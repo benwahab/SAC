@@ -18,8 +18,10 @@ Ce document évite de confondre une décision de l'utilisateur avec une proposit
 | SOS essentiel | Reste gratuit |
 | Catégories | Danger personnel, accident, intrusion au domicile, urgence médicale, personne perdue/désorientée, alerte personnalisée |
 | Niveaux | Préventif, urgent, critique |
+| SOS discret | Écran neutre après déclenchement ; code de contrainte dans SAC ou via raccourci écran verrouillé si faisable |
+| Protection contre désactivation forcée | Tentative d'alerte discrète avant désactivation lorsque la plateforme le permet, sans garantie d'empêcher l'arrêt |
 | Protection des trajets | Une fonction regroupée avec trois modes : vérification d'arrivée, accompagnement, protection complète |
-| Rappels | Toutes les 5 minutes ; durée maximale choisie par l'auteur |
+| Rappels | Toutes les 5 minutes vers les contacts initiaux, jusqu'à la clôture par l'auteur ; aucun ajout automatique de contacts |
 | Clôture | Seul l'auteur de l'alerte peut clôturer |
 | Expiration des rappels | Ne clôture pas l'alerte |
 | Répondant principal | Premier contact qui accepte la prise en charge ; promotion du volontaire suivant si retrait |
@@ -97,5 +99,6 @@ Ces éléments sont des recommandations d'architecture, pas des engagements de f
 |---|---|
 | 1.0 | Consolidation des décisions connues et des points ouverts dans le cadre du dépôt initial de la documentation. |
 | 1.1 | Cahier des charges complété sur la portabilité Android/iOS, la stack TypeScript et la collaboration Claude/Qwen ; langues de référence harmonisées. |
+| 1.2 | Rappels alignés sur la validation utilisateur : toutes les 5 minutes vers les contacts initiaux jusqu'à clôture ; détails du SOS discret et de la protection contre désactivation forcée consignés. |
 
 Mettre à jour ce tableau à chaque nouvelle validation importante.
