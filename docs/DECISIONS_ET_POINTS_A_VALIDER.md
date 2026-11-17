@@ -180,3 +180,38 @@ Le module `src/services/location/key-exchange.ts` contient désormais :
 **Limite fondamentale :** la signature vérifie que le paquet a été signé par la clé d'identité qu'il contient ; elle ne prouve pas que cette clé appartient réellement au contact attendu. L'empreinte doit être comparée indépendamment puis épinglée comme référence de confiance. Les procédures de récupération, rotation, révocation multi-appareils et gestion des conflits restent à spécifier et tester.
 
 Le prototype n'est pas connecté à l'application, n'échange aucune vraie position et ne constitue pas un protocole de production. Le commit `0c6dd00` a passé typecheck, les 15 tests crypto, build et audit des dépendances de production. L'audit complet reste signalé : 11 vulnérabilités élevées dans des dépendances de développement (notamment picomatch et sa chaîne de dépendances). Les nouveaux tests d'empreinte du commit `0f83c11` sont validés : 18 tests réussis, 0 échec, typecheck et build réussis (CI run `44189940721`). L'audit complet des dépendances reste non bloquant dans le workflow, mais signale 11 vulnérabilités élevées dans des dépendances de développement ; elles restent à traiter sans mise à niveau forcée ni migration majeure non validée.
+
+
+## 3.8 Décision produit — plusieurs appareils autorisés pour un même compte
+
+**Décision produit validée :** un utilisateur SAC peut enregistrer et utiliser plusieurs appareils sous un seul compte. Un appareil supplémentaire n'est pas un nouvel utilisateur et ne crée pas une nouvelle relation de contact. Aucun plafond numérique arbitraire n'est fixé dans cette première décision ; une limite éventuelle devra être justifiée par la sécurité, les coûts et l'expérience utilisateur.
+
+### Règles obligatoires
+
+1. Chaque téléphone, tablette ou installation native/PWA possède un identifiant d'appareil opaque, une session propre et un statut individuel : en attente de vérification, actif ou révoqué.
+2. Chaque appareil génère localement ses propres clés privées de signature et d'échange. Les clés privées ne sont jamais copiées depuis un autre appareil, envoyées au serveur, incluses dans une sauvegarde SAC ou transférées par simple synchronisation de compte.
+3. Le serveur conserve uniquement les métadonnées nécessaires : identifiant opaque, type de plateforme, libellé choisi par l'utilisateur, dates d'enregistrement/dernière activité, statut, empreintes et clés publiques, version de clé et informations de révocation. Aucun secret privé.
+4. L'ajout d'un appareil exige une authentification forte et une approbation explicite. Si un appareil déjà approuvé est disponible, il autorise le nouvel appareil par une procédure de jumelage cryptographique vérifiée ; un OTP seul ne suffit pas à restaurer la confiance GPS.
+5. Une nouvelle installation, une réinitialisation ou une récupération de compte ne récupère jamais silencieusement les clés privées de l'ancien appareil. Si aucun appareil approuvé n'est disponible, le compte peut être récupéré selon la procédure d'authentification qui sera retenue, mais la nouvelle identité cryptographique doit être réapprouvée indépendamment par les contacts avant tout nouveau partage GPS.
+6. L'utilisateur peut consulter ses appareils, renommer un appareil et révoquer un appareil perdu ou inutilisé. La révocation côté serveur invalide immédiatement les sessions et autorisations serveur de cet appareil et interdit les nouveaux partages utilisant ses clés révoquées.
+7. Un appareil révoqué qui est hors ligne ne peut pas recevoir un ordre d'effacement à distance. La révocation serveur ne doit donc jamais être présentée comme la preuve que les données ou clés déjà présentes physiquement sur cet appareil ont été effacées.
+8. Les alertes SOS et leur transmission restent indépendantes de la disponibilité du chiffrement GPS. Une erreur de jumelage ou de clé ne doit pas empêcher l'envoi d'une alerte essentielle par un appareil encore authentifié et autorisé.
+9. Les alertes et actions restent attribuées au compte utilisateur, mais les événements de sécurité et les sessions identifient précisément l'appareil qui a réalisé l'action.
+10. Les notifications push sont enregistrées par appareil et leur révocation/désinscription est indépendante des autres appareils du compte.
+
+### Modèle cryptographique à concevoir avant intégration
+
+La piste à étudier est une identité de compte racine distincte des clés opérationnelles de chaque appareil. La clé racine approuve les clés publiques propres aux appareils ; un appareil déjà approuvé peut certifier l'ajout d'un nouvel appareil. Chaque appareil garde ses clés privées localement. Si la clé racine et tous les appareils approuvés sont perdus, une récupération de compte ne restaure pas cette confiance : une nouvelle identité doit être créée et les contacts doivent la vérifier à nouveau par un canal indépendant.
+
+Ce modèle est une proposition de protocole, pas une implémentation approuvée. Il faut spécifier les formats de certificats, l'authentification de l'appareil approbateur, le rejeu, la révocation, la rotation, les appareils simultanément hors ligne, les conflits d'ajout et la récupération avant de connecter le prototype ECDH/ECDSA à l'application.
+
+### Comportement fonctionnel attendu
+
+- Écran « Mes appareils » dans les paramètres de sécurité.
+- Pour chaque appareil : nom, type, date d'ajout, dernière activité, statut et action de révocation.
+- Confirmation renforcée avant révocation ; afficher clairement que l'appareil hors ligne ne sera pas effacé à distance.
+- À la connexion d'un nouvel appareil : parcours « Ajouter un appareil » ou « Récupérer mon compte », sans confusion entre récupération d'accès au compte et récupération des clés GPS.
+- Aucun partage automatique de l'historique GPS local d'un appareil vers un autre.
+- Un nouvel appareil ne voit les anciennes archives GPS que si un mécanisme explicite, compatible avec la règle stricte J+30, est ultérieurement conçu et validé. Par défaut, les anciennes clés et archives restent liées à leur appareil d'origine.
+
+**État :** décision produit multi-appareils validée par l'utilisateur le 17 novembre 2026 ; protocole cryptographique, UX, API, stockage et tests restent à concevoir. Aucun écran, endpoint ou migration n'est déclaré implémenté par cette décision.
