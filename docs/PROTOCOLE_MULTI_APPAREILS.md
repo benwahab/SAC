@@ -334,3 +334,40 @@ Le dépôt contient maintenant `src/services/device/device-certificate.ts`. Il p
 La vérification reçoit obligatoirement la clé publique racine de confiance séparément ainsi que les identifiants attendus du compte et de l'appareil. Elle recalcule l'empreinte racine, compare les identifiants attendus et vérifie la signature ; elle ne récupère jamais l'ancre de confiance depuis le certificat. Les tests adversariaux couvrent compte/appareil altéré, clé ECDH substituée, autre racine, signature altérée, certificat mal formé et paire racine incohérente.
 
 **Limites importantes :** le certificat ne constitue pas une cérémonie d'enrôlement complète. Il ne prouve pas que l'utilisateur a comparé les empreintes, ne stocke aucun état, ne révoque aucune session, ne vérifie pas le statut actif côté serveur et ne résout pas les courses d'approbation/révocation. L'appelant doit charger une ancre racine déjà vérifiée et vérifier l'état de révocation serveur à chaque autorisation. Ne pas utiliser avec le GPS réel avant revue indépendante.
+
+
+## 19. Contrat de révocation serveur — proposition avant API
+
+### Autorité d'approbation
+- En V1, seul l'appareil racine actif peut approuver un nouvel appareil.
+- Un appareil secondaire, même actif et muni d'un certificat valide, ne peut jamais approuver, signer ou initier une approbation d'un autre appareil.
+- Le serveur doit vérifier simultanément l'identité de l'acteur, le statut actif du root enregistré pour le compte et la signature racine du certificat. Un champ `actorRole` fourni par le client n'est jamais une preuve.
+- Une révocation du root place le compte en état `root_recovery_required` et bloque tout nouvel enrôlement ainsi que tout partage GPS jusqu'à la création d'une nouvelle identité et à la revérification indépendante des contacts. La récupération du mot de passe ne réactive pas l'ancienne racine.
+
+### Autorisation à chaque requête protégée
+Chaque requête utilisant une fonction sensible doit vérifier dans D1, sans cache d'autorisation :
+1. le compte de la session correspond au compte de l'appareil ;
+2. le `device_id` de la session correspond à l'appareil certifié ;
+3. l'appareil existe et son état courant est `active` ;
+4. le certificat est valide sous l'empreinte racine de confiance actuellement enregistrée ;
+5. la version d'autorisation de session correspond à la version courante de l'appareil ;
+6. l'appareil racine est toujours actif si l'action dépend de l'identité racine.
+
+Un jeton signé valide ne suffit jamais à maintenir une autorisation après révocation. Les caches d'autorisation positifs sont interdits pour les routes protégées. Les vérifications sensibles et mutations doivent être sérialisées avec la révocation via transaction D1 ou une condition atomique équivalente.
+
+### Mutation de révocation atomique
+La révocation doit, dans une transaction atomique unique :
+- passer l'appareil à `revoked`, écrire l'horodatage serveur et incrémenter sa `auth_version` ;
+- invalider toutes ses sessions serveur et tous ses jetons de rafraîchissement ;
+- désactiver ses abonnements push ;
+- annuler les défis de jumelage où il est appareil sujet ou approbateur ;
+- fermer/refuser les sessions de partage GPS actives qui dépendent de cet appareil ;
+- écrire un événement d'audit append-only sans secret ni coordonnées GPS.
+
+L'opération est idempotente : une deuxième révocation ne réactive rien et ne réécrit pas l'événement initial. Toute course entre une approbation et une révocation doit aboutir à un seul état terminal cohérent. Les opérations qui arrivent après le commit de révocation sont refusées, même avec un ancien jeton.
+
+### Notifications et limites physiques
+Les tâches de notification en attente doivent recontrôler l'état de l'appareil et son abonnement juste avant l'envoi. Une notification déjà remise au fournisseur externe ou en transit ne peut pas être rappelée. Les appareils hors ligne ne reçoivent pas un effacement à distance ; les clés et données déjà copiées sur cet appareil ne sont pas réputées effacées.
+
+### État de cette spécification
+Ce contrat est une base de conception, pas un endpoint ni une migration existante. Il faut encore le confronter aux garanties transactionnelles réelles de D1, aux limites d'exécution Pages Functions et au modèle de session retenu. Aucun GPS réel ne doit être connecté avant revue indépendante et preuve de suppression irréversible à J+30.
