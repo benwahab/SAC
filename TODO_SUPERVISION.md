@@ -112,4 +112,5 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 
 - [ ] Vérifier la nouvelle CI incluant les tests de certificats racine avant de considérer ce prototype validé.
 - [ ] Intégrer obligatoirement la vérification du certificat et de son statut de révocation avant toute dérivation de clé ou autorisation d'échange.
+- [x] Durcir le contrat métier pur : seule l'identité d'appareil racine peut être l'acteur d'une approbation secondaire ; tests de refus ajoutés. Le contrôleur serveur doit encore charger le root actif depuis D1.
 - [ ] Définir le modèle de révocation transactionnelle côté serveur : invalidation immédiate des sessions, push, nouveaux jumelages et autorisations ; aucun appareil hors ligne ne peut être effacé à distance.
