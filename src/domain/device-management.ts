@@ -38,7 +38,7 @@ export type DeviceTransitionResult =
   | { readonly ok: false; readonly error: DeviceTransitionError };
 
 function isCanonicalUtcTimestamp(value: string): boolean {
-  if (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/.test(value)) {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) {
     return false;
   }
 
