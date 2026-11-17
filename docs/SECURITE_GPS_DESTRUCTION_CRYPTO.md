@@ -381,3 +381,60 @@ Critères de rejet :
 L'utilisateur confirme que les destinataires des alertes sont des personnes de confiance. Le périmètre de protection porte donc sur les données et clés sous le contrôle de SAC ; le produit ne cherchera pas à effacer les copies que les contacts autorisés choisissent de conserver sur leurs propres appareils. Cela ne change pas les règles de consentement, de sélection des destinataires et de révocation pour les nouvelles alertes.
 
 **Décision provisoire maintenue :** poursuivre le prototype et les tests natifs, sans stockage GPS persistant côté serveur. Ne pas prétendre que l'exigence J+30 est entièrement prouvée tant que la suppression à échéance hors ligne n'est pas résolue ou que la règle de rétention n'est pas explicitement adaptée.
+
+
+## 13. Transport temps réel sans historique GPS : Pages Functions + relais WebSocket
+
+Une nouvelle piste de transport est confirmée par la documentation Cloudflare : une Pages Function peut être liée à un namespace Durable Objects et lui transmettre une requête. Cloudflare précise que la classe Durable Object doit être définie et déployée dans un Worker séparé, puis liée au projet Pages. Cela peut rester un service technique de relais et non remplacer l'API REST principale Pages Functions, mais cette extension doit être validée avant création de ressource.
+
+### 13.1 Flux proposé
+
+1. Le téléphone de l'auteur chiffre la position avec une clé de session et vérifie le consentement ainsi que les destinataires.
+2. La Pages Function authentifie la session, vérifie l'alerte et les droits des destinataires.
+3. La Pages Function transmet la connexion WebSocket au Durable Object de relais.
+4. Le Durable Object transmet en mémoire les paquets chiffrés uniquement aux destinataires actuellement connectés à la session.
+5. Le relais ne déchiffre jamais les coordonnées et n'écrit jamais le contenu des paquets dans D1, R2, SQLite, KV, les attachments WebSocket, les logs ou les traces.
+6. Les attachments nécessaires à la reprise d'une connexion ne contiennent que des identifiants opaques minimaux de routage ; aucune coordonnée, adresse, précision ou historique.
+7. À la fermeture des connexions, les paquets de position ne sont pas conservés pour une livraison ultérieure.
+
+### 13.2 Ce que les WebSockets Durable Objects permettent — et ne permettent pas
+
+Cloudflare documente l'API WebSocket Hibernation : les connexions clientes peuvent rester ouvertes pendant que l'objet est hiberné. Les attachments sérialisés peuvent survivre à l'hibernation et doivent donc être considérés comme des données persistantes liées à la connexion. Le stockage SQLite des Durable Objects dispose aussi d'une restauration temporelle jusqu'à 30 jours.
+
+Conséquences impératives pour SAC :
+- aucune coordonnée GPS, même chiffrée, ne doit être mise dans un attachment ;
+- aucune position ne doit être écrite dans le stockage Durable Objects ;
+- le code de relais ne doit pas appeler les API de stockage pour le contenu GPS ;
+- seuls les paquets en transit dans la mémoire d'exécution peuvent contenir le ciphertext, pour la durée du transfert ;
+- les journaux et traces doivent masquer les corps de messages et paramètres contenant des données de localisation.
+
+Sources officielles :
+- [Cloudflare Pages Functions — Bindings Durable Objects](https://developers.cloudflare.com/pages/functions/bindings/)
+- [Cloudflare Durable Objects — WebSockets et hibernation](https://developers.cloudflare.com/durable-objects/best-practices/websockets/)
+- [Cloudflare Durable Objects — SQLite et restauration temporelle](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)
+
+### 13.3 Livraison et mode hors ligne
+
+Ce relais ne constitue pas une boîte aux lettres durable. Si le contact n'est pas connecté, le paquet GPS n'est pas stocké pour lui. SAC peut envoyer une notification générique sans coordonnées ; le contact récupère la position lorsque l'auteur et le destinataire sont connectés et que le partage est encore autorisé.
+
+Une alerte non géographique peut être créée et notifiée indépendamment du partage GPS. L'interface doit distinguer « alerte envoyée » de « position disponible en direct ». Elle ne doit jamais afficher une position comme disponible si le relais ne l'a pas transmise.
+
+WebRTC DataChannel est une alternative ou un complément : le transport est chiffré par DTLS et peut être pair-à-pair, mais les connexions peuvent nécessiter STUN/TURN et un serveur de signalisation. Le TURN peut relayer les paquets chiffrés ; le fonctionnement hors ligne et en arrière-plan reste limité par les plateformes mobiles.
+
+Sources :
+- [MDN — WebRTC Data Channels et chiffrement DTLS](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Using_data_channels)
+- [MDN — STUN, TURN et ICE](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Protocols)
+- [MDN — Signalisation WebRTC](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling)
+
+### 13.4 Architecture candidate à tester
+
+- Pages Functions reste l'API REST de référence et contrôle l'authentification et les autorisations.
+- Un Worker auxiliaire ne fournit que le point d'entrée Durable Object WebSocket ; il ne remplace pas l'API métier.
+- Le Durable Object ne stocke aucune position et ne conserve aucun paquet après transfert.
+- D1 conserve uniquement les événements non géographiques et les états d'alerte.
+- Les notifications push ne contiennent jamais les coordonnées GPS.
+- Le terminal source conserve localement l'archive chiffrée pour la durée produit retenue ; les clés sont liées à l'appareil.
+
+**Limites qui restent ouvertes :** disponibilité des connexions, réception lorsque les contacts sont hors ligne, comportement en arrière-plan Android/iOS, coûts et limites de WebSocket, gestion de plusieurs destinataires, absence de journalisation, et preuve par tests qu'aucun contenu GPS n'est écrit dans les stockages du relais.
+
+Cette piste respecte la règle de ne pas remplacer Pages Functions par un backend autonome. Elle nécessite néanmoins un Worker auxiliaire pour héberger la classe Durable Object, donc une validation explicite avant toute création ou déploiement.
