@@ -241,7 +241,7 @@ La comparaison SAS vise à détecter une substitution pendant le jumelage ; elle
 
 Une revue interne préliminaire des prototypes ECDH/ECDSA et AES-GCM est consignée dans [REVUE_CRYPTO_PRELIMINAIRE.md](REVUE_CRYPTO_PRELIMINAIRE.md). Elle décrit les durcissements apportés aux validations, à l'encodage HKDF et aux bundles signés, ainsi que les risques encore bloquants.
 
-Cette revue n'est pas indépendante et ne certifie pas le protocole. En particulier, le contexte HKDF final doit lier compte, cérémonie, appareils, usage et direction ; les clés AES-GCM doivent être séparées par direction ; l'amorçage de la racine, les certificats, la révocation, la récupération, le stockage matériel et la destruction J+30 restent à concevoir et à tester.
+Cette revue n'est pas indépendante et ne certifie pas le protocole. En particulier, le contexte HKDF final doit encore lier compte et cérémonie ; l'authenticité des identifiants dépend des certificats d'appareils ; les clés AES-GCM sont maintenant séparées par direction dans le prototype ; l'amorçage de la racine, les certificats, la révocation, la récupération, le stockage matériel et la destruction J+30 restent à concevoir et à tester.
 
 **Interdiction maintenue :** ne pas connecter ces prototypes aux coordonnées GPS réelles avant revue cryptographique indépendante et preuve séparée de destruction irréversible J+30.
 
