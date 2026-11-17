@@ -319,3 +319,14 @@ Ce document décrit une architecture cible, pas un système déjà construit.
 ## 12. Précision : aucun KMS validé pour J+30
 
 L'étude complémentaire dans [SECURITE_GPS_DESTRUCTION_CRYPTO.md](SECURITE_GPS_DESTRUCTION_CRYPTO.md) conclut qu'aucun candidat examiné (Google Cloud KMS, AWS KMS, AWS CloudHSM, secrets Workers) ne démontre à ce stade la destruction irréversible de toutes copies de clés au plus tard à J+30. Les fenêtres réversibles et sauvegardes doivent être considérées dans la menace. Aucun de ces services ne doit être sélectionné par défaut. Le contrôle serveur doit refuser toute lecture GPS dès l'échéance, mais ce contrôle n'est pas assimilé à une destruction cryptographique.
+
+
+## 1.6 Proposition de protection GPS sans persistance serveur — à prototyper
+
+Pour les coordonnées GPS précises, l'étude propose de ne pas utiliser D1 ni R2 comme stockage historique. Le terminal chiffre les positions avant toute transmission ; les archives nécessaires à la conservation sont gardées localement sous chiffrement natif lié à l'appareil. Les contacts autorisés reçoivent les positions via un relais chiffré qui ne conserve aucun historique GPS persistant.
+
+Cette proposition vise à empêcher qu'une restauration D1/R2 puisse réintroduire des coordonnées GPS. Elle ne remplace pas les alertes métier ni leur historique non géographique.
+
+Le modèle de clés envisagé est une clé aléatoire indépendante par session de partage, stockée dans Android Keystore ou iOS Keychain selon les capacités vérifiées de l'appareil. Les fichiers GPS chiffrés doivent être exclus des sauvegardes applicatives lorsque la plateforme le permet.
+
+**Limite non résolue :** les systèmes mobiles ne garantissent pas le réveil de l'application à une heure exacte. L'expiration doit bloquer le déchiffrement dès la première exécution après J+30 et déclencher la suppression de la clé ; la destruction matérielle à l'instant précis J+30 lorsque le téléphone est éteint n'est pas démontrée. Aucun code métier ni stockage GPS ne doit être implémenté avant validation du prototype, des scénarios de restauration et de la politique finale de rétention.
