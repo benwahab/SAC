@@ -222,7 +222,7 @@ Ce mode combine :
 
 ### 10.4 Durée et limites
 
-Les durées proposées pour le partage sont : ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à la clôture de l'alerte/du trajet, selon le parcours. À l'expiration, le partage actif s'arrête. Les positions GPS précises déjà collectées sont conservées temporairement pendant 30 jours à compter de la fin du partage concerné, puis supprimées automatiquement et définitivement des données actives SAC. Pour un partage ponctuel, le délai commence à la collecte de la position. Les événements non géographiques de l'alerte ou du trajet peuvent rester dans l'historique ; ils ne doivent pas conserver les coordonnées précises. Les journaux techniques ne doivent pas recopier les coordonnées. La stratégie de purge des sauvegardes doit être définie pour garantir leur disparition à l'issue de leur cycle de rétention.
+Les durées proposées pour le partage sont : ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à la clôture de l'alerte/du trajet, selon le parcours. À l'expiration, le partage actif s'arrête. Les positions GPS précises déjà collectées sont conservées temporairement pendant 30 jours à compter de la fin du partage concerné, puis supprimées automatiquement et définitivement des données actives SAC. Pour un partage ponctuel, le délai commence à la collecte de la position. Les événements non géographiques de l'alerte ou du trajet peuvent rester dans l'historique ; ils ne doivent pas conserver les coordonnées précises. Les journaux techniques ne doivent pas recopier les coordonnées. **À J+30, aucune restauration ne doit permettre de récupérer ou de rendre lisibles les coordonnées GPS expirées**, y compris depuis D1 Time Travel, une sauvegarde, un snapshot, un export ou une réplication. Une simple suppression SQL n'est pas suffisante. Les positions doivent être chiffrées avant persistance et la clé indépendante correspondante doit être détruite de manière irréversible à l'échéance, sans possibilité de restauration de cette clé depuis un backup. Cette garantie doit être démontrée par des tests de restauration avant toute migration GPS.
 
 Une PWA ne garantit pas un suivi GPS continu lorsque le navigateur ou l'application est suspendu ou fermé. Les applications natives peuvent améliorer certains scénarios, mais restent soumises aux permissions, à l'économie d'énergie et aux règles Android/iOS. L'interface doit afficher le dernier point reçu, sa date et l'état de connexion, sans présenter une donnée ancienne comme du direct.
 
@@ -376,8 +376,10 @@ Les opérations sensibles doivent être atomiques lorsque nécessaire et protég
 - Chiffrement en transit et chiffrement au repos selon les capacités de l'infrastructure.
 - Sauvegardes et procédure de restauration testées.
 - Appliquer et tester la conservation temporaire des positions GPS précises pendant 30 jours après la fin du partage, puis leur suppression automatique et définitive des données actives SAC.
-- Une restauration de base ne doit jamais rendre consultable une position dont le délai de 30 jours est écoulé : purge de rattrapage et vérification obligatoires avant réouverture du service.
-- La suppression irréversible des copies de sauvegarde à J+30 doit être démontrée ; ne pas stocker les coordonnées GPS en clair dans D1 tant que l'historique Time Travel et la stratégie de destruction des clés n'ont pas été traités.
+- Après 30 jours, aucune restauration (D1 Time Travel, sauvegarde, snapshot, export ou réplication) ne doit pouvoir récupérer ni rendre lisibles les coordonnées GPS expirées.
+- Une simple purge de rattrapage après restauration ne suffit pas à satisfaire cette exigence.
+- Les positions doivent être chiffrées avant persistance avec des clés indépendantes de D1 ; les clés doivent être détruites de façon vérifiable et non restaurable à J+30.
+- Interdiction de stocker des coordonnées GPS en clair dans D1, R2, les exports ou les sauvegardes tant que cette garantie cryptographique n'est pas implémentée et testée.
 - Accès administratif limité, justifié et auditable.
 - Aucun compte administrateur ne doit permettre de consulter librement toutes les localisations sans contrôle et justification.
 
