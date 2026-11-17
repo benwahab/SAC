@@ -75,7 +75,7 @@ Ces éléments sont des recommandations d'architecture, pas des engagements de f
 4. **Groupes :** nombre maximal de groupes, membres, rôles et règles d'invitation.
 5. **Paiement :** prestataire(s) acceptés au Niger, frais, renouvellement, remboursement et gestion des paiements échoués.
 6. **SMS :** prestataire, coût, disponibilité et règles de bascule depuis les notifications push.
-7. **Données GPS :** fréquence d'échantillonnage, export, cycle de purge des sauvegardes et vérification de l'effacement après 30 jours.
+7. **Données GPS :** fréquence d'échantillonnage et conception du chiffrement/destruction indépendante des clés ; la règle est décidée : aucune restauration ne doit rendre les positions expirées lisibles après 30 jours.
 8. **Compte :** récupération après perte du téléphone, changement de numéro/e-mail et suppression du compte.
 9. **SOS discret :** scénarios techniquement réalisables sur Android, iOS et PWA ; limites de permissions et de fonctionnement en arrière-plan.
 10. **Base et hébergement :** choix définitif de l'infrastructure et localisation des données.
@@ -105,5 +105,6 @@ Ces éléments sont des recommandations d'architecture, pas des engagements de f
 | 1.3 | Architecture Cloudflare rétablie conformément au cahier des charges : Pages, Pages Functions, D1 et R2 sous réserve d'activation/autorisation. |
 | 1.4 | Catégories d'alerte, vérification des contacts invités et fenêtres de partage de localisation harmonisées avec les décisions récupérées. |
 | 1.5 | Conservation des positions GPS précises validée à 30 jours après la fin du partage, avec purge automatique définitive des données actives. |
+| 1.6 | Exigence ferme : après 30 jours, aucune restauration de sauvegarde, D1 Time Travel, snapshot, export ou réplication ne doit permettre de récupérer ou rendre lisibles les coordonnées GPS expirées ; destruction cryptographique indépendante et non restaurable obligatoire. |
 
 Mettre à jour ce tableau à chaque nouvelle validation importante.
