@@ -21,7 +21,7 @@ function requireContext(value: string, label: string): void {
     typeof value !== "string" ||
     !value.trim() ||
     value.length > 256 ||
-    /[\u0000-\u001f\u007f]/.test(value)
+    [...value].some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127)
   ) {
     throw new Error(`Le contexte ${label} est invalide.`);
   }
@@ -209,7 +209,7 @@ export async function verifyLocationKeyBundle(
       typeof bundle.ownerId !== "string" ||
       !bundle.ownerId.trim() ||
       bundle.ownerId.length > 256 ||
-      /[\u0000-\u001f\u007f]/.test(bundle.ownerId) ||
+      [...bundle.ownerId].some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127) ||
       !isP256PublicJwk(bundle.identityPublicKey) ||
       !isP256PublicJwk(bundle.exchangePublicKey) ||
       !(bundle.signature instanceof Uint8Array) ||
