@@ -1,7 +1,7 @@
 # SAC — Cahier des charges fonctionnel et technique
 
 **Projet :** SAC — Sécurité, Alerte, Citoyenne  
-**Version :** 1.0 — Document de cadrage  
+**Version :** 1.1 — Document de cadrage consolidé  
 **Statut :** Référence de conception — développement non commencé  
 **Périmètre initial :** population générale, lancement envisagé au Niger, conception extensible à d'autres pays.
 
@@ -377,7 +377,9 @@ Les opérations sensibles doivent être atomiques lorsque nécessaire et protég
 
 ## 17. Langues et accessibilité
 
-Le lancement doit prévoir une interface en français. L'architecture doit permettre d'ajouter d'autres langues sans réécrire les parcours. Les textes doivent être courts, les boutons suffisamment grands et les contrastes lisibles. Les messages critiques doivent éviter les ambiguïtés et employer des termes cohérents dans toutes les langues.
+L'application doit être conçue pour être multilingue dès le départ, sans texte métier dispersé directement dans les composants. Les langues de référence déjà prévues sont le français, le hausa, le zarma et l'anglais. La structure doit permettre d'ajouter d'autres langues sans réécrire les parcours ; la disponibilité effective de chaque traduction doit être vérifiée avant activation.
+
+Les textes doivent être courts, les boutons suffisamment grands et les contrastes lisibles. Les messages critiques doivent éviter les ambiguïtés et employer des termes cohérents dans toutes les langues. Les parcours SOS doivent rester compréhensibles même lorsque l'utilisateur agit rapidement ou sous stress.
 
 ## 18. Performance et fiabilité
 
@@ -445,3 +447,59 @@ Les éléments non tranchés sont consignés dans `DECISIONS_ET_POINTS_A_VALIDER
 ---
 
 **Règle de lecture :** une exigence marquée comme décidée est obligatoire. Une proposition technique ou un point à valider ne doit pas être transformé en décision utilisateur sans validation explicite.
+
+
+## 21. Préparation à une application mobile Android et iOS
+
+La première version est une PWA mobile-first. Cependant, le projet doit être structuré dès le départ pour pouvoir être emballé ensuite en application Android et iOS avec Capacitor, sans reconstruire les écrans ni réécrire les règles métier.
+
+Exigences obligatoires :
+- conserver les écrans et la logique métier indépendants de la plateforme ;
+- isoler les capacités du téléphone derrière des interfaces dédiées dans `src/services/device/` ;
+- prévoir des adaptateurs Web pour la PWA et des adaptateurs Capacitor ultérieurs pour Android/iOS ;
+- ne pas appeler directement des plugins natifs depuis les composants d'interface ;
+- garder les contrats API et les validations sensibles côté serveur ;
+- documenter séparément les capacités réellement disponibles sur navigateur, Android et iOS ;
+- tester les permissions, notifications, géolocalisation, reprise après suspension et fonctionnement réseau sur de vrais appareils avant toute promesse fonctionnelle ;
+- ne pas considérer Capacitor comme une garantie de GPS continu, de SMS silencieux ou d'exécution permanente en arrière-plan.
+
+Le passage à l'application mobile devra être une étape d'emballage et d'adaptation des capacités du terminal, et non une réécriture du produit. Toute évolution qui rendrait cette portabilité impossible ou imposerait une réécriture devra être signalée avant d'être adoptée.
+
+## 22. Stack technique et règles de collaboration
+
+La stack de référence est verrouillée pour tous les intervenants :
+- interface : React ;
+- bundler et environnement frontend : Vite ;
+- langage applicatif : TypeScript ;
+- styles : Tailwind CSS ;
+- icônes : Lucide React ;
+- backend : API REST sur Cloudflare Workers, en TypeScript ;
+- première plateforme : PWA mobile-first ;
+- préparation native : Capacitor, isolé derrière les adaptateurs de terminal ;
+- scripts de base de données : SQL lorsque le fournisseur retenu le nécessitera.
+
+Claude, Qwen et tout autre assistant autorisé peuvent auditer, documenter, corriger et développer dans le même dépôt. Ils doivent :
+1. lire `AGENTS.md`, `README.md`, le présent cahier des charges, l'architecture, les décisions et les consignes permanentes avant toute intervention ;
+2. conserver exactement la stack, les langages, les conventions et l'architecture validés ;
+3. ne pas migrer vers un autre framework, langage, bundler, backend ou dépôt sans accord explicite de l'utilisateur ;
+4. travailler uniquement dans `benwahab/SAC`, sur l'unique branche `main` ;
+5. vérifier le dernier commit avant chaque écriture et ne pas écraser le travail d'un autre intervenant ;
+6. annoncer les fichiers modifiés, les contrôles exécutés et les limites restantes ;
+7. distinguer clairement une proposition technique d'une décision validée.
+
+Aucun assistant ne doit créer une branche parallèle, un dépôt miroir, un prototype concurrent ou une deuxième version de l'application.
+
+## 23. Vérification multi-plateforme et critères de livraison
+
+Avant une mise en production, les scénarios critiques doivent être testés au minimum sur :
+- PWA installée et PWA ouverte dans un navigateur mobile ;
+- Android sur appareil réel ;
+- iOS sur appareil réel lorsque la version native sera engagée ;
+- réseau mobile stable, réseau lent, perte de connexion et retour de connexion ;
+- permissions de localisation accordées, refusées puis révoquées ;
+- notifications autorisées, refusées et indisponibles ;
+- application en premier plan, en arrière-plan et suspendue, en documentant les limites propres à chaque système.
+
+Les tests doivent notamment vérifier qu'une alerte enregistrée reste consultable même si un canal de notification échoue, qu'aucun état de livraison n'est inventé, que les destinataires sont corrects, que la clôture reste réservée à l'auteur et que les rappels ne se dupliquent pas.
+
+La livraison ne peut être déclarée prête que sur la base de résultats observés et consignés. Une compilation réussie ne suffit pas à prouver la fiabilité du SOS, du GPS, des notifications ou des SMS.
