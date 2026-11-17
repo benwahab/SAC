@@ -57,8 +57,8 @@ Les tests sont exécutés par `npm run test:crypto` dans la CI existante. Le ré
 
 1. **Pas d'authentification d'identité complète :** une signature valide d'un bundle prouve seulement que la clé d'identité incluse a signé le lien avec la clé ECDH. Elle ne prouve pas que cette identité est celle du bon utilisateur. L'empreinte doit être ancrée indépendamment et le protocole de l'appareil racine doit être implémenté et audité.
 2. **Pas de certificat d'appareil de production :** le bundle expérimental ne lie pas encore l'ensemble des champs requis (compte, appareil, cérémonie, usages, version, expiration, statut et racine).
-3. **Séparation directionnelle du prototype — durcie, intégration finale non validée :** `deriveLocationDirectionalKey` dérive un contexte HKDF distinct pour chaque sens. Le pair émetteur reçoit une clé `encrypt` uniquement et le pair destinataire une clé `decrypt` uniquement. Les tests vérifient qu'une clé de sens inverse ne déchiffre pas le paquet et que les usages sont restreints. Le compte, la cérémonie, l'authentification des identifiants et l'association des clés publiques aux appareils doivent encore être liés par le protocole de certificats.
-4. **Contexte HKDF incomplet :** compte, appareils, cérémonie et usage doivent être liés au contexte final ; le contexte actuel est uniquement un prototype amélioré.
+3. **Séparation directionnelle du prototype — durcie, intégration finale non validée :** `deriveLocationDirectionalKey` dérive un contexte HKDF distinct pour chaque sens. Le pair émetteur reçoit une clé `encrypt` uniquement et le pair destinataire une clé `decrypt` uniquement. Le compte et la cérémonie sont désormais inclus dans le contexte. Les tests vérifient l'isolation entre comptes, cérémonies et directions. L'authentification des identifiants et l'association des clés publiques aux appareils doivent encore être assurées par les certificats.
+4. **Contexte HKDF incomplet :** compte, cérémonie, session, appareils, usage, direction, algorithme et version sont liés dans le prototype. Il reste à définir et authentifier formellement les identifiants via le transcript signé, puis à soumettre ce format à la revue indépendante.
 5. **Non-exportable ne signifie pas matériellement protégé :** WebCrypto dans une PWA ne garantit ni TEE/StrongBox, ni Android Keystore, ni iOS Keychain, ni absence de copie du profil navigateur. Les garanties doivent être vérifiées par plateforme.
 6. **Cycle de vie incomplet :** rotation, révocation, remplacement, récupération, appareils hors ligne et invalidation des partages GPS ne sont pas implémentés.
 7. **Démarrage de la première identité racine :** il faut définir comment la première clé racine est liée à un compte après authentification forte, et comment un serveur compromis ne peut pas substituer cette racine au moment de l'inscription.
@@ -101,3 +101,10 @@ Les tests adversariaux couvrent l'échange normal, le refus des usages interdits
 La première CI de la séparation directionnelle a révélé un cas de test mal construit : le test de collision HKDF fournissait un identifiant local qui ne correspondait ni à l'émetteur ni au destinataire. La fonction a correctement rejeté cette entrée incohérente ; le défaut était dans le test, pas dans le contrôle d'identité locale.
 
 Le test a été corrigé pour comparer deux tuples valides d'identifiants contenant des séparateurs. La nouvelle CI du commit correctif doit confirmer l'ensemble des tests avant validation.
+
+
+## 10. Liaison du contexte HKDF au compte et à la cérémonie
+
+La fonction expérimentale `deriveLocationDirectionalKey` utilise désormais le domaine versionné `SAC:location-directional-key:v4` et inclut compte, cérémonie, session, émetteur, destinataire, usage et algorithme dans l'information HKDF. Les tests vérifient qu'un paquet d'une cérémonie ou d'un compte ne peut pas être déchiffré avec une clé dérivée dans un autre contexte.
+
+Cette évolution ne prouve pas à elle seule l'authenticité des identifiants : ceux-ci doivent être issus de certificats d'appareils vérifiés sous la racine de confiance et liés à un transcript signé. L'intégration serveur et la revue cryptographique indépendante restent non réalisées.
