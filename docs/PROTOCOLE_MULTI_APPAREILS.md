@@ -169,3 +169,71 @@ La conséquence acceptée est un point unique d'approbation et une dépendance �
 ### 12.7 Résultat des tests du contrat de cycle de vie
 
 Le contrat métier pur `src/domain/device-management.ts` et ses 14 tests (`tests/device-lifecycle.test.ts`) ont été intégrés au dépôt. La CI run `44191818016` sur le commit `eab16e659bd6d8759747f466d4dab57962178005` a réussi : typecheck, test du contrat appareil, tests crypto existants, build et audit bloquant des dépendances de production. Ce résultat valide uniquement le code de transition local ; il ne valide pas le protocole d'identité racine, les API, la persistance ni le comportement multi-appareils réel.
+
+## 13. Cérémonie d'enrôlement — spécification technique proposée
+
+Cette section transforme le principe validé de l'appareil racine unique en un protocole vérifiable. Les paramètres ci-dessous sont une proposition d'ingénierie à soumettre à une revue cryptographique indépendante ; ils ne doivent pas être codés en production avant cette revue.
+
+### 13.1 Acteurs et responsabilités
+
+- **Appareil racine (R)** : seul appareil déjà approuvé ; il détient localement la clé privée de signature racine et autorise l'ajout d'un appareil.
+- **Nouvel appareil (N)** : génère ses propres clés locales et ne reçoit jamais les clés privées de R.
+- **Serveur SAC** : orchestre la cérémonie, vérifie l'état du compte et consomme les défis ; il ne peut ni signer à la place de R ni décider seul que N est digne de confiance.
+- **Utilisateur** : compare la valeur de sécurité affichée sur R et N par un canal indépendant du serveur avant de confirmer.
+
+### 13.2 Matériel cryptographique proposé
+
+- Identité racine : ECDSA P-256 avec SHA-256, clé privée non exportable sur l'appareil racine.
+- Identité propre à chaque appareil : paire ECDSA P-256/SHA-256 locale.
+- Échange propre à chaque appareil : paire ECDH P-256 locale.
+- Dérivation des clés de transport : HKDF-SHA-256 avec sel aléatoire de 32 octets et contexte de protocole/version/compte/cérémonie/appareils.
+- Chiffrement de transport : AES-256-GCM avec nonce aléatoire de 96 bits, jamais réutilisé avec une même clé.
+- Encodage du transcript : JSON Canonicalization Scheme (RFC 8785), champs strictement définis, identifiants opaques ASCII et rejet des champs inconnus, doublons, tailles excessives et versions non supportées.
+
+Ces choix sont cohérents avec les primitives expérimentales déjà isolées dans le dépôt, mais cette cohérence ne constitue pas une preuve de sécurité. Toute modification d'algorithme ou de paramètre doit incrémenter la version du protocole et être revue.
+
+### 13.3 Déroulement proposé
+
+1. N génère localement sa paire ECDSA et sa paire ECDH ; les clés privées sont marquées non exportables lorsque la plateforme le permet.
+2. N demande une cérémonie au serveur. Le serveur crée un `ceremonyId` aléatoire, un défi imprévisible d'au moins 256 bits, une expiration courte (proposition : 120 secondes) et l'état `pending`. Le serveur conserve uniquement les données publiques et le défi, jamais de clé privée ni de GPS.
+3. N affiche un QR temporaire contenant le `ceremonyId`, le défi, les clés publiques de N, les identifiants opaques de compte/appareil, la version de protocole et l'expiration. Aucun secret privé ni donnée de localisation n'est inclus.
+4. R scanne le QR et récupère auprès du serveur le transcript complet de la demande. R vérifie l'appartenance au compte, l'état pending, l'expiration, la version, l'absence d'utilisation antérieure et les limites de taille.
+5. R construit le transcript canonique complet : version, compte, identifiant de R, identifiant de N, empreintes des clés publiques racine et appareil, clés publiques ECDSA/ECDH de N, défi serveur, nonce de R, nonce de N, identifiant de cérémonie, usages autorisés et expiration.
+6. R signe les octets canoniques du transcript avec la clé privée racine. La signature et le transcript sont transmis à N via le serveur.
+7. R et N calculent indépendamment une courte valeur de comparaison à partir du hash SHA-256 du transcript canonique et de la signature racine. Proposition : six mots choisis dans une liste publique figée d'au moins 2 048 entrées, soit au moins 66 bits de comparaison. L'algorithme d'extraction, la liste, l'ordre et la version doivent être identiques sur toutes les plateformes.
+8. L'utilisateur compare les six mots affichés sur les deux écrans, en présence physique ou via un canal vocal indépendant. Il confirme séparément sur R et N. Un QR ou un message reçu par le même serveur ne remplace jamais cette comparaison.
+9. Après confirmation, R approuve et signe un certificat d'appareil qui lie compte, appareil, clés publiques, usages, version, cérémonie et transcript. N vérifie la signature et les liaisons exactes.
+10. Le serveur effectue une activation atomique : le défi passe une seule fois de pending à consumed, l'appareil passe à active, le certificat public est enregistré et les appareils existants reçoivent une notification sans données GPS.
+
+### 13.4 Règles d'échec obligatoires
+
+- Une expiration, une différence de mots, un refus sur l'un des deux appareils, une perte réseau ambiguë, une signature invalide ou un transcript différent annule la cérémonie.
+- Un défi expiré, consommé ou révoqué ne peut jamais être réutilisé ; un nouvel essai crée un nouvel identifiant et un nouveau défi.
+- Le serveur doit faire la consommation du défi et l'activation dans une transaction atomique ou un mécanisme équivalent garantissant l'unicité.
+- Les demandes concurrentes sont sérialisées par compte et par appareil racine ; une révocation gagne contre une approbation concurrente si elle est validée en premier, et aucun certificat révoqué ne peut être réactivé.
+- Les logs, erreurs, analytics et notifications ne contiennent ni QR complet, ni défi, ni transcript complet, ni signature sensible, ni clé privée, ni GPS. Les métadonnées nécessaires au diagnostic doivent être minimisées.
+- En cas de résultat incertain après coupure réseau, l'interface affiche « vérification à reprendre » et interroge l'état serveur ; elle ne déclare jamais l'appareil actif sur la seule base d'une confirmation locale.
+
+### 13.5 Limites de la comparaison indépendante
+
+La comparaison SAS vise à détecter une substitution pendant le jumelage ; elle ne protège pas si l'utilisateur confirme sans comparer, si les deux écrans sont contrôlés par un attaquant ou si l'application compromise affiche une valeur mensongère. L'interface doit exiger une confirmation explicite sur les deux appareils et expliquer de recommencer en cas de différence. Le jumelage à distance sans canal indépendant est refusé dans la première version.
+
+### 13.6 Rotation et récupération de la racine
+
+- Si R est encore disponible, une rotation de racine doit être signée par l'ancienne racine et par la nouvelle, avec un transcript de transition qui lie explicitement les deux empreintes et un événement d'audit.
+- Si aucun appareil approuvé ne subsiste, la récupération d'accès au compte ne restaure jamais l'ancienne clé racine. Une nouvelle racine est créée ; les contacts doivent revérifier indépendamment son empreinte avant toute nouvelle transmission GPS.
+- Une récupération ne restaure jamais des clés GPS expirées ni une archive GPS supprimée au terme de J+30.
+- L'ancien certificat racine est révoqué côté serveur ; les certificats et sessions antérieurs ne doivent pas être silencieusement transférés à la nouvelle identité.
+
+### 13.7 Tests adversariaux préalables à l'implémentation
+
+- substitution de la clé racine, de la clé ECDSA ou de la clé ECDH dans le QR ou la réponse serveur ;
+- altération d'un champ, changement d'ordre/encodage, doublon de champ, version inconnue ou identifiant de compte différent ;
+- rejeu du même QR, défi, signature, confirmation ou requête d'activation ;
+- défi expiré, horloge locale fausse, requêtes simultanées, timeout après commit et reconnexion ;
+- appareil racine révoqué pendant la cérémonie, appareil N révoqué avant activation, deux ajouts concurrents ;
+- comparaison SAS différente, confirmation manquante sur l'un des écrans, tentative de jumelage distant sans canal indépendant ;
+- perte de R, perte de tous les appareils, restauration de sauvegarde, réinstallation, changement de téléphone et rotation de racine ;
+- PWA sur navigateurs et profils différents, Android avec/sans matériel sécurisé disponible, iOS avec politiques Keychain applicables.
+
+**État :** spécification proposée, pas encore revue ni implémentée. L'approbation produit du modèle racine unique est acquise ; la revue cryptographique indépendante reste un verrou avant l'activation réelle.
