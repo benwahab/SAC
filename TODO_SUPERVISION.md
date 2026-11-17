@@ -105,7 +105,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Faire réaliser une revue cryptographique indépendante par un spécialiste externe avant tout raccordement aux données GPS réelles.
 - [x] Ajouter la dérivation directionnelle et le contexte HKDF v4 lié au compte et à la cérémonie ; tests CI run 44193976083 réussis. La validation des certificats et la revue indépendante restent séparées.
 - [ ] Définir l'amorçage sécurisé de la première identité racine et finaliser l'intégration des certificats d'appareil complets.
-- [x] Ajouter le prototype de certificat secondaire signé par une clé racine ECDSA P-256 préalablement approuvée, avec tests adversariaux dédiés ; validation CI en attente sur le commit courant.
+- [x] Ajouter le prototype de certificat secondaire signé par une clé racine ECDSA P-256 préalablement approuvée, avec compte et appareil attendus obligatoires à la vérification, et tests adversariaux dédiés ; validation CI en attente sur le commit courant.
 - [ ] Finaliser et tester le transcript canonique et la comparaison indépendante à six mots sur PWA, Android et iOS.
 - [ ] Démontrer les garanties de stockage et de révocation des clés sur les appareils cibles.
 - [ ] Prouver séparément la destruction irréversible des clés GPS à J+30, y compris contre toute restauration.
