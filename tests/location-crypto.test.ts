@@ -173,6 +173,27 @@ test("les clés de transport sont distinctes et limitées à leur direction", as
   await assert.rejects(decryptLocationPayload(outbound, bobToAlice, "session-direction"));
 });
 
+test("les clés sont isolées entre comptes et cérémonies", async () => {
+  const alice = await createLocationExchangeKeyPair();
+  const bob = await createLocationExchangeKeyPair();
+  const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
+  const key = await deriveLocationDirectionalKey(
+    alice.privateKey, bob.publicKey, salt,
+    "account-one", "ceremony-one", "session-one", "alice", "bob", "alice",
+  );
+  const otherAccount = await deriveLocationDirectionalKey(
+    alice.privateKey, bob.publicKey, salt,
+    "account-two", "ceremony-one", "session-one", "alice", "bob", "alice",
+  );
+  const otherCeremony = await deriveLocationDirectionalKey(
+    alice.privateKey, bob.publicKey, salt,
+    "account-one", "ceremony-two", "session-one", "alice", "bob", "alice",
+  );
+  const packet = await encryptLocationPayload("scoped", key, "session-one");
+  await assert.rejects(decryptLocationPayload(packet, otherAccount, "session-one"));
+  await assert.rejects(decryptLocationPayload(packet, otherCeremony, "session-one"));
+});
+
 test("une identité locale qui ne correspond ni à l'émetteur ni au destinataire est refusée", async () => {
   const alice = await createLocationExchangeKeyPair();
   const bob = await createLocationExchangeKeyPair();
