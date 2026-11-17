@@ -1,33 +1,26 @@
-# SAC — Sécurité, Alerte, Citoyenne
+# SAC — Plateforme citoyenne de signalement
 
-SAC est un projet d'application de sécurité et d'alerte citoyenne. Le dépôt contient d'abord la documentation de référence : le projet n'est pas encore en phase de développement logiciel.
+SAC est une plateforme publique de signalement citoyen, de suivi par code unique et de traitement par les autorités/modérateurs. Elle remplace l'ancien concept d'alertes privées entre proches.
 
-## Règles impératives du dépôt
+## Règles
+- Dépôt unique : benwahab/SAC ; branche unique : main.
+- Travail directement sur GitHub ; aucun Lovable.
+- SAC reste séparé de PCS et Coup Sûr.
+- Aucun secret ni donnée personnelle réelle dans Git.
 
-- Une seule branche de travail : `main`.
-- Tout le travail est réalisé directement sur GitHub, dans ce dépôt.
-- Ne créer aucune branche secondaire.
-- Ne pas créer de dépôt parallèle et ne pas mélanger SAC avec PCS ou Coup Sûr.
-- Ne pas commencer le développement de l'application avant une demande explicite.
-- Les décisions confirmées et les points encore à valider sont distingués dans la documentation.
+## Stack
+React, Vite, TypeScript strict, Tailwind, Lucide React, Leaflet/OSM, Cloudflare Pages Functions, D1 et R2 privé. Adaptateurs device prévus pour Capacitor.
 
-## Documents de référence
+## Développement
+```bash
+npm install
+npm run dev
+npm run build
+```
 
-| Document | Contenu |
-|---|---|
-| [Cahier des charges complet](docs/CAHIER_DES_CHARGES_SAC.md) | Besoins fonctionnels, parcours, écrans, règles métier, notifications, exigences non fonctionnelles et critères de validation. |
-| [Architecture et modèle de données](docs/ARCHITECTURE_ET_MODELE_DONNEES.md) | Architecture cible, domaines backend, modèle relationnel conceptuel, sécurité, API et traitements planifiés. |
-| [Consignes permanentes de travail](docs/CONSIGNES_DE_TRAVAIL.md) | Règles à respecter pour toute intervention future sur SAC. |
-| [Décisions et points à valider](docs/DECISIONS_ET_POINTS_A_VALIDER.md) | Décisions actées, propositions techniques et sujets non tranchés. |
+## Cloudflare
+D1 `sac-citoyen-db` est créé et les tables initiales sont appliquées. Pages `sac-citoyen` est relié à GitHub `main`, build `npm run build`, sortie `dist`, binding D1 `DB`. R2 doit être activé dans le dashboard avant de créer le bucket privé `sac-report-media` et d'ajouter le binding `MEDIA`. La CI GitHub Actions a réussi le 17/11/2026.
 
-## Identité produit
+L'application n'est pas encore prête pour des urgences réelles : authentification nominative des agents, rôles fins, accès aux médias privés, politique de conservation, modération et notifications doivent être finalisés.
 
-- Nom : **SAC — Sécurité, Alerte, Citoyenne**
-- Aucun logo n'est défini à ce stade.
-- Interface mobile-first, claire et professionnelle.
-- Palette sans violet : bleu nuit `#142B45`, rouge SOS `#D9273F`, blanc `#FFFFFF`, vert `#15966B`, gris clair `#E9EEF3`.
-- Orientation produit : PWA en premier, avec possibilité d'applications Android et iOS ultérieures.
-
-## État actuel
-
-**Phase : cadrage et documentation.** Aucun code applicatif, aucune migration de base de données et aucune intégration de paiement ou de messagerie ne doivent être ajoutés sans autorisation explicite.
+Voir `ARCHITECTURE.md` et `TODO_SUPERVISION.md`.
