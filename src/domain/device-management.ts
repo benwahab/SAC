@@ -21,7 +21,7 @@ export interface DeviceRecord {
 }
 
 export type DeviceLifecycleEvent =
-  | { readonly type: "approve"; readonly actorAccountId: string; readonly at: string }
+  | { readonly type: "approve"; readonly actorAccountId: string; readonly actorDeviceId: string; readonly rootDeviceId: string; readonly at: string }
   | { readonly type: "revoke"; readonly actorAccountId: string; readonly at: string };
 
 export type DeviceTransitionError =
@@ -32,6 +32,8 @@ export type DeviceTransitionError =
   | "event_before_device_creation"
   | "event_before_verification"
   | "device_not_pending"
+  | "approval_not_from_root"
+  | "root_device_cannot_be_secondary"
   | "device_already_revoked";
 
 export type DeviceTransitionResult =
@@ -96,8 +98,11 @@ function isValidDeviceRecord(device: DeviceRecord): boolean {
 
 /**
  * Applique une transition pure et immuable au cycle de vie d'un appareil.
- * L'appelant serveur doit authentifier l'acteur et vérifier les signatures
- * cryptographiques avant d'appeler cette fonction.
+ * L'appelant serveur doit authentifier l'acteur, charger depuis D1 le root
+ * actif du compte, fournir actorDeviceId depuis la session authentifiée et
+ * rootDeviceId depuis cet enregistrement, puis vérifier les signatures
+ * cryptographiques avant d'appeler cette fonction. Ces champs ne doivent
+ * jamais être acceptés directement depuis le corps de requête client.
  */
 export function transitionDevice(
   device: DeviceRecord,
@@ -128,6 +133,16 @@ export function transitionDevice(
   }
 
   if (event.type === "approve") {
+    if (
+      !event.actorDeviceId.trim() ||
+      !event.rootDeviceId.trim() ||
+      event.actorDeviceId !== event.rootDeviceId
+    ) {
+      return { ok: false, error: "approval_not_from_root" };
+    }
+    if (device.deviceId === event.rootDeviceId) {
+      return { ok: false, error: "root_device_cannot_be_secondary" };
+    }
     if (device.status !== "pending_verification") {
       return { ok: false, error: "device_not_pending" };
     }
