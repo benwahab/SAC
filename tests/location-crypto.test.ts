@@ -117,3 +117,56 @@ test("un paquet avec un IV de longueur incorrecte est refusé avant déchiffreme
   );
 });
 
+import {
+  createLocationExchangeKeyPair,
+  deriveLocationRecipientKey,
+} from "../src/services/location/key-exchange.ts";
+
+test("ECDH établit la même clé AES-GCM non exportable sur les deux appareils", async () => {
+  const alice = await createLocationExchangeKeyPair();
+  const bob = await createLocationExchangeKeyPair();
+  const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
+
+  const aliceKey = await deriveLocationRecipientKey(
+    alice.privateKey, bob.publicKey, salt, "session-1", "bob",
+  );
+  const bobKey = await deriveLocationRecipientKey(
+    bob.privateKey, alice.publicKey, salt, "session-1", "bob",
+  );
+
+  assert.equal(alice.privateKey.extractable, false);
+  assert.equal(bob.privateKey.extractable, false);
+  assert.equal(aliceKey.extractable, false);
+  assert.equal(bobKey.extractable, false);
+
+  const packet = await encryptLocationPayload("position-test", aliceKey, "session-1");
+  assert.equal(await decryptLocationPayload(packet, bobKey, "session-1"), "position-test");
+});
+
+test("la clé dérivée est liée à l'identifiant du destinataire", async () => {
+  const alice = await createLocationExchangeKeyPair();
+  const bob = await createLocationExchangeKeyPair();
+  const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
+
+  const bobKey = await deriveLocationRecipientKey(
+    alice.privateKey, bob.publicKey, salt, "session-1", "bob",
+  );
+  const otherRecipientKey = await deriveLocationRecipientKey(
+    alice.privateKey, bob.publicKey, salt, "session-1", "other-contact",
+  );
+  const packet = await encryptLocationPayload("position-test", bobKey, "session-1");
+
+  await assert.rejects(decryptLocationPayload(packet, otherRecipientKey, "session-1"));
+});
+
+test("ECDH refuse un sel de dérivation de longueur incorrecte", async () => {
+  const alice = await createLocationExchangeKeyPair();
+  const bob = await createLocationExchangeKeyPair();
+
+  await assert.rejects(
+    deriveLocationRecipientKey(
+      alice.privateKey, bob.publicKey, new Uint8Array(8), "session-1", "bob",
+    ),
+    /32 octets/,
+  );
+});
