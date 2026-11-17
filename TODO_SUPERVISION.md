@@ -57,4 +57,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Auditer un ou plusieurs gestionnaires de clés externes compatibles AWS XKS, notamment leurs sauvegardes, réplications, snapshots, restaurations administrateur et garanties contractuelles de destruction.
 
 - [x] Examiner les documents officiels AWS XKS, Entrust nShield et Thales CipherTrust/CCKM ; consigner les limites de restauration et de destruction individualisée.
-- [ ] Rechercher un gestionnaire externe offrant une destruction individualisée non restaurable, avec preuve sur sauvegardes/répliques et disponibilité compatible avec une application d'urgence.\n- [ ] Étudier un relais GPS chiffré sans persistance côté serveur, afin qu'aucune restauration D1/R2 ne puisse réintroduire des coordonnées.\n- [ ] Tester les clés locales Android Keystore (TEE/StrongBox) et iOS Keychain ThisDeviceOnly, y compris sauvegardes, restaurations et suppression à J+30.\n- [ ] Clarifier si la rétention J+30 vise les seules données sous contrôle de SAC ou prétend aussi couvrir les copies reçues par les contacts.
+- [ ] Rechercher un gestionnaire externe offrant une destruction individualisée non restaurable, avec preuve sur sauvegardes/répliques et disponibilité compatible avec une application d'urgence.
+- [ ] Étudier un relais GPS chiffré sans persistance côté serveur, afin qu'aucune restauration D1/R2 ne puisse réintroduire des coordonnées.
+- [ ] Tester les clés locales Android Keystore (TEE/StrongBox) et iOS Keychain ThisDeviceOnly, y compris sauvegardes, restaurations et suppression à J+30.
+- [ ] Clarifier si la rétention J+30 vise les seules données sous contrôle de SAC ou prétend aussi couvrir les copies reçues par les contacts.
