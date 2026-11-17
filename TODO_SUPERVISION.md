@@ -11,7 +11,8 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Règle de rappels : toutes les 5 minutes vers les contacts initiaux jusqu'à clôture.
 - [x] SOS discret, écran neutre, code de contrainte et protection contre désactivation forcée documentés.
 - [x] Cible d'architecture corrigée : Pages, Pages Functions, D1, R2 sous condition d'activation.
-- [ ] Audit du code/configuration du Worker Cloudflare existant nommé `sac`.
+- [x] Lecture des paramètres du Worker Cloudflare existant `sac` : aucun binding, sous-domaine désactivé, previews désactivées, déploiements `dash_template`.
+- [ ] Inspection du contenu source et des éventuelles routes du Worker `sac` avant toute décision de conservation ou suppression.
 - [ ] Reconstituer l'environnement Cloudflare Pages de SAC, sans réutiliser les ressources de l'application erronée.
 - [ ] Confirmer l'activation de R2 et la possibilité de créer un bucket privé.
 - [ ] Finaliser les choix d'authentification, OTP, push, SMS et paiement.
