@@ -71,3 +71,21 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Démontrer le comportement après J+30 si le téléphone est éteint ou si le système ne réveille pas l'application ; la suppression à l'heure exacte n'est pas encore garantie.
 - [ ] Vérifier sur Android/iOS les fenêtres réelles d'exécution en arrière-plan ; WorkManager et BGTaskScheduler ne garantissent pas une exécution à l'heure exacte.
 - [x] Confirmer que la protection J+30 porte sur les données sous contrôle de SAC ; les copies conservées par les contacts de confiance ne sont pas dans le périmètre d'effacement.
+
+
+## Gestion multi-appareils — décision du 17 novembre 2026
+
+- [x] Valider le principe produit : un même compte SAC peut utiliser plusieurs appareils.
+- [x] Définir les règles de base : identité par compte, sessions et clés privées propres à chaque appareil, approbation explicite, révocation indépendante.
+- [x] Documenter la séparation entre récupération du compte et récupération de la confiance/clé GPS.
+- [x] Documenter la limite : une révocation serveur ne peut pas effacer à distance un appareil hors ligne ni ses données locales.
+- [x] Ajouter le modèle conceptuel, les familles d'API et les critères de test dans l'architecture.
+- [ ] Concevoir le protocole complet d'identité racine et de certification des appareils ; ne pas connecter le prototype crypto actuel avant revue.
+- [ ] Définir le parcours UX de jumelage (QR/code de comparaison, approbation sur appareil existant, erreurs et annulation).
+- [ ] Définir la récupération après perte de tous les appareils et la procédure de revérification indépendante des contacts.
+- [ ] Définir les règles de révocation des sessions, push, certificats, clés ECDH et partages GPS en cours.
+- [ ] Ajouter les contrats TypeScript et tests unitaires des états d'appareil et transitions autorisées.
+- [ ] Implémenter les API d'enrôlement, liste, approbation, renommage et révocation après validation des contrats.
+- [ ] Valider le schéma D1 et les politiques d'accès avant toute migration.
+- [ ] Tester plusieurs appareils PWA, Android et iOS, y compris appareil hors ligne, perdu, restauré et réinstallé.
+- [ ] Vérifier qu'aucune synchronisation automatique ne copie les archives GPS ni les clés privées.
