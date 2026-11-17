@@ -371,3 +371,10 @@ Les tâches de notification en attente doivent recontrôler l'état de l'apparei
 
 ### État de cette spécification
 Ce contrat est une base de conception, pas un endpoint ni une migration existante. Il faut encore le confronter aux garanties transactionnelles réelles de D1, aux limites d'exécution Pages Functions et au modèle de session retenu. Aucun GPS réel ne doit être connecté avant revue indépendante et preuve de suppression irréversible à J+30.
+
+
+## 20. Garde métier sur l'approbation par la racine — contrat pur ajouté
+
+Le contrat pur `transitionDevice` exige désormais, pour une transition `approve`, un `actorDeviceId` et un `rootDeviceId` identiques. Il refuse également qu'un appareil dont l'identifiant est celui de la racine soit enregistré comme appareil secondaire. Des tests vérifient le refus d'un secondaire approbateur et le refus d'enrôler la racine comme secondaire.
+
+**Limite essentielle :** cette fonction ne prouve pas que l'acteur est réellement le root actif. Le futur contrôleur Pages Functions devra obtenir `actorDeviceId` depuis la session authentifiée, charger `rootDeviceId` et son statut actif depuis D1, puis appeler le contrat. Les valeurs envoyées dans le corps de requête ne doivent jamais établir cette autorité. Aucun endpoint ni schéma D1 n'est créé ici.
