@@ -251,3 +251,87 @@ test("l'empreinte refuse une clé d'identité qui n'est pas P-256", async () => 
     /invalide/,
   );
 });
+
+
+test("les contextes HKDF ne présentent pas de collision avec des identifiants contenant des séparateurs", async () => {
+  const alice = await createLocationExchangeKeyPair();
+  const bob = await createLocationExchangeKeyPair();
+  const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
+
+  const firstContextKey = await deriveLocationRecipientKey(
+    alice.privateKey, bob.publicKey, salt, "a:b", "c",
+  );
+  const secondContextKey = await deriveLocationRecipientKey(
+    alice.privateKey, bob.publicKey, salt, "a", "b:c",
+  );
+  const packet = await encryptLocationPayload("context-bound", firstContextKey, "a:b");
+
+  await assert.rejects(
+    decryptLocationPayload(packet, secondContextKey, "a:b"),
+  );
+});
+
+test("la signature refuse une clé privée et une clé publique d'identité qui ne correspondent pas", async () => {
+  const exchange = await createLocationExchangeKeyPair();
+  const identityA = await createLocationIdentityKeyPair();
+  const identityB = await createLocationIdentityKeyPair();
+
+  await assert.rejects(
+    signLocationKeyBundleWithPublicKey(
+      "contact-bob",
+      exchange.publicKey,
+      identityA.privateKey,
+      identityB.publicKey,
+    ),
+    /ne correspond pas/,
+  );
+});
+
+test("la vérification d'un bundle mal formé retourne false sans lever d'exception", async () => {
+  assert.equal(await verifyLocationKeyBundle(null as never), false);
+  assert.equal(
+    await verifyLocationKeyBundle({ version: 1, ownerId: "bob", identityPublicKey: null, exchangePublicKey: {}, signature: new Uint8Array(64) } as never),
+    false,
+  );
+
+  const exchange = await createLocationExchangeKeyPair();
+  const identity = await createLocationIdentityKeyPair();
+  const bundle = await signLocationKeyBundleWithPublicKey(
+    "contact-bob", exchange.publicKey, identity.privateKey, identity.publicKey,
+  );
+
+  assert.equal(
+    await verifyLocationKeyBundle({ ...bundle, signature: new Uint8Array(8) }),
+    false,
+  );
+});
+
+test("un bundle ne peut pas embarquer une clé privée dans son JWK public", async () => {
+  const exchange = await createLocationExchangeKeyPair();
+  const identity = await createLocationIdentityKeyPair();
+  const bundle = await signLocationKeyBundleWithPublicKey(
+    "contact-bob", exchange.publicKey, identity.privateKey, identity.publicKey,
+  );
+  const identityJwk = await globalThis.crypto.subtle.exportKey("jwk", identity.publicKey);
+
+  assert.equal(
+    await verifyLocationKeyBundle({
+      ...bundle,
+      identityPublicKey: { ...identityJwk, d: "private-material-must-never-be-here" },
+    }),
+    false,
+  );
+});
+
+test("les identifiants de contexte avec caractères de contrôle sont refusés", async () => {
+  const alice = await createLocationExchangeKeyPair();
+  const bob = await createLocationExchangeKeyPair();
+  const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
+
+  await assert.rejects(
+    deriveLocationRecipientKey(
+      alice.privateKey, bob.publicKey, salt, "session\nforged", "bob",
+    ),
+    /contexte/,
+  );
+});
