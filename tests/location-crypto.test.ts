@@ -122,7 +122,7 @@ import {
   deriveLocationDirectionalKey,
 } from "../src/services/location/key-exchange.ts";
 
-test("ECDH établit la même clé AES-GCM non exportable sur les deux appareils", async () => {
+test("ECDH dérive une clé d’envoi et une clé de réception compatibles et non exportables", async () => {
   const alice = await createLocationExchangeKeyPair();
   const bob = await createLocationExchangeKeyPair();
   const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
