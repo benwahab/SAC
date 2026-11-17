@@ -304,3 +304,80 @@ Ces mécanismes sont des protections de stockage local, pas encore une preuve un
 6. Empêcher toute journalisation des coordonnées, y compris dans les erreurs, analytics, outils de diagnostic et rapports de crash.
 
 **Décision provisoire :** approfondir en priorité le relais chiffré sans persistance GPS serveur, associé à une conservation locale. Ne pas activer cette conception en production et ne pas déclarer la règle J+30 satisfaite avant les tests natifs, la clarification de la portée de la rétention et l'analyse des copies côté destinataires. Aucun stockage GPS serveur n'est autorisé entre-temps.
+
+
+## 12. Conception native : chiffrement local, suppression de clé et limites temporelles
+
+Cette section approfondit la piste sans persistance GPS serveur. Elle s'appuie sur les documentations Android et Apple consultées le 17 novembre 2026. C'est une proposition d'architecture à prototyper, pas une fonctionnalité déjà implémentée.
+
+### 12.1 Modèle de protection proposé
+
+Pour chaque session de partage ou trajet :
+1. Le terminal génère une clé de données aléatoire dédiée à cette session (DEK distincte ; aucune clé globale commune à toutes les positions).
+2. Les coordonnées sont chiffrées sur le terminal avant toute transmission ou écriture locale.
+3. L'archive locale ne contient que des blocs chiffrés, horodatés et authentifiés. Les fichiers de stockage sont exclus des sauvegardes applicatives autant que les plateformes le permettent.
+4. La clé de session est conservée dans le magasin sécurisé natif, liée à l'appareil ; elle n'est jamais exportée vers D1, R2, les journaux, les analytics, les notifications ou le compte utilisateur.
+5. Les destinataires autorisés reçoivent les positions partagées via un canal chiffré de bout en bout. Le relais serveur ne détient pas la clé de déchiffrement et ne conserve pas d'historique GPS.
+6. À l'expiration, l'application supprime la clé de session ; les blocs chiffrés deviennent alors inutilisables. La suppression des fichiers chiffrés est également effectuée, mais elle n'est pas considérée comme la garantie cryptographique principale.
+
+Une clé par session limite l'impact d'une compromission ou d'une erreur de suppression : elle évite qu'une clé maîtresse permette de déchiffrer toutes les sessions historiques.
+
+### 12.2 Android
+
+Android Keystore peut garder le matériel de clé non exportable et, si le terminal le prend en charge, lier la clé à un TEE ou à StrongBox. L'application doit vérifier le niveau réel avec `KeyInfo.getSecurityLevel()` et ne jamais supposer que tous les téléphones disposent de StrongBox.
+
+La clé et les données doivent être liées au terminal. Les fichiers d'archive doivent être exclus des sauvegardes Android. Les tests devront couvrir sauvegarde cloud, transfert d'appareil, restauration sur le même terminal, réinstallation, réinitialisation et suppression d'une entrée de clé.
+
+La documentation Android précise que le matériel de clé peut être lié au matériel sécurisé et non extractible. Elle précise également que certaines autorisations temporelles ne sont généralement pas appliquées par le matériel sécurisé, faute d'horloge temps réel indépendante. Une date d'expiration inscrite dans les paramètres de clé ne suffit donc pas à prouver une destruction à la seconde près.
+
+Source officielle : [Android Keystore system](https://developer.android.com/privacy-and-security/keystore).
+
+### 12.3 iOS
+
+Le candidat le plus restrictif étudié est `kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly` : l'élément exige un code de verrouillage, est accessible lorsque l'appareil est déverrouillé, n'est pas migré vers un autre appareil et n'est pas restauré sur un nouvel appareil. Apple précise aussi que retirer le code de l'appareil supprime ces éléments.
+
+Cette classe a une contrepartie : elle n'est disponible que lorsque l'appareil est déverrouillé et peut donc ne pas convenir à toutes les opérations en arrière-plan. Une classe accessible après le premier déverrouillage pourrait améliorer le fonctionnement en arrière-plan, mais doit être comparée à la classe la plus restrictive et ne doit pas être sélectionnée sans test de sauvegarde/restauration.
+
+Source officielle : [Apple — kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly](https://developer.apple.com/documentation/security/ksecattraccessiblewhenpasscodesetthisdeviceonly) et [Apple — Restricting keychain item accessibility](https://developer.apple.com/documentation/Security/restricting-keychain-item-accessibility).
+
+### 12.4 Le point non résolu : exécution exacte à J+30
+
+La suppression d'une clé locale peut être déclenchée par :
+- une tâche de nettoyage planifiée ;
+- chaque reprise de l'application ;
+- chaque ouverture de l'écran d'historique ;
+- une vérification d'expiration avant toute opération de déchiffrement.
+
+Toutefois, les systèmes mobiles ne garantissent pas qu'une application soit réveillée à l'heure demandée. La documentation Capacitor indique que les tâches d'arrière-plan sont limitées, que leur exécution n'est pas garantie à l'intervalle demandé et que iOS peut suspendre l'application. Un téléphone éteint, hors batterie, désinstallé ou qui ne rouvre jamais SAC ne peut pas exécuter le nettoyage applicatif à l'instant J+30.
+
+La date d'expiration doit donc bloquer tout accès dans le code dès que l'application peut vérifier l'heure, et le nettoyage doit être relancé à chaque occasion. Mais cela ne prouve pas la destruction matérielle de la clé exactement à J+30 si l'OS n'a pas exécuté SAC. Android ne fournit pas non plus une horloge temps réel sécurisée universelle pour faire appliquer cette échéance par le matériel.
+
+Source officielle sur les limites des tâches : [Capacitor — Background Runner](https://next.capacitorjs.com/docs/next/apis/background-runner).
+
+**Conclusion technique honnête :** l'approche native peut fortement protéger les clés contre l'extraction et leur migration via une sauvegarde vers un autre appareil. Elle permet aussi une suppression cryptographique locale lors de l'exécution du nettoyage. Elle ne démontre pas encore une suppression automatique garantie à l'instant précis J+30 lorsque le téléphone reste éteint ou que le système ne réveille pas l'application.
+
+### 12.5 Stratégie de prototype et critères de validation
+
+Le prototype devra être testé sur plusieurs appareils Android réels (avec et sans TEE/StrongBox) et au moins un appareil iOS :
+- vérifier le niveau matériel réel des clés ;
+- créer une clé indépendante par session et chiffrer/déchiffrer une archive de test ;
+- sauvegarder puis restaurer les données sur le même appareil et sur un autre appareil ;
+- vérifier qu'une copie des fichiers chiffrés sans la clé ne permet aucun déchiffrement ;
+- supprimer la clé et vérifier que le déchiffrement échoue ;
+- éteindre l'appareil avant J+30, le rallumer après l'échéance et vérifier que l'accès est immédiatement bloqué avant tout affichage ;
+- vérifier le nettoyage au retour de l'application et mesurer le délai réel de suppression ;
+- tester l'appareil sans code de verrouillage, sans matériel sécurisé compatible, avec batterie épuisée, application désinstallée et réinitialisation ;
+- vérifier l'absence de coordonnées dans les journaux, crash reports, analytics, push, D1, R2 et sauvegardes serveur.
+
+Critères de rejet :
+- une clé de session peut être restaurée sur un autre appareil ;
+- une archive GPS peut être déchiffrée après échéance par l'application ;
+- une coordonnée apparaît dans un stockage serveur persistant ou une télémétrie ;
+- l'application présente une position périmée comme étant en direct ;
+- le système annonce une suppression à J+30 alors qu'il n'a fait qu'enregistrer une tâche de nettoyage non exécutée.
+
+### 12.6 Portée de la confiance envers les contacts
+
+L'utilisateur confirme que les destinataires des alertes sont des personnes de confiance. Le périmètre de protection porte donc sur les données et clés sous le contrôle de SAC ; le produit ne cherchera pas à effacer les copies que les contacts autorisés choisissent de conserver sur leurs propres appareils. Cela ne change pas les règles de consentement, de sélection des destinataires et de révocation pour les nouvelles alertes.
+
+**Décision provisoire maintenue :** poursuivre le prototype et les tests natifs, sans stockage GPS persistant côté serveur. Ne pas prétendre que l'exigence J+30 est entièrement prouvée tant que la suppression à échéance hors ligne n'est pas résolue ou que la règle de rétention n'est pas explicitement adaptée.
