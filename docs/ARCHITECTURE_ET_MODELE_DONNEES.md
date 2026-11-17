@@ -339,3 +339,20 @@ Cloudflare Pages Functions prend en charge les bindings vers un Durable Object d
 Le Durable Object ne doit jamais écrire de coordonnées ni de paquets GPS dans SQLite, KV, D1, R2, les attachments WebSocket, les logs ou les traces. Les attachments de connexion, qui peuvent survivre à l'hibernation, ne peuvent contenir que des identifiants opaques de routage. Si un destinataire est hors ligne, le relais ne met pas la position en attente : une notification générique peut l'inviter à ouvrir SAC, puis le partage en direct reprend si l'auteur est encore connecté et autorisé.
 
 Cette extension nécessite un Worker auxiliaire qui héberge la classe Durable Object. Elle ne remplace pas Pages Functions comme API métier et ne doit pas être créée ou déployée avant validation explicite. Le fonctionnement hors ligne, la livraison en arrière-plan, les coûts et l'absence de persistance doivent être testés.
+
+
+## 1.8 Prototype cryptographique isolé — AES-256-GCM
+
+Un premier module expérimental a été ajouté dans `src/services/location/crypto.ts`. Il génère une clé AES-GCM 256 bits non exportable en mémoire, chiffre un contenu opaque avec un IV aléatoire de 96 bits et authentifie l'identifiant de session comme donnée associée (AAD). Le déchiffrement échoue si le paquet est altéré ou si l'identifiant de session ne correspond pas.
+
+Ce module est volontairement isolé :
+- il n'est pas appelé par l'interface ni par l'API ;
+- il ne collecte aucune coordonnée et ne persiste aucune donnée ou clé ;
+- il ne définit pas le stockage sécurisé natif Android/iOS ;
+- il ne distribue pas la clé aux destinataires ;
+- il ne gère pas la durée de conservation ni la destruction de clé J+30 ;
+- il ne prouve pas une protection contre l'extraction mémoire ou les outils de débogage.
+
+Il valide seulement une primitive de chiffrement authentifié pour préparer le futur protocole de transport. Il ne doit pas être présenté comme le système GPS sécurisé de production.
+
+Des tests automatisés sont ajoutés via le script `npm run test:crypto` et exécutés dans la CI. Ils couvrent le caractère non exportable de la clé Web Crypto, le cycle chiffrer/déchiffrer, l'association à la session, l'altération du ciphertext et la génération d'IV distincts.
