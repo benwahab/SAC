@@ -21,7 +21,7 @@ function requireContext(value: string, label: string): void {
     typeof value !== "string" ||
     !value.trim() ||
     value.length > 256 ||
-    /[\\u0000-\\u001f\\u007f]/.test(value)
+    /[\u0000-\u001f\u007f]/.test(value)
   ) {
     throw new Error(`Le contexte ${label} est invalide.`);
   }
@@ -160,7 +160,7 @@ export async function signLocationKeyBundleWithPublicKey(
     exchangePublicKey.type !== "public" ||
     identityPrivateKey.type !== "private" ||
     identityPublicKey.type !== "public" ||
-    !exchangePublicKey.usages.includes("deriveBits") && exchangePublicKey.usages.length !== 0 ||
+    exchangePublicKey.usages.length !== 0 ||
     !identityPrivateKey.usages.includes("sign") ||
     !identityPublicKey.usages.includes("verify") ||
     exchangePublicKey.algorithm.name !== "ECDH" ||
@@ -209,7 +209,7 @@ export async function verifyLocationKeyBundle(
       typeof bundle.ownerId !== "string" ||
       !bundle.ownerId.trim() ||
       bundle.ownerId.length > 256 ||
-      /[\\u0000-\\u001f\\u007f]/.test(bundle.ownerId) ||
+      /[\u0000-\u001f\u007f]/.test(bundle.ownerId) ||
       !isP256PublicJwk(bundle.identityPublicKey) ||
       !isP256PublicJwk(bundle.exchangePublicKey) ||
       !(bundle.signature instanceof Uint8Array) ||
