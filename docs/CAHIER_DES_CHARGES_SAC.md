@@ -93,11 +93,13 @@ Le paiement devra être confirmé côté serveur par une preuve fiable du presta
 ### 5.1 Gestion
 
 - L'utilisateur peut inviter des proches par téléphone ou e-mail.
-- Le contact doit accepter l'invitation avant de devenir un destinataire autorisé.
+- Le contact doit accepter l'invitation et vérifier le téléphone ou l'e-mail associé avant de devenir un destinataire autorisé.
+- Une invitation en attente ne donne accès ni aux alertes, ni au compte, ni à la localisation de l'utilisateur.
 - Chaque contact peut être classé : famille, ami, voisin, collègue ou autre.
 - L'utilisateur peut retirer un contact ou révoquer ses autorisations.
 - Un contact révoqué ne reçoit plus les nouvelles alertes.
 - La révocation ne supprime pas rétroactivement les événements déjà associés à une alerte passée.
+- Une annulation d'alerte, qu'elle intervienne avant ou après la transmission des notifications, est horodatée et conservée dans la chronologie ; elle ne réécrit pas l'historique des événements déjà survenus.
 
 ### 5.2 Préférences par type d'alerte
 
@@ -220,7 +222,7 @@ Ce mode combine :
 
 ### 10.4 Durée et limites
 
-Les durées proposées pour le partage sont : ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à la clôture de l'alerte/du trajet, selon le parcours.
+Les durées proposées pour le partage sont : ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à la clôture de l'alerte/du trajet, selon le parcours. À l'expiration, le partage actif s'arrête ; la durée de conservation des positions déjà collectées reste à valider et doit être définie avant la première migration.
 
 Une PWA ne garantit pas un suivi GPS continu lorsque le navigateur ou l'application est suspendu ou fermé. Les applications natives peuvent améliorer certains scénarios, mais restent soumises aux permissions, à l'économie d'énergie et aux règles Android/iOS. L'interface doit afficher le dernier point reçu, sa date et l'état de connexion, sans présenter une donnée ancienne comme du direct.
 
