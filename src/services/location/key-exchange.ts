@@ -73,12 +73,16 @@ export async function deriveLocationDirectionalKey(
   ownPrivateKey: CryptoKey,
   remotePublicKey: CryptoKey,
   salt: Uint8Array,
+  accountId: string,
+  ceremonyId: string,
   sessionId: string,
   senderId: string,
   recipientId: string,
   ownDeviceId: string,
   cryptoProvider: Crypto = globalThis.crypto,
 ): Promise<CryptoKey> {
+  requireContext(accountId, "du compte");
+  requireContext(ceremonyId, "de cérémonie");
   requireContext(sessionId, "de session");
   requireContext(senderId, "de l'émetteur");
   requireContext(recipientId, "du destinataire");
@@ -114,7 +118,9 @@ export async function deriveLocationDirectionalKey(
       hash: "SHA-256",
       salt: toArrayBuffer(salt),
       info: encoder.encode(JSON.stringify([
-        "SAC:location-directional-key:v3",
+        "SAC:location-directional-key:v4",
+        accountId,
+        ceremonyId,
         sessionId,
         senderId,
         recipientId,
