@@ -25,7 +25,8 @@ async function verify(certificate: Parameters<typeof verifySecondaryDeviceCertif
   return verifySecondaryDeviceCertificate(certificate, rootPublicKey, { accountId, deviceId });
 }
 
-async function issue(root = await rootKeys()) {
+async function issue(root?: CryptoKeyPair) {
+  const signingRoot = root ?? await rootKeys();
   const device = await deviceKeys();
   const certificate = await issueSecondaryDeviceCertificate({
     accountId: "account-123",
@@ -34,8 +35,8 @@ async function issue(root = await rootKeys()) {
     createdAt: "2026-11-17T12:00:00.000Z",
     identityPublicKey: device.identity.publicKey,
     exchangePublicKey: device.exchange.publicKey,
-  }, root.privateKey, root.publicKey);
-  return { root, device, certificate };
+  }, signingRoot.privateKey, signingRoot.publicKey);
+  return { root: signingRoot, device, certificate };
 }
 
 test("un certificat secondaire signé par la racine est vérifié", async () => {
