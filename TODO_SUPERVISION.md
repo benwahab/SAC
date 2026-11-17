@@ -52,3 +52,6 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - Après chaque changement, indiquer le commit GitHub et la preuve de vérification.
 - Ne jamais créer une branche secondaire.
 - Ne pas supprimer une ressource Cloudflare avant audit de son contenu et de ses dépendances.
+
+- [x] Étendre l'étude documentaire aux mécanismes Fortanix DSM, HashiCorp Vault Transit et AWS External Key Store ; consigner pourquoi aucun n'est encore validé.
+- [ ] Auditer un ou plusieurs gestionnaires de clés externes compatibles AWS XKS, notamment leurs sauvegardes, réplications, snapshots, restaurations administrateur et garanties contractuelles de destruction.
