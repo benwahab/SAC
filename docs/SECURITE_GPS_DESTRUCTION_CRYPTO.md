@@ -438,3 +438,26 @@ Sources :
 **Limites qui restent ouvertes :** disponibilité des connexions, réception lorsque les contacts sont hors ligne, comportement en arrière-plan Android/iOS, coûts et limites de WebSocket, gestion de plusieurs destinataires, absence de journalisation, et preuve par tests qu'aucun contenu GPS n'est écrit dans les stockages du relais.
 
 Cette piste respecte la règle de ne pas remplacer Pages Functions par un backend autonome. Elle nécessite néanmoins un Worker auxiliaire pour héberger la classe Durable Object, donc une validation explicite avant toute création ou déploiement.
+
+
+## 14. Premier prototype de chiffrement authentifié (17 novembre 2026)
+
+Le dépôt contient désormais un prototype isolé dans `src/services/location/crypto.ts` :
+- génération d'une clé de session AES-GCM 256 bits non exportable par Web Crypto ;
+- IV aléatoire de 12 octets par paquet ;
+- authentification de l'identifiant de session avec AAD ;
+- échec du déchiffrement en cas de mauvais identifiant ou de ciphertext modifié.
+
+Les tests correspondants se trouvent dans `tests/location-crypto.test.ts` et sont lancés par `npm run test:crypto` dans GitHub Actions.
+
+**Portée stricte :** il s'agit d'une primitive de chiffrement en mémoire, pas d'un coffre de clés. La clé n'est ni persistée ni partagée ; le module n'est pas branché à l'application. Aucune coordonnée réelle n'est collectée. Il ne résout pas l'enveloppe de clé pour plusieurs destinataires, le stockage natif, la révocation, la livraison hors ligne, l'expiration ni la destruction cryptographique à J+30. Web Crypto non exportable ne signifie pas stockage matériel garanti.
+
+La documentation Android indique que WorkManager respecte des fenêtres flexibles et que l'exécution périodique dépend des contraintes et optimisations du système. La documentation Apple indique que `earliestBeginDate` ne garantit pas le lancement à l'heure demandée et que le système décide du moment d'exécution des tâches en arrière-plan.
+
+Sources officielles :
+- [Android — Task scheduling](https://developer.android.com/develop/background-work/background-tasks/persistent)
+- [Android — Define work requests](https://developer.android.com/develop/background-work/background-tasks/persistent/getting-started/define-work)
+- [Apple — Background Tasks](https://developer.apple.com/documentation/backgroundtasks/)
+- [Apple — earliestBeginDate](https://developer.apple.com/documentation/backgroundtasks/bgtaskrequest/earliestbegindate)
+
+**Conclusion :** la primitive AES-GCM peut être testée indépendamment ; elle ne valide pas la politique de rétention. La destruction locale après échéance doit rester bloquée comme garantie stricte tant que le cycle de vie des clés natives et les scénarios d'appareil éteint/restauré ne sont pas prouvés.
