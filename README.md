@@ -14,7 +14,7 @@ SAC est une application de sécurité personnelle et familiale. Elle permet à u
 ## Stack confirmée
 
 - Frontend : React, Vite, TypeScript, Tailwind CSS et Lucide React.
-- Backend : API REST séparée sur Cloudflare Workers.
+- Backend : API REST séparée via Cloudflare Pages Functions.
 - Première livraison : PWA mobile-first.
 - Préparation native dès la conception : Capacitor pour Android/iOS, sans réécriture des écrans ni de la logique métier.
 - Adaptateurs des capacités du terminal isolés dans `src/services/device/`.
