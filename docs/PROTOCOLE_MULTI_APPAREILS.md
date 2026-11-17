@@ -378,3 +378,28 @@ Ce contrat est une base de conception, pas un endpoint ni une migration existant
 Le contrat pur `transitionDevice` exige désormais, pour une transition `approve`, un `actorDeviceId` et un `rootDeviceId` identiques. Il refuse également qu'un appareil dont l'identifiant est celui de la racine soit enregistré comme appareil secondaire. Des tests vérifient le refus d'un secondaire approbateur et le refus d'enrôler la racine comme secondaire.
 
 **Limite essentielle :** cette fonction ne prouve pas que l'acteur est réellement le root actif. Le futur contrôleur Pages Functions devra obtenir `actorDeviceId` depuis la session authentifiée, charger `rootDeviceId` et son statut actif depuis D1, puis appeler le contrat. Les valeurs envoyées dans le corps de requête ne doivent jamais établir cette autorité. Aucun endpoint ni schéma D1 n'est créé ici.
+
+
+## 21. Contrat de session lié à l'appareil — prototype pur
+
+Le dépôt ajoute `src/domain/session-authorization.ts` et ses tests. Le contrat d'une session comprend un identifiant opaque, le compte, l'appareil, le hash SHA-256 du jeton à haute entropie, l'état, la version d'autorisation de l'appareil, la création, l'expiration et l'éventuelle révocation. Le jeton brut n'est jamais un champ du modèle persistant.
+
+À chaque requête protégée, le futur contrôleur doit charger l'état courant de la session et de l'appareil depuis D1 et fournir au contrat le compte et l'appareil attendus depuis le contexte authentifié, l'état courant de l'appareil, la valeur courante de `auth_version` et l'heure UTC du serveur.
+
+Le contrat refuse une session expirée ou révoquée, un compte/appareil différent, un appareil non actif, ou une version de session qui ne correspond plus à la version de l'appareil. L'incrément de `auth_version` lors d'une révocation invalide donc toutes les sessions antérieures de cet appareil sans toucher aux sessions des autres appareils du compte.
+
+### Révocation transactionnelle attendue
+
+La future mutation de révocation doit dans une transaction D1 :
+1. passer l'appareil ciblé à `revoked`, renseigner `revoked_at` et incrémenter `auth_version` ;
+2. révoquer toutes les sessions liées à cet appareil ;
+3. désactiver ses abonnements push ;
+4. annuler ses demandes de jumelage en attente ;
+5. invalider les autorisations de partage GPS qui en dépendent ;
+6. écrire l'événement d'audit sans jeton, clé privée ni coordonnées.
+
+Les routes de lecture doivent filtrer par session et appareil actifs dans la requête SQL elle-même. Toute mutation sensible doit inclure une condition d'autorisation courante dans l'instruction DML finale, ou dans une séquence D1 atomique équivalente ; un contrôle séparé suivi plus tard d'une écriture non conditionnelle crée une course avec la révocation. Aucun cache positif d'autorisation. Les tâches push/outbox recontrôlent l'état juste avant l'envoi.
+
+### Limites et décisions différées
+
+Le prototype est un évaluateur pur : il ne génère pas les jetons, ne vérifie pas le canal OTP, ne stocke rien, ne définit pas le transport du cookie/jeton et ne fournit aucune route. Le fournisseur OTP, le transport de session, le schéma D1 et les garanties transactionnelles finales restent à valider. Aucun secret ou jeton réel n'est utilisé dans les tests. Aucune migration ni modification distante de D1 n'a été effectuée.
