@@ -428,3 +428,8 @@ Ces routes sont des contrats indicatifs, pas des endpoints existants. Chaque rou
 - Les essais couvrent PWA, Android et iOS, ainsi que les conflits d'approbation, le rejeu et les changements d'horloge/réseau.
 
 **Statut :** modèle conceptuel à implémenter après validation du protocole de confiance et des contrats API. Aucune migration D1 ni fonctionnalité multi-appareils n'est déclarée opérationnelle.
+
+
+## 15.8 Référence du protocole multi-appareils
+
+La proposition de hiérarchie de clés, de cérémonie d'enrôlement, de récupération, de révocation, de contrats API indicatifs et de tests adversariaux est détaillée dans [PROTOCOLE_MULTI_APPAREILS.md](PROTOCOLE_MULTI_APPAREILS.md). Le document est une proposition à valider ; il ne transforme pas les entités et routes conceptuelles en schéma ou API existants.
