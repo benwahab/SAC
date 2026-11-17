@@ -1,0 +1,1 @@
+export interface MediaAdapter{select(file:File):File;} /** Sélecteur web, remplaçable par @capacitor/camera. */ export const mediaAdapter:MediaAdapter={select:file=>file};

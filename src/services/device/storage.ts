@@ -1,0 +1,1 @@
+export interface StorageAdapter{get(key:string):string|null;set(key:string,value:string):void;remove(key:string):void;} /** Stockage non sensible, remplaçable par @capacitor/preferences. */ export const deviceStorage:StorageAdapter={get:key=>localStorage.getItem(key),set:(key,value)=>localStorage.setItem(key,value),remove:key=>localStorage.removeItem(key)};
