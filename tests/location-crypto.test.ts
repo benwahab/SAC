@@ -220,3 +220,34 @@ test("une substitution de clé ECDH invalide la signature du contact", async () 
     false,
   );
 });
+
+import { fingerprintLocationIdentityKey } from "../src/services/location/key-exchange.ts";
+
+test("l'empreinte de la clé d'identité est stable et indépendante du serveur", async () => {
+  const identity = await createLocationIdentityKeyPair();
+  const jwk = await globalThis.crypto.subtle.exportKey("jwk", identity.publicKey);
+  const first = await fingerprintLocationIdentityKey(jwk);
+  const second = await fingerprintLocationIdentityKey({ ...jwk });
+
+  assert.equal(first, second);
+  assert.match(first, /^(?:[0-9A-F]{4})(?: [0-9A-F]{4}){15}$/);
+});
+
+test("une autre clé d'identité produit une empreinte différente", async () => {
+  const firstIdentity = await createLocationIdentityKeyPair();
+  const secondIdentity = await createLocationIdentityKeyPair();
+  const firstJwk = await globalThis.crypto.subtle.exportKey("jwk", firstIdentity.publicKey);
+  const secondJwk = await globalThis.crypto.subtle.exportKey("jwk", secondIdentity.publicKey);
+
+  assert.notEqual(
+    await fingerprintLocationIdentityKey(firstJwk),
+    await fingerprintLocationIdentityKey(secondJwk),
+  );
+});
+
+test("l'empreinte refuse une clé d'identité qui n'est pas P-256", async () => {
+  await assert.rejects(
+    fingerprintLocationIdentityKey({ kty: "RSA", crv: "P-256", x: "x", y: "y" }),
+    /invalide/,
+  );
+});
