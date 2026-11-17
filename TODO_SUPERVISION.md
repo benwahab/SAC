@@ -22,9 +22,12 @@
 - [ ] Créer les comptes professionnels nominatifs.
 
 ## P0 sécurité
-- [ ] Remplacer le secret admin partagé par identité nominative, rôles, sessions et révocation.\n- [ ] Examiner les 4 alertes HIGH restantes dans les dépendances de développement (Vite/fdir/picomatch/tinyglobby). Audit runtime : 0 vulnérabilité ; aucune CRITICAL après retrait de Vitest.
-- [ ] Ajouter Turnstile/WAF et rate limiting distribué.\n- [x] Limitation de débit initiale côté D1 pour création de signalement et accès professionnel (à remplacer par une solution distribuée).
-- [ ] Ajouter route média avec autorisation ; aucun accès public R2.\n- [x] Vérification des signatures réelles des fichiers JPEG/PNG/WebP/WebM/MP3/MP4 avant stockage.
+- [ ] Remplacer le secret admin partagé par identité nominative, rôles, sessions et révocation.
+- [ ] Examiner les 4 alertes HIGH restantes dans les dépendances de développement (Vite/fdir/picomatch/tinyglobby). Audit runtime : 0 vulnérabilité ; aucune CRITICAL après retrait de Vitest.
+- [ ] Ajouter Turnstile/WAF et rate limiting distribué.
+- [x] Limitation de débit initiale côté D1 pour création de signalement et accès professionnel (à remplacer par une solution distribuée).
+- [ ] Ajouter route média avec autorisation ; aucun accès public R2.
+- [x] Vérification des signatures réelles des fichiers JPEG/PNG/WebP/WebM/MP3/MP4 avant stockage.
 - [ ] Définir rétention, purge, export et suppression des coordonnées/médias.
 - [ ] Définir modération et escalade des signalements critiques.
 - [ ] Valider cadre légal, responsabilités et messages d'urgence.
@@ -33,13 +36,16 @@
 - [ ] Géocodage inverse avec fournisseur validé.
 - [ ] Affectation par organisation/zone.
 - [ ] Notifications et suivi réel de livraison.
-- [x] Tableau professionnel initial avec carte, filtres et mise à jour statut/modération (jeton temporaire).\n- [ ] Recherche, pagination et affectations par zone/organisation.
+- [x] Tableau professionnel initial avec carte, filtres et mise à jour statut/modération (jeton temporaire).
+- [ ] Recherche, pagination et affectations par zone/organisation.
 - [ ] Upload résumable pour réseau faible.
 - [ ] Gestion des pièces jointes multiples et analyse de sécurité.
 
 ## P2 qualité/mobile
-- [x] Écritures du signalement et de son historique regroupées dans un batch D1 atomique.\n- [ ] Tests API/D1/R2 et E2E.
-- [x] Recentrage automatique de la carte après acquisition GPS.\n- [ ] Accessibilité et tests sur téléphones réels.
+- [x] Écritures du signalement et de son historique regroupées dans un batch D1 atomique.
+- [ ] Tests API/D1/R2 et E2E.
+- [x] Recentrage automatique de la carte après acquisition GPS.
+- [ ] Accessibilité et tests sur téléphones réels.
 - [ ] Capacitor Android/iOS.
 - [ ] Observabilité, sauvegardes et restauration testée.
 
