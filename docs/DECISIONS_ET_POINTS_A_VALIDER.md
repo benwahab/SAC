@@ -27,7 +27,7 @@ Ce document évite de confondre une décision de l'utilisateur avec une proposit
 | Répondant principal | Premier contact qui accepte la prise en charge ; promotion du volontaire suivant si retrait |
 | Contacts | Invitation par téléphone ou e-mail, acceptation et vérification obligatoires ; invitation en attente sans accès ; révocation pour les nouvelles alertes |
 | Destinataires | Instantané figé au déclenchement |
-| Localisation | Partage soumis à autorisation ; fenêtres prévues : position ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à clôture selon le parcours ; une position ancienne doit être datée et identifiée ; positions GPS précises conservées 30 jours après la fin du partage, puis supprimées automatiquement et définitivement des données actives SAC |
+| Localisation | Partage soumis à autorisation ; fenêtres prévues : position ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à clôture selon le parcours ; une position ancienne doit être datée et identifiée ; positions GPS précises conservées 30 jours après la fin du partage sous le contrôle de SAC ; les destinataires sont des proches de confiance et SAC ne cherche pas à effacer leurs copies locales |
 | Backend / API | API REST séparée via Cloudflare Pages Functions (`functions/api/`), en TypeScript |
 | Portabilité mobile | PWA d'abord ; préparation Capacitor pour Android/iOS sans réécriture |
 | Adaptateurs appareil | Interfaces isolées dans `src/services/device/` |
@@ -139,3 +139,12 @@ L'étude a examiné les caractéristiques documentées d'AWS XKS ainsi que les o
 - Thales CipherTrust documente des sauvegardes système restaurables qui contiennent les clés. La liaison à un HSM Root of Trust protège la restauration globale mais ne prouve pas l'effacement individuel à J+30.
 
 Aucun produit n'est approuvé. Voir la section 10 de [SECURITE_GPS_DESTRUCTION_CRYPTO.md](SECURITE_GPS_DESTRUCTION_CRYPTO.md). Aucune ressource ni intégration externe n'a été créée.
+
+
+## 3.5 Orientation utilisateur confirmée — périmètre de la rétention GPS
+
+L'utilisateur confirme que les destinataires des alertes sont des personnes de confiance. L'exigence de protection et de rétention de 30 jours porte sur les données et clés sous le contrôle de SAC. Il n'est pas demandé à SAC de supprimer les copies éventuellement conservées par les contacts autorisés sur leurs propres téléphones.
+
+Cette décision ne dispense pas SAC de chiffrer les échanges, de vérifier les destinataires, de respecter le consentement de localisation ni de retirer les autorisations pour les nouvelles alertes après révocation d'un contact.
+
+L'architecture proposée est désormais : aucun historique GPS persistant côté serveur ; chiffrement local et clés natives liées à l'appareil ; relais chiffré vers les contacts autorisés. La suppression exacte à J+30 reste à démontrer lorsque le téléphone est éteint ou que le système suspend l'application. Cette proposition ne doit pas être présentée comme une garantie déjà acquise.
