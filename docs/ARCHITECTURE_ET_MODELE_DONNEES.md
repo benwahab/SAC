@@ -57,7 +57,7 @@ La PWA constitue la première cible. Dès la conception, le code doit rester com
 
 ### 1.5 API et hébergement
 
-Le frontend React/Vite communique avec un backend exposé sous forme d'API REST sur Cloudflare Workers. Les règles métier sensibles, l'authentification, les autorisations, les tâches planifiées et les notifications restent côté serveur. Les fournisseurs externes sont encapsulés derrière des adaptateurs. Le choix du stockage relationnel, de l'authentification et des prestataires demeure soumis aux décisions validées.
+Le frontend React/Vite/TypeScript communique avec un backend exposé sous forme d'API REST sur Cloudflare Workers, implémenté en TypeScript. Les règles métier sensibles, l'authentification, les autorisations, les tâches planifiées et les notifications restent côté serveur. Les fournisseurs externes sont encapsulés derrière des adaptateurs. Le choix du stockage relationnel, de l'authentification et des prestataires demeure soumis aux décisions validées.
 
 ## 2. Principes d'architecture
 
