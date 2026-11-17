@@ -62,8 +62,6 @@ export async function createLocationExchangeKeyPair(
  * Le sel est public mais doit être aléatoire (32 octets) et transmis avec
  * l'enveloppe. Le contexte lie la clé à une session et à un destinataire.
  */
-export type LocationKeyRole = "sender" | "recipient";
-
 /**
  * Dérive une clé AES-GCM strictement directionnelle.
  * Les deux pairs appellent la fonction avec les mêmes sessionId,
