@@ -161,11 +161,15 @@ Une position indisponible ne doit pas empêcher une alerte d'être créée. L'in
 
 ### 8.3 SOS discret et code de contrainte
 
-Le concept prévoit un mode discret et un code de contrainte :
-- un code normal permet un usage normal ;
-- un code de contrainte, saisi dans le contexte de sécurité prévu, déclenche discrètement une alerte aux contacts sélectionnés ;
-- l'application peut afficher un écran neutre après le déclenchement, selon les capacités réelles de la plateforme ;
-- la dernière position connue peut être partagée si l'utilisateur a accordé cette autorisation.
+Le mode SOS discret est validé avec affichage d'un **écran neutre après le déclenchement**, sans indication visible d'urgence.
+
+Deux contextes d'utilisation du code de contrainte sont retenus :
+- saisie du code de contrainte dans SAC ;
+- déclenchement via un mécanisme ou raccourci accessible depuis l'écran verrouillé, sous réserve de faisabilité réelle sur chaque plateforme.
+
+Le code de contrainte déclenche discrètement une alerte aux contacts sélectionnés. Le code normal permet l'utilisation normale de l'application. La dernière position connue peut être partagée si l'utilisateur a accordé cette autorisation.
+
+La protection contre une désactivation forcée est également validée : SAC doit tenter de déclencher une alerte discrète **avant la désactivation lorsque la plateforme le permet**. Il s'agit d'un mécanisme de meilleure intention, pas d'une garantie qu'une application peut empêcher un arrêt forcé, une extinction ou une désinstallation.
 
 Les codes ne sont jamais conservés en clair. Ils doivent être protégés contre les essais répétés, les attaques par force brute et la consultation par les administrateurs. Le comportement exact doit être validé sur Android, iOS et PWA : les systèmes d'exploitation et navigateurs limitent certaines actions discrètes, l'exécution en arrière-plan et les notifications silencieuses. Aucune promesse technique ne doit être faite avant des essais réels.
 
@@ -241,15 +245,14 @@ Les contacts ne peuvent pas clôturer l'alerte. Seul l'auteur de l'alerte peut l
 
 ## 12. Rappels et clôture
 
-- Les rappels aux contacts non répondants sont envoyés toutes les **5 minutes**.
-- L'auteur choisit la durée maximale pendant laquelle les rappels doivent continuer.
+- Les rappels sont envoyés toutes les **5 minutes** aux contacts initialement sélectionnés lors du déclenchement.
+- Les rappels continuent jusqu'à la clôture de l'alerte par son auteur.
+- Les rappels restent strictement limités à la liste initiale figée : aucun nouveau contact ne peut être ajouté automatiquement.
+- Un accusé de réception ou une prise en charge est enregistré dans la chronologie, mais ne clôture pas l'alerte et ne retire pas le contact de la liste des destinataires des rappels tant que l'auteur n'a pas clôturé l'alerte.
 - Les rappels cessent immédiatement lorsque l'auteur clôture l'alerte.
-- Les contacts ayant déjà accusé réception ne doivent plus recevoir les rappels de simple accusé de réception.
-- Les contacts qui ont pris la situation en charge reçoivent les mises à jour pertinentes sans être noyés sous des rappels identiques.
-- Aucun nouveau contact ne doit être ajouté automatiquement si personne ne répond : les rappels restent adressés à la liste initiale figée.
-- La fin de la période de rappel ne clôture pas l'alerte. Elle reste enregistrée comme active/non résolue tant que l'auteur ne l'a pas clôturée.
+- L'arrêt des rappels résulte uniquement de la clôture par l'auteur ; aucune durée maximale ne les arrête avant cette clôture.
 
-Les traitements de rappel doivent être fiables, idempotents et résistants aux doubles exécutions. Le choix des durées disponibles et leur valeur minimale/maximale reste à valider.
+Les traitements de rappel doivent être fiables, idempotents et résistants aux doubles exécutions.
 
 ## 13. Notifications et états
 
