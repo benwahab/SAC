@@ -376,6 +376,8 @@ Les opérations sensibles doivent être atomiques lorsque nécessaire et protég
 - Chiffrement en transit et chiffrement au repos selon les capacités de l'infrastructure.
 - Sauvegardes et procédure de restauration testées.
 - Appliquer et tester la conservation temporaire des positions GPS précises pendant 30 jours après la fin du partage, puis leur suppression automatique et définitive des données actives SAC.
+- Une restauration de base ne doit jamais rendre consultable une position dont le délai de 30 jours est écoulé : purge de rattrapage et vérification obligatoires avant réouverture du service.
+- La suppression irréversible des copies de sauvegarde à J+30 doit être démontrée ; ne pas stocker les coordonnées GPS en clair dans D1 tant que l'historique Time Travel et la stratégie de destruction des clés n'ont pas été traités.
 - Accès administratif limité, justifié et auditable.
 - Aucun compte administrateur ne doit permettre de consulter librement toutes les localisations sans contrôle et justification.
 
