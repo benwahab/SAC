@@ -12,7 +12,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] SOS discret, écran neutre, code de contrainte et protection contre désactivation forcée documentés.
 - [x] Cible d'architecture corrigée : Pages, Pages Functions, D1, R2 sous condition d'activation.
 - [x] Audit du Worker Cloudflare `sac` : source `Hello world` uniquement, aucun binding, sous-domaine désactivé, aucune zone DNS associée ; Worker modèle supprimé après audit.
-- [x] Créer la base D1 officielle `sac-db` (vide, région WEUR, réplication désactivée).
+- [x] Créer et vérifier l'existence de la base D1 officielle `sac-db` (UUID confirmé par l'API Cloudflare le 17 novembre 2026, vide, région WEUR, réplication désactivée).
 - [ ] Créer et connecter le projet Cloudflare Pages au dépôt GitHub, branche main, après validation du build.
 - [ ] Configurer le binding D1 DB dans Pages et vérifier /api/health en Preview.
 - [ ] Activer R2 depuis le tableau de bord Cloudflare puis créer le bucket privé SAC.
