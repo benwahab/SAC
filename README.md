@@ -34,4 +34,4 @@ Base relationnelle cible : Cloudflare D1. Stockage privé : Cloudflare R2 si act
 
 ## État du projet
 
-**Phase : cadrage et documentation.** Le code de signalement public ajouté par erreur a été retiré. Le développement de la véritable application SAC n'est pas commencé.
+**Phase : socle technique initial en cours.** Le premier socle React/Vite/TypeScript, l'interface mobile de démarrage, le manifeste PWA, un service worker minimal, les contrats d'adaptateurs Web et une route Pages Functions de vérification D1 sont versionnés. Le SOS, l'authentification, les alertes, les notifications, les paiements et les migrations métier ne sont pas encore implémentés. Aucune alerte réelle ne peut être déclenchée à ce stade.

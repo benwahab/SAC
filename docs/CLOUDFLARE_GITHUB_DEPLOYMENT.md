@@ -31,16 +31,16 @@ Le backend ne doit pas être remplacé par un Worker autonome déployé séparé
 - R2 n'est pas activé : l'API retourne l'erreur Cloudflare 10042 « Please enable R2 through the Cloudflare Dashboard ». Aucun bucket n'a été créé.
 - Le Worker `sac` a été audité : son unique source était le modèle Cloudflare `Hello world`, sans binding, sous-domaine désactivé et sans zone DNS associée. Il a été supprimé après vérification, car il ne contenait aucune logique SAC ni ressource liée.
 
-**Conséquence :** la configuration Cloudflare actuelle n'est pas prête pour déployer la véritable application SAC. Le projet Pages n'a pas encore été créé : le dépôt ne contient pas encore `package.json` ni le socle frontend à compiler. Aucun build ni déploiement de l'application n'a été confirmé.
+**Conséquence :** le dépôt contient maintenant le socle React/Vite/TypeScript, une route Pages Functions `/api/health` qui interroge D1, un manifeste PWA et un service worker minimal. Le projet Pages n'a pas encore été créé et R2 reste inactif. Le build et le déploiement ne sont pas encore vérifiés.
 
 ## 4. Règles de reconstruction de l'environnement
 
-Quand le développement et la configuration seront autorisés :
+Étapes restantes pour la configuration et le premier déploiement :
 
-1. Auditer le Worker `sac` existant (code, routes, variables, secrets et bindings) avant toute modification ou suppression.
+1. Le Worker modèle `sac` a déjà été audité puis supprimé ; ne pas le recréer comme backend autonome.
 2. Créer/configurer le projet Cloudflare Pages connecté au dépôt `benwahab/SAC`, branche `main`, avec le répertoire de build et les commandes correspondant aux fichiers réels du projet.
 3. Ajouter les Pages Functions dans `functions/api/`, sans second backend.
-4. Créer la base D1 officielle SAC et versionner les migrations SQL dans GitHub.
+4. La base D1 officielle `sac-db` existe déjà. Configurer le binding `DB` dans Pages ; les migrations métier attendent la validation du schéma détaillé.
 5. Vérifier l'activation de R2 ; s'il est autorisé, créer le bucket privé et ses bindings. Sinon, garder le stockage désactivé et documenter la configuration attendue sans simuler son fonctionnement.
 6. Définir les variables d'environnement et secrets uniquement dans Cloudflare, jamais dans Git.
 7. Configurer les tâches planifiées et mécanismes de notification nécessaires, avec idempotence et journalisation.

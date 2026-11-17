@@ -13,7 +13,8 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Cible d'architecture corrigée : Pages, Pages Functions, D1, R2 sous condition d'activation.
 - [x] Audit du Worker Cloudflare `sac` : source `Hello world` uniquement, aucun binding, sous-domaine désactivé, aucune zone DNS associée ; Worker modèle supprimé après audit.
 - [x] Créer la base D1 officielle `sac-db` (vide, région WEUR, réplication désactivée).
-- [ ] Reconstituer l'environnement Cloudflare Pages de SAC après création du socle applicatif GitHub.
+- [ ] Créer et connecter le projet Cloudflare Pages au dépôt GitHub, branche main, après validation du build.
+- [ ] Configurer le binding D1 DB dans Pages et vérifier /api/health en Preview.
 - [ ] Activer R2 depuis le tableau de bord Cloudflare puis créer le bucket privé SAC.
 - [ ] Finaliser les choix d'authentification, OTP, push, SMS et paiement.
 - [ ] Finaliser les règles de conservation et suppression des positions.
@@ -21,9 +22,15 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Définir les avantages Premium au-delà des 10 contacts.
 - [ ] Valider les limites et rôles des groupes familiaux.
 - [ ] Préparer les tests de sécurité, de réseau faible et de non-livraison des notifications.
-- [ ] Obtenir l'autorisation explicite de démarrer le développement.
-- [ ] Créer le socle React/Vite/TypeScript et Pages Functions sur `main` (prérequis à la création du projet Pages ; `package.json` absent à ce stade).
+- [x] Autorisation de démarrer le développement reçue dans la conversation.
+- [x] Créer le socle React/Vite/TypeScript et Pages Functions sur main.
+- [x] Ajouter manifeste PWA et service worker minimal, sans prétendre à une protection hors-ligne des alertes.
+- [x] Ajouter les interfaces d'adaptateurs Web pour géolocalisation, notifications et partage, sans demander de permission automatiquement.
+- [x] Ajouter une route de santé API vérifiant réellement l'accès D1.
+- [x] Ajouter un workflow CI de typecheck et build.
 - [ ] Créer les migrations D1 et les tests d'accès.
+- [ ] Installer les dépendances, exécuter typecheck et build, puis corriger les erreurs constatées.
+- [ ] Générer et versionner package-lock.json après installation vérifiée.
 - [ ] Vérifier le build `npm run build` et les déploiements Preview/Production.
 - [ ] Tester la préparation Capacitor sur Android puis iOS.
 
