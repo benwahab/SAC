@@ -295,3 +295,21 @@ La protection contre cette substitution repose donc sur l'ancrage indépendant d
 - Récupération après perte de tous les appareils : nouvelle racine distincte, ancienne racine non restaurée et nouvelle vérification indépendante des contacts.
 
 **État :** proposition de sécurité à examiner en revue indépendante. Le mécanisme d'authentification forte du compte, le format exact du transcript, les preuves de possession, le stockage de la racine et l'interface de vérification des contacts ne sont pas encore implémentés. Aucun schéma D1 ni endpoint n'est créé par cette spécification.
+
+
+## 16. Séparation des clés de transport par direction — prototype ajouté
+
+Le prototype local `src/services/location/key-exchange.ts` expose désormais `deriveLocationDirectionalKey`.
+
+- Les deux appareils reçoivent les mêmes identifiants canoniques de session, d'émetteur et de destinataire.
+- Le contexte HKDF versionné inclut la session, l'émetteur, le destinataire, l'usage « location-payload » et l'algorithme AES-256-GCM.
+- L'appareil identifié comme émetteur obtient une CryptoKey utilisable uniquement pour `encrypt`.
+- L'appareil identifié comme destinataire obtient la clé correspondante utilisable uniquement pour `decrypt`.
+- Le sens inverse inverse les identifiants émetteur/destinataire : il produit une clé distincte et les usages WebCrypto sont eux aussi inversés.
+- Un identifiant local qui ne correspond ni à l'émetteur ni au destinataire est refusé.
+
+Les tests couvrent le déchiffrement normal, l'échec avec la clé du sens inverse, l'impossibilité d'utiliser une clé de réception pour chiffrer, et le refus d'un appareil étranger.
+
+**Limites et conditions restantes :** cette fonction ne lie pas encore le compte et l'identifiant de cérémonie au contexte HKDF. Elle ne vérifie pas non plus le certificat qui authentifie l'association entre les identifiants et les clés publiques. Ces données doivent être intégrées au transcript signé et validées par la couche d'identité avant toute utilisation. Les identifiants fournis à la fonction ne sont pas, à eux seuls, une preuve d'identité. La version du prototype n'est pas une autorisation de transport GPS réel.
+
+**État :** séparation directionnelle expérimentale implémentée et testée en CI ; revue cryptographique indépendante, contexte final complet, authentification des appareils et preuve J+30 toujours obligatoires.
