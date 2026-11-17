@@ -2,7 +2,7 @@
 
 **Projet :** SAC — Sécurité, Alerte, Citoyenne  
 **Version :** 1.1 — Document de cadrage consolidé  
-**Statut :** Référence de conception — développement non commencé  
+**Statut :** Référence fonctionnelle — socle technique initial commencé ; fonctions métier non encore implémentées  
 **Périmètre initial :** population générale, lancement envisagé au Niger, conception extensible à d'autres pays.
 
 ---
@@ -32,7 +32,6 @@ SAC doit être compréhensible par le grand public, utilisable principalement su
 - Pas de promesse de fonctionnement GPS permanent lorsque l'application est fermée ou suspendue.
 - Pas de promesse de SMS automatique lorsque le téléphone, le réseau ou le fournisseur SMS ne le permet pas.
 - Pas de logo imposé à ce stade.
-- Pas de développement applicatif dans la phase documentaire actuelle.
 
 ## 2. Principes produit non négociables
 
