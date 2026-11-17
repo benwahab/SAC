@@ -28,7 +28,7 @@ Le backend ne doit pas être remplacé par un Worker autonome déployé séparé
 - Aucun projet Cloudflare Pages n'est actuellement présent dans le compte au moment de la vérification.
 - Le projet Pages nommé `sac-citoyen` et la base D1 `sac-citoyen-db` qui avaient été créés dans le contexte de l'application erronée de signalement ont été supprimés. Cette suppression a aussi laissé l'environnement sans projet Pages ni base D1 ; il ne faut pas prétendre que ces services sont actuellement opérationnels.
 - Le compte ne permettait pas de confirmer la disponibilité de R2 : l'accès à la liste R2 a retourné une erreur indiquant que R2 doit être activé depuis le tableau de bord.
-- Un Worker nommé `sac` existe. Son code, ses bindings et son rôle exact n'ont pas encore été audités. Il est conservé sans être considéré comme le backend officiel de SAC.
+- Un Worker nommé `sac` existe. Son paramétrage a été lu : aucun binding, sous-domaine désactivé, previews désactivées et déploiements provenant de `dash_template`. Le contenu source n'a pas encore été audité. Il est conservé sans être considéré comme le backend officiel de SAC.
 
 **Conséquence :** la configuration Cloudflare actuelle n'est pas prête pour déployer la véritable application SAC. Aucun build ni déploiement de l'application n'a été confirmé.
 
