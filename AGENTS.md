@@ -8,8 +8,8 @@ Avant toute tâche, lis :
 2. `docs/CAHIER_DES_CHARGES_SAC.md`
 3. `docs/ARCHITECTURE_ET_MODELE_DONNEES.md`
 4. `docs/CONSIGNES_DE_TRAVAIL.md`
-5. `docs/DECISIONS_ET_POINTS_A_VALIDER.md)
-6. `docs/CLOUDFLARE_GITHUB_DEPLOYMENT.md)
+5. `docs/DECISIONS_ET_POINTS_A_VALIDER.md`
+6. `docs/CLOUDFLARE_GITHUB_DEPLOYMENT.md`
 
 ## Stack verrouillée
 - React
