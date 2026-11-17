@@ -84,7 +84,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Définir le parcours UX de jumelage (QR/code de comparaison, approbation sur appareil existant, erreurs et annulation).
 - [ ] Définir la récupération après perte de tous les appareils et la procédure de revérification indépendante des contacts.
 - [ ] Définir les règles de révocation des sessions, push, certificats, clés ECDH et partages GPS en cours.
-- [ ] Ajouter les contrats TypeScript et tests unitaires des états d'appareil et transitions autorisées.
+- [x] Ajouter le contrat TypeScript pur et les tests unitaires des états/transitions d'appareil (14 tests) ; CI run 44191818016 réussie sur commit eab16e659bd6d8759747f466d4dab57962178005. Ce contrat ne remplace pas les contrôles serveur.
 - [ ] Implémenter les API d'enrôlement, liste, approbation, renommage et révocation après validation des contrats.
 - [ ] Valider le schéma D1 et les politiques d'accès avant toute migration.
 - [ ] Tester plusieurs appareils PWA, Android et iOS, y compris appareil hors ligne, perdu, restauré et réinstallé.
