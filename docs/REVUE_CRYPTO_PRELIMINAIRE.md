@@ -77,3 +77,7 @@ Les tests sont exécutés par `npm run test:crypto` dans la CI existante. Le ré
 - Aucun endpoint, migration D1, stockage R2, fournisseur KMS, ressource Cloudflare ou déploiement créé.
 - Aucune clé privée, donnée personnelle ou position GPS réelle ajoutée au dépôt.
 - Aucun changement de stack, dépôt ou branche.
+
+## 7. Résultat CI vérifié
+
+La CI du commit de code `234943e9277e0ccbb17de4a9428b537afd22e669` (run GitHub Actions `44192845933`) a réussi. Les journaux confirment **24 tests cryptographiques réussis, 0 échec**, ainsi que le typecheck, les tests du cycle de vie des appareils, le build et l'audit bloquant des dépendances de production. Cette réussite valide les tests automatisés du prototype sur l'environnement CI ; elle ne remplace pas la revue indépendante ni les essais sur appareils physiques.
