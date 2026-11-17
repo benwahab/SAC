@@ -33,7 +33,7 @@
 - [ ] Géocodage inverse avec fournisseur validé.
 - [ ] Affectation par organisation/zone.
 - [ ] Notifications et suivi réel de livraison.
-- [ ] Tableau professionnel avec filtres, carte, recherche et pagination.
+- [x] Tableau professionnel initial avec carte, filtres et mise à jour statut/modération (jeton temporaire).\n- [ ] Recherche, pagination et affectations par zone/organisation.
 - [ ] Upload résumable pour réseau faible.
 - [ ] Gestion des pièces jointes multiples et analyse de sécurité.
 
