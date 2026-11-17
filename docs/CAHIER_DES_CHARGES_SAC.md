@@ -476,7 +476,9 @@ La stack de référence est verrouillée pour tous les intervenants :
 - langage applicatif : TypeScript ;
 - styles : Tailwind CSS ;
 - icônes : Lucide React ;
-- backend : API REST sur Cloudflare Workers, en TypeScript ;
+- backend : API REST via Cloudflare Pages Functions (`functions/api/`), en TypeScript ;
+- base de données : Cloudflare D1 ;
+- stockage privé : Cloudflare R2 si activé et autorisé sur le compte ;
 - première plateforme : PWA mobile-first ;
 - préparation native : Capacitor, isolé derrière les adaptateurs de terminal ;
 - scripts de base de données : SQL lorsque le fournisseur retenu le nécessitera.
