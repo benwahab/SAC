@@ -157,3 +157,16 @@ Un module expérimental isolé `src/services/location/crypto.ts` et des tests au
 Cette étape ne valide ni le stockage des clés sur Android/iOS, ni leur échange avec plusieurs contacts, ni le relais WebSocket, ni la conservation GPS, ni la destruction à J+30. Le module n'est pas relié à l'application et ne doit pas être utilisé avec de vraies coordonnées. Aucune ressource Cloudflare ni intégration fournisseur n'a été créée.
 
 Le choix du protocole complet et de la politique J+30 reste ouvert jusqu'aux tests natifs et à la validation de l'échange de clés.
+
+## 3.7 Prototype expérimental d'identité des clés de contact — 17 novembre 2026
+
+Le module `src/services/location/key-exchange.ts` contient désormais :
+- une paire ECDH P-256 non exportable pour l'accord de clé ;
+- une dérivation de clé AES-GCM par destinataire via HKDF-SHA-256 ;
+- une paire de signature ECDSA P-256 distincte ;
+- un paquet liant l'identifiant du propriétaire à sa clé publique ECDH, signé par sa clé d'identité ;
+- une vérification de la signature et des tests négatifs contre la modification de l'identité ou la substitution de la clé ECDH.
+
+**Limite fondamentale :** une signature vérifie que le paquet a été signé par la clé d'identité qu'il contient ; elle ne prouve pas que cette clé appartient réellement au contact attendu. L'empreinte de la clé d'identité doit être vérifiée par un canal indépendant (par exemple comparaison d'un code de sécurité ou QR en personne), puis conservée comme référence de confiance. La procédure de récupération/changement d'appareil et de révocation reste à concevoir.
+
+Le prototype n'est pas connecté à l'application, n'échange aucune vraie position et ne constitue pas un protocole de production. La CI du commit `8f5a27d` est en cours au moment de cette mise à jour ; aucune réussite n'est présumée.
