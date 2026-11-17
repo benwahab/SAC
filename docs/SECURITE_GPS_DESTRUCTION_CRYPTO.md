@@ -249,3 +249,58 @@ Sources officielles :
 | HashiCorp Vault Transit | Backup/restore de clés et snapshots ; non retenu |
 
 **Décision : aucun de ces produits n'est approuvé pour stocker les clés GPS SAC.** Le travail suivant doit chercher une solution qui offre nativement une destruction individualisée, vérifiable et non restaurable de chaque clé, y compris dans les sauvegardes, les répliques et les plans de reprise. Il faut également établir que sa disponibilité est compatible avec une application d'urgence et que la redondance ne recrée pas une copie de clé après destruction.
+
+
+## 11. Nouvelle piste : absence de persistance GPS côté serveur et conservation locale contrôlée
+
+Cette piste change le modèle au lieu de chercher uniquement un KMS externe. Elle reste une **proposition d'étude, pas une décision d'architecture validée**.
+
+### 11.1 Principe
+
+- Le téléphone de l'auteur collecte les coordonnées et les chiffre avant transmission.
+- Les coordonnées en clair ne sont jamais écrites dans D1, R2, les journaux, les traces, les files de tâches ou les sauvegardes Cloudflare.
+- Le serveur Pages Functions authentifie l'auteur, vérifie les destinataires et relaie les paquets chiffrés sans les déchiffrer ni les conserver durablement.
+- Les paquets de relais sont éphémères et ont une durée de vie courte, uniquement pour permettre la livraison. Aucun historique GPS serveur n'est créé.
+- Les positions à conserver pendant 30 jours après la fin du partage sont archivées uniquement sur le terminal de l'auteur, chiffrées avec une clé propre à ce terminal. À l'échéance, l'application supprime la clé locale et les données chiffrées.
+- Les contacts reçoivent uniquement les positions explicitement partagées. SAC ne peut pas garantir qu'un destinataire ne fasse pas une capture d'écran, une copie ou un enregistrement externe.
+
+### 11.2 Ce que cette piste résout
+
+Si elle est correctement implémentée et testée, l'absence de persistance serveur empêche une restauration D1 Time Travel ou R2 de faire réapparaître un historique GPS qui n'a jamais été stocké dans ces services. Cela supprime le besoin de placer une clé GPS de déchiffrement dans un KMS cloud uniquement pour protéger des copies serveur inexistantes.
+
+Cette approche réduit aussi l'impact d'une compromission de la base relationnelle : les données de compte, d'alerte et les événements peuvent être conservés, mais ils ne contiennent pas les coordonnées précises.
+
+### 11.3 Limite PWA : non acceptable comme preuve de destruction forte
+
+La Web Crypto API permet des objets CryptoKey non exportables, mais la spécification W3C précise qu'elle ne garantit pas la manière dont le matériel de clé est conservé par le navigateur ou le système d'exploitation, ni qu'il ne soit pas persisté sur disque. Une clé non exportable ne constitue donc pas, à elle seule, une preuve de destruction irréversible face aux sauvegardes/restaurations ou à un accès au profil du navigateur.
+
+Sources :
+- [W3C Web Cryptography API — considérations de sécurité](https://www.w3.org/TR/2025/WD-WebCryptoAPI-20250422/)
+- [IETF RFC 10017 — considérations de stockage navigateur](https://www.ietf.org/rfc/rfc10017.html)
+
+Conclusion : la PWA peut assurer le relais chiffré sans stockage serveur, mais ne doit pas promettre à elle seule une destruction locale matériellement irréversible des archives GPS à J+30.
+
+### 11.4 Piste native Android/iOS à tester
+
+Une enveloppe native pourrait conserver les clés locales dans les mécanismes sécurisés du système :
+- Android : Android Keystore, avec vérification à l'exécution que la clé est réellement adossée à un TEE ou StrongBox lorsque disponible. Android documente que le matériel de clé peut être protégé et utilisé dans un environnement sécurisé ; les capacités varient selon le terminal.
+- iOS : Keychain avec une classe `ThisDeviceOnly` adaptée, éventuellement `WhenPasscodeSetThisDeviceOnly` si le parcours accepte d'exiger un code de verrouillage. Apple documente que ces éléments ne sont pas sauvegardés ni migrés vers un nouvel appareil pour la classe la plus stricte.
+
+Sources :
+- [Android — Hardware-backed Keystore](https://source.android.com/docs/security/features/keystore)
+- [Android — règles de sauvegarde des données d'application](https://developer.android.com/identity/data/autobackup)
+- [Apple — kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly](https://developer.apple.com/documentation/security/ksecattraccessiblewhenpasscodesetthisdeviceonly)
+- [Apple — Keychain data protection](https://support.apple.com/en-sa/guide/security/secb0694df1a/web)
+
+Ces mécanismes sont des protections de stockage local, pas encore une preuve universelle de destruction physique de toutes les copies internes du terminal. Il faudra tester suppression de clé, restauration complète, migration de téléphone, réinstallation, sauvegarde locale/cloud, changement de code et appareils sans TEE/StrongBox.
+
+### 11.5 Conditions qui restent à résoudre
+
+1. Confirmer si les 30 jours de conservation concernent exclusivement les données sous contrôle de SAC, ou si l'exigence prétend aussi effacer les copies déjà reçues par les contacts. Ces deux garanties ne sont pas équivalentes.
+2. Définir si l'archive GPS de 30 jours peut rester uniquement sur le téléphone de l'auteur, sans accès historique depuis un autre appareil ou depuis les comptes des contacts.
+3. Définir le comportement lors d'une perte, panne, casse ou réinitialisation du téléphone : la perte de la clé locale rendrait l'archive irrécupérable avant J+30, ce qui protège la confidentialité mais réduit la disponibilité.
+4. Tester les limites de fonctionnement en arrière-plan et de livraison en réseau faible. Un relais sans persistance ne peut pas garantir la livraison si l'émetteur et les destinataires sont simultanément hors ligne.
+5. Garantir que les notifications push ne contiennent jamais de coordonnées précises ; elles doivent seulement inviter le contact à ouvrir SAC.
+6. Empêcher toute journalisation des coordonnées, y compris dans les erreurs, analytics, outils de diagnostic et rapports de crash.
+
+**Décision provisoire :** approfondir en priorité le relais chiffré sans persistance GPS serveur, associé à une conservation locale. Ne pas activer cette conception en production et ne pas déclarer la règle J+30 satisfaite avant les tests natifs, la clarification de la portée de la rétention et l'analyse des copies côté destinataires. Aucun stockage GPS serveur n'est autorisé entre-temps.
