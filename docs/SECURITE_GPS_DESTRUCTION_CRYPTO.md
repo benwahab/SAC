@@ -143,3 +143,49 @@ Sources officielles : [Workers Secrets](https://developers.cloudflare.com/worker
 Le prochain travail est une étude ciblée de gestion de clés avec effacement immédiat/non restaurable ou d'un service externe de gestion de clés dont le contrat, les sauvegardes, les administrateurs et les procédures de reprise démontrent cette propriété. Il faudra également décider si « aucune restauration » signifie : (a) aucune lecture possible par l'application après J+30, même si des copies chiffrées existent ; ou (b) aucune possibilité de rétablir le matériel de clé par quelque sauvegarde, compte administrateur ou mécanisme fournisseur que ce soit. SAC vise le niveau (b) tant que l'utilisateur n'a pas explicitement accepté une définition plus limitée.
 
 En attendant, l'accès GPS doit être bloqué à l'expiration côté serveur, même si la destruction physique/cryptographique complète reste à démontrer. Ce verrou d'accès n'est pas présenté comme équivalent à l'effacement irréversible.
+
+
+## 9. Évaluation complémentaire — Fortanix DSM, HashiCorp Vault et AWS External Key Store
+
+Cette section complète l'étude documentaire. Elle ne constitue ni un test réel de service, ni une validation contractuelle, ni une autorisation de créer un compte ou une ressource.
+
+### 9.1 Fortanix DSM — non validé contre la restauration d'un état antérieur
+
+Fortanix DSM propose une destruction directe lorsque la Key Undo Policy n'est pas activée. Mais si cette politique est activée, la destruction reste annulable pendant la période configurée (de 7 à 180 jours). Plus important pour SAC, sa documentation de reprise après sinistre décrit la restauration du cluster depuis une sauvegarde Cassandra antérieure. Cette restauration ramène le cluster à l'état de cette sauvegarde ; elle peut donc réintroduire des objets/états qui existaient avant la destruction.
+
+La documentation ne fournit pas une preuve suffisante qu'une clé détruite à J+30 est exclue de toutes les sauvegardes antérieures et ne peut jamais être réintroduite par restauration complète. Fortanix DSM est donc **non retenu à ce stade** pour la garantie stricte SAC, même si la destruction de clé individuelle est proposée.
+
+Sources officielles :
+- [Fortanix DSM — Key Undo Policy](https://support.fortanix.com/docs/fortanix-dsm-key-undo-policy)
+- [Fortanix DSM — Backup and Restore](https://support.fortanix.com/docs/introduction-to-fortanix-dsm-backup-and-restore)
+- [Fortanix DSM — Key Lifecycle Management](https://support.fortanix.com/docs/fortanix-data-security-manager-key-lifecycle-management)
+
+### 9.2 HashiCorp Vault Transit — non validé contre sauvegardes et snapshots
+
+Vault Transit fournit une opération de suppression d'une clé nommée, mais sa documentation expose aussi une opération de sauvegarde/restauration de clé Transit. En outre, le stockage Raft de Vault permet de prendre et restaurer un snapshot qui réinstalle l'état du cluster défini par ce snapshot.
+
+Par conséquent, supprimer une clé Transit dans l'état courant ne prouve pas qu'une sauvegarde antérieure contenant cette clé a été détruite, ni qu'un administrateur ne peut restaurer un snapshot antérieur. Vault ne sera pas retenu comme coffre GPS SAC sans une architecture externe et des preuves qui neutralisent ces chemins de restauration, ce qui n'est pas démontré ici.
+
+Sources officielles :
+- [HashiCorp Vault — Transit API](https://docs.hashicorp.com/vault/api-docs/secret/transit)
+- [HashiCorp Vault — Raft snapshot and restore](https://docs.hashicorp.com/vault/api-docs/system/storage/raft)
+
+### 9.3 AWS External Key Store (XKS) — piste conditionnelle, non validée
+
+AWS indique qu'avec un External Key Store, les opérations cryptographiques sont exécutées par le gestionnaire de clés externe et que le matériel de clé ne quitte pas ce gestionnaire. AWS précise également que si la clé externe est perdue ou supprimée, le ciphertext associé devient irrécupérable.
+
+Cette séparation est intéressante : SAC pourrait conserver uniquement des DEK enveloppées par une clé externe, tandis que le service externe contrôlerait le matériel qui permet de les désenvelopper. Toutefois, AWS KMS ne crée, ne supprime ni ne gère les clés externes. La garantie dépend donc entièrement du fournisseur XKS choisi, de ses sauvegardes, snapshots, mécanismes de réplication, comptes administrateurs et procédures de reprise.
+
+Aucune preuve consultée ne permet d'affirmer qu'un fournisseur XKS précis garantit l'absence de toute restauration de la clé externe à J+30. XKS est donc une **piste de recherche prioritaire, pas un choix validé**. Il faudra auditer séparément le gestionnaire externe et obtenir des preuves écrites sur la destruction de toutes les copies réutilisables.
+
+Source officielle :
+- [AWS KMS — External key stores](https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html)
+
+### 9.4 Conclusion de cette passe
+
+Les trois pistes supplémentaires ne valident pas encore l'exigence stricte :
+- Fortanix DSM : chemin de restauration de cluster documenté ;
+- HashiCorp Vault : sauvegarde/restauration de clés et snapshots Raft documentés ;
+- AWS XKS : séparation de la clé externe intéressante, mais garanties de destruction et de non-restauration laissées au gestionnaire externe.
+
+Le prochain travail doit porter sur des gestionnaires externes XKS précis et sur la preuve de leur politique de sauvegarde/destruction. Le critère reste inchangé : aucune sauvegarde, réplication, restauration administrateur ou copie fournisseur ne doit pouvoir rendre la clé expirée à nouveau utilisable. Tant que cette preuve n'est pas disponible, aucune migration GPS ni intégration de clés n'est autorisée.
