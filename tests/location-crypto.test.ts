@@ -335,3 +335,16 @@ test("les identifiants de contexte avec caractères de contrôle sont refusés",
     /contexte/,
   );
 });
+
+
+test("l'empreinte refuse un JWK contenant du matériel privé", async () => {
+  const identity = await createLocationIdentityKeyPair();
+  const jwk = await globalThis.crypto.subtle.exportKey("jwk", identity.publicKey);
+
+  assert.equal(
+    await fingerprintLocationIdentityKey({ ...jwk, d: "private-material" }),
+    await assert.rejects(
+      fingerprintLocationIdentityKey({ ...jwk, d: "private-material" }),
+    ).then(() => "rejected"),
+  );
+});
