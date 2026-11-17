@@ -92,7 +92,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 
 
 - [x] Rédiger une proposition détaillée de protocole multi-appareils (hiérarchie de clés, enrôlement, récupération, révocation, contrats indicatifs et tests adversariaux) dans docs/PROTOCOLE_MULTI_APPAREILS.md.
-- [ ] Faire valider le modèle d'un appareil racine unique approbateur ; expliciter le risque de point unique d'approbation.
+- [x] Modèle d'un appareil racine unique approbateur validé par l'utilisateur le 17 novembre 2026 ; risque de point unique d'approbation accepté et récupération après perte de tous les appareils soumise à une nouvelle identité + revérification indépendante des contacts.
 - [ ] Faire valider le format du transcript signé, la comparaison indépendante et la durée de vie du défi anti-rejeu.
 - [ ] Spécifier la transition de racine, la récupération après perte de tous les appareils et la revérification des contacts.
 - [ ] Faire une revue cryptographique indépendante du protocole avant toute implémentation.
