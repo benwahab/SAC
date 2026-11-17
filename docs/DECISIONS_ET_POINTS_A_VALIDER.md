@@ -26,7 +26,7 @@ Ce document évite de confondre une décision de l'utilisateur avec une proposit
 | Contacts | Invitation acceptée obligatoire ; révocation pour les nouvelles alertes |
 | Destinataires | Instantané figé au déclenchement |
 | Localisation | Partage soumis à autorisation ; une position ancienne doit être datée et identifiée |
-| Backend / API | API REST séparée sur Cloudflare Workers |
+| Backend / API | API REST séparée sur Cloudflare Workers, implémentée en TypeScript |
 | Portabilité mobile | PWA d'abord ; préparation Capacitor pour Android/iOS sans réécriture |
 | Adaptateurs appareil | Interfaces isolées dans `src/services/device/` |
 | Collaboration IA | Claude et Qwen peuvent intervenir via les consignes partagées, sans changer la stack ni les conventions |
@@ -96,5 +96,6 @@ Ces éléments sont des recommandations d'architecture, pas des engagements de f
 | Version | Événement |
 |---|---|
 | 1.0 | Consolidation des décisions connues et des points ouverts dans le cadre du dépôt initial de la documentation. |
+| 1.1 | Cahier des charges complété sur la portabilité Android/iOS, la stack TypeScript et la collaboration Claude/Qwen ; langues de référence harmonisées. |
 
 Mettre à jour ce tableau à chaque nouvelle validation importante.
