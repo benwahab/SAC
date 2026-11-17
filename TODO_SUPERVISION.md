@@ -85,6 +85,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Définir la récupération après perte de tous les appareils et la procédure de revérification indépendante des contacts.
 - [ ] Définir les règles de révocation des sessions, push, certificats, clés ECDH et partages GPS en cours.
 - [x] Ajouter le contrat TypeScript pur et les tests unitaires des états/transitions d'appareil (14 tests) ; CI run 44191818016 réussie sur commit eab16e659bd6d8759747f466d4dab57962178005. Ce contrat ne remplace pas les contrôles serveur.
+- [x] Ajouter un évaluateur pur d'autorisation des sessions liées à un appareil, avec vérification du compte, appareil, état, expiration et auth_version ; tests ajoutés à la CI. Aucun jeton brut ni persistance dans ce prototype.
 - [ ] Implémenter les API d'enrôlement, liste, approbation, renommage et révocation après validation des contrats.
 - [ ] Valider le schéma D1 et les politiques d'accès avant toute migration.
 - [ ] Tester plusieurs appareils PWA, Android et iOS, y compris appareil hors ligne, perdu, restauré et réinstallé.
@@ -113,4 +114,5 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Vérifier la nouvelle CI incluant les tests de certificats racine avant de considérer ce prototype validé.
 - [ ] Intégrer obligatoirement la vérification du certificat et de son statut de révocation avant toute dérivation de clé ou autorisation d'échange.
 - [x] Durcir le contrat métier pur : seule l'identité d'appareil racine peut être l'acteur d'une approbation secondaire ; tests de refus ajoutés. Le contrôleur serveur doit encore charger le root actif depuis D1.
-- [ ] Définir le modèle de révocation transactionnelle côté serveur : invalidation immédiate des sessions, push, nouveaux jumelages et autorisations ; aucun appareil hors ligne ne peut être effacé à distance.
+- [x] Spécifier le contrat de session par appareil et la règle d'invalidation par auth_version dans docs/PROTOCOLE_MULTI_APPAREILS.md.
+- [ ] Implémenter et tester la transaction D1 de révocation et les contrôles d'accès conditionnels sur chaque lecture/écriture sensible.
