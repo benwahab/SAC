@@ -106,3 +106,40 @@ Tant que tous les critères ci-dessus ne sont pas démontrés :
 - aucune déclaration selon laquelle la destruction J+30 est déjà implémentée.
 
 **Décision en attente :** choix d'un fournisseur KMS et validation du calendrier de destruction permettant de respecter exactement la règle J+30. Cette étude ne sélectionne pas un fournisseur à la place de l'utilisateur.
+
+
+## 7. Résultats complémentaires — critères stricts J+30
+
+Les vérifications documentaires complémentaires conduisent à ne retenir aucun des candidats évalués pour une garantie stricte « irréversible au plus tard à J+30 » dans leur configuration standard.
+
+### Google Cloud KMS : non retenu pour le délai strict actuel
+
+La durée minimale de l'état réversible `DESTROY_SCHEDULED` est de 24 heures. Pendant cet état, la clé ne peut plus effectuer d'opérations cryptographiques, mais un administrateur autorisé peut encore restaurer la version. Une fois l'état `DESTROYED` atteint, la clé ne peut plus être restaurée par le client ; toutefois Google indique que le matériel peut rester dans ses systèmes jusqu'à 45 jours après la programmation de destruction. Ce fournisseur n'est donc pas accepté comme preuve suffisante de l'effacement physique de toutes copies au jour J+30. Il pourrait être réévalué uniquement si l'exigence est définie comme non-récupérabilité par les interfaces client après état DESTROYED, et si cette interprétation est explicitement acceptée. Cette exception n'est pas validée.
+
+Sources officielles : [destruction/restauration Cloud KMS](https://docs.cloud.google.com/kms/docs/destroy-restore), [états des versions](https://docs.cloud.google.com/kms/docs/key-states).
+
+### AWS KMS : non retenu pour le délai strict actuel
+
+La suppression impose une attente de 7 à 30 jours, annulable avant son terme, et la date réelle peut être jusqu'à 24 heures plus tard que la durée configurée. Une programmation à l'échéance ne garantit donc pas la suppression irréversible à l'instant J+30 ; programmer avant l'échéance rendrait la clé inutilisable avant la fin de la période d'accès attendue.
+
+Source officielle : [suppression des clés AWS KMS](https://docs.aws.amazon.com/kms/latest/developerguide/deleting-keys.html).
+
+### AWS CloudHSM : non retenu comme solution simple
+
+AWS CloudHSM effectue des sauvegardes périodiques au moins toutes les 24 heures, contenant le matériel des clés. La documentation AWS précise qu'il faut supprimer les clés du HSM puis supprimer toutes les sauvegardes existantes pour éviter de restaurer les clés supprimées. Or une sauvegarde marquée pour suppression reste restaurable pendant sept jours ; la politique de rétention ne supprime pas la dernière sauvegarde du cluster. Cette piste ne fournit donc pas, sans mécanisme supplémentaire démontré, une destruction irréversible à J+30.
+
+Sources officielles : [sauvegardes CloudHSM](https://docs.aws.amazon.com/cloudhsm/latest/userguide/manage-backups.html), [suppression des sauvegardes](https://docs.aws.amazon.com/cloudhsm/latest/userguide/delete-restore-backup.html), [rétention des sauvegardes](https://docs.aws.amazon.com/cloudhsm/latest/userguide/manage-backup-retention.html).
+
+### Cloudflare Secrets et versions : pas un coffre de clés GPS démontré
+
+Les secrets Cloudflare sont des valeurs de configuration de Workers et leur suppression crée une nouvelle version ; les Workers permettent par ailleurs de revenir à d'anciennes versions. La documentation consultée ne démontre pas que cette combinaison constitue un mécanisme de destruction cryptographique individuel, horodaté et non restaurable. Les secrets de déploiement ne seront donc pas utilisés comme coffre de clés GPS.
+
+Sources officielles : [Workers Secrets](https://developers.cloudflare.com/workers/configuration/secrets/), [Versions et déploiements](https://developers.cloudflare.com/workers/versions-and-deployments/), [Rollbacks](https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/).
+
+## 8. Décision technique actuelle
+
+**Aucun fournisseur n'est validé.** Il serait trompeur de présenter Google KMS, AWS KMS, CloudHSM, Cloudflare KV, Durable Objects ou les secrets Workers comme garantissant actuellement la destruction irréversible demandée au jour J+30.
+
+Le prochain travail est une étude ciblée de gestion de clés avec effacement immédiat/non restaurable ou d'un service externe de gestion de clés dont le contrat, les sauvegardes, les administrateurs et les procédures de reprise démontrent cette propriété. Il faudra également décider si « aucune restauration » signifie : (a) aucune lecture possible par l'application après J+30, même si des copies chiffrées existent ; ou (b) aucune possibilité de rétablir le matériel de clé par quelque sauvegarde, compte administrateur ou mécanisme fournisseur que ce soit. SAC vise le niveau (b) tant que l'utilisateur n'a pas explicitement accepté une définition plus limitée.
+
+En attendant, l'accès GPS doit être bloqué à l'expiration côté serveur, même si la destruction physique/cryptographique complète reste à démontrer. Ce verrou d'accès n'est pas présenté comme équivalent à l'effacement irréversible.
