@@ -96,3 +96,15 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Faire valider le format du transcript signé, la comparaison indépendante et la durée de vie du défi anti-rejeu.
 - [ ] Spécifier la transition de racine, la récupération après perte de tous les appareils et la revérification des contacts.
 - [ ] Faire une revue cryptographique indépendante du protocole avant toute implémentation.
+
+
+## Revue cryptographique — état
+
+- [x] Réaliser une revue interne préliminaire des primitives ECDH/ECDSA/AES-GCM et consigner les constats dans docs/REVUE_CRYPTO_PRELIMINAIRE.md.
+- [x] Durcir le prototype : contexte HKDF non ambigu, validation défensive des bundles, contrôle de cohérence des clés de signature et rejet des JWK privés.
+- [ ] Faire réaliser une revue cryptographique indépendante par un spécialiste externe avant tout raccordement aux données GPS réelles.
+- [ ] Définir et tester les clés directionnelles et le contexte HKDF complet (compte, cérémonie, appareils, usage, direction, version).
+- [ ] Définir l'amorçage sécurisé de la première identité racine et les certificats d'appareil complets.
+- [ ] Finaliser et tester le transcript canonique et la comparaison indépendante à six mots sur PWA, Android et iOS.
+- [ ] Démontrer les garanties de stockage et de révocation des clés sur les appareils cibles.
+- [ ] Prouver séparément la destruction irréversible des clés GPS à J+30, y compris contre toute restauration.
