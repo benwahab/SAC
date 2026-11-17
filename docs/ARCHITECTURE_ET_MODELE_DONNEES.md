@@ -86,7 +86,7 @@ Le modèle relationnel devra au minimum couvrir les entités suivantes. Les noms
 ### 3.2 Contacts et groupes
 
 - `trusted_contacts` : relation entre utilisateur propriétaire et contact invité, catégorie, statut et dates.
-- `contact_invitations` : jeton d'invitation à usage limité, expiration, état et destinataire.
+- `contact_invitations` : jeton d'invitation à usage limité, expiration, état, canal et destinataire. Une invitation en attente ne donne aucun accès aux alertes, au compte ou à la localisation ; le contact devient actif seulement après acceptation et vérification du téléphone ou de l'e-mail.
 - `contact_alert_preferences` : autorisation par catégorie et éventuellement niveau.
 - `groups` : groupes privés créés par un utilisateur.
 - `group_members` : membres, rôles et états d'adhésion.
@@ -104,7 +104,7 @@ Une relation de contact n'accorde aucun accès général au compte, à l'histori
 
 - `alerts` : auteur, catégorie, niveau, description, état, date de déclenchement et clôture.
 - `alert_recipients` : instantané des destinataires autorisés au moment du déclenchement.
-- `alert_events` : chronologie immuable des événements métier importants.
+- `alert_events` : chronologie immuable des événements métier importants, y compris annulation avant ou après transmission, avec horodatage et auteur de l'action.
 - `alert_responses` : accusés de réception, volontariat, retrait et réponses.
 - `alert_takeovers` : historique des répondants principaux et changements de responsabilité.
 - `alert_locations` : positions horodatées liées à l'alerte, précision et source.
@@ -118,7 +118,7 @@ Une alerte ne doit pas dépendre de la présence d'une position. Les coordonnée
 - `trip_locations` : positions partagées, horodatage et précision.
 - `arrival_checks` : confirmations d'arrivée, rappels et absence de confirmation.
 
-Les droits d'accès aux positions d'un trajet sont limités aux participants explicitement autorisés et à la durée choisie.
+Les droits d'accès aux positions d'un trajet sont limités aux participants explicitement autorisés et à la durée choisie. Les durées fonctionnelles prévues sont : position ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à la clôture de l'alerte/du trajet selon le parcours. Chaque position conserve son horodatage et son niveau de précision ; une position ancienne n'est jamais présentée comme une position en direct. La durée de conservation technique après la fin du partage reste à valider avant migration.
 
 ### 3.6 Programmation et notifications
 
@@ -138,7 +138,7 @@ Ne jamais journaliser les codes, OTP, secrets, jetons d'accès ou coordonnées d
 ## 4. Relations et contraintes essentielles
 
 - Un utilisateur possède plusieurs contacts de confiance, dans la limite de son offre.
-- Un contact ne devient actif qu'après acceptation.
+- Un contact ne devient actif qu'après acceptation et vérification du téléphone ou de l'e-mail ; une invitation en attente n'accorde aucun accès.
 - Un utilisateur définit les catégories pour lesquelles chaque contact est destinataire.
 - Une alerte appartient à un seul auteur.
 - Une alerte possède un instantané de destinataires créé dans la même transaction que l'alerte.
@@ -148,7 +148,7 @@ Ne jamais journaliser les codes, OTP, secrets, jetons d'accès ou coordonnées d
 - Les tâches de rappel et d'alerte différée possèdent une clé d'idempotence unique.
 - Une notification est reliée à un destinataire et à un canal précis.
 - Un abonnement ne dépasse pas les limites de contacts de sa formule.
-- Les positions doivent toujours avoir un horodatage et un propriétaire/droit d'accès vérifiable.
+- Les positions doivent toujours avoir un horodatage et un propriétaire/droit d'accès vérifiable. Les fenêtres de partage autorisées sont ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à clôture selon le parcours ; la politique de purge après partage reste un point bloquant avant migration.
 
 ## 5. États métier proposés
 
