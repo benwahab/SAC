@@ -7,7 +7,7 @@
  *
  * Ce module ne gère ni stockage, ni révocation serveur, ni sessions.
  */
-import { fingerprintLocationIdentityKey } from "./location/key-exchange.ts";
+import { fingerprintLocationIdentityKey } from "../location/key-exchange.ts";
 
 const encoder = new TextEncoder();
 const PLATFORMS = ["web", "android", "ios"] as const;
@@ -54,8 +54,8 @@ function validPublicJwk(value: unknown, curve: "P-256"): value is JsonWebKey {
 
 function canonicalPayload(
   certificate: Omit<SecondaryDeviceCertificate, "signature">,
-): Uint8Array {
-  return encoder.encode(JSON.stringify([
+): ArrayBuffer {
+  const encoded = encoder.encode(JSON.stringify([
     "SAC:secondary-device-certificate:v1",
     certificate.version,
     certificate.accountId,
@@ -73,6 +73,9 @@ function canonicalPayload(
     certificate.exchangePublicKey.y,
     ["location:send", "location:receive"],
   ]));
+  const buffer = new ArrayBuffer(encoded.byteLength);
+  new Uint8Array(buffer).set(encoded);
+  return buffer;
 }
 
 function validateRootKeys(privateKey: CryptoKey, publicKey: CryptoKey): void {
@@ -192,7 +195,7 @@ export async function verifySecondaryDeviceCertificate(
     return await cryptoProvider.subtle.verify(
       { name: "ECDSA", hash: "SHA-256" },
       trustedRootPublicKey,
-      signature,
+      signature.buffer.slice(signature.byteOffset, signature.byteOffset + signature.byteLength) as ArrayBuffer,
       canonicalPayload(unsigned),
     );
   } catch {
