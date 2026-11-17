@@ -67,6 +67,12 @@ Ce document évite de confondre une décision de l'utilisateur avec une proposit
 
 Ces éléments sont des recommandations d'architecture, pas des engagements de fournisseur.
 
+## 3.1 Étude de sécurité GPS — état au 17 novembre 2026
+
+L'étude comparative est versionnée dans [SECURITE_GPS_DESTRUCTION_CRYPTO.md](SECURITE_GPS_DESTRUCTION_CRYPTO.md). Elle écarte Durable Objects comme coffre de clés indépendant en raison de sa propre restauration temporelle. Google Cloud KMS et AWS KMS restent des candidats non sélectionnés ; leurs délais de destruction réversible doivent être démontrés compatibles avec l'échéance J+30.
+
+Aucun fournisseur, compte externe, coût, intégration ou calendrier de destruction n'est validé à ce stade. La prochaine validation technique porte sur la preuve qu'une clé GPS arrivée à échéance ne peut être réactivée par une sauvegarde ou une restauration administrative. Le stockage des coordonnées reste bloqué tant que cette preuve n'existe pas.
+
 ## 4. Points à valider avant développement ou lancement
 
 1. **Rappels :** confirmer les détails d'interface sans modifier la règle actée de répétition toutes les 5 minutes jusqu'à clôture.
