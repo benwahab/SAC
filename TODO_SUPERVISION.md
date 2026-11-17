@@ -58,7 +58,10 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 
 - [x] Examiner les documents officiels AWS XKS, Entrust nShield et Thales CipherTrust/CCKM ; consigner les limites de restauration et de destruction individualisée.
 - [ ] Rechercher un gestionnaire externe offrant une destruction individualisée non restaurable, avec preuve sur sauvegardes/répliques et disponibilité compatible avec une application d'urgence.
-- [ ] Évaluer le relais WebSocket Durable Objects lié à Pages Functions ; vérifier qu'aucune coordonnée ou charge utile GPS n'est écrite dans attachments, SQLite, logs ou traces.\n- [ ] Tester le relais en direct avec plusieurs contacts, contacts hors ligne, réseau faible et application en arrière-plan ; distinguer explicitement alerte livrée et position disponible.
+- [ ] Évaluer le relais WebSocket Durable Objects lié à Pages Functions ; vérifier qu'aucune coordonnée ou charge utile GPS n'est écrite dans attachments, SQLite, logs ou traces.
+- [ ] Tester le relais en direct avec plusieurs contacts, contacts hors ligne, réseau faible et application en arrière-plan ; distinguer explicitement alerte livrée et position disponible.
 - [ ] Prototyper les clés locales Android Keystore (TEE/StrongBox) et iOS Keychain WhenPasscodeSetThisDeviceOnly ; tester sauvegardes, restaurations, révocation et suppression à l'échéance.
+- [ ] Étendre le prototype AES-GCM à l'échange de clés de session par destinataire, sans rendre les clés exportables ni les stocker côté serveur ; ajouter des tests négatifs et d'interopérabilité.
 - [ ] Démontrer le comportement après J+30 si le téléphone est éteint ou si le système ne réveille pas l'application ; la suppression à l'heure exacte n'est pas encore garantie.
+- [ ] Vérifier sur Android/iOS les fenêtres réelles d'exécution en arrière-plan ; WorkManager et BGTaskScheduler ne garantissent pas une exécution à l'heure exacte.
 - [x] Confirmer que la protection J+30 porte sur les données sous contrôle de SAC ; les copies conservées par les contacts de confiance ne sont pas dans le périmètre d'effacement.
