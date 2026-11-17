@@ -235,7 +235,7 @@ Matrice de principe :
 | Paiement | lecture de son historique | aucun accès | aucun accès | support financier restreint |
 | Journaux de sécurité | informations utiles à son compte | aucun accès | aucun accès | accès strictement contrôlé |
 
-Si Supabase est retenu, les politiques RLS devront être conçues et testées pour chaque table exposée. Aucune table contenant des données personnelles ne doit être accessible par défaut à tous les utilisateurs authentifiés.
+Les contrôles d'accès doivent être appliqués par les Pages Functions avant chaque lecture ou écriture D1. Aucune donnée personnelle ne doit être accessible sans vérification explicite de l'utilisateur, de la relation de contact et du contexte de l'alerte.
 
 ## 8. API — familles fonctionnelles
 
@@ -272,7 +272,6 @@ Les index définitifs doivent être justifiés par les requêtes réelles et mes
 ## 10. Choix encore ouverts
 
 - Fournisseur/mécanisme d'authentification et modalités exactes de configuration D1/R2.
-- Confirmation ou non de Supabase.
 - Mécanisme de file de tâches et planification.
 - Fournisseur OTP, SMS, push et paiement.
 - Fournisseur cartographique.
