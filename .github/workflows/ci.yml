@@ -18,4 +18,6 @@ jobs:
         run: |
           npm audit --json > npm-audit.json || true
           node -e "const a=require('./npm-audit.json'); for (const [n,v] of Object.entries(a.vulnerabilities || {})) console.log(n + ' | ' + v.severity + ' | ' + v.range + ' | fix=' + JSON.stringify(v.fixAvailable))"
+      - name: Audit des dépendances de production
+        run: npm audit --omit=dev --audit-level=high
       - run: npm run build
