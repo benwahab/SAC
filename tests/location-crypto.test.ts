@@ -119,7 +119,7 @@ test("un paquet avec un IV de longueur incorrecte est refusé avant déchiffreme
 
 import {
   createLocationExchangeKeyPair,
-  deriveLocationRecipientKey,
+  deriveLocationDirectionalKey,
 } from "../src/services/location/key-exchange.ts";
 
 test("ECDH établit la même clé AES-GCM non exportable sur les deux appareils", async () => {
@@ -127,11 +127,11 @@ test("ECDH établit la même clé AES-GCM non exportable sur les deux appareils"
   const bob = await createLocationExchangeKeyPair();
   const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
 
-  const aliceKey = await deriveLocationRecipientKey(
-    alice.privateKey, bob.publicKey, salt, "session-1", "bob",
+  const aliceKey = await deriveLocationDirectionalKey(
+    alice.privateKey, bob.publicKey, salt, "session-1", "alice", "bob", "alice",
   );
-  const bobKey = await deriveLocationRecipientKey(
-    bob.privateKey, alice.publicKey, salt, "session-1", "bob",
+  const bobKey = await deriveLocationDirectionalKey(
+    bob.privateKey, alice.publicKey, salt, "session-1", "alice", "bob", "bob",
   );
 
   assert.equal(alice.privateKey.extractable, false);
@@ -143,16 +143,58 @@ test("ECDH établit la même clé AES-GCM non exportable sur les deux appareils"
   assert.equal(await decryptLocationPayload(packet, bobKey, "session-1"), "position-test");
 });
 
+test("les clés de transport sont distinctes et limitées à leur direction", async () => {
+  const alice = await createLocationExchangeKeyPair();
+  const bob = await createLocationExchangeKeyPair();
+  const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
+
+  const aliceToBob = await deriveLocationDirectionalKey(
+    alice.privateKey, bob.publicKey, salt, "session-direction", "alice", "bob", "alice",
+  );
+  const bobReceives = await deriveLocationDirectionalKey(
+    bob.privateKey, alice.publicKey, salt, "session-direction", "alice", "bob", "bob",
+  );
+  const bobToAlice = await deriveLocationDirectionalKey(
+    bob.privateKey, alice.publicKey, salt, "session-direction", "bob", "alice", "bob",
+  );
+  const aliceReceives = await deriveLocationDirectionalKey(
+    alice.privateKey, bob.publicKey, salt, "session-direction", "bob", "alice", "alice",
+  );
+
+  assert.deepEqual(aliceToBob.usages, ["encrypt"]);
+  assert.deepEqual(bobReceives.usages, ["decrypt"]);
+  assert.deepEqual(bobToAlice.usages, ["encrypt"]);
+  assert.deepEqual(aliceReceives.usages, ["decrypt"]);
+
+  const outbound = await encryptLocationPayload("alice-to-bob", aliceToBob, "session-direction");
+  assert.equal(await decryptLocationPayload(outbound, bobReceives, "session-direction"), "alice-to-bob");
+  await assert.rejects(decryptLocationPayload(outbound, aliceReceives, "session-direction"));
+  await assert.rejects(encryptLocationPayload("forbidden", bobReceives, "session-direction"));
+  await assert.rejects(decryptLocationPayload(outbound, bobToAlice, "session-direction"));
+});
+
+test("une identité locale qui ne correspond ni à l'émetteur ni au destinataire est refusée", async () => {
+  const alice = await createLocationExchangeKeyPair();
+  const bob = await createLocationExchangeKeyPair();
+  const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
+  await assert.rejects(
+    deriveLocationDirectionalKey(
+      alice.privateKey, bob.publicKey, salt, "session-1", "alice", "bob", "eve",
+    ),
+    /incohérents/,
+  );
+});
+
 test("la clé dérivée est liée à l'identifiant du destinataire", async () => {
   const alice = await createLocationExchangeKeyPair();
   const bob = await createLocationExchangeKeyPair();
   const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
 
-  const bobKey = await deriveLocationRecipientKey(
-    alice.privateKey, bob.publicKey, salt, "session-1", "bob",
+  const bobKey = await deriveLocationDirectionalKey(
+    alice.privateKey, bob.publicKey, salt, "session-1", "alice", "bob", "alice",
   );
-  const otherRecipientKey = await deriveLocationRecipientKey(
-    alice.privateKey, bob.publicKey, salt, "session-1", "other-contact",
+  const otherRecipientKey = await deriveLocationDirectionalKey(
+    alice.privateKey, bob.publicKey, salt, "session-1", "alice", "other-contact", "alice",
   );
   const packet = await encryptLocationPayload("position-test", bobKey, "session-1");
 
@@ -164,8 +206,8 @@ test("ECDH refuse un sel de dérivation de longueur incorrecte", async () => {
   const bob = await createLocationExchangeKeyPair();
 
   await assert.rejects(
-    deriveLocationRecipientKey(
-      alice.privateKey, bob.publicKey, new Uint8Array(8), "session-1", "bob",
+    deriveLocationDirectionalKey(
+      alice.privateKey, bob.publicKey, new Uint8Array(8), "session-1", "alice", "bob", "alice",
     ),
     /32 octets/,
   );
@@ -258,11 +300,11 @@ test("les contextes HKDF ne présentent pas de collision avec des identifiants c
   const bob = await createLocationExchangeKeyPair();
   const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
 
-  const firstContextKey = await deriveLocationRecipientKey(
-    alice.privateKey, bob.publicKey, salt, "a:b", "c",
+  const firstContextKey = await deriveLocationDirectionalKey(
+    alice.privateKey, bob.publicKey, salt, "a:b", "alice", "bob", "alice",
   );
-  const secondContextKey = await deriveLocationRecipientKey(
-    alice.privateKey, bob.publicKey, salt, "a", "b:c",
+  const secondContextKey = await deriveLocationDirectionalKey(
+    alice.privateKey, bob.publicKey, salt, "a", "bob", "c", "alice",
   );
   const packet = await encryptLocationPayload("context-bound", firstContextKey, "a:b");
 
@@ -329,8 +371,8 @@ test("les identifiants de contexte avec caractères de contrôle sont refusés",
   const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
 
   await assert.rejects(
-    deriveLocationRecipientKey(
-      alice.privateKey, bob.publicKey, salt, "session\nforged", "bob",
+    deriveLocationDirectionalKey(
+      alice.privateKey, bob.publicKey, salt, "session\nforged", "alice", "bob", "alice",
     ),
     /contexte/,
   );
