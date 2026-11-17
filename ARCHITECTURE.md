@@ -25,7 +25,7 @@ Statut : received, in_progress, resolved. Publication : pending, approved, rejec
 Tables : users, reports, report_updates, rate_limits. Code de suivi hashé. Référence média stockée comme clé R2 privée. Seed synthétique réservé à la démo locale.
 
 ## Sécurité et limites
-Requêtes D1 préparées, validation stricte, limite média 8 Mo, MIME allowlist, rate limit basique, secret admin Cloudflare, historique. L'authentification admin par secret partagé est transitoire ; avant production, la remplacer par comptes nominatifs, sessions, rôles et révocation. Ajouter Turnstile/WAF, audit, rétention et purge. Pas de route d'accès média autorisée encore.
+Requêtes D1 préparées et batch atomique, validation stricte, limite média 8 Mo, allowlist MIME + signatures binaires, rate limit basique, secret admin Cloudflare, historique. L'authentification admin par secret partagé est transitoire ; avant production, la remplacer par comptes nominatifs, sessions, rôles et révocation. Ajouter Turnstile/WAF, audit, rétention et purge. Pas de route d'accès média autorisée encore.
 
 ## Capacitor
 Les écrans utilisent les adaptateurs abstraits. Les implémentations web pourront être remplacées par les plugins natifs. Les permissions GPS en arrière-plan dépendent des limites Android/iOS.
