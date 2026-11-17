@@ -37,7 +37,7 @@ Ce document évite de confondre une décision de l'utilisateur avec une proposit
 | Groupes familiaux | Disponibles avec limites selon l'offre gratuite/Premium ; plafonds précis à valider |
 | Base de données | Cloudflare D1 comme base relationnelle cible |
 | Stockage fichiers | Cloudflare R2 si le service est activé et autorisé ; sinon préparer les interfaces/configurations sans prétendre qu'il est opérationnel |
-| Phase actuelle | Documentation et cadrage, pas de développement applicatif |
+| Phase actuelle | Socle technique initial créé ; fonctionnalités métier à implémenter progressivement après validation de leur conception |
 | Dépôt | `benwahab/SAC` |
 | Branche | Une seule branche : `main` |
 | Méthode | Tout le travail directement sur GitHub |
