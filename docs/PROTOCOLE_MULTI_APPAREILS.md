@@ -160,9 +160,11 @@ La révocation serveur doit avoir une sémantique transactionnelle et idempotent
 
 Le module `src/domain/device-management.ts` est un contrat métier pur pour les états pending_verification, active et revoked. Il vérifie des transitions et des invariants d'horodatage ; il n'authentifie pas l'acteur, ne valide aucune signature, ne consulte aucune base, n'invalide aucune session et ne protège aucun endpoint. Tous ces contrôles restent obligatoires côté serveur. Les tests du module ne prouvent donc pas la sécurité du protocole cryptographique complet.
 
-### 12.6 Décision encore requise
+### 12.6 Décision produit validée — appareil racine unique
 
-Avant toute API ou persistance, l'utilisateur doit valider le principe de l'appareil racine unique approbateur et accepter qu'en cas de perte de cet appareil, la nouvelle identité exige une revérification indépendante des contacts. La revue cryptographique indépendante reste obligatoire.
+**Validé explicitement par l'utilisateur le 17 novembre 2026.** Dans la première version, le premier appareil approuvé constitue l'unique appareil racine autorisé à approuver les nouveaux appareils. Les appareils secondaires ne peuvent pas approuver d'autres appareils. Si tous les appareils approuvés sont perdus, la récupération d'accès au compte ne restaure pas l'ancienne identité cryptographique : une nouvelle identité est créée et les contacts doivent vérifier indépendamment sa nouvelle empreinte avant tout partage GPS.
+
+La conséquence acceptée est un point unique d'approbation et une dépendance à l'appareil racine. Cette décision produit n'est pas une validation cryptographique indépendante. Restent obligatoires avant connexion au GPS réel : spécification du transcript canonique signé, UX de comparaison indépendante, expiration et anti-rejeu de la cérémonie, récupération/rotation, tests adversariaux et revue cryptographique indépendante. Les API et migrations ne sont pas encore implémentées.
 
 ### 12.7 Résultat des tests du contrat de cycle de vie
 
