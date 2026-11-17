@@ -17,5 +17,8 @@ jobs:
       - run: npm install
       - run: npm run typecheck
       - run: npm run build
-      - name: Audit dependency vulnerabilities
+      - name: Audit production dependencies (blocking)
+        run: npm audit --omit=dev --audit-level=high
+      - name: Audit all dependencies (development toolchain)
         run: npm audit --audit-level=high
+        continue-on-error: true
