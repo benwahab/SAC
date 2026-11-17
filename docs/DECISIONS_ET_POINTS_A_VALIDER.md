@@ -128,3 +128,14 @@ L'évaluation documentaire a également examiné Fortanix DSM, HashiCorp Vault T
 AWS XKS est une piste conditionnelle : AWS exécute les opérations avec une clé détenue par un gestionnaire externe et indique que la perte/suppression de cette clé rend le ciphertext irrécupérable. Cependant, AWS ne gère pas les clés externes ; toute la garantie dépend du gestionnaire choisi, de ses sauvegardes et de ses administrateurs. Aucun gestionnaire précis n'est validé.
 
 Références détaillées et liens officiels : [SECURITE_GPS_DESTRUCTION_CRYPTO.md](SECURITE_GPS_DESTRUCTION_CRYPTO.md), section 9. Aucun fournisseur, compte ou intégration n'est autorisé par cette étude.
+
+
+## 3.4 Audit ciblé des gestionnaires AWS XKS — aucun fournisseur approuvé
+
+L'étude a examiné les caractéristiques documentées d'AWS XKS ainsi que les options Entrust nShield et Thales CipherTrust/CCKM.
+
+- AWS XKS sépare le matériel de clé du stockage AWS, mais AWS laisse la disponibilité, la durabilité et la gestion des copies au gestionnaire externe ; les exigences de redondance impliquent des instances liées partageant les clés.
+- Entrust nShield documente que la suppression logique d'une clé peut être annulée par restauration d'une sauvegarde. La destruction permanente implique la destruction de l'OCS protégeant la clé ou du Security World entier ; les cartes opérateur et sauvegardes doivent être neutralisées. La granularité individuelle et l'exploitation de ce modèle pour SAC ne sont pas prouvées.
+- Thales CipherTrust documente des sauvegardes système restaurables qui contiennent les clés. La liaison à un HSM Root of Trust protège la restauration globale mais ne prouve pas l'effacement individuel à J+30.
+
+Aucun produit n'est approuvé. Voir la section 10 de [SECURITE_GPS_DESTRUCTION_CRYPTO.md](SECURITE_GPS_DESTRUCTION_CRYPTO.md). Aucune ressource ni intégration externe n'a été créée.
