@@ -119,3 +119,12 @@ Mettre à jour ce tableau à chaque nouvelle validation importante.
 ## 3.2 Décision de sécurité complémentaire — aucun KMS approuvé
 
 L'étude complémentaire (voir [SECURITE_GPS_DESTRUCTION_CRYPTO.md](SECURITE_GPS_DESTRUCTION_CRYPTO.md)) ne valide aucun des candidats évalués pour garantir l'irréversibilité stricte au jour J+30. Les périodes réversibles Google/AWS KMS et les sauvegardes restaurables AWS CloudHSM sont incompatibles avec une affirmation non démontrée de destruction immédiate à l'échéance. Les secrets Workers ne sont pas un coffre de clés GPS prouvé. La sélection du fournisseur reste bloquée ; l'application devra néanmoins refuser côté serveur tout accès GPS à l'échéance, sans confondre ce verrou avec l'effacement irréversible.
+
+
+## 3.3 Résultats de recherche supplémentaires — aucun fournisseur approuvé
+
+L'évaluation documentaire a également examiné Fortanix DSM, HashiCorp Vault Transit et AWS External Key Store. Fortanix documente une restauration de cluster depuis sauvegarde ; Vault documente la sauvegarde/restauration de clés Transit ainsi que la restauration de snapshots Raft. Ces deux pistes ne prouvent donc pas l'impossibilité de réintroduire un état antérieur contenant une clé.
+
+AWS XKS est une piste conditionnelle : AWS exécute les opérations avec une clé détenue par un gestionnaire externe et indique que la perte/suppression de cette clé rend le ciphertext irrécupérable. Cependant, AWS ne gère pas les clés externes ; toute la garantie dépend du gestionnaire choisi, de ses sauvegardes et de ses administrateurs. Aucun gestionnaire précis n'est validé.
+
+Références détaillées et liens officiels : [SECURITE_GPS_DESTRUCTION_CRYPTO.md](SECURITE_GPS_DESTRUCTION_CRYPTO.md), section 9. Aucun fournisseur, compte ou intégration n'est autorisé par cette étude.
