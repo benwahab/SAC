@@ -124,7 +124,7 @@ Les droits d'accès aux positions d'un trajet sont limités aux participants exp
 - `scheduled_alerts` : alerte différée, échéance, état, annulation et clé d'idempotence.
 - `notification_jobs` : tâches à envoyer, canal, prochaine tentative, nombre de tentatives et état.
 - `notification_deliveries` : résultats par destinataire et canal : accepté, livré si confirmé, échec, lu si disponible.
-- Les rappels toutes les cinq minutes doivent être calculés côté serveur jusqu'à l'expiration choisie ou la clôture de l'alerte.
+- Les rappels toutes les cinq minutes sont calculés côté serveur vers l'instantané initial des destinataires et continuent jusqu'à la clôture de l'alerte par son auteur.
 
 ### 3.7 Sécurité et audit
 
@@ -210,12 +210,12 @@ Seul l'auteur authentifié peut clôturer. La transition, l'événement de clôt
 
 ### 6.4 Rappels
 
-Le serveur planifie les rappels toutes les cinq minutes vers les destinataires qui n'ont pas accusé réception. Il vérifie à chaque exécution :
+Le serveur planifie les rappels toutes les cinq minutes vers **tous les contacts de l'instantané initial**, jusqu'à la clôture de l'alerte par son auteur. Un accusé de réception ou une prise en charge est enregistré, mais ne retire pas le contact de la liste des rappels et ne clôture pas l'alerte. Le serveur vérifie à chaque exécution :
 - l'alerte est encore active ;
-- la période choisie n'est pas expirée ;
-- le destinataire appartient à l'instantané ;
-- le destinataire n'a pas déjà accusé réception ;
+- le destinataire appartient à l'instantané initial ;
 - la tâche n'a pas déjà été traitée.
+
+La clôture par l'auteur arrête immédiatement les rappels futurs. Aucun délai d'expiration autonome ne doit les arrêter avant cette clôture.
 
 ### 6.5 Alertes programmées
 
