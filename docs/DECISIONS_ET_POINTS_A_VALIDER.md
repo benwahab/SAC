@@ -215,3 +215,10 @@ Ce modèle est une proposition de protocole, pas une implémentation approuvée.
 - Un nouvel appareil ne voit les anciennes archives GPS que si un mécanisme explicite, compatible avec la règle stricte J+30, est ultérieurement conçu et validé. Par défaut, les anciennes clés et archives restent liées à leur appareil d'origine.
 
 **État :** décision produit multi-appareils validée par l'utilisateur le 17 novembre 2026 ; protocole cryptographique, UX, API, stockage et tests restent à concevoir. Aucun écran, endpoint ou migration n'est déclaré implémenté par cette décision.
+
+
+## 3.9 Protocole multi-appareils — proposition technique à valider
+
+La proposition détaillée est consignée dans [PROTOCOLE_MULTI_APPAREILS.md](PROTOCOLE_MULTI_APPAREILS.md). Elle étudie une clé d'identité racine conservée sur le premier appareil, qui signe les certificats des appareils secondaires ; les clés privées propres aux appareils restent locales. Dans cette première piste, seul l'appareil racine approuve les ajouts. La perte de la racine sans appareil approuvé impose une nouvelle identité et une revérification indépendante par les contacts.
+
+**Ce modèle n'est pas encore validé par l'utilisateur ni implémenté.** Son avantage est d'éviter la copie de clés privées ; sa limite principale est le point unique d'approbation et la dépendance à l'appareil racine. Aucun endpoint, migration ou GPS réel ne doit être connecté avant validation du modèle, du transcript signé, de l'UX de jumelage et des tests adversariaux.
