@@ -70,7 +70,7 @@ Les tests sont exécutés par `npm run test:crypto` dans la CI existante. Le ré
 
 - Revue cryptographique indépendante et traitement documenté de chaque constat.
 - Spécification et tests interopérables du transcript canonique et de la cérémonie racine.
-- Clés directionnelles, contexte HKDF complet (compte, cérémonie, appareils, usage, sens) et versionné.
+- Clés directionnelles, contexte HKDF versionné (compte, cérémonie, session, appareils, usage et algorithme) et certificats secondaires signés par une ancre racine déjà vérifiée.
 - Authentification, autorisation, certificats, révocation et récupération implémentés côté serveur.
 - Tests sur PWA, Android et iOS, y compris stockage matériel lorsqu'il est disponible, restauration, réinstallation et perte d'appareil.
 - Démonstration séparée de la destruction irréversible J+30 ; aucune clé GPS ne doit dépendre de ces prototypes tant que cette preuve n'existe pas.
@@ -93,7 +93,7 @@ Le prototype ECDH expose maintenant `deriveLocationDirectionalKey`. Les deux app
 
 Les tests adversariaux couvrent l'échange normal, le refus des usages interdits, l'échec de déchiffrement avec la clé du sens inverse et le rejet d'un identifiant local étranger.
 
-**Limite importante :** cette fonction est un prototype de dérivation, pas un protocole de transport complet. Elle ne lie pas encore le compte et l'identifiant de cérémonie, ne vérifie pas elle-même le certificat des appareils et ne garantit pas l'authenticité des identifiants fournis. Ces éléments doivent être imposés par la couche de protocole signée avant toute utilisation. Aucun raccordement GPS n'est autorisé.
+**Limite importante :** cette fonction est un prototype de dérivation, pas un protocole de transport complet. Le compte et la cérémonie sont liés au contexte HKDF v4. Un prototype distinct de certificat secondaire signé par la racine existe désormais, mais aucune orchestration ne vérifie encore le certificat avant dérivation ni le statut de révocation à chaque requête. Aucun raccordement GPS n'est autorisé.
 
 
 ## 9. Correction de la suite directionnelle après échec CI
@@ -108,3 +108,10 @@ Le test a été corrigé pour comparer deux tuples valides d'identifiants conten
 La fonction expérimentale `deriveLocationDirectionalKey` utilise désormais le domaine versionné `SAC:location-directional-key:v4` et inclut compte, cérémonie, session, émetteur, destinataire, usage et algorithme dans l'information HKDF. Les tests vérifient qu'un paquet d'une cérémonie ou d'un compte ne peut pas être déchiffré avec une clé dérivée dans un autre contexte.
 
 Cette évolution ne prouve pas à elle seule l'authenticité des identifiants : ceux-ci doivent être issus de certificats d'appareils vérifiés sous la racine de confiance et liés à un transcript signé. L'intégration serveur et la revue cryptographique indépendante restent non réalisées.
+
+
+## 11. Certificat secondaire signé par une ancre racine
+
+Un prototype distinct a été ajouté dans `src/services/device/device-certificate.ts`. La racine signe un transcript ordonné qui lie compte, appareil, plateforme, date, clés publiques ECDSA/ECDH, empreinte racine et domaine d'usage. Le vérificateur reçoit la clé racine de confiance en paramètre, recalcule son empreinte et vérifie la signature. La clé racine n'est jamais acceptée depuis le certificat lui-même.
+
+Les tests du certificat sont désormais une étape bloquante dédiée de la CI. Ce mécanisme ne remplace pas la cérémonie d'enrôlement, l'ancrage indépendant de la racine, la révocation serveur, le contrôle transactionnel ni la revue cryptographique externe.
