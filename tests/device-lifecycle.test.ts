@@ -164,3 +164,26 @@ test("la dernière activité ne peut pas précéder la création", () => {
 
   assert.deepEqual(result, { ok: false, error: "invalid_device_record" });
 });
+test("un type d événement inconnu est refusé au lieu de déclencher une révocation", () => {
+  const result = transitionDevice(makeDevice(), {
+    type: "unknown" as "approve",
+    actorAccountId: "account-a",
+    at: revokedAt,
+  });
+
+  assert.deepEqual(result, { ok: false, error: "invalid_event_type" });
+});
+
+test("un appareil révoqué ne peut pas avoir une dernière activité postérieure à sa révocation", () => {
+  const result = transitionDevice(makeDevice({
+    status: "revoked",
+    revokedAt,
+    lastSeenAt: "2026-11-17T10:11:00.000Z",
+  }), {
+    type: "approve",
+    actorAccountId: "account-a",
+    at: "2026-11-17T10:15:00.000Z",
+  });
+
+  assert.deepEqual(result, { ok: false, error: "invalid_device_record" });
+});
