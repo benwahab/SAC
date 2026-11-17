@@ -201,7 +201,7 @@ Le prototype n'est pas connecté à l'application, n'échange aucune vraie posit
 
 ### Modèle cryptographique à concevoir avant intégration
 
-La piste à étudier est une identité de compte racine distincte des clés opérationnelles de chaque appareil. La clé racine approuve les clés publiques propres aux appareils ; un appareil déjà approuvé peut certifier l'ajout d'un nouvel appareil. Chaque appareil garde ses clés privées localement. Si la clé racine et tous les appareils approuvés sont perdus, une récupération de compte ne restaure pas cette confiance : une nouvelle identité doit être créée et les contacts doivent la vérifier à nouveau par un canal indépendant.
+La piste à étudier est une identité de compte racine distincte des clés opérationnelles de chaque appareil. En V1, seul le premier appareil racine approuve les clés publiques propres aux appareils secondaires ; aucun appareil secondaire ne peut certifier l'ajout d'un autre appareil. Chaque appareil garde ses clés privées localement. Si la clé racine et tous les appareils approuvés sont perdus, une récupération de compte ne restaure pas cette confiance : une nouvelle identité doit être créée et les contacts doivent la vérifier à nouveau par un canal indépendant.
 
 Ce modèle est une proposition de protocole, pas une implémentation approuvée. Il faut spécifier les formats de certificats, l'authentification de l'appareil approbateur, le rejeu, la révocation, la rotation, les appareils simultanément hors ligne, les conflits d'ajout et la récupération avant de connecter le prototype ECDH/ECDSA à l'application.
 
@@ -222,3 +222,10 @@ Ce modèle est une proposition de protocole, pas une implémentation approuvée.
 La proposition détaillée est consignée dans [PROTOCOLE_MULTI_APPAREILS.md](PROTOCOLE_MULTI_APPAREILS.md). Elle étudie une clé d'identité racine conservée sur le premier appareil, qui signe les certificats des appareils secondaires ; les clés privées propres aux appareils restent locales. Dans cette première piste, seul l'appareil racine approuve les ajouts. La perte de la racine sans appareil approuvé impose une nouvelle identité et une revérification indépendante par les contacts.
 
 **Décision validée par l'utilisateur le 17 novembre 2026 :** le premier appareil approuvé est l'unique appareil racine autorisé à approuver les nouveaux appareils. Les appareils secondaires ne peuvent pas approuver d'autres appareils dans la première version. En cas de perte de tous les appareils approuvés, la récupération du compte ne restaure pas l'ancienne identité cryptographique : une nouvelle identité est créée et les contacts doivent vérifier indépendamment sa nouvelle empreinte avant tout nouveau partage GPS. La conséquence acceptée est un point unique d'approbation et une dépendance à l'appareil racine. Cette validation produit ne vaut pas validation cryptographique indépendante et n'autorise pas encore à connecter les clés au GPS réel ; le transcript signé, l'UX de jumelage, les API et les tests adversariaux restent à spécifier.
+
+
+### Révocation multi-appareils — contrat à implémenter
+
+La proposition de contrôle transactionnel est détaillée dans [PROTOCOLE_MULTI_APPAREILS.md, section 19](PROTOCOLE_MULTI_APPAREILS.md). La révocation doit invalider les sessions, jetons de rafraîchissement, push, défis de jumelage et partages GPS liés à l'appareil, avec contrôle de statut courant à chaque requête protégée. La révocation du root bloque les nouvelles approbations et les partages GPS jusqu'à une nouvelle identité racine et la revérification indépendante des contacts.
+
+**État :** exigences de sécurité consignées ; aucun endpoint, schéma D1, mécanisme de session ou tâche de notification n'est encore implémenté. Les appareils hors ligne ne peuvent pas être effacés à distance.
