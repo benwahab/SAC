@@ -65,3 +65,55 @@ test("un identifiant de session vide est refusé", async () => {
     /identifiant de session est obligatoire/,
   );
 });
+
+test("une clé de session différente ne peut pas déchiffrer le paquet", async () => {
+  const senderKey = await createLocationSessionKey();
+  const unrelatedKey = await createLocationSessionKey();
+  const packet = await encryptLocationPayload(
+    "opaque-test-payload",
+    senderKey,
+    "session-test-1",
+  );
+
+  await assert.rejects(
+    decryptLocationPayload(packet, unrelatedKey, "session-test-1"),
+  );
+});
+
+test("une modification du vecteur d'initialisation est détectée", async () => {
+  const key = await createLocationSessionKey();
+  const packet = await encryptLocationPayload(
+    "opaque-test-payload",
+    key,
+    "session-test-1",
+  );
+  const alteredIv = new Uint8Array(packet.iv);
+  alteredIv[0] ^= 1;
+
+  await assert.rejects(
+    decryptLocationPayload(
+      { ...packet, iv: alteredIv },
+      key,
+      "session-test-1",
+    ),
+  );
+});
+
+test("un paquet avec un IV de longueur incorrecte est refusé avant déchiffrement", async () => {
+  const key = await createLocationSessionKey();
+  const packet = await encryptLocationPayload(
+    "opaque-test-payload",
+    key,
+    "session-test-1",
+  );
+
+  await assert.rejects(
+    decryptLocationPayload(
+      { ...packet, iv: new Uint8Array(8) },
+      key,
+      "session-test-1",
+    ),
+    /Paquet de localisation invalide/,
+  );
+});
+
