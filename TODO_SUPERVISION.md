@@ -63,7 +63,8 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Prototyper les clés locales Android Keystore (TEE/StrongBox) et iOS Keychain WhenPasscodeSetThisDeviceOnly ; tester sauvegardes, restaurations, révocation et suppression à l'échéance.
 - [x] Ajouter un prototype expérimental d'échange ECDH P-256 par destinataire, dérivation HKDF-SHA-256 et signature ECDSA P-256 des clés publiques ; tests de base validés par CI run 44189717717 (commit 0c6dd008).
 - [x] Ajouter une empreinte SHA-256 lisible de la clé publique d'identité ; typecheck, tests existants et build validés par CI run 44189915423 (commit 7b3afdadd).
-- [ ] Faire passer en CI les nouveaux tests de stabilité, différence et validation d'empreinte (commit 0f83c114), puis vérifier la CI du dernier commit documentaire.
+- [x] Valider en CI les tests de stabilité, différence et validation d'empreinte : 18 tests réussis, 0 échec, typecheck et build réussis (run 44189940721, commit 0f83c114).
+- [ ] Vérifier la CI du dernier commit documentaire et de mise à jour du suivi.
 - [ ] Concevoir puis faire valider l'écran et la procédure de comparaison indépendante des empreintes entre proches ; ne jamais considérer une clé reçue du serveur comme authentifiée par défaut.
 - [ ] Spécifier et tester rotation, révocation, multi-appareils et récupération de compte sans rétablissement silencieux de la confiance.
 - [ ] Étendre les tests crypto à la rotation, à la révocation, au rejeu, à la liaison session/destinataire et à l'interopérabilité Android/iOS.
