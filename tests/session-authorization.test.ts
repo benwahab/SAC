@@ -1,0 +1,110 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { authorizeDeviceSession, type DeviceSessionRecord, type SessionAuthorizationContext } from "../src/domain/session-authorization.ts";
+
+const now = "2026-11-17T12:00:00.000Z";
+const sessionExpiry = "2026-11-17T13:00:00.000Z";
+
+function makeSession(overrides: Partial<DeviceSessionRecord> = {}): DeviceSessionRecord {
+  return {
+    sessionId: "session-a",
+    accountId: "account-a",
+    deviceId: "device-a",
+    tokenHash: "a".repeat(64),
+    status: "active",
+    authVersion: 3,
+    createdAt: "2026-11-17T11:00:00.000Z",
+    expiresAt: sessionExpiry,
+    revokedAt: null,
+    ...overrides,
+  };
+}
+
+function makeContext(overrides: Partial<SessionAuthorizationContext> = {}): SessionAuthorizationContext {
+  return {
+    expectedAccountId: "account-a",
+    expectedDeviceId: "device-a",
+    currentDeviceAuthVersion: 3,
+    deviceStatus: "active",
+    now,
+    ...overrides,
+  };
+}
+
+test("autorise une session active liée au bon compte et au bon appareil", () => {
+  assert.deepEqual(authorizeDeviceSession(makeSession(), makeContext()), {
+    ok: true, sessionId: "session-a", accountId: "account-a", deviceId: "device-a",
+  });
+});
+
+test("refuse une session révoquée", () => {
+  assert.deepEqual(authorizeDeviceSession(makeSession({
+    status: "revoked", revokedAt: now,
+  }), makeContext()), { ok: false, error: "session_revoked" });
+});
+
+test("refuse une session expirée à la seconde exacte de son échéance", () => {
+  assert.deepEqual(authorizeDeviceSession(makeSession(), makeContext({
+    now: sessionExpiry,
+  })), { ok: false, error: "session_expired" });
+});
+
+test("refuse une session d'un autre compte", () => {
+  assert.deepEqual(authorizeDeviceSession(makeSession(), makeContext({
+    expectedAccountId: "account-b",
+  })), { ok: false, error: "account_mismatch" });
+});
+
+test("refuse une session présentée depuis un autre appareil", () => {
+  assert.deepEqual(authorizeDeviceSession(makeSession(), makeContext({
+    expectedDeviceId: "device-b",
+  })), { ok: false, error: "device_mismatch" });
+});
+
+test("refuse un appareil en attente ou révoqué", () => {
+  for (const deviceStatus of ["pending_verification", "revoked"] as const) {
+    assert.deepEqual(authorizeDeviceSession(makeSession(), makeContext({
+      deviceStatus,
+    })), { ok: false, error: "device_not_active" });
+  }
+});
+
+test("l'incrément de auth_version invalide les anciennes sessions de l'appareil", () => {
+  assert.deepEqual(authorizeDeviceSession(makeSession(), makeContext({
+    currentDeviceAuthVersion: 4,
+  })), { ok: false, error: "session_version_mismatch" });
+});
+
+test("une session d'un autre appareil du même compte reste indépendante", () => {
+  const otherDeviceSession = makeSession({
+    sessionId: "session-b",
+    deviceId: "device-b",
+    authVersion: 1,
+  });
+  assert.equal(authorizeDeviceSession(otherDeviceSession, makeContext({
+    expectedDeviceId: "device-b",
+    currentDeviceAuthVersion: 1,
+  })).ok, true);
+  assert.deepEqual(authorizeDeviceSession(otherDeviceSession, makeContext({
+    expectedDeviceId: "device-b",
+    currentDeviceAuthVersion: 2,
+  })), { ok: false, error: "session_version_mismatch" });
+});
+
+test("refuse un hash de jeton mal formé", () => {
+  assert.deepEqual(authorizeDeviceSession(makeSession({
+    tokenHash: "not-a-hash",
+  }), makeContext()), { ok: false, error: "invalid_session_record" });
+});
+
+test("refuse une session active portant une date de révocation", () => {
+  assert.deepEqual(authorizeDeviceSession(makeSession({
+    revokedAt: now,
+  }), makeContext()), { ok: false, error: "invalid_session_record" });
+});
+
+test("refuse un contexte incomplet", () => {
+  assert.deepEqual(authorizeDeviceSession(makeSession(), makeContext({
+    currentDeviceAuthVersion: -1,
+  })), { ok: false, error: "invalid_authorization_context" });
+});
