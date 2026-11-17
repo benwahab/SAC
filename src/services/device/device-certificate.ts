@@ -144,7 +144,7 @@ export async function issueSecondaryDeviceCertificate(
     canonicalPayload(unsigned),
   ));
   const certificate = { ...unsigned, signature };
-  if (!(await verifySecondaryDeviceCertificate(certificate, trustedRootPublicKey, cryptoProvider))) {
+  if (!(await verifySecondaryDeviceCertificate(certificate, trustedRootPublicKey, { accountId: input.accountId, deviceId: input.deviceId }, cryptoProvider))) {
     throw new Error("La paire de clés racine ne correspond pas ou le certificat est invalide.");
   }
   return certificate;
@@ -153,6 +153,7 @@ export async function issueSecondaryDeviceCertificate(
 export async function verifySecondaryDeviceCertificate(
   certificate: SecondaryDeviceCertificate,
   trustedRootPublicKey: CryptoKey,
+  expected: { accountId: string; deviceId: string },
   cryptoProvider: Crypto = globalThis.crypto,
 ): Promise<boolean> {
   try {
@@ -167,6 +168,9 @@ export async function verifySecondaryDeviceCertificate(
     ) return false;
     requireText(certificate.accountId, "accountId");
     requireText(certificate.deviceId, "deviceId");
+    requireText(expected.accountId, "expected.accountId");
+    requireText(expected.deviceId, "expected.deviceId");
+    if (certificate.accountId !== expected.accountId || certificate.deviceId !== expected.deviceId) return false;
     requireText(certificate.rootFingerprint, "rootFingerprint");
     if (!validTimestamp(certificate.createdAt)) return false;
     if (
