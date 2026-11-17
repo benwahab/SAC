@@ -16,9 +16,9 @@ Les primitives restent expérimentales et ne sont pas connectées à l'applicati
 
 L'ancien contexte concaténait les identifiants avec le caractère `:`. Deux paires distinctes pouvaient produire la même chaîne, par exemple `("a:b", "c")` et `("a", "b:c")`.
 
-Le prototype utilise maintenant un tableau JSON ordonné et versionné pour l'information HKDF (`SAC:location-recipient:v2`). Des identifiants vides, trop longs ou contenant des caractères de contrôle sont rejetés. Un test vérifie que les deux contextes précédemment ambigus ne dérivent plus la même clé.
+Le prototype directionnel utilise maintenant un tableau JSON ordonné et versionné pour l'information HKDF (`SAC:location-directional-key:v3`). Des identifiants vides, trop longs ou contenant des caractères de contrôle sont rejetés. Un test vérifie que deux tuples d'identifiants contenant des séparateurs ne dérivent plus la même clé.
 
-**Limite :** le contexte actuel ne contient encore que la session et le destinataire. Le protocole final devra lier explicitement au minimum le compte, la cérémonie, l'appareil émetteur, l'appareil destinataire, l'usage, la direction et la version. Il faudra aussi définir une séparation de clés directionnelles avant toute utilisation AES-GCM bidirectionnelle.
+**Limite :** le contexte actuel contient la session, l'émetteur, le destinataire, l'usage, l'algorithme et la version. Le compte et l'identifiant de cérémonie ne sont pas encore liés à la dérivation. L'authenticité des identifiants dépendra des certificats d'appareils validés par la racine.
 
 ### 2.2 Validation d'un bundle non fiable — corrigé dans le prototype
 
@@ -94,3 +94,10 @@ Le prototype ECDH expose maintenant `deriveLocationDirectionalKey`. Les deux app
 Les tests adversariaux couvrent l'échange normal, le refus des usages interdits, l'échec de déchiffrement avec la clé du sens inverse et le rejet d'un identifiant local étranger.
 
 **Limite importante :** cette fonction est un prototype de dérivation, pas un protocole de transport complet. Elle ne lie pas encore le compte et l'identifiant de cérémonie, ne vérifie pas elle-même le certificat des appareils et ne garantit pas l'authenticité des identifiants fournis. Ces éléments doivent être imposés par la couche de protocole signée avant toute utilisation. Aucun raccordement GPS n'est autorisé.
+
+
+## 9. Correction de la suite directionnelle après échec CI
+
+La première CI de la séparation directionnelle a révélé un cas de test mal construit : le test de collision HKDF fournissait un identifiant local qui ne correspondait ni à l'émetteur ni au destinataire. La fonction a correctement rejeté cette entrée incohérente ; le défaut était dans le test, pas dans le contrôle d'identité locale.
+
+Le test a été corrigé pour comparer deux tuples valides d'identifiants contenant des séparateurs. La nouvelle CI du commit correctif doit confirmer l'ensemble des tests avant validation.
