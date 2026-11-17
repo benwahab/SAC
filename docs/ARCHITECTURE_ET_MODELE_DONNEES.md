@@ -79,7 +79,7 @@ Le modèle relationnel devra au minimum couvrir les entités suivantes. Les noms
 ### 3.1 Identité et appareils
 
 - `users` : compte, coordonnées vérifiées, langue, état du compte, dates de création et mise à jour.
-- `user_devices` : appareils enregistrés, type, jeton push protégé, dernière activité, révocation.
+- `user_devices` : appareils enregistrés, type, jeton push protégé, dernière activité, révocation et compteur `auth_version` monotone pour invalider toutes les sessions de cet appareil.
 - `user_sessions` : sessions et révocations si le fournisseur d'authentification ne couvre pas entièrement ce besoin.
 - `user_settings` : préférences de notification, confidentialité et sécurité.
 
@@ -367,7 +367,7 @@ Des tests automatisés sont ajoutés via le script `npm run test:crypto` et exé
 Le modèle devra distinguer les appareils, les sessions et les clés publiques :
 
 - `user_devices` : `id` opaque aléatoire, `user_id`, `display_name`, `platform` (`web`, `android`, `ios`), `status` (`pending_verification`, `active`, `revoked`), `created_at`, `verified_at`, `last_seen_at`, `revoked_at`, `revocation_reason` facultatif.
-- `device_sessions` : sessions rattachées à un appareil précis, empreinte/identifiant de session non secret, dates d'expiration et révocation, dernier usage et état. Les jetons de session ne sont pas stockés en clair.
+- `device_sessions` : sessions rattachées à un appareil précis, identifiant opaque, hash du jeton à haute entropie, `auth_version`, dates d'expiration et révocation, dernier usage et état. Le jeton brut n'est jamais stocké. Chaque requête protégée relit l'état courant de la session et de l'appareil ; le contrat pur expérimental est dans `src/domain/session-authorization.ts`.
 - `device_public_keys` : appareil propriétaire, type de clé (signature ou échange), algorithme, version, clé publique, empreinte, dates d'activation/rotation/révocation et référence du certificat d'approbation.
 - `device_push_subscriptions` : abonnement push propre à l'appareil, protégé et révocable indépendamment.
 
