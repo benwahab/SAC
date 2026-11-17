@@ -331,6 +331,6 @@ Le dépôt contient maintenant `src/services/device/device-certificate.ts`. Il p
 - l'empreinte de la clé racine qui a signé le certificat ;
 - le domaine d'usage fixe du certificat (échange de localisation SAC).
 
-La vérification reçoit obligatoirement la clé publique racine de confiance séparément. Elle recalcule son empreinte et vérifie la signature ; elle ne récupère jamais l'ancre de confiance depuis le certificat. Les tests adversariaux couvrent compte/appareil altéré, clé ECDH substituée, autre racine, signature altérée, certificat mal formé et paire racine incohérente.
+La vérification reçoit obligatoirement la clé publique racine de confiance séparément ainsi que les identifiants attendus du compte et de l'appareil. Elle recalcule l'empreinte racine, compare les identifiants attendus et vérifie la signature ; elle ne récupère jamais l'ancre de confiance depuis le certificat. Les tests adversariaux couvrent compte/appareil altéré, clé ECDH substituée, autre racine, signature altérée, certificat mal formé et paire racine incohérente.
 
 **Limites importantes :** le certificat ne constitue pas une cérémonie d'enrôlement complète. Il ne prouve pas que l'utilisateur a comparé les empreintes, ne stocke aucun état, ne révoque aucune session, ne vérifie pas le statut actif côté serveur et ne résout pas les courses d'approbation/révocation. L'appelant doit charger une ancre racine déjà vérifiée et vérifier l'état de révocation serveur à chaque autorisation. Ne pas utiliser avec le GPS réel avant revue indépendante.
