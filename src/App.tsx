@@ -23,7 +23,7 @@ export default function App(){
  const statusDot=health==="connected"?"bg-sac-green":health==="unavailable"?"bg-amber-500":"animate-pulse bg-slate-300";
  return <div className="min-h-screen overflow-hidden bg-[#F5F7FA] text-slate-900">
   <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
-   <a href="/" aria-label="SAC, accueil" className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-sac-navy text-white shadow-lg shadow-slate-900/10"><ShieldCheck size={24}/></span><span><span className="block text-lg font-extrabold tracking-[0.18em]">SAC</span><span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">Sécurité · Alerte · Citoyenne</span></span></a>
+   <a href="/" aria-label="SAC, accueil" className="flex flex-col"><span className="text-xl font-black tracking-[0.2em] text-sac-navy">SAC</span><span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">Sécurité · Alerte · Citoyenne</span></a>
    <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-600 sm:flex"><LockKeyhole size={14} className="text-sac-green"/>Application privée</div>
   </header>
   <main>
