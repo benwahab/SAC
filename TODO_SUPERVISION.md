@@ -17,7 +17,8 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Configurer le binding D1 DB dans Pages et vérifier /api/health en Preview.
 - [ ] Activer R2 depuis le tableau de bord Cloudflare puis créer le bucket privé SAC.
 - [ ] Finaliser les choix d'authentification, OTP, push, SMS et paiement.
-- [ ] Finaliser les règles de conservation et suppression des positions.
+- [x] Décider la conservation des positions GPS précises : 30 jours après la fin du partage, puis purge automatique définitive des données actives SAC.
+- [ ] Définir et tester le cycle de purge des sauvegardes ainsi que la preuve d'effacement.
 - [ ] Finaliser les détails des rappels de Protection des trajets et les relances d'arrivée.
 - [ ] Définir les avantages Premium au-delà des 10 contacts.
 - [ ] Valider les limites et rôles des groupes familiaux.
@@ -29,7 +30,8 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Ajouter les types TypeScript partagés pour les six catégories d'alerte, les niveaux, les états, les durées de partage et les limites d'offre.
 - [x] Ajouter une route de santé API vérifiant réellement l'accès D1.
 - [x] Ajouter un workflow CI de typecheck et build.
-- [ ] Créer les migrations D1 et les tests d'accès.
+- [ ] Valider le schéma relationnel détaillé, les rôles, les politiques d'accès, les états, les sauvegardes et les tests de sécurité avant toute migration D1.
+- [ ] Créer les migrations D1 et les tests d'accès après validation de ces prérequis.
 - [x] Installer les dépendances, exécuter typecheck et build dans GitHub Actions (run 44151374924, commit 6edbd77d).
 - [ ] Générer et versionner package-lock.json après installation vérifiée.
 - [x] Vérifier le build `npm run build` dans GitHub Actions (run 44151374924, commit 6edbd77d).
