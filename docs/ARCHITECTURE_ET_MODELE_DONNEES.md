@@ -134,6 +134,16 @@ Aucun stockage GPS en clair dans D1, aucun export ni backup externe en clair ne 
 
 Les journaux d'audit conservent uniquement les métadonnées nécessaires à la preuve de purge (identifiant technique non parlant, échéance, résultat et horodatage), jamais les coordonnées ni les clés. Les tests doivent couvrir la purge normale, la lecture après échéance, la restauration d'un point antérieur à la purge et la purge de rattrapage avant réouverture.
 
+### 3.5.2 Gestionnaire de clés GPS — exigence de séparation
+
+La conception détaillée et l'étude comparative sont consignées dans [SECURITE_GPS_DESTRUCTION_CRYPTO.md](SECURITE_GPS_DESTRUCTION_CRYPTO.md). La piste étudiée est un chiffrement enveloppe : les positions sont chiffrées avant persistance ; les clés de données sont enveloppées par un KMS indépendant ; D1 ne conserve que les ciphertexts et les clés de données enveloppées.
+
+**Cloudflare Durable Objects ne doit pas servir de coffre de clés GPS** : son stockage SQLite possède lui aussi une capacité de restauration temporelle pouvant restaurer les clés supprimées. La séparation logique entre deux services Cloudflare ne constitue donc pas, à elle seule, une séparation suffisante contre la restauration.
+
+Google Cloud KMS et AWS KMS sont uniquement des candidats étudiés. Leurs périodes réversibles de destruction doivent être prises en compte : une clé programmée pour destruction n'est pas encore définitivement détruite. Aucun fournisseur n'est choisi et aucune intégration n'est autorisée par cette étude seule. Le fournisseur retenu devra prouver qu'aucune restauration administrative ou sauvegarde accessible au client ne peut réactiver une clé arrivée à échéance. Aucune clé importée ou copie externe réutilisable ne sera admise.
+
+L'interface du KMS sera isolée derrière un contrat TypeScript côté serveur ; le frontend ne verra jamais de clé. En cas d'indisponibilité ou d'état inconnu du KMS, la lecture GPS échoue fermée. Aucun cache local ni mécanisme de secours ne doit contourner l'expiration.
+
 ### 3.6 Programmation et notifications
 
 - `scheduled_alerts` : alerte différée, échéance, état, annulation et clé d'idempotence.
