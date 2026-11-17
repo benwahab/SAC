@@ -31,7 +31,7 @@ export async function createLocationExchangeKeyPair(
   const pair = await cryptoProvider.subtle.generateKey(
     { name: "ECDH", namedCurve: "P-256" },
     false,
-    ["deriveKey"],
+    ["deriveBits"],
   );
   return { publicKey: pair.publicKey, privateKey: pair.privateKey };
 }
