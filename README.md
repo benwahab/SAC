@@ -4,6 +4,8 @@ SAC est une application de sécurité personnelle et familiale. Elle permet à u
 
 ## Références obligatoires
 
+- [Architecture de référence](ARCHITECTURE.md)
+- [Suivi et supervision](TODO_SUPERVISION.md)
 - [Cahier des charges complet](docs/CAHIER_DES_CHARGES_SAC.md)
 - [Architecture et modèle de données](docs/ARCHITECTURE_ET_MODELE_DONNEES.md)
 - [Consignes permanentes](docs/CONSIGNES_DE_TRAVAIL.md)
