@@ -2,7 +2,7 @@
 
 **Statut :** conception uniquement. Ce document ne constitue pas une migration SQL exécutable.  
 **Stack frontend confirmée :** React, Vite, TypeScript, Tailwind CSS et Lucide React. PWA mobile-first.  
-**Base de données et fournisseurs :** à confirmer avant implémentation.
+**Base de données cible :** Cloudflare D1. **Stockage objet :** Cloudflare R2 sous réserve d'activation et d'autorisation du compte.
 
 ## 1. Architecture logique
 
@@ -40,7 +40,8 @@ API sécurisée et logique métier côté serveur. Les responsabilités principa
 - fournisseur SMS complémentaire ;
 - fournisseur de paiement compatible avec le Niger ;
 - service cartographique et géocodage, éventuellement OpenStreetMap ;
-- stockage privé si des pièces jointes sont ajoutées ultérieurement.
+- Cloudflare D1 pour les données relationnelles ;
+- Cloudflare R2 pour les fichiers privés si le service est activé et autorisé.
 
 Aucun fournisseur n'est encore choisi. Les intégrations doivent être encapsulées derrière des interfaces pour éviter de lier la logique métier à un fournisseur unique.
 
@@ -57,7 +58,7 @@ La PWA constitue la première cible. Dès la conception, le code doit rester com
 
 ### 1.5 API et hébergement
 
-Le frontend React/Vite/TypeScript communique avec un backend exposé sous forme d'API REST sur Cloudflare Pages Functions, implémenté en TypeScript. Les règles métier sensibles, l'authentification, les autorisations, les tâches planifiées et les notifications restent côté serveur. Les fournisseurs externes sont encapsulés derrière des adaptateurs. Le choix du stockage relationnel, de l'authentification et des prestataires demeure soumis aux décisions validées.
+Le frontend React/Vite/TypeScript communique avec une API REST Cloudflare Pages Functions en TypeScript, organisée sous `functions/api/`. Cloudflare D1 est la base relationnelle cible ; les migrations SQL doivent être versionnées dans le dépôt. Cloudflare R2 est prévu pour le stockage privé des fichiers si le service est activé et autorisé sur le compte. Les règles métier sensibles, l'authentification, les autorisations, les tâches planifiées et les notifications restent côté serveur. Les fournisseurs externes non encore choisis sont encapsulés derrière des adaptateurs.
 
 ## 2. Principes d'architecture
 
@@ -270,7 +271,7 @@ Les index définitifs doivent être justifiés par les requêtes réelles et mes
 
 ## 10. Choix encore ouverts
 
-- Fournisseur de base de données et d'authentification.
+- Fournisseur/mécanisme d'authentification et modalités exactes de configuration D1/R2.
 - Confirmation ou non de Supabase.
 - Mécanisme de file de tâches et planification.
 - Fournisseur OTP, SMS, push et paiement.
