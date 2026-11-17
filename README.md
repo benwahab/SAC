@@ -19,7 +19,7 @@ SAC est une application de sécurité personnelle et familiale. Elle permet à u
 - Préparation native dès la conception : Capacitor pour Android/iOS, sans réécriture des écrans ni de la logique métier.
 - Adaptateurs des capacités du terminal isolés dans `src/services/device/`.
 
-La base de données, l'authentification, les fournisseurs SMS/push et les paiements restent soumis aux validations indiquées dans les documents de décisions.
+Base relationnelle cible : Cloudflare D1. Stockage privé : Cloudflare R2 si activé et autorisé sur le compte. Les choix d'authentification, SMS/push et paiement restent soumis aux validations indiquées dans les documents de décisions.
 
 ## Règles du dépôt
 
