@@ -148,3 +148,12 @@ L'utilisateur confirme que les destinataires des alertes sont des personnes de c
 Cette décision ne dispense pas SAC de chiffrer les échanges, de vérifier les destinataires, de respecter le consentement de localisation ni de retirer les autorisations pour les nouvelles alertes après révocation d'un contact.
 
 L'architecture proposée est désormais : aucun historique GPS persistant côté serveur ; chiffrement local et clés natives liées à l'appareil ; relais chiffré vers les contacts autorisés. La suppression exacte à J+30 reste à démontrer lorsque le téléphone est éteint ou que le système suspend l'application. Cette proposition ne doit pas être présentée comme une garantie déjà acquise.
+
+
+## 3.6 Prototype AES-GCM — validation technique limitée, non décision produit
+
+Un module expérimental isolé `src/services/location/crypto.ts` et des tests automatisés ont été ajoutés pour vérifier le chiffrement authentifié AES-256-GCM des paquets, l'association cryptographique à un identifiant de session, le rejet d'un paquet altéré et la génération d'IV distincts.
+
+Cette étape ne valide ni le stockage des clés sur Android/iOS, ni leur échange avec plusieurs contacts, ni le relais WebSocket, ni la conservation GPS, ni la destruction à J+30. Le module n'est pas relié à l'application et ne doit pas être utilisé avec de vraies coordonnées. Aucune ressource Cloudflare ni intégration fournisseur n'a été créée.
+
+Le choix du protocole complet et de la politique J+30 reste ouvert jusqu'aux tests natifs et à la validation de l'échange de clés.
