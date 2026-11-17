@@ -18,6 +18,8 @@ jobs:
       - run: npm run typecheck
       - name: Test experimental location encryption primitive
         run: npm run test:crypto
+      - name: Test device lifecycle domain contract
+        run: npm run test:devices
       - run: npm run build
       - name: Audit production dependencies (blocking)
         run: npm audit --omit=dev --audit-level=high
