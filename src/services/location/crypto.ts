@@ -19,12 +19,18 @@ const AES_GCM_TAG_LENGTH = 128;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-function createAdditionalData(sessionId: string): Uint8Array {
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
+}
+
+function createAdditionalData(sessionId: string): ArrayBuffer {
   if (!sessionId.trim()) {
     throw new Error("L'identifiant de session est obligatoire.");
   }
 
-  return encoder.encode(`SAC:location:v1:${sessionId}`);
+  return toArrayBuffer(encoder.encode(`SAC:location:v1:${sessionId}`));
 }
 
 /** Génère une clé AES-GCM non exportable, conservée uniquement par l'appelant. */
@@ -49,7 +55,7 @@ export async function encryptLocationPayload(
   const ciphertext = await cryptoProvider.subtle.encrypt(
     {
       name: "AES-GCM",
-      iv,
+      iv: toArrayBuffer(iv),
       additionalData: createAdditionalData(sessionId),
       tagLength: AES_GCM_TAG_LENGTH,
     },
@@ -84,12 +90,12 @@ export async function decryptLocationPayload(
   const plaintext = await cryptoProvider.subtle.decrypt(
     {
       name: "AES-GCM",
-      iv: packet.iv,
+      iv: toArrayBuffer(packet.iv),
       additionalData: createAdditionalData(sessionId),
       tagLength: AES_GCM_TAG_LENGTH,
     },
     key,
-    packet.ciphertext,
+    toArrayBuffer(packet.ciphertext),
   );
 
   return decoder.decode(plaintext);
