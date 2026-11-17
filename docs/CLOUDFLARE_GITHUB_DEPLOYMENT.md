@@ -26,9 +26,9 @@ Le backend ne doit pas être remplacé par un Worker autonome déployé séparé
 ## 3. État réellement constaté lors de l'audit
 
 - Aucun projet Cloudflare Pages n'est actuellement présent dans le compte au moment de la vérification.
-- La base D1 officielle `sac-db` a été créée le 17 novembre 2026 (région de création WEUR, réplication désactivée, aucune table encore).
+- La base D1 officielle `sac-db` a été créée le 17 novembre 2026 (UUID `892ce876-f279-409c-8f9e-06b1dca66e9d`, région de création WEUR, réplication désactivée, aucune table encore).
 - Le projet Pages nommé `sac-citoyen` et la base D1 `sac-citoyen-db` qui avaient été créés dans le contexte de l'application erronée de signalement ont été supprimés. Le projet Pages erroné a été supprimé. La base D1 erronée a été supprimée, puis une base propre `sac-db` a été créée pour le vrai projet SAC.
-- Le compte ne permettait pas de confirmer la disponibilité de R2 : l'accès à la liste R2 a retourné une erreur indiquant que R2 doit être activé depuis le tableau de bord.
+- R2 n'est pas activé : l'API retourne l'erreur Cloudflare 10042 « Please enable R2 through the Cloudflare Dashboard ». Aucun bucket n'a été créé.
 - Le Worker `sac` a été audité : son unique source était le modèle Cloudflare `Hello world`, sans binding, sous-domaine désactivé et sans zone DNS associée. Il a été supprimé après vérification, car il ne contenait aucune logique SAC ni ressource liée.
 
 **Conséquence :** la configuration Cloudflare actuelle n'est pas prête pour déployer la véritable application SAC. Le projet Pages n'a pas encore été créé : le dépôt ne contient pas encore `package.json` ni le socle frontend à compiler. Aucun build ni déploiement de l'application n'a été confirmé.
