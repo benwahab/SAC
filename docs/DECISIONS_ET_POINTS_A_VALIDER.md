@@ -165,8 +165,18 @@ Le module `src/services/location/key-exchange.ts` contient désormais :
 - une dérivation de clé AES-GCM par destinataire via HKDF-SHA-256 ;
 - une paire de signature ECDSA P-256 distincte ;
 - un paquet liant l'identifiant du propriétaire à sa clé publique ECDH, signé par sa clé d'identité ;
-- une vérification de la signature et des tests négatifs contre la modification de l'identité ou la substitution de la clé ECDH.
+- une vérification de signature et des tests contre la modification de l'identité ou la substitution de la clé ECDH ;
+- une fonction d'empreinte SHA-256 de la clé publique d'identité, présentée en groupes lisibles pour comparaison indépendante.
 
-**Limite fondamentale :** une signature vérifie que le paquet a été signé par la clé d'identité qu'il contient ; elle ne prouve pas que cette clé appartient réellement au contact attendu. L'empreinte de la clé d'identité doit être vérifiée par un canal indépendant (par exemple comparaison d'un code de sécurité ou QR en personne), puis conservée comme référence de confiance. La procédure de récupération/changement d'appareil et de révocation reste à concevoir.
+**Cérémonie de vérification proposée (à valider avant intégration produit) :**
+1. Après acceptation d'une invitation et vérification du numéro/e-mail, chaque appareil crée sa paire de signature d'identité et sa paire ECDH ; les clés privées restent locales et non exportables.
+2. Le paquet public signé est transmis au contact. L'application affiche l'empreinte de la clé d'identité, mais ne la considère pas vérifiée simplement parce qu'elle vient du serveur.
+3. Les deux proches comparent leurs empreintes par un canal indépendant : idéalement en personne, ou par appel vocal/vidéo où chacun lit les groupes de chiffres/lettres. Un QR affiché sur un appareil et scanné par l'autre est pratique en personne, mais le QR seul ne suffit pas si son origine n'est pas authentifiée.
+4. Chaque côté confirme explicitement la correspondance. L'application enregistre localement et côté serveur l'état de vérification, l'empreinte approuvée, la version de clé et la date ; le serveur ne peut pas fabriquer une signature valide ni remplacer silencieusement une empreinte déjà approuvée.
+5. Toute nouvelle clé, réinstallation ou récupération de compte déclenche un état « identité à revérifier » : pas de remplacement silencieux de la clé de confiance. Les contacts reçoivent une notification de changement et doivent revérifier avant un nouvel échange de position chiffrée.
 
-Le prototype n'est pas connecté à l'application, n'échange aucune vraie position et ne constitue pas un protocole de production. La CI du commit `8f5a27d` est en cours au moment de cette mise à jour ; aucune réussite n'est présumée.
+**Règles de cycle de vie proposées :** rotation = nouvelle clé ECDH signée par la clé d'identité déjà approuvée ; révocation = invalidation serveur immédiate des anciennes clés pour les nouveaux partages et notification aux contacts ; perte de la clé d'identité = réauthentification forte et nouvelle vérification indépendante par les contacts. La récupération ne doit jamais reconstituer une confiance cryptographique à partir d'un simple SMS ou e-mail. Les alertes SOS restent indépendantes de la disponibilité du chiffrement GPS : une erreur de clé ne doit pas bloquer l'alerte essentielle.
+
+**Limite fondamentale :** la signature vérifie que le paquet a été signé par la clé d'identité qu'il contient ; elle ne prouve pas que cette clé appartient réellement au contact attendu. L'empreinte doit être comparée indépendamment puis épinglée comme référence de confiance. Les procédures de récupération, rotation, révocation multi-appareils et gestion des conflits restent à spécifier et tester.
+
+Le prototype n'est pas connecté à l'application, n'échange aucune vraie position et ne constitue pas un protocole de production. Le commit `0c6dd00` a passé typecheck, les 15 tests crypto, build et audit des dépendances de production. L'audit complet reste signalé : 11 vulnérabilités élevées dans des dépendances de développement (notamment picomatch et sa chaîne de dépendances). Les nouveaux tests d'empreinte du commit `0f83c11` sont encore en cours de vérification CI au moment de cette mise à jour.
