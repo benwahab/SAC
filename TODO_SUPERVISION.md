@@ -18,10 +18,12 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Activer R2 depuis le tableau de bord Cloudflare puis créer le bucket privé SAC.
 - [ ] Finaliser les choix d'authentification, OTP, push, SMS et paiement.
 - [x] Décider la conservation des positions GPS précises : 30 jours après la fin du partage, puis purge automatique définitive des données actives SAC.
-- [ ] Définir et tester le cycle de purge des sauvegardes ainsi que la preuve d'effacement.
+- [ ] Concevoir et tester la destruction cryptographique irréversible des clés GPS à J+30, indépendante de D1 et de toutes les sauvegardes.
 - [x] Vérifier en lecture seule que `sac-db` utilise D1 `version: production`, sans tables, réplication désactivée (17 novembre 2026).
 - [x] Documenter la fenêtre D1 Time Travel (30 jours Paid / 7 jours Free) et le risque de réapparition des positions après restauration.
-- [ ] Concevoir et valider avant migration une protection empêchant les copies GPS historiques D1 de rester déchiffrables au-delà de J+30.
+- [x] Valider l'exigence : après 30 jours, aucune restauration ne doit pouvoir récupérer ni rendre lisibles les coordonnées GPS expirées.
+- [ ] Concevoir et valider avant migration un chiffrement GPS avec clés indépendantes de D1 et destruction irréversible/non restaurable à J+30.
+- [ ] Tester la restauration de sauvegardes antérieures à J+30 et prouver que les coordonnées expirées restent indéchiffrables.
 - [ ] Implémenter la purge de rattrapage et son contrôle bloquant avant toute réouverture après restauration D1.
 - [ ] Finaliser les détails des rappels de Protection des trajets et les relances d'arrivée.
 - [ ] Définir les avantages Premium au-delà des 10 contacts.
