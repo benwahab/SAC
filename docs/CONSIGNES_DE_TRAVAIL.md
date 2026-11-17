@@ -22,8 +22,9 @@ Ne jamais réutiliser par erreur leurs dépôts, bases de données, clés, secre
 
 ## 3. Autorisation et périmètre
 
-- La phase actuelle est documentaire et de cadrage.
-- Ne pas commencer à coder l'application, créer des migrations, installer des dépendances ou déployer des services sans demande explicite.
+- Le développement initial du socle technique a été explicitement autorisé et commencé sur `main`.
+- Poursuivre les tâches déjà autorisées dans le périmètre validé, après audit et vérification du dernier commit.
+- Toute nouvelle fonctionnalité métier, migration D1, intégration fournisseur, création de ressource Cloudflare ou déploiement non déjà autorisé exige une validation explicite.
 - Ne pas transformer une proposition technique en décision produit.
 - Ne pas ajouter une fonctionnalité non demandée.
 - Ne pas supprimer, désactiver ou réduire une fonctionnalité sans autorisation explicite.
