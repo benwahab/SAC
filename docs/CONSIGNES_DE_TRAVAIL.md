@@ -97,7 +97,7 @@ Ne jamais affirmer que les tests, la CI, le déploiement ou une synchronisation 
 
 - Claude, Qwen et tout autre assistant explicitement autorisé peuvent auditer, documenter et contribuer au même dépôt.
 - Avant toute intervention, chaque assistant doit lire `AGENTS.md`, `README.md`, le cahier des charges, l'architecture, les décisions et les présentes consignes.
-- La stack est verrouillée : React, Vite, TypeScript, Tailwind CSS, Lucide React, API REST Cloudflare Workers, PWA d'abord et préparation Capacitor.
+- La stack est verrouillée : React, Vite, TypeScript, Tailwind CSS, Lucide React, API REST Cloudflare Pages Functions, PWA d'abord et préparation Capacitor.
 - Aucun assistant ne peut remplacer TypeScript par un autre langage applicatif, migrer vers Next.js/Vue/Angular/Svelte ou changer de framework, de gestionnaire de dépendances ou d'architecture sans validation explicite de l'utilisateur.
 - Les migrations de versions et changements de dépendances doivent être justifiés, limités et documentés ; ne jamais réécrire le projet pour les préférences d'un assistant.
 - Les assistants partagent les mêmes fichiers de référence et la même branche `main`. Aucun travail sur une branche parallèle ou un dépôt miroir.
