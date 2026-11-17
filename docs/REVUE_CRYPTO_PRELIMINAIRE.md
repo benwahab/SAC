@@ -39,6 +39,10 @@ Le calcul d'empreinte utilise maintenant le même contrôle strict de JWK public
 ## 3. Tests ajoutés
 
 Le fichier `tests/location-crypto.test.ts` contient maintenant des cas supplémentaires pour :
+- clés directionnelles distinctes ;
+- restriction des usages WebCrypto (`encrypt` côté émetteur, `decrypt` côté destinataire) ;
+- échec de déchiffrement dans le sens inverse ;
+- refus d'un identifiant local qui ne correspond à aucun des deux appareils ;
 - collision de contexte HKDF par séparateur ;
 - clé privée et clé publique d'identité incohérentes ;
 - bundle nul ou mal formé ;
@@ -53,7 +57,7 @@ Les tests sont exécutés par `npm run test:crypto` dans la CI existante. Le ré
 
 1. **Pas d'authentification d'identité complète :** une signature valide d'un bundle prouve seulement que la clé d'identité incluse a signé le lien avec la clé ECDH. Elle ne prouve pas que cette identité est celle du bon utilisateur. L'empreinte doit être ancrée indépendamment et le protocole de l'appareil racine doit être implémenté et audité.
 2. **Pas de certificat d'appareil de production :** le bundle expérimental ne lie pas encore l'ensemble des champs requis (compte, appareil, cérémonie, usages, version, expiration, statut et racine).
-3. **Pas de séparation directionnelle des clés :** les deux côtés dérivent actuellement la même clé AES-GCM. Le protocole final doit dériver des clés distinctes par direction et usage, ou imposer une architecture qui empêche le chiffrement dans les deux sens avec la même clé.
+3. **Séparation directionnelle du prototype — durcie, intégration finale non validée :** `deriveLocationDirectionalKey` dérive un contexte HKDF distinct pour chaque sens. Le pair émetteur reçoit une clé `encrypt` uniquement et le pair destinataire une clé `decrypt` uniquement. Les tests vérifient qu'une clé de sens inverse ne déchiffre pas le paquet et que les usages sont restreints. Le compte, la cérémonie, l'authentification des identifiants et l'association des clés publiques aux appareils doivent encore être liés par le protocole de certificats.
 4. **Contexte HKDF incomplet :** compte, appareils, cérémonie et usage doivent être liés au contexte final ; le contexte actuel est uniquement un prototype amélioré.
 5. **Non-exportable ne signifie pas matériellement protégé :** WebCrypto dans une PWA ne garantit ni TEE/StrongBox, ni Android Keystore, ni iOS Keychain, ni absence de copie du profil navigateur. Les garanties doivent être vérifiées par plateforme.
 6. **Cycle de vie incomplet :** rotation, révocation, remplacement, récupération, appareils hors ligne et invalidation des partages GPS ne sont pas implémentés.
@@ -66,7 +70,7 @@ Les tests sont exécutés par `npm run test:crypto` dans la CI existante. Le ré
 
 - Revue cryptographique indépendante et traitement documenté de chaque constat.
 - Spécification et tests interopérables du transcript canonique et de la cérémonie racine.
-- Clés directionnelles et contexte HKDF complet, versionné.
+- Clés directionnelles, contexte HKDF complet (compte, cérémonie, appareils, usage, sens) et versionné.
 - Authentification, autorisation, certificats, révocation et récupération implémentés côté serveur.
 - Tests sur PWA, Android et iOS, y compris stockage matériel lorsqu'il est disponible, restauration, réinstallation et perte d'appareil.
 - Démonstration séparée de la destruction irréversible J+30 ; aucune clé GPS ne doit dépendre de ces prototypes tant que cette preuve n'existe pas.
@@ -81,3 +85,12 @@ Les tests sont exécutés par `npm run test:crypto` dans la CI existante. Le ré
 ## 7. Résultat CI vérifié
 
 La CI du commit de code `234943e9277e0ccbb17de4a9428b537afd22e669` (run GitHub Actions `44192845933`) a réussi. Les journaux confirment **24 tests cryptographiques réussis, 0 échec**, ainsi que le typecheck, les tests du cycle de vie des appareils, le build et l'audit bloquant des dépendances de production. Cette réussite valide les tests automatisés du prototype sur l'environnement CI ; elle ne remplace pas la revue indépendante ni les essais sur appareils physiques.
+
+
+## 8. Séparation directionnelle ajoutée au prototype
+
+Le prototype ECDH expose maintenant `deriveLocationDirectionalKey`. Les deux appareils dérivent la clé du même sens avec les mêmes identifiants canoniques d'émetteur et de destinataire ; l'appareil émetteur reçoit une CryptoKey AES-GCM limitée à `encrypt`, et le destinataire une clé compatible limitée à `decrypt`. Le sens inverse utilise un contexte HKDF différent et produit une autre clé.
+
+Les tests adversariaux couvrent l'échange normal, le refus des usages interdits, l'échec de déchiffrement avec la clé du sens inverse et le rejet d'un identifiant local étranger.
+
+**Limite importante :** cette fonction est un prototype de dérivation, pas un protocole de transport complet. Elle ne lie pas encore le compte et l'identifiant de cérémonie, ne vérifie pas elle-même le certificat des appareils et ne garantit pas l'authenticité des identifiants fournis. Ces éléments doivent être imposés par la couche de protocole signée avant toute utilisation. Aucun raccordement GPS n'est autorisé.
