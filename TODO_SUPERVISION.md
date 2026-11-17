@@ -26,6 +26,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Créer le socle React/Vite/TypeScript et Pages Functions sur main.
 - [x] Ajouter manifeste PWA et service worker minimal, sans prétendre à une protection hors-ligne des alertes.
 - [x] Ajouter les interfaces d'adaptateurs Web pour géolocalisation, notifications et partage, sans demander de permission automatiquement.
+- [x] Ajouter les types TypeScript partagés pour les six catégories d'alerte, les niveaux, les états, les durées de partage et les limites d'offre.
 - [x] Ajouter une route de santé API vérifiant réellement l'accès D1.
 - [x] Ajouter un workflow CI de typecheck et build.
 - [ ] Créer les migrations D1 et les tests d'accès.
