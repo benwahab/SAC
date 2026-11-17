@@ -241,7 +241,7 @@ La comparaison SAS vise à détecter une substitution pendant le jumelage ; elle
 
 Une revue interne préliminaire des prototypes ECDH/ECDSA et AES-GCM est consignée dans [REVUE_CRYPTO_PRELIMINAIRE.md](REVUE_CRYPTO_PRELIMINAIRE.md). Elle décrit les durcissements apportés aux validations, à l'encodage HKDF et aux bundles signés, ainsi que les risques encore bloquants.
 
-Cette revue n'est pas indépendante et ne certifie pas le protocole. En particulier, le contexte HKDF final doit encore lier compte et cérémonie ; l'authenticité des identifiants dépend des certificats d'appareils ; les clés AES-GCM sont maintenant séparées par direction dans le prototype ; l'amorçage de la racine, les certificats, la révocation, la récupération, le stockage matériel et la destruction J+30 restent à concevoir et à tester.
+Cette revue n'est pas indépendante et ne certifie pas le protocole. En particulier, le prototype HKDF v4 lie maintenant compte, cérémonie, session, émetteur, destinataire, usage et algorithme ; l'authenticité des identifiants dépend toujours des certificats d'appareils ; les clés AES-GCM sont séparées par direction ; l'amorçage de la racine, les certificats, la révocation, la récupération, le stockage matériel et la destruction J+30 restent à concevoir et à tester.
 
 **Interdiction maintenue :** ne pas connecter ces prototypes aux coordonnées GPS réelles avant revue cryptographique indépendante et preuve séparée de destruction irréversible J+30.
 
@@ -313,3 +313,10 @@ Les tests couvrent le déchiffrement normal, l'échec avec la clé du sens inver
 **Limites et conditions restantes :** cette fonction ne lie pas encore le compte et l'identifiant de cérémonie au contexte HKDF. Elle ne vérifie pas non plus le certificat qui authentifie l'association entre les identifiants et les clés publiques. Ces données doivent être intégrées au transcript signé et validées par la couche d'identité avant toute utilisation. Les identifiants fournis à la fonction ne sont pas, à eux seuls, une preuve d'identité. La version du prototype n'est pas une autorisation de transport GPS réel.
 
 **État :** séparation directionnelle expérimentale implémentée et testée en CI ; revue cryptographique indépendante, contexte final complet, authentification des appareils et preuve J+30 toujours obligatoires.
+
+
+## 17. Contexte HKDF v4 — compte et cérémonie
+
+Le prototype de dérivation directionnelle lie maintenant explicitement le compte et l'identifiant de cérémonie, en plus de la session, de l'émetteur, du destinataire, de l'usage et de l'algorithme. Les tests vérifient qu'une clé dérivée pour un autre compte ou une autre cérémonie ne déchiffre pas le paquet.
+
+Cette liaison contextuelle ne remplace pas l'authentification des appareils : les identifiants d'émetteur et de destinataire doivent provenir de certificats valides signés sous la racine de confiance. La fonction reste expérimentale et non connectée aux positions GPS.
