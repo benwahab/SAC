@@ -1,26 +1,35 @@
-# SAC — Plateforme citoyenne de signalement
+# SAC — Sécurité, Alerte, Citoyenne
 
-SAC est une plateforme publique de signalement citoyen, de suivi par code unique et de traitement par les autorités/modérateurs. Elle remplace l'ancien concept d'alertes privées entre proches.
+SAC est une application de sécurité personnelle et familiale. Elle permet à une personne de prévenir ses proches de confiance en cas de danger, d'urgence ou pendant un déplacement. Les alertes sont destinées aux contacts choisis et autorisés par l'utilisateur ; SAC n'est pas une plateforme publique de signalement ni un outil de dispatch institutionnel.
 
-## Règles
-- Dépôt unique : benwahab/SAC ; branche unique : main.
-- Travail directement sur GitHub ; aucun Lovable.
-- SAC reste séparé de PCS et Coup Sûr.
-- Aucun secret ni donnée personnelle réelle dans Git.
+## Références obligatoires
 
-## Stack
-React, Vite, TypeScript strict, Tailwind, Lucide React, Leaflet/OSM, Cloudflare Pages Functions, D1 et R2 privé. Adaptateurs device prévus pour Capacitor.
+- [Cahier des charges complet](docs/CAHIER_DES_CHARGES_SAC.md)
+- [Architecture et modèle de données](docs/ARCHITECTURE_ET_MODELE_DONNEES.md)
+- [Consignes permanentes](docs/CONSIGNES_DE_TRAVAIL.md)
+- [Décisions et points à valider](docs/DECISIONS_ET_POINTS_A_VALIDER.md)
+- [Connexion GitHub et préparation Cloudflare](docs/CLOUDFLARE_GITHUB_DEPLOYMENT.md)
+- [Consignes communes aux assistants IA](AGENTS.md)
 
-## Développement
-```bash
-npm install
-npm run dev
-npm run build
-```
+## Stack confirmée
 
-## Cloudflare
-D1 `sac-citoyen-db` est créé et les tables initiales sont appliquées. Pages `sac-citoyen` est relié à GitHub `main`, build `npm run build`, sortie `dist`, binding D1 `DB`. R2 doit être activé dans le dashboard avant de créer le bucket privé `sac-report-media` et d'ajouter le binding `MEDIA`. La CI GitHub Actions a réussi le 17/11/2026.
+- Frontend : React, Vite, TypeScript, Tailwind CSS et Lucide React.
+- Backend : API REST séparée sur Cloudflare Workers.
+- Première livraison : PWA mobile-first.
+- Préparation native dès la conception : Capacitor pour Android/iOS, sans réécriture des écrans ni de la logique métier.
+- Adaptateurs des capacités du terminal isolés dans `src/services/device/`.
 
-L'application n'est pas encore prête pour des urgences réelles : authentification nominative des agents, rôles fins, accès aux médias privés, politique de conservation, modération et notifications doivent être finalisés.
+La base de données, l'authentification, les fournisseurs SMS/push et les paiements restent soumis aux validations indiquées dans les documents de décisions.
 
-Voir `ARCHITECTURE.md` et `TODO_SUPERVISION.md`.
+## Règles du dépôt
+
+- Dépôt unique : `benwahab/SAC`.
+- Une seule branche : `main`. Tout travail directement sur GitHub.
+- Aucun dépôt parallèle, aucune branche secondaire, aucun mélange avec PCS ou Coup Sûr.
+- Claude et Qwen peuvent contribuer, mais doivent respecter exactement la stack et les conventions établies.
+- Aucun code applicatif, migration ou déploiement ne doit être ajouté sans autorisation explicite.
+- Aucun secret, OTP ou donnée personnelle réelle dans Git.
+
+## État du projet
+
+**Phase : cadrage et documentation.** Le code de signalement public ajouté par erreur a été retiré. Le développement de la véritable application SAC n'est pas commencé.
