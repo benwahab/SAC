@@ -244,3 +244,54 @@ Une revue interne préliminaire des prototypes ECDH/ECDSA et AES-GCM est consign
 Cette revue n'est pas indépendante et ne certifie pas le protocole. En particulier, le contexte HKDF final doit lier compte, cérémonie, appareils, usage et direction ; les clés AES-GCM doivent être séparées par direction ; l'amorçage de la racine, les certificats, la révocation, la récupération, le stockage matériel et la destruction J+30 restent à concevoir et à tester.
 
 **Interdiction maintenue :** ne pas connecter ces prototypes aux coordonnées GPS réelles avant revue cryptographique indépendante et preuve séparée de destruction irréversible J+30.
+
+## 15. Amorçage de la première identité racine — proposition
+
+Cette section traite le cas particulier où aucun appareil racine ni aucune empreinte cryptographique préalablement approuvée n'existe encore. Elle complète la cérémonie d'enrôlement ; elle ne constitue pas une décision sur le fournisseur ou la méthode définitive d'authentification du compte.
+
+### 15.1 Deux preuves différentes à ne pas confondre
+
+L'authentification du compte prouve que la personne a franchi le mécanisme d'accès au compte SAC. La preuve de possession de clé prouve que le terminal détient la clé privée correspondant à une clé publique. **Aucune de ces deux preuves, seule ou combinée, ne prouve à un contact que la première clé publique présentée est réellement celle de la personne attendue.**
+
+La première identité est donc une racine de confiance initiale. Pour chaque contact, son empreinte doit être vérifiée par un canal indépendant du serveur SAC (présence physique ou appel vocal indépendant, par exemple). Une empreinte simplement affichée, envoyée ou confirmée par le même serveur qui héberge la clé n'est pas une vérification indépendante.
+
+### 15.2 Séquence d'initialisation proposée
+
+1. L'utilisateur termine l'authentification du compte SAC selon un mécanisme fort qui reste à spécifier. La session authentifiée autorise une tentative d'initialisation, mais ne rend pas automatiquement la clé racine digne de confiance pour les contacts.
+2. Le premier terminal génère localement une nouvelle paire de signature racine. La clé privée ne doit jamais être exportée, téléversée, synchronisée ou incluse dans une sauvegarde SAC.
+3. Le terminal crée un identifiant de cérémonie aléatoire et une preuve de possession : un défi serveur imprévisible, à usage unique, lié à l'identifiant du compte, à la clé publique racine, à la version du protocole et à l'expiration. Le terminal signe le transcript exact avec la clé privée nouvellement créée.
+4. Le serveur vérifie la signature et l'authentification de la session, puis tente d'enregistrer la clé publique comme racine initiale au moyen d'une opération atomique conditionnelle : « créer seulement si aucune racine n'existe ». Il ne doit exister aucun chemin de mise à jour implicite ou de remplacement silencieux.
+5. Si deux terminaux tentent l'initialisation simultanément, un seul gagne la création atomique. L'autre reçoit un état explicite « identité déjà initialisée » et ne peut ni écraser ni remplacer la racine existante.
+6. Le terminal affiche l'empreinte complète de la clé racine et explique qu'elle doit être communiquée aux contacts par un canal indépendant. Aucun partage GPS avec un contact n'est autorisé tant que ce contact n'a pas vérifié et épinglé cette empreinte.
+7. Le serveur conserve uniquement la clé publique, sa version, son empreinte, l'état et les métadonnées strictement nécessaires. La preuve de possession et les défis consommés ne doivent pas être réutilisables ; les journaux ne contiennent aucun secret.
+
+### 15.3 Limite fondamentale — première confiance et serveur compromis
+
+Lors de la toute première initialisation, il n'existe pas encore d'ancienne clé racine permettant de détecter une substitution. Une signature valide prouve que le terminal possède la clé privée associée à la clé publique soumise ; elle ne prouve pas que le serveur n'a pas substitué une autre racine dans sa réponse ou dans son stockage.
+
+La protection contre cette substitution repose donc sur l'ancrage indépendant de l'empreinte par chaque contact. Si l'utilisateur et ses contacts ne comparent pas l'empreinte via un canal indépendant, la première identité reste exposée à une attaque de type « première confiance » (TOFU). SAC ne doit pas présenter l'initialisation comme résistante à un serveur entièrement compromis tant qu'un mécanisme d'ancrage indépendant et audité ne le démontre pas.
+
+### 15.4 Règles serveur et états
+
+- Une seule racine initiale peut être créée par compte ; contrainte d'unicité et transaction atomique obligatoires.
+- Une requête répétée avec le même identifiant de cérémonie est idempotente et retourne le résultat déjà établi, sans créer une seconde racine.
+- Un défi expiré, consommé, associé à une autre clé ou à un autre compte est rejeté.
+- Une racine existante ne peut être remplacée que par la procédure de rotation signée par l'ancienne racine, ou par la procédure de récupération explicitement définie après perte de tous les appareils.
+- L'OTP, la réinitialisation du mot de passe, l'assistance ou la seule session web ne peuvent jamais remplacer silencieusement la racine.
+- En cas de résultat réseau incertain, le client relit l'état d'initialisation et compare l'empreinte complète ; il ne génère pas une nouvelle racine automatiquement.
+- Tant que l'identité n'est pas initialisée et ancrée par les contacts requis, l'état GPS reste bloqué. L'envoi d'une alerte SOS non-GPS ne doit pas être bloqué par cette étape.
+
+### 15.5 Tests adversariaux obligatoires
+
+- Deux premières initialisations simultanées : exactement une racine créée, aucune écriture perdue ou écrasée.
+- Rejeu d'un défi, d'une signature ou d'une cérémonie déjà consommée : rejet ou réponse idempotente sans nouvel effet.
+- Substitution de la clé publique entre la signature du terminal et l'enregistrement serveur : échec de vérification.
+- Réponse serveur présentant une empreinte différente de celle générée localement : alerte bloquante et aucune activation GPS.
+- Compte déjà initialisé : tentative d'initialisation simple refusée, aucune mutation de la racine.
+- Réinitialisation du mot de passe ou OTP : aucune modification de l'identité cryptographique.
+- Perte réseau avant/après commit : état récupéré sans création d'une deuxième racine.
+- Contact qui reçoit l'empreinte uniquement par SAC : état non vérifié ; partage GPS refusé.
+- Contact qui compare l'empreinte par canal indépendant : état vérifié seulement après confirmation explicite et traçable.
+- Récupération après perte de tous les appareils : nouvelle racine distincte, ancienne racine non restaurée et nouvelle vérification indépendante des contacts.
+
+**État :** proposition de sécurité à examiner en revue indépendante. Le mécanisme d'authentification forte du compte, le format exact du transcript, les preuves de possession, le stockage de la racine et l'interface de vérification des contacts ne sont pas encore implémentés. Aucun schéma D1 ni endpoint n'est créé par cette spécification.
