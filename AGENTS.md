@@ -17,7 +17,7 @@ Avant toute tâche, lis :
 - TypeScript
 - Tailwind CSS
 - Lucide React
-- API REST séparée sur Cloudflare Workers
+- API REST séparée via Cloudflare Pages Functions
 - PWA en premier
 - Capacitor prévu pour Android/iOS ultérieurement, sans réécriture
 - Adaptateurs des capacités du terminal dans `src/services/device/`
