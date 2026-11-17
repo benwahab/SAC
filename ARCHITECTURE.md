@@ -31,4 +31,4 @@ Requêtes D1 préparées, validation stricte, limite média 8 Mo, MIME allowlist
 Les écrans utilisent les adaptateurs abstraits. Les implémentations web pourront être remplacées par les plugins natifs. Les permissions GPS en arrière-plan dépendent des limites Android/iOS.
 
 ## Déploiement et ressources
-Pages `sac-citoyen` relié à GitHub main, build `npm run build`, sortie `dist`, binding D1 `DB`. D1 `sac-citoyen-db` créé le 17/11/2026 en juridiction EU ; tables initiales appliquées et vérifiées. R2 non activé (erreur API 10042), bucket/binding MEDIA en attente. Le build GitHub Actions est réussi ; le déploiement Pages reste à confirmer.
+Pages `sac-citoyen` relié à GitHub main, build `npm run build`, sortie `dist`, binding D1 `DB`. D1 `sac-citoyen-db` créé le 17/11/2026 en juridiction EU ; tables initiales appliquées et vérifiées. R2 non activé (erreur API 10042), bucket/binding MEDIA en attente. Le build GitHub Actions et le premier déploiement Pages sont réussis ; Pages Functions et le binding D1 DB sont actifs. R2 reste à activer.
