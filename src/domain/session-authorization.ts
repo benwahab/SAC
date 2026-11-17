@@ -42,7 +42,7 @@ export type SessionAuthorizationResult =
   | { readonly ok: false; readonly error: SessionAuthorizationError };
 
 function isUtc(value: string): boolean {
-  if (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/.test(value)) return false;
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) return false;
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) && new Date(parsed).toISOString() === value;
 }
