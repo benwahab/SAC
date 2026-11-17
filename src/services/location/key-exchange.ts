@@ -130,33 +130,6 @@ export async function createLocationIdentityKeyPair(
   return { publicKey: pair.publicKey, privateKey: pair.privateKey };
 }
 
-/** Signe le lien entre l'identité déclarée et la clé publique ECDH. */
-export async function signLocationKeyBundle(
-  ownerId: string,
-  exchangePublicKey: CryptoKey,
-  identityPrivateKey: CryptoKey,
-  cryptoProvider: Crypto = globalThis.crypto,
-): Promise<SignedLocationKeyBundle> {
-  if (
-    exchangePublicKey.algorithm.name !== "ECDH" ||
-    identityPrivateKey.algorithm.name !== "ECDSA"
-  ) {
-    throw new Error("Types de clés incompatibles pour la signature.");
-  }
-  const exchangeJwk = await cryptoProvider.subtle.exportKey("jwk", exchangePublicKey);
-  const identityJwk = await cryptoProvider.subtle.exportKey(
-    "jwk",
-    // Public key is derived from the private key's pair by the caller and
-    // supplied separately through create bundle helper below.
-    identityPrivateKey,
-  ).catch(() => null);
-
-  if (identityJwk) {
-    throw new Error("La clé privée d'identité ne doit jamais être exportée.");
-  }
-  throw new Error("Fournir la clé publique d'identité via signLocationKeyBundleWithPublicKey.");
-}
-
 export async function signLocationKeyBundleWithPublicKey(
   ownerId: string,
   exchangePublicKey: CryptoKey,
