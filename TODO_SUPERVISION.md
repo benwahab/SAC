@@ -18,12 +18,13 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Activer R2 depuis le tableau de bord Cloudflare puis créer le bucket privé SAC.
 - [ ] Finaliser les choix d'authentification, OTP, push, SMS et paiement.
 - [x] Décider la conservation des positions GPS précises : 30 jours après la fin du partage, puis purge automatique définitive des données actives SAC.
-- [ ] Concevoir et tester la destruction cryptographique irréversible des clés GPS à J+30, indépendante de D1 et de toutes les sauvegardes.
+- [x] Réaliser une étude comparative des pistes de destruction cryptographique (KMS externe, D1 Time Travel, Durable Objects) et consigner les limites dans `docs/SECURITE_GPS_DESTRUCTION_CRYPTO.md`.
+- [ ] Choisir et valider un KMS indépendant ; démontrer que sa fenêtre réversible de destruction est terminée au plus tard à J+30.
 - [x] Vérifier en lecture seule que `sac-db` utilise D1 `version: production`, sans tables, réplication désactivée (17 novembre 2026).
 - [x] Documenter la fenêtre D1 Time Travel (30 jours Paid / 7 jours Free) et le risque de réapparition des positions après restauration.
 - [x] Valider l'exigence : après 30 jours, aucune restauration ne doit pouvoir récupérer ni rendre lisibles les coordonnées GPS expirées.
-- [ ] Concevoir et valider avant migration un chiffrement GPS avec clés indépendantes de D1 et destruction irréversible/non restaurable à J+30.
-- [ ] Tester la restauration de sauvegardes antérieures à J+30 et prouver que les coordonnées expirées restent indéchiffrables.
+- [ ] Concevoir et valider avant migration le chiffrement enveloppe GPS, le regroupement par échéance et le cycle de vie des clés avec le KMS retenu.
+- [ ] Tester la restauration de sauvegardes antérieures à J+30 et prouver que les coordonnées expirées restent indéchiffrables, y compris après restauration administrative du KMS.
 - [ ] Implémenter la purge de rattrapage et son contrôle bloquant avant toute réouverture après restauration D1.
 - [ ] Finaliser les détails des rappels de Protection des trajets et les relances d'arrivée.
 - [ ] Définir les avantages Premium au-delà des 10 contacts.
