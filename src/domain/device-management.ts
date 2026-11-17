@@ -26,6 +26,7 @@ export type DeviceLifecycleEvent =
 
 export type DeviceTransitionError =
   | "invalid_device_record"
+  | "invalid_event_type"
   | "account_mismatch"
   | "invalid_event_timestamp"
   | "event_before_device_creation"
@@ -51,6 +52,7 @@ function isValidDeviceRecord(device: DeviceRecord): boolean {
     !device.deviceId.trim() ||
     !device.accountId.trim() ||
     !device.displayName.trim() ||
+    !["web", "android", "ios"].includes(device.platform) ||
     !isCanonicalUtcTimestamp(device.createdAt)
   ) {
     return false;
@@ -80,6 +82,7 @@ function isValidDeviceRecord(device: DeviceRecord): boolean {
       device.revokedAt !== null &&
       isCanonicalUtcTimestamp(device.revokedAt) &&
       Date.parse(device.revokedAt) >= Date.parse(device.createdAt) &&
+      (device.lastSeenAt === null || Date.parse(device.lastSeenAt) <= Date.parse(device.revokedAt)) &&
       (device.verifiedAt === null || (
         isCanonicalUtcTimestamp(device.verifiedAt) &&
         Date.parse(device.verifiedAt) >= Date.parse(device.createdAt) &&
@@ -102,6 +105,10 @@ export function transitionDevice(
 ): DeviceTransitionResult {
   if (!isValidDeviceRecord(device)) {
     return { ok: false, error: "invalid_device_record" };
+  }
+
+  if (!event || (event.type !== "approve" && event.type !== "revoke")) {
+    return { ok: false, error: "invalid_event_type" };
   }
 
   if (event.actorAccountId !== device.accountId) {
