@@ -163,3 +163,7 @@ Le module `src/domain/device-management.ts` est un contrat métier pur pour les 
 ### 12.6 Décision encore requise
 
 Avant toute API ou persistance, l'utilisateur doit valider le principe de l'appareil racine unique approbateur et accepter qu'en cas de perte de cet appareil, la nouvelle identité exige une revérification indépendante des contacts. La revue cryptographique indépendante reste obligatoire.
+
+### 12.7 Résultat des tests du contrat de cycle de vie
+
+Le contrat métier pur `src/domain/device-management.ts` et ses 14 tests (`tests/device-lifecycle.test.ts`) ont été intégrés au dépôt. La CI run `44191818016` sur le commit `eab16e659bd6d8759747f466d4dab57962178005` a réussi : typecheck, test du contrat appareil, tests crypto existants, build et audit bloquant des dépendances de production. Ce résultat valide uniquement le code de transition local ; il ne valide pas le protocole d'identité racine, les API, la persistance ni le comportement multi-appareils réel.
