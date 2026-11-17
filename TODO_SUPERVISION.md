@@ -11,10 +11,10 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Règle de rappels : toutes les 5 minutes vers les contacts initiaux jusqu'à clôture.
 - [x] SOS discret, écran neutre, code de contrainte et protection contre désactivation forcée documentés.
 - [x] Cible d'architecture corrigée : Pages, Pages Functions, D1, R2 sous condition d'activation.
-- [x] Lecture des paramètres du Worker Cloudflare existant `sac` : aucun binding, sous-domaine désactivé, previews désactivées, déploiements `dash_template`.
-- [ ] Inspection du contenu source et des éventuelles routes du Worker `sac` avant toute décision de conservation ou suppression.
-- [ ] Reconstituer l'environnement Cloudflare Pages de SAC, sans réutiliser les ressources de l'application erronée.
-- [ ] Confirmer l'activation de R2 et la possibilité de créer un bucket privé.
+- [x] Audit du Worker Cloudflare `sac` : source `Hello world` uniquement, aucun binding, sous-domaine désactivé, aucune zone DNS associée ; Worker modèle supprimé après audit.
+- [x] Créer la base D1 officielle `sac-db` (vide, région WEUR, réplication désactivée).
+- [ ] Reconstituer l'environnement Cloudflare Pages de SAC après création du socle applicatif GitHub.
+- [ ] Activer R2 depuis le tableau de bord Cloudflare puis créer le bucket privé SAC.
 - [ ] Finaliser les choix d'authentification, OTP, push, SMS et paiement.
 - [ ] Finaliser les règles de conservation et suppression des positions.
 - [ ] Finaliser les détails des rappels de Protection des trajets et les relances d'arrivée.
@@ -22,7 +22,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Valider les limites et rôles des groupes familiaux.
 - [ ] Préparer les tests de sécurité, de réseau faible et de non-livraison des notifications.
 - [ ] Obtenir l'autorisation explicite de démarrer le développement.
-- [ ] Créer le socle React/Vite/TypeScript et Pages Functions sur `main`.
+- [ ] Créer le socle React/Vite/TypeScript et Pages Functions sur `main` (prérequis à la création du projet Pages ; `package.json` absent à ce stade).
 - [ ] Créer les migrations D1 et les tests d'accès.
 - [ ] Vérifier le build `npm run build` et les déploiements Preview/Production.
 - [ ] Tester la préparation Capacitor sur Android puis iOS.
