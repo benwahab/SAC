@@ -29,9 +29,10 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Ajouter une route de santé API vérifiant réellement l'accès D1.
 - [x] Ajouter un workflow CI de typecheck et build.
 - [ ] Créer les migrations D1 et les tests d'accès.
-- [ ] Installer les dépendances, exécuter typecheck et build, puis corriger les erreurs constatées.
+- [x] Installer les dépendances, exécuter typecheck et build dans GitHub Actions (run 44151374924, commit 6edbd77d).
 - [ ] Générer et versionner package-lock.json après installation vérifiée.
-- [ ] Vérifier le build `npm run build` et les déploiements Preview/Production.
+- [x] Vérifier le build `npm run build` dans GitHub Actions (run 44151374924, commit 6edbd77d).
+- [ ] Configurer et vérifier les déploiements Preview/Production.
 - [ ] Tester la préparation Capacitor sur Android puis iOS.
 
 ## Règles de mise à jour
