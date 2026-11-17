@@ -356,3 +356,75 @@ Ce module est volontairement isolé :
 Il valide seulement une primitive de chiffrement authentifié pour préparer le futur protocole de transport. Il ne doit pas être présenté comme le système GPS sécurisé de production.
 
 Des tests automatisés sont ajoutés via le script `npm run test:crypto` et exécutés dans la CI. Ils couvrent le caractère non exportable de la clé Web Crypto, le cycle chiffrer/déchiffrer, l'association à la session, l'altération du ciphertext et la génération d'IV distincts.
+
+
+## 15. Gestion multi-appareils d'un même compte
+
+**Décision produit :** un compte SAC peut être actif sur plusieurs appareils. Il s'agit d'un seul utilisateur, avec plusieurs installations/appareils enregistrés et contrôlés séparément. Cette section complète le modèle conceptuel ; elle n'est pas une migration SQL exécutable.
+
+### 15.1 Entités à prévoir
+
+Le modèle devra distinguer les appareils, les sessions et les clés publiques :
+
+- `user_devices` : `id` opaque aléatoire, `user_id`, `display_name`, `platform` (`web`, `android`, `ios`), `status` (`pending_verification`, `active`, `revoked`), `created_at`, `verified_at`, `last_seen_at`, `revoked_at`, `revocation_reason` facultatif.
+- `device_sessions` : sessions rattachées à un appareil précis, empreinte/identifiant de session non secret, dates d'expiration et révocation, dernier usage et état. Les jetons de session ne sont pas stockés en clair.
+- `device_public_keys` : appareil propriétaire, type de clé (signature ou échange), algorithme, version, clé publique, empreinte, dates d'activation/rotation/révocation et référence du certificat d'approbation.
+- `device_push_subscriptions` : abonnement push propre à l'appareil, protégé et révocable indépendamment.
+
+Les clés privées sont créées et conservées sur l'appareil. Elles ne sont jamais écrites dans D1/R2, transmises aux Pages Functions, ni copiées entre appareils. Le serveur ne conserve que les clés publiques, leurs certificats, les empreintes et l'état de confiance nécessaire à l'autorisation.
+
+### 15.2 Ajout et approbation
+
+1. L'utilisateur authentifie le nouvel appareil ; celui-ci reçoit un statut en attente et génère ses propres paires de clés localement.
+2. Si un appareil déjà actif est disponible, l'utilisateur approuve explicitement l'ajout depuis cet appareil. Les deux appareils réalisent un jumelage cryptographique avec comparaison/vérification indépendante des identités ; le serveur ne peut pas se substituer à l'approbateur.
+3. Le serveur vérifie l'autorisation et enregistre les clés publiques et le certificat signé. Le nouvel appareil devient actif seulement après validation complète.
+4. Un code OTP peut prouver le contrôle d'un canal de récupération, mais ne suffit pas à approuver une nouvelle identité cryptographique ou à restaurer les clés GPS.
+5. Si tous les appareils approuvés sont perdus, une procédure de récupération de compte peut rétablir l'accès au compte après authentification renforcée. Elle crée toutefois une nouvelle identité cryptographique et déclenche une nouvelle vérification indépendante par les contacts. Elle ne restaure pas les clés GPS locales de l'ancien appareil.
+
+### 15.3 Identité racine et clés par appareil — conception à valider
+
+La piste recommandée est une clé de signature racine du compte, distincte des clés opérationnelles générées par chaque appareil. La racine approuve les clés publiques des appareils ; un appareil actif peut signer le certificat d'un nouvel appareil après approbation explicite. Chaque appareil conserve localement sa clé privée de signature et sa clé privée ECDH.
+
+La perte de la racine et de tous les appareils approuvés entraîne une nouvelle identité et une revérification des contacts. Il ne faut pas reconstruire la confiance à partir d'un SMS, d'un e-mail, d'une donnée serveur ou d'une simple restauration de sauvegarde.
+
+Cette piste reste à spécifier et tester : format et canonicalisation des certificats, révocation, rotation, rejeu, concurrence entre approbations, appareils hors ligne, multi-installation PWA, récupération, compatibilité Web/Android/iOS et stockage matériel disponible. Le prototype ECDH/ECDSA existant ne suffit pas encore à fournir ce protocole.
+
+### 15.4 Révocation et conséquences
+
+La révocation est atomique côté serveur : invalider toutes les sessions de l'appareil, refuser ses futures requêtes, révoquer ses abonnements push et interdire les nouveaux partages fondés sur ses clés. Les actions antérieures restent attribuées à l'utilisateur et leurs métadonnées d'audit identifient l'appareil source.
+
+Une révocation serveur ne peut pas effacer un appareil éteint, hors ligne ou désinstallé. Elle ne garantit pas l'effacement des clés ou des archives déjà présentes localement. L'interface doit expliquer cette limite et ne jamais annoncer un effacement à distance non exécuté. Les partages GPS actifs initiés par l'appareil révoqué doivent être invalidés côté serveur et côté relais dès que l'autorité serveur peut appliquer la révocation.
+
+### 15.5 Autorisations et séparation des données
+
+- Tous les appareils actifs d'un même compte peuvent accéder aux fonctions du compte selon les permissions utilisateur, mais chaque requête est authentifiée par sa propre session et liée à son appareil.
+- Un appareil révoqué n'accède plus au compte via les API, même si son stockage local subsiste.
+- Les archives GPS locales restent liées à l'appareil qui les a créées ; aucune synchronisation ou copie automatique vers un autre appareil.
+- L'accès aux anciennes archives GPS sur un nouvel appareil est désactivé par défaut et nécessite un mécanisme séparé, compatible avec la destruction stricte à J+30, qui n'est pas encore défini.
+- Les alertes SOS restent disponibles indépendamment de l'échange de clés GPS ; l'échec du jumelage ne bloque pas une alerte essentielle.
+- Les événements d'audit distinguent l'utilisateur, l'appareil, la session et l'action sans enregistrer de coordonnées GPS, secrets ou jetons.
+
+### 15.6 Familles d'API à prévoir
+
+- `GET /api/devices` : lister uniquement les appareils du compte authentifié.
+- `POST /api/devices/enroll` : enregistrer un appareil en attente et ses clés publiques.
+- `POST /api/devices/{deviceId}/approve` : valider un certificat d'approbation signé et lier le nouvel appareil.
+- `POST /api/devices/{deviceId}/revoke` : révoquer un appareil et ses sessions/abonnements.
+- `PATCH /api/devices/{deviceId}` : modifier uniquement les métadonnées autorisées, par exemple le libellé.
+- `POST /api/devices/recovery` : démarrer la récupération du compte sans restaurer silencieusement la confiance cryptographique.
+
+Ces routes sont des contrats indicatifs, pas des endpoints existants. Chaque route doit vérifier côté serveur l'identité du compte, l'appartenance de l'appareil, le statut, les signatures, l'anti-rejeu, la limitation de débit et l'idempotence. Aucun endpoint ne reçoit une clé privée.
+
+### 15.7 Critères de test avant production
+
+- Un appareil A et un appareil B sont liés au même compte mais possèdent des clés privées distinctes.
+- B ne devient pas actif avant approbation explicite et validation cryptographique.
+- Un OTP seul ne permet pas de remplacer une clé d'identité déjà approuvée.
+- La révocation de B invalide ses sessions, ses push et ses nouveaux accès API sans déconnecter A.
+- Un appareil révoqué hors ligne ne reçoit pas de commande d'effacement ; l'interface n'affirme donc pas que ses données locales sont effacées.
+- La récupération après perte de tous les appareils crée une nouvelle identité et exige la revérification des contacts.
+- Aucun GPS, clé privée, jeton ou secret n'apparaît dans D1, R2, les logs, traces, push ou exports.
+- Les alertes essentielles restent envoyables même si le protocole de clés GPS est indisponible.
+- Les essais couvrent PWA, Android et iOS, ainsi que les conflits d'approbation, le rejeu et les changements d'horloge/réseau.
+
+**Statut :** modèle conceptuel à implémenter après validation du protocole de confiance et des contrats API. Aucune migration D1 ni fonctionnalité multi-appareils n'est déclarée opérationnelle.
