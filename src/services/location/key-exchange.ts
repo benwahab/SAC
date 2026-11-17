@@ -62,16 +62,32 @@ export async function createLocationExchangeKeyPair(
  * Le sel est public mais doit être aléatoire (32 octets) et transmis avec
  * l'enveloppe. Le contexte lie la clé à une session et à un destinataire.
  */
-export async function deriveLocationRecipientKey(
+export type LocationKeyRole = "sender" | "recipient";
+
+/**
+ * Dérive une clé AES-GCM strictement directionnelle.
+ * Les deux pairs appellent la fonction avec les mêmes sessionId,
+ * senderId et recipientId. Le pair émetteur obtient encrypt-only ;
+ * le pair destinataire obtient decrypt-only. Inverser les identifiants
+ * ne donne pas la même clé.
+ */
+export async function deriveLocationDirectionalKey(
   ownPrivateKey: CryptoKey,
   remotePublicKey: CryptoKey,
   salt: Uint8Array,
   sessionId: string,
+  senderId: string,
   recipientId: string,
+  ownDeviceId: string,
   cryptoProvider: Crypto = globalThis.crypto,
 ): Promise<CryptoKey> {
   requireContext(sessionId, "de session");
+  requireContext(senderId, "de l'émetteur");
   requireContext(recipientId, "du destinataire");
+  requireContext(ownDeviceId, "de l'appareil local");
+  if (senderId === recipientId || (ownDeviceId !== senderId && ownDeviceId !== recipientId)) {
+    throw new Error("Les identifiants des appareils et le sens du transfert sont incohérents.");
+  }
   if (salt.byteLength !== SALT_LENGTH) {
     throw new Error("Le sel de dérivation doit contenir 32 octets.");
   }
@@ -93,19 +109,28 @@ export async function deriveLocationRecipientKey(
   const hkdfKey = await cryptoProvider.subtle.importKey(
     "raw", secret, "HKDF", false, ["deriveKey"],
   );
+  const isSender = ownDeviceId === senderId;
   return cryptoProvider.subtle.deriveKey(
     {
       name: "HKDF",
       hash: "SHA-256",
       salt: toArrayBuffer(salt),
-      info: encoder.encode(JSON.stringify(["SAC:location-recipient:v2", sessionId, recipientId])),
+      info: encoder.encode(JSON.stringify([
+        "SAC:location-directional-key:v3",
+        sessionId,
+        senderId,
+        recipientId,
+        "location-payload",
+        "AES-256-GCM",
+      ])),
     },
     hkdfKey,
     { name: "AES-GCM", length: 256 },
     false,
-    ["encrypt", "decrypt"],
+    isSender ? ["encrypt"] : ["decrypt"],
   );
 }
+
 export interface SignedLocationKeyBundle {
   readonly version: 1;
   readonly ownerId: string;
