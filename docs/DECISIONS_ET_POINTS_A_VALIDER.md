@@ -25,9 +25,9 @@ Ce document évite de confondre une décision de l'utilisateur avec une proposit
 | Clôture | Seul l'auteur de l'alerte peut clôturer |
 | Expiration des rappels | Ne clôture pas l'alerte |
 | Répondant principal | Premier contact qui accepte la prise en charge ; promotion du volontaire suivant si retrait |
-| Contacts | Invitation acceptée obligatoire ; révocation pour les nouvelles alertes |
+| Contacts | Invitation par téléphone ou e-mail, acceptation et vérification obligatoires ; invitation en attente sans accès ; révocation pour les nouvelles alertes |
 | Destinataires | Instantané figé au déclenchement |
-| Localisation | Partage soumis à autorisation ; une position ancienne doit être datée et identifiée |
+| Localisation | Partage soumis à autorisation ; fenêtres prévues : position ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à clôture selon le parcours ; une position ancienne doit être datée et identifiée |
 | Backend / API | API REST séparée via Cloudflare Pages Functions (`functions/api/`), en TypeScript |
 | Portabilité mobile | PWA d'abord ; préparation Capacitor pour Android/iOS sans réécriture |
 | Adaptateurs appareil | Interfaces isolées dans `src/services/device/` |
@@ -50,6 +50,7 @@ Ce document évite de confondre une décision de l'utilisateur avec une proposit
 - Si le principal se retire, le prochain volontaire devient principal.
 - Si aucun autre contact ne se porte volontaire, l'alerte reste active sans répondant principal.
 - Les contacts ne clôturent jamais l'alerte.
+- Une annulation avant ou après transmission est tracée dans l'historique ; elle ne doit pas effacer les événements déjà survenus.
 - Les rappels s'arrêtent uniquement à la clôture par l'auteur.
 - L'arrêt des rappels n'est pas une preuve de résolution.
 - Aucun nouveau destinataire n'est ajouté automatiquement après déclenchement.
@@ -102,5 +103,6 @@ Ces éléments sont des recommandations d'architecture, pas des engagements de f
 | 1.1 | Cahier des charges complété sur la portabilité Android/iOS, la stack TypeScript et la collaboration Claude/Qwen ; langues de référence harmonisées. |
 | 1.2 | Rappels alignés sur la validation utilisateur : toutes les 5 minutes vers les contacts initiaux jusqu'à clôture ; détails du SOS discret et de la protection contre désactivation forcée consignés. |
 | 1.3 | Architecture Cloudflare rétablie conformément au cahier des charges : Pages, Pages Functions, D1 et R2 sous réserve d'activation/autorisation. |
+| 1.4 | Catégories d'alerte, vérification des contacts invités et fenêtres de partage de localisation harmonisées avec les décisions récupérées. |
 
 Mettre à jour ce tableau à chaque nouvelle validation importante.
