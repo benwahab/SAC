@@ -28,14 +28,15 @@ Ce document évite de confondre une décision de l'utilisateur avec une proposit
 | Contacts | Invitation acceptée obligatoire ; révocation pour les nouvelles alertes |
 | Destinataires | Instantané figé au déclenchement |
 | Localisation | Partage soumis à autorisation ; une position ancienne doit être datée et identifiée |
-| Backend / API | API REST séparée via Cloudflare Pages Functions, implémentée en TypeScript |
+| Backend / API | API REST séparée via Cloudflare Pages Functions (`functions/api/`), en TypeScript |
 | Portabilité mobile | PWA d'abord ; préparation Capacitor pour Android/iOS sans réécriture |
 | Adaptateurs appareil | Interfaces isolées dans `src/services/device/` |
 | Collaboration IA | Claude et Qwen peuvent intervenir via les consignes partagées, sans changer la stack ni les conventions |
 | Langues prévues | Français, Hausa, Zarma et anglais |
 | SMS de secours | Prévoir un mécanisme SMS de secours lorsque l'accès Internet est indisponible, sous réserve des capacités réelles du terminal et du fournisseur |
 | Groupes familiaux | Disponibles avec limites selon l'offre gratuite/Premium ; plafonds précis à valider |
-| Infrastructure de données | Fournisseur relationnel et authentification à confirmer |
+| Base de données | Cloudflare D1 comme base relationnelle cible |
+| Stockage fichiers | Cloudflare R2 si le service est activé et autorisé ; sinon préparer les interfaces/configurations sans prétendre qu'il est opérationnel |
 | Phase actuelle | Documentation et cadrage, pas de développement applicatif |
 | Dépôt | `benwahab/SAC` |
 | Branche | Une seule branche : `main` |
@@ -49,14 +50,14 @@ Ce document évite de confondre une décision de l'utilisateur avec une proposit
 - Si le principal se retire, le prochain volontaire devient principal.
 - Si aucun autre contact ne se porte volontaire, l'alerte reste active sans répondant principal.
 - Les contacts ne clôturent jamais l'alerte.
-- Les rappels s'arrêtent à la clôture ou à l'échéance choisie.
+- Les rappels s'arrêtent uniquement à la clôture par l'auteur.
 - L'arrêt des rappels n'est pas une preuve de résolution.
 - Aucun nouveau destinataire n'est ajouté automatiquement après déclenchement.
 
 ## 3. Propositions techniques — non encore validées comme choix définitifs
 
-- Utiliser PostgreSQL comme base de données.
-- Étudier Supabase pour la base, l'authentification et éventuellement le temps réel.
+- Définir le schéma D1, les migrations versionnées et les règles d'accès côté Pages Functions.
+- Définir le mécanisme d'authentification compatible avec l'architecture Cloudflare, sans fournisseur choisi à ce stade.
 - Utiliser Web Push pour la PWA, puis étudier FCM/APNs pour des applications natives.
 - Étudier OpenStreetMap ou un fournisseur cartographique équivalent.
 - Utiliser une file de tâches côté serveur pour rappels et alertes différées.
@@ -67,7 +68,7 @@ Ces éléments sont des recommandations d'architecture, pas des engagements de f
 
 ## 4. Points à valider avant développement ou lancement
 
-1. **Durée des rappels :** liste des durées proposées par l'interface, durée minimale et maximale.
+1. **Rappels :** confirmer les détails d'interface sans modifier la règle actée de répétition toutes les 5 minutes jusqu'à clôture.
 2. **Protection des trajets :** délai avant alerte en cas d'absence de confirmation et nombre de relances.
 3. **Premium :** liste précise des options supplémentaires incluses dans les 5 000 FCFA/mois.
 4. **Groupes :** nombre maximal de groupes, membres, rôles et règles d'invitation.
