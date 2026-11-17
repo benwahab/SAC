@@ -222,7 +222,7 @@ Ce mode combine :
 
 ### 10.4 Durée et limites
 
-Les durées proposées pour le partage sont : ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à la clôture de l'alerte/du trajet, selon le parcours. À l'expiration, le partage actif s'arrête ; la durée de conservation des positions déjà collectées reste à valider et doit être définie avant la première migration.
+Les durées proposées pour le partage sont : ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à la clôture de l'alerte/du trajet, selon le parcours. À l'expiration, le partage actif s'arrête. Les positions GPS précises déjà collectées sont conservées temporairement pendant 30 jours à compter de la fin du partage concerné, puis supprimées automatiquement et définitivement des données actives SAC. Pour un partage ponctuel, le délai commence à la collecte de la position. Les événements non géographiques de l'alerte ou du trajet peuvent rester dans l'historique ; ils ne doivent pas conserver les coordonnées précises. Les journaux techniques ne doivent pas recopier les coordonnées. La stratégie de purge des sauvegardes doit être définie pour garantir leur disparition à l'issue de leur cycle de rétention.
 
 Une PWA ne garantit pas un suivi GPS continu lorsque le navigateur ou l'application est suspendu ou fermé. Les applications natives peuvent améliorer certains scénarios, mais restent soumises aux permissions, à l'économie d'énergie et aux règles Android/iOS. L'interface doit afficher le dernier point reçu, sa date et l'état de connexion, sans présenter une donnée ancienne comme du direct.
 
@@ -375,7 +375,7 @@ Les opérations sensibles doivent être atomiques lorsque nécessaire et protég
 - Journalisation des actions de sécurité sans enregistrer inutilement des secrets ou des coordonnées détaillées.
 - Chiffrement en transit et chiffrement au repos selon les capacités de l'infrastructure.
 - Sauvegardes et procédure de restauration testées.
-- Politique de conservation et de suppression des données GPS à définir avant production.
+- Appliquer et tester la conservation temporaire des positions GPS précises pendant 30 jours après la fin du partage, puis leur suppression automatique et définitive des données actives SAC.
 - Accès administratif limité, justifié et auditable.
 - Aucun compte administrateur ne doit permettre de consulter librement toutes les localisations sans contrôle et justification.
 
@@ -446,7 +446,7 @@ Le déploiement doit être progressif : environnement de développement, environ
 
 ## 23. Points à décider avant la mise en production
 
-Les éléments non tranchés sont consignés dans `DECISIONS_ET_POINTS_A_VALIDER.md`. Ils comprennent notamment : durées de rappel, délai de confirmation de trajet, avantages Premium détaillés, limites des groupes, prestataires SMS et paiement, conservation des positions, récupération/suppression de compte, capacités exactes du SOS discret selon plateforme et choix final d'infrastructure.
+Les éléments non tranchés sont consignés dans `DECISIONS_ET_POINTS_A_VALIDER.md`. Ils comprennent notamment : durées de rappel, délai de confirmation de trajet, avantages Premium détaillés, limites des groupes, prestataires SMS et paiement, fréquence d'échantillonnage GPS, purge des sauvegardes, récupération/suppression de compte, capacités exactes du SOS discret selon plateforme et choix final d'infrastructure.
 
 ---
 
