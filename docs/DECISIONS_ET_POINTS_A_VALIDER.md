@@ -27,7 +27,7 @@ Ce document évite de confondre une décision de l'utilisateur avec une proposit
 | Répondant principal | Premier contact qui accepte la prise en charge ; promotion du volontaire suivant si retrait |
 | Contacts | Invitation par téléphone ou e-mail, acceptation et vérification obligatoires ; invitation en attente sans accès ; révocation pour les nouvelles alertes |
 | Destinataires | Instantané figé au déclenchement |
-| Localisation | Partage soumis à autorisation ; fenêtres prévues : position ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à clôture selon le parcours ; une position ancienne doit être datée et identifiée |
+| Localisation | Partage soumis à autorisation ; fenêtres prévues : position ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à clôture selon le parcours ; une position ancienne doit être datée et identifiée ; positions GPS précises conservées 30 jours après la fin du partage, puis supprimées automatiquement et définitivement des données actives SAC |
 | Backend / API | API REST séparée via Cloudflare Pages Functions (`functions/api/`), en TypeScript |
 | Portabilité mobile | PWA d'abord ; préparation Capacitor pour Android/iOS sans réécriture |
 | Adaptateurs appareil | Interfaces isolées dans `src/services/device/` |
@@ -75,7 +75,7 @@ Ces éléments sont des recommandations d'architecture, pas des engagements de f
 4. **Groupes :** nombre maximal de groupes, membres, rôles et règles d'invitation.
 5. **Paiement :** prestataire(s) acceptés au Niger, frais, renouvellement, remboursement et gestion des paiements échoués.
 6. **SMS :** prestataire, coût, disponibilité et règles de bascule depuis les notifications push.
-7. **Données GPS :** durée de conservation, fréquence d'échantillonnage, purge et export.
+7. **Données GPS :** fréquence d'échantillonnage, export, cycle de purge des sauvegardes et vérification de l'effacement après 30 jours.
 8. **Compte :** récupération après perte du téléphone, changement de numéro/e-mail et suppression du compte.
 9. **SOS discret :** scénarios techniquement réalisables sur Android, iOS et PWA ; limites de permissions et de fonctionnement en arrière-plan.
 10. **Base et hébergement :** choix définitif de l'infrastructure et localisation des données.
@@ -104,5 +104,6 @@ Ces éléments sont des recommandations d'architecture, pas des engagements de f
 | 1.2 | Rappels alignés sur la validation utilisateur : toutes les 5 minutes vers les contacts initiaux jusqu'à clôture ; détails du SOS discret et de la protection contre désactivation forcée consignés. |
 | 1.3 | Architecture Cloudflare rétablie conformément au cahier des charges : Pages, Pages Functions, D1 et R2 sous réserve d'activation/autorisation. |
 | 1.4 | Catégories d'alerte, vérification des contacts invités et fenêtres de partage de localisation harmonisées avec les décisions récupérées. |
+| 1.5 | Conservation des positions GPS précises validée à 30 jours après la fin du partage, avec purge automatique définitive des données actives. |
 
 Mettre à jour ce tableau à chaque nouvelle validation importante.
