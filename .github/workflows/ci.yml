@@ -20,6 +20,8 @@ jobs:
         run: npm run test:crypto
       - name: Test device lifecycle domain contract
         run: npm run test:devices
+      - name: Test root-signed device certificates
+        run: npm run test:certificates
       - run: npm run build
       - name: Audit production dependencies (blocking)
         run: npm audit --omit=dev --audit-level=high
