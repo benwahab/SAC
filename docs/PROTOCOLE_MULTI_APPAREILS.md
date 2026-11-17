@@ -134,3 +134,32 @@ Ce sont des contrats de conception, pas des endpoints présents. Chaque requête
 ## 11. Relation avec la règle GPS J+30
 
 Ce protocole ne change pas la règle stricte de destruction des données GPS après 30 jours. Les clés d'identité de compte et les clés d'appareil ne doivent jamais devenir des moyens de restaurer une clé GPS expirée. Les clés GPS doivent rester séparées, limitées à leur session et détruites selon une architecture dont l'irréversibilité J+30 reste à démontrer. La récupération d'un compte ou l'ajout d'un appareil ne doit pas réintroduire des coordonnées expirées.
+## 12. Revue de conception préliminaire — points de sécurité corrigés ou bloquants
+
+### 12.1 Amorçage de la confiance sur le nouvel appareil
+
+Le nouvel appareil ne peut pas considérer comme fiable une clé publique racine simplement téléchargée depuis le serveur : un serveur compromis pourrait substituer sa propre clé. La mention d'une clé racine « déjà épinglée » dans la procédure doit donc être satisfaite par une cérémonie d'amorçage explicite.
+
+Procédure à spécifier : le nouvel appareil crée un défi aléatoire et ses clés publiques ; l'appareil racine signe un transcript canonique contenant le compte, les identifiants des deux appareils, toutes les clés publiques, les nonces, le défi, les usages et la version du protocole. L'appareil racine transmet au nouvel appareil sa clé publique racine, le certificat et la signature. Les deux appareils calculent indépendamment une courte valeur de comparaison à partir du transcript complet. L'utilisateur compare la même valeur affichée sur les deux écrans, idéalement en présence physique ou par canal vocal indépendant, puis confirme sur les deux appareils. En cas de différence, d'interruption ou d'expiration, l'enrôlement échoue sans activation.
+
+Un QR code seul, ou une clé racine fournie par le serveur, ne suffit pas à authentifier l'identité racine. L'encodage canonique, le calcul de la valeur de comparaison, sa longueur et sa résistance aux erreurs doivent être fixés et revus avant implémentation.
+
+### 12.2 Limites de la clé racine sur PWA
+
+Une clé WebCrypto marquée non exportable ne prouve pas à elle seule un stockage matériel, une résistance à la copie du profil navigateur ou une persistance après réinstallation. La PWA peut servir au parcours initial, mais ne doit pas être présentée comme offrant les mêmes garanties qu'une clé protégée par Android Keystore/TEE/StrongBox ou iOS Keychain avec les attributs adaptés. Les capacités réelles doivent être détectées et affichées honnêtement ; aucune garantie matérielle ne doit être supposée.
+
+### 12.3 Appareil racine : disponibilité et récupération
+
+Le modèle d'un appareil racine unique est une proposition simple, mais il crée un point unique d'approbation et de disponibilité. Si cet appareil est perdu, éteint ou endommagé, aucun nouvel appareil ne peut être approuvé par la voie normale. La récupération du compte avec nouvelle identité et revérification des contacts est donc une procédure de sécurité essentielle, pas une exception administrative. Le modèle ne doit pas être déclaré définitif avant validation de cette conséquence.
+
+### 12.4 Révocation et concurrence
+
+La révocation serveur doit avoir une sémantique transactionnelle et idempotente : après validation de la révocation, toute requête authentifiée avec une session de l'appareil révoqué doit échouer, même si un jeton non expiré existe. Les opérations d'approbation et de révocation concurrentes doivent être sérialisées ; une révocation ne peut jamais être annulée par une approbation tardive ou un rejeu de certificat. Un identifiant de cérémonie ne peut être consommé qu'une fois.
+
+### 12.5 Limite du contrat de domaine ajouté au dépôt
+
+Le module `src/domain/device-management.ts` est un contrat métier pur pour les états pending_verification, active et revoked. Il vérifie des transitions et des invariants d'horodatage ; il n'authentifie pas l'acteur, ne valide aucune signature, ne consulte aucune base, n'invalide aucune session et ne protège aucun endpoint. Tous ces contrôles restent obligatoires côté serveur. Les tests du module ne prouvent donc pas la sécurité du protocole cryptographique complet.
+
+### 12.6 Décision encore requise
+
+Avant toute API ou persistance, l'utilisateur doit valider le principe de l'appareil racine unique approbateur et accepter qu'en cas de perte de cet appareil, la nouvelle identité exige une revérification indépendante des contacts. La revue cryptographique indépendante reste obligatoire.
