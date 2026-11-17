@@ -28,7 +28,7 @@ Ce document évite de confondre une décision de l'utilisateur avec une proposit
 | Contacts | Invitation acceptée obligatoire ; révocation pour les nouvelles alertes |
 | Destinataires | Instantané figé au déclenchement |
 | Localisation | Partage soumis à autorisation ; une position ancienne doit être datée et identifiée |
-| Backend / API | API REST séparée sur Cloudflare Workers, implémentée en TypeScript |
+| Backend / API | API REST séparée via Cloudflare Pages Functions, implémentée en TypeScript |
 | Portabilité mobile | PWA d'abord ; préparation Capacitor pour Android/iOS sans réécriture |
 | Adaptateurs appareil | Interfaces isolées dans `src/services/device/` |
 | Collaboration IA | Claude et Qwen peuvent intervenir via les consignes partagées, sans changer la stack ni les conventions |
