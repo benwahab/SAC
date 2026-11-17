@@ -170,3 +170,53 @@ test("ECDH refuse un sel de dérivation de longueur incorrecte", async () => {
     /32 octets/,
   );
 });
+
+import {
+  createLocationIdentityKeyPair,
+  signLocationKeyBundleWithPublicKey,
+  verifyLocationKeyBundle,
+} from "../src/services/location/key-exchange.ts";
+
+test("une clé ECDH signée est vérifiée avec la clé publique d'identité", async () => {
+  const contactExchange = await createLocationExchangeKeyPair();
+  const identity = await createLocationIdentityKeyPair();
+  const bundle = await signLocationKeyBundleWithPublicKey(
+    "contact-bob",
+    contactExchange.publicKey,
+    identity.privateKey,
+    identity.publicKey,
+  );
+
+  assert.equal(identity.privateKey.extractable, false);
+  assert.equal(await verifyLocationKeyBundle(bundle), true);
+});
+
+test("une modification de l'identité déclarée invalide la signature", async () => {
+  const exchange = await createLocationExchangeKeyPair();
+  const identity = await createLocationIdentityKeyPair();
+  const bundle = await signLocationKeyBundleWithPublicKey(
+    "contact-bob", exchange.publicKey, identity.privateKey, identity.publicKey,
+  );
+
+  assert.equal(
+    await verifyLocationKeyBundle({ ...bundle, ownerId: "contact-eve" }),
+    false,
+  );
+});
+
+test("une substitution de clé ECDH invalide la signature du contact", async () => {
+  const exchange = await createLocationExchangeKeyPair();
+  const substituted = await createLocationExchangeKeyPair();
+  const identity = await createLocationIdentityKeyPair();
+  const bundle = await signLocationKeyBundleWithPublicKey(
+    "contact-bob", exchange.publicKey, identity.privateKey, identity.publicKey,
+  );
+
+  assert.equal(
+    await verifyLocationKeyBundle({
+      ...bundle,
+      exchangePublicKey: await globalThis.crypto.subtle.exportKey("jwk", substituted.publicKey),
+    }),
+    false,
+  );
+});
