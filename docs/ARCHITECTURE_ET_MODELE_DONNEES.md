@@ -433,3 +433,11 @@ Ces routes sont des contrats indicatifs, pas des endpoints existants. Chaque rou
 ## 15.8 Référence du protocole multi-appareils
 
 La proposition de hiérarchie de clés, de cérémonie d'enrôlement, de récupération, de révocation, de contrats API indicatifs et de tests adversariaux est détaillée dans [PROTOCOLE_MULTI_APPAREILS.md](PROTOCOLE_MULTI_APPAREILS.md). Le document est une proposition à valider ; il ne transforme pas les entités et routes conceptuelles en schéma ou API existants.
+
+## 15.9 Contrat TypeScript isolé du cycle de vie appareil
+
+Le module `src/domain/device-management.ts` définit les types `DeviceRecord`, `DevicePlatform`, `DeviceStatus`, les événements et les résultats de transition. La fonction pure `transitionDevice` couvre les transitions pending_verification vers active, pending_verification vers revoked et active vers revoked ; revoked est terminal. Elle vérifie l'appartenance du compte portée par l'événement, les horodatages UTC canoniques et plusieurs invariants de cohérence.
+
+Les tests `tests/device-lifecycle.test.ts` sont exécutés par `npm run test:devices` et intégrés au workflow CI. Ils ne valident ni l'authentification, ni les signatures cryptographiques, ni la persistance, ni les sessions, ni les endpoints. Ce module n'est donc pas une implémentation serveur et ne peut pas être utilisé seul pour autoriser une action sensible.
+
+**Vérification :** CI GitHub Actions run `44191818016`, commit `eab16e659bd6d8759747f466d4dab57962178005` — typecheck, 14 tests de cycle de vie, tests crypto existants, build et audit bloquant des dépendances de production réussis. L'audit complet de l'outillage de développement reste non bloquant selon la configuration existante.
