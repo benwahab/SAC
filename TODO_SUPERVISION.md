@@ -19,6 +19,10 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Finaliser les choix d'authentification, OTP, push, SMS et paiement.
 - [x] Décider la conservation des positions GPS précises : 30 jours après la fin du partage, puis purge automatique définitive des données actives SAC.
 - [ ] Définir et tester le cycle de purge des sauvegardes ainsi que la preuve d'effacement.
+- [x] Vérifier en lecture seule que `sac-db` utilise D1 `version: production`, sans tables, réplication désactivée (17 novembre 2026).
+- [x] Documenter la fenêtre D1 Time Travel (30 jours Paid / 7 jours Free) et le risque de réapparition des positions après restauration.
+- [ ] Concevoir et valider avant migration une protection empêchant les copies GPS historiques D1 de rester déchiffrables au-delà de J+30.
+- [ ] Implémenter la purge de rattrapage et son contrôle bloquant avant toute réouverture après restauration D1.
 - [ ] Finaliser les détails des rappels de Protection des trajets et les relances d'arrivée.
 - [ ] Définir les avantages Premium au-delà des 10 contacts.
 - [ ] Valider les limites et rôles des groupes familiaux.
