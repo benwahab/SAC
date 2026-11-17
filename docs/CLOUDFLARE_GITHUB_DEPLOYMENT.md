@@ -49,7 +49,22 @@ Le backend ne doit pas être remplacé par un Worker autonome déployé séparé
 
 Ne jamais inventer une commande, un binding, une base, un bucket ou une réussite de déploiement.
 
-## 5. Principes de sécurité
+## 5. Rétention GPS et restauration D1
+
+Vérification en lecture seule du 17 novembre 2026 : la base `sac-db` (UUID `892ce876-f279-409c-8f9e-06b1dca66e9d`) existe, utilise `version: production`, ne contient encore aucune table et a la réplication désactivée. Le stockage `production` prend en charge D1 Time Travel.
+
+La documentation Cloudflare indique une fenêtre de restauration Time Travel de 30 jours sur Workers Paid et de 7 jours sur Workers Free. Cette fenêtre est indépendante de la durée de rétention produit SAC. Une restauration peut réintroduire une ancienne ligne GPS supprimée dans l'état courant.
+
+Procédure obligatoire après toute restauration D1 :
+1. maintenir SAC en mode maintenance et bloquer les lectures utilisateur ;
+2. réexécuter la purge GPS à partir des dates de fin de partage et échéances conservées dans les données restaurées ;
+3. vérifier automatiquement qu'aucune position arrivée à échéance n'est lisible ni présente dans les tables actives ;
+4. consigner le résultat sans coordonnées ;
+5. rouvrir le trafic seulement après réussite des contrôles.
+
+Ne pas exporter ni sauvegarder à long terme des coordonnées GPS en clair dans R2 ou ailleurs. La fenêtre Time Travel peut contenir des copies historiques après la suppression active. Pour garantir l'irréversibilité à J+30, une stratégie cryptographique avec destruction indépendante des clés, ou un stockage séparé dont les garanties de TTL et de purge sont démontrées, doit être validée avant toute migration GPS. Cette stratégie n'est pas encore implémentée et aucun stockage GPS ne doit être déclaré conforme avant les tests.
+
+## 6. Principes de sécurité
 
 - Les données D1 ne sont accessibles qu'au travers des contrôles d'autorisation côté serveur.
 - Les objets R2, si utilisés, doivent être privés par défaut ; aucun lien public permanent pour les données sensibles.
