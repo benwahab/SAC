@@ -301,15 +301,15 @@ test("les contextes HKDF ne présentent pas de collision avec des identifiants c
   const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
 
   const firstContextKey = await deriveLocationDirectionalKey(
-    alice.privateKey, bob.publicKey, salt, "a:b", "alice", "bob", "alice",
+    alice.privateKey, bob.publicKey, salt, "session", "a:b", "c", "a:b",
   );
   const secondContextKey = await deriveLocationDirectionalKey(
-    alice.privateKey, bob.publicKey, salt, "a", "bob", "c", "alice",
+    alice.privateKey, bob.publicKey, salt, "session", "a", "b:c", "a",
   );
-  const packet = await encryptLocationPayload("context-bound", firstContextKey, "a:b");
+  const packet = await encryptLocationPayload("context-bound", firstContextKey, "session");
 
   await assert.rejects(
-    decryptLocationPayload(packet, secondContextKey, "a:b"),
+    decryptLocationPayload(packet, secondContextKey, "session"),
   );
 });
 
