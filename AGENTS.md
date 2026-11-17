@@ -5,11 +5,13 @@ Tu interviens sur **SAC — Sécurité, Alerte, Citoyenne**, application privée
 ## Lecture obligatoire
 Avant toute tâche, lis :
 1. `README.md`
-2. `docs/CAHIER_DES_CHARGES_SAC.md`
-3. `docs/ARCHITECTURE_ET_MODELE_DONNEES.md`
-4. `docs/CONSIGNES_DE_TRAVAIL.md`
-5. `docs/DECISIONS_ET_POINTS_A_VALIDER.md`
-6. `docs/CLOUDFLARE_GITHUB_DEPLOYMENT.md`
+2. `ARCHITECTURE.md`
+3. `TODO_SUPERVISION.md`
+4. `docs/CAHIER_DES_CHARGES_SAC.md`
+5. `docs/ARCHITECTURE_ET_MODELE_DONNEES.md`
+6. `docs/CONSIGNES_DE_TRAVAIL.md`
+7. `docs/DECISIONS_ET_POINTS_A_VALIDER.md`
+8. `docs/CLOUDFLARE_GITHUB_DEPLOYMENT.md`
 
 ## Stack verrouillée
 - React
