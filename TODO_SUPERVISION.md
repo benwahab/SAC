@@ -18,11 +18,11 @@
 - [x] CI GitHub Actions : npm install et npm run build réussis le 17/11/2026.
 - [ ] Activer R2 dans le dashboard puis créer sac-report-media privé.
 - [ ] Ajouter binding R2 MEDIA à Pages.
-- [ ] Vérifier la fin du premier déploiement Pages.
+- [x] Premier déploiement Pages réussi avec Pages Functions et D1.
 - [ ] Créer les comptes professionnels nominatifs.
 
 ## P0 sécurité
-- [ ] Remplacer le secret admin partagé par identité nominative, rôles, sessions et révocation.
+- [ ] Remplacer le secret admin partagé par identité nominative, rôles, sessions et révocation.\n- [ ] Examiner les 6 alertes HIGH restantes dans les outils de développement (npm audit) ; aucune CRITICAL restante après mise à niveau.
 - [ ] Ajouter Turnstile/WAF et rate limiting distribué.
 - [ ] Ajouter route média avec autorisation ; aucun accès public R2.
 - [ ] Définir rétention, purge, export et suppression des coordonnées/médias.
