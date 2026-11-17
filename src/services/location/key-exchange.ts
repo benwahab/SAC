@@ -149,7 +149,7 @@ export async function signLocationKeyBundleWithPublicKey(
   const signature = await cryptoProvider.subtle.sign(
     { name: "ECDSA", hash: "SHA-256" },
     identityPrivateKey,
-    canonicalBundlePayload(ownerId, exchangeJwk),
+    toArrayBuffer(canonicalBundlePayload(ownerId, exchangeJwk)),
   );
   return {
     version: 1,
@@ -191,7 +191,7 @@ export async function verifyLocationKeyBundle(
       { name: "ECDSA", hash: "SHA-256" },
       identityKey,
       toArrayBuffer(bundle.signature),
-      canonicalBundlePayload(bundle.ownerId, bundle.exchangePublicKey),
+      toArrayBuffer(canonicalBundlePayload(bundle.ownerId, bundle.exchangePublicKey)),
     );
   } catch {
     return false;
