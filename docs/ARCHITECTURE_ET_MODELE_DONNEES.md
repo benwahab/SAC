@@ -330,3 +330,12 @@ Cette proposition vise à empêcher qu'une restauration D1/R2 puisse réintrodui
 Le modèle de clés envisagé est une clé aléatoire indépendante par session de partage, stockée dans Android Keystore ou iOS Keychain selon les capacités vérifiées de l'appareil. Les fichiers GPS chiffrés doivent être exclus des sauvegardes applicatives lorsque la plateforme le permet.
 
 **Limite non résolue :** les systèmes mobiles ne garantissent pas le réveil de l'application à une heure exacte. L'expiration doit bloquer le déchiffrement dès la première exécution après J+30 et déclencher la suppression de la clé ; la destruction matérielle à l'instant précis J+30 lorsque le téléphone est éteint n'est pas démontrée. Aucun code métier ni stockage GPS ne doit être implémenté avant validation du prototype, des scénarios de restauration et de la politique finale de rétention.
+
+
+## 1.7 Transport candidat des positions en direct
+
+Cloudflare Pages Functions prend en charge les bindings vers un Durable Object défini dans un Worker séparé. Cette possibilité est étudiée comme un relais WebSocket auxiliaire : Pages Functions conserve le contrôle de l'authentification et des autorisations ; le relais transmet uniquement des paquets GPS chiffrés aux destinataires connectés.
+
+Le Durable Object ne doit jamais écrire de coordonnées ni de paquets GPS dans SQLite, KV, D1, R2, les attachments WebSocket, les logs ou les traces. Les attachments de connexion, qui peuvent survivre à l'hibernation, ne peuvent contenir que des identifiants opaques de routage. Si un destinataire est hors ligne, le relais ne met pas la position en attente : une notification générique peut l'inviter à ouvrir SAC, puis le partage en direct reprend si l'auteur est encore connecté et autorisé.
+
+Cette extension nécessite un Worker auxiliaire qui héberge la classe Durable Object. Elle ne remplace pas Pages Functions comme API métier et ne doit pas être créée ou déployée avant validation explicite. Le fonctionnement hors ligne, la livraison en arrière-plan, les coûts et l'absence de persistance doivent être testés.
