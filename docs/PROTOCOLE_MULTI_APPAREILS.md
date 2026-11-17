@@ -302,7 +302,7 @@ La protection contre cette substitution repose donc sur l'ancrage indépendant d
 Le prototype local `src/services/location/key-exchange.ts` expose désormais `deriveLocationDirectionalKey`.
 
 - Les deux appareils reçoivent les mêmes identifiants canoniques de session, d'émetteur et de destinataire.
-- Le contexte HKDF versionné inclut la session, l'émetteur, le destinataire, l'usage « location-payload » et l'algorithme AES-256-GCM.
+- Le contexte HKDF versionné v4 inclut le compte, la cérémonie, la session, l'émetteur, le destinataire, l'usage « location-payload » et l'algorithme AES-256-GCM.
 - L'appareil identifié comme émetteur obtient une CryptoKey utilisable uniquement pour `encrypt`.
 - L'appareil identifié comme destinataire obtient la clé correspondante utilisable uniquement pour `decrypt`.
 - Le sens inverse inverse les identifiants émetteur/destinataire : il produit une clé distincte et les usages WebCrypto sont eux aussi inversés.
@@ -310,7 +310,7 @@ Le prototype local `src/services/location/key-exchange.ts` expose désormais `de
 
 Les tests couvrent le déchiffrement normal, l'échec avec la clé du sens inverse, l'impossibilité d'utiliser une clé de réception pour chiffrer, et le refus d'un appareil étranger.
 
-**Limites et conditions restantes :** cette fonction ne lie pas encore le compte et l'identifiant de cérémonie au contexte HKDF. Elle ne vérifie pas non plus le certificat qui authentifie l'association entre les identifiants et les clés publiques. Ces données doivent être intégrées au transcript signé et validées par la couche d'identité avant toute utilisation. Les identifiants fournis à la fonction ne sont pas, à eux seuls, une preuve d'identité. La version du prototype n'est pas une autorisation de transport GPS réel.
+**Limites et conditions restantes :** la fonction HKDF ne vérifie pas elle-même les certificats. Un prototype séparé de certificat d'appareil secondaire signé ECDSA P-256 par une clé racine de confiance est ajouté dans `src/services/device/device-certificate.ts`. Le vérificateur exige une clé racine fournie comme ancre de confiance par l'appelant ; il ne fait jamais confiance à une clé racine reçue du serveur ou du certificat. Ce certificat lie compte, appareil, plateforme, date, clés publiques et empreinte racine. Il ne gère pas la révocation serveur, les sessions, la cérémonie complète ni la persistance. Il reste à intégrer la vérification du certificat avant toute dérivation, et à lier les identifiants de session au transcript signé. La version du prototype n'est pas une autorisation de transport GPS réel.
 
 **État :** séparation directionnelle expérimentale implémentée et testée en CI ; revue cryptographique indépendante, contexte final complet, authentification des appareils et preuve J+30 toujours obligatoires.
 
@@ -320,3 +320,17 @@ Les tests couvrent le déchiffrement normal, l'échec avec la clé du sens inver
 Le prototype de dérivation directionnelle lie maintenant explicitement le compte et l'identifiant de cérémonie, en plus de la session, de l'émetteur, du destinataire, de l'usage et de l'algorithme. Les tests vérifient qu'une clé dérivée pour un autre compte ou une autre cérémonie ne déchiffre pas le paquet.
 
 Cette liaison contextuelle ne remplace pas l'authentification des appareils : les identifiants d'émetteur et de destinataire doivent provenir de certificats valides signés sous la racine de confiance. La fonction reste expérimentale et non connectée aux positions GPS.
+
+
+## 18. Certificat expérimental d'appareil secondaire signé par la racine
+
+Le dépôt contient maintenant `src/services/device/device-certificate.ts`. Il permet à une clé racine ECDSA P-256 déjà approuvée de signer un certificat secondaire qui lie :
+- l'identifiant du compte et l'identifiant stable de l'appareil ;
+- la plateforme (web, Android ou iOS) et la date canonique d'émission ;
+- la clé publique d'identité ECDSA P-256 et la clé publique d'échange ECDH P-256 ;
+- l'empreinte de la clé racine qui a signé le certificat ;
+- le domaine d'usage fixe du certificat (échange de localisation SAC).
+
+La vérification reçoit obligatoirement la clé publique racine de confiance séparément. Elle recalcule son empreinte et vérifie la signature ; elle ne récupère jamais l'ancre de confiance depuis le certificat. Les tests adversariaux couvrent compte/appareil altéré, clé ECDH substituée, autre racine, signature altérée, certificat mal formé et paire racine incohérente.
+
+**Limites importantes :** le certificat ne constitue pas une cérémonie d'enrôlement complète. Il ne prouve pas que l'utilisateur a comparé les empreintes, ne stocke aucun état, ne révoque aucune session, ne vérifie pas le statut actif côté serveur et ne résout pas les courses d'approbation/révocation. L'appelant doit charger une ancre racine déjà vérifiée et vérifier l'état de révocation serveur à chaque autorisation. Ne pas utiliser avec le GPS réel avant revue indépendante.
