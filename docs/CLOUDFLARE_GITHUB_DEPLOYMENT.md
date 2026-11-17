@@ -1,75 +1,63 @@
 # SAC — Connexion GitHub et préparation Cloudflare
 
 **État vérifié le 17 novembre 2026.**  
-**Statut :** connexion configurée ; chaîne de compilation non encore validée.  
-**Périmètre :** configuration et documentation uniquement. Aucun code applicatif n'est créé ni déployé par ce document.
+**Statut :** cible d'architecture corrigée ; environnement Cloudflare à remettre en place avant le premier déploiement.  
+**Périmètre :** documentation et audit uniquement. Aucun code applicatif ni service Cloudflare n'est créé dans cette étape.
 
-## 1. Dépôt source officiel
+## 1. Source officielle
 
-- Dépôt GitHub : `benwahab/SAC`
-- Branche surveillée : `main`
-- Source de contrôle : GitHub
-- Règle de projet : une seule branche, aucun développement sur une branche secondaire.
+- Dépôt : `benwahab/SAC`
+- Branche unique : `main`
+- Tout le travail est effectué directement sur GitHub.
+- Aucun dépôt Lovable, dépôt miroir ou branche secondaire.
 
-Cloudflare Workers Builds référence le dépôt GitHub SAC et surveille la branche `main`. La compilation automatique est activée et les déploiements Preview sont activés.
+## 2. Architecture Cloudflare demandée pour SAC
 
-## 2. Worker Cloudflare existant
+La cible demandée dans le cahier des charges est :
 
-Un Worker nommé `sac` est présent dans le compte Cloudflare connecté.
+- **Cloudflare Pages** pour héberger la PWA React/Vite ;
+- **Cloudflare Pages Functions** pour l'API REST en TypeScript, dans `functions/api/` ;
+- **Cloudflare D1** comme base relationnelle ;
+- **Cloudflare R2** pour le stockage privé des fichiers si le service est activé et autorisé sur le compte ;
+- les migrations D1, les contrats API et les configurations nécessaires doivent être versionnés dans le dépôt.
 
-Configuration lue :
-- dépôt lié : `benwahab/SAC` ;
-- branche : `main` ;
-- répertoire racine : `/` ;
-- compilation automatique : activée ;
-- aperçus Preview : activés ;
-- commande de compilation : vide ;
-- commande de déploiement de production : `npx wrangler deploy` ;
-- commande Preview : `npx wrangler preview` ;
-- filtrage de branche : `main` ;
-- déclencheur Workers Builds : présent.
+Le backend ne doit pas être remplacé par un Worker autonome déployé séparément sans validation explicite. Les tâches planifiées, rappels et notifications doivent être implémentés avec des mécanismes compatibles avec la cible Cloudflare et testés avant toute mise en production.
 
-Aucun projet Cloudflare Pages n'a été trouvé dans le compte lors de la vérification. SAC est donc préparé comme un Worker Cloudflare avec Workers Builds, et non comme un projet Pages.
+## 3. État réellement constaté lors de l'audit
 
-## 3. Ce que cette vérification prouve — et ne prouve pas
+- Aucun projet Cloudflare Pages n'est actuellement présent dans le compte au moment de la vérification.
+- Le projet Pages nommé `sac-citoyen` et la base D1 `sac-citoyen-db` qui avaient été créés dans le contexte de l'application erronée de signalement ont été supprimés. Cette suppression a aussi laissé l'environnement sans projet Pages ni base D1 ; il ne faut pas prétendre que ces services sont actuellement opérationnels.
+- Le compte ne permettait pas de confirmer la disponibilité de R2 : l'accès à la liste R2 a retourné une erreur indiquant que R2 doit être activé depuis le tableau de bord.
+- Un Worker nommé `sac` existe. Son code, ses bindings et son rôle exact n'ont pas encore été audités. Il est conservé sans être considéré comme le backend officiel de SAC.
 
-La liaison technique GitHub–Cloudflare et le déclencheur de build sur `main` sont configurés.
+**Conséquence :** la configuration Cloudflare actuelle n'est pas prête pour déployer la véritable application SAC. Aucun build ni déploiement de l'application n'a été confirmé.
 
-En revanche, cela ne prouve pas qu'une compilation de l'application SAC a déjà réussi ni qu'une version applicative est en production. Le Worker existant a été créé depuis un modèle du tableau de bord (`dash_template`) et ne constitue pas, à lui seul, la preuve que le produit SAC est déployé.
+## 4. Règles de reconstruction de l'environnement
 
-## 4. Pourquoi aucune commande de build n'est renseignée
+Quand le développement et la configuration seront autorisés :
 
-Le dépôt contient actuellement la documentation du projet, pas encore le code de l'application. Il ne contient donc pas de manifeste de dépendances ni de configuration de build permettant de choisir une commande correcte.
+1. Auditer le Worker `sac` existant (code, routes, variables, secrets et bindings) avant toute modification ou suppression.
+2. Créer/configurer le projet Cloudflare Pages connecté au dépôt `benwahab/SAC`, branche `main`, avec le répertoire de build et les commandes correspondant aux fichiers réels du projet.
+3. Ajouter les Pages Functions dans `functions/api/`, sans second backend.
+4. Créer la base D1 officielle SAC et versionner les migrations SQL dans GitHub.
+5. Vérifier l'activation de R2 ; s'il est autorisé, créer le bucket privé et ses bindings. Sinon, garder le stockage désactivé et documenter la configuration attendue sans simuler son fonctionnement.
+6. Définir les variables d'environnement et secrets uniquement dans Cloudflare, jamais dans Git.
+7. Configurer les tâches planifiées et mécanismes de notification nécessaires, avec idempotence et journalisation.
+8. Exécuter `npm run build` après création du véritable projet, puis tester les Pages Functions, D1, R2 (si activé), les permissions et les scénarios d'alerte.
+9. Vérifier le déploiement et son URL réelle avant de déclarer SAC publié.
 
-Il serait incorrect d'inventer maintenant une commande telle que `npm run build` ou de lancer `npx wrangler deploy` sans application et sans configuration Wrangler validées.
+Ne jamais inventer une commande, un binding, une base, un bucket ou une réussite de déploiement.
 
-## 5. Préparation requise avant le premier déploiement applicatif
+## 5. Principes de sécurité
 
-Avant d'activer une véritable chaîne de déploiement :
+- Les données D1 ne sont accessibles qu'au travers des contrôles d'autorisation côté serveur.
+- Les objets R2, si utilisés, doivent être privés par défaut ; aucun lien public permanent pour les données sensibles.
+- Aucun secret Cloudflare ou fournisseur ne doit être committé.
+- Les positions et événements d'alerte sont des données particulièrement sensibles.
+- Les migrations doivent être versionnées, relues et testées avant production.
+- Un environnement Preview ne doit pas recevoir de vraies données personnelles ou de véritables alertes.
 
-1. Confirmer l'architecture d'exécution Cloudflare compatible avec le framework frontend retenu.
-2. Définir et valider la structure du projet et les versions des outils.
-3. Ajouter les fichiers de configuration requis (dont la configuration Wrangler adaptée au projet).
-4. Définir les commandes exactes de compilation et de déploiement à partir des scripts réellement présents.
-5. Définir les variables d'environnement et secrets côté Cloudflare, sans jamais les committer dans Git.
-6. Vérifier les bindings et services nécessaires (base de données, stockage, files/queues, tâches planifiées, notifications) avant leur utilisation.
-7. Exécuter un premier build contrôlé, examiner les logs, puis vérifier le résultat du déploiement.
-8. Confirmer explicitement le comportement de production avant de considérer SAC comme publié.
+## 6. Source de vérité et collaboration
 
-Les choix de base de données, d'authentification, de SMS, de paiement et de cartographie restent à valider dans les documents de décisions. Leur configuration Cloudflare ne doit pas être inventée.
+GitHub `benwahab/SAC`, branche `main`, reste la source de vérité. Claude et Qwen peuvent contribuer au même dépôt, après lecture de `AGENTS.md` et des documents de référence. Ils ne peuvent modifier le langage, la stack, l'architecture ou les règles métier sans validation explicite.
 
-## 6. Règles de travail Cloudflare
-
-- GitHub `benwahab/SAC`, branche `main`, reste l'unique source de vérité.
-- Les modifications de code et de configuration sont enregistrées directement sur `main`.
-- Cloudflare construit et héberge les composants retenus ; il ne remplace pas GitHub comme dépôt source.
-- Aucun projet Lovable n'est utilisé.
-- Ne pas créer de deuxième branche, de dépôt miroir ou de pipeline parallèle.
-- Ne pas déployer une configuration vide ou un Worker modèle en prétendant qu'il s'agit de l'application fonctionnelle.
-- Ne jamais exposer de secrets dans le dépôt.
-- Avant chaque changement Cloudflare, inspecter la configuration actuelle et mesurer l'impact.
-- Après chaque changement, vérifier la configuration enregistrée et les résultats réels des builds.
-
-## 7. Prochaine étape
-
-La prochaine étape technique, après autorisation de commencer le développement, sera de choisir et valider l'architecture d'application compatible avec Cloudflare, puis d'ajouter les fichiers de projet et de configurer les commandes de build à partir de ceux-ci. Cette étape ne doit pas être remplacée par une commande générique supposée.
