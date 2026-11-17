@@ -25,6 +25,8 @@ test("un appareil en attente devient actif après approbation du même compte", 
   const result = transitionDevice(makeDevice(), {
     type: "approve",
     actorAccountId: "account-a",
+    actorDeviceId: "root-device",
+    rootDeviceId: "root-device",
     at: verifiedAt,
   });
 
@@ -40,6 +42,8 @@ test("la transition ne modifie pas l enregistrement initial", () => {
   const result = transitionDevice(original, {
     type: "approve",
     actorAccountId: "account-a",
+    actorDeviceId: "root-device",
+    rootDeviceId: "root-device",
     at: verifiedAt,
   });
 
@@ -84,16 +88,42 @@ test("un appareil révoqué est terminal et ne peut pas être réactivé", () =>
   const result = transitionDevice(revoked, {
     type: "approve",
     actorAccountId: "account-a",
+    actorDeviceId: "root-device",
+    rootDeviceId: "root-device",
     at: "2026-11-17T10:15:00.000Z",
   });
 
   assert.deepEqual(result, { ok: false, error: "device_already_revoked" });
 });
 
+test("un appareil secondaire ne peut pas approuver un autre appareil", () => {
+  const result = transitionDevice(makeDevice(), {
+    type: "approve",
+    actorAccountId: "account-a",
+    actorDeviceId: "secondary-device",
+    rootDeviceId: "root-device",
+    at: verifiedAt,
+  });
+  assert.deepEqual(result, { ok: false, error: "approval_not_from_root" });
+});
+
+test("l'appareil racine ne peut pas être enrôlé comme appareil secondaire", () => {
+  const result = transitionDevice(makeDevice({ deviceId: "root-device" }), {
+    type: "approve",
+    actorAccountId: "account-a",
+    actorDeviceId: "root-device",
+    rootDeviceId: "root-device",
+    at: verifiedAt,
+  });
+  assert.deepEqual(result, { ok: false, error: "root_device_cannot_be_secondary" });
+});
+
 test("un appareil actif ne peut pas être approuvé une seconde fois", () => {
   const result = transitionDevice(makeDevice({ status: "active", verifiedAt }), {
     type: "approve",
     actorAccountId: "account-a",
+    actorDeviceId: "root-device",
+    rootDeviceId: "root-device",
     at: "2026-11-17T10:15:00.000Z",
   });
 
@@ -114,6 +144,8 @@ test("un horodatage non canonique ou invalide est refusé", () => {
   const result = transitionDevice(makeDevice(), {
     type: "approve",
     actorAccountId: "account-a",
+    actorDeviceId: "root-device",
+    rootDeviceId: "root-device",
     at: "not-a-date",
   });
 
@@ -124,6 +156,8 @@ test("une transition antérieure à la création est refusée", () => {
   const result = transitionDevice(makeDevice(), {
     type: "approve",
     actorAccountId: "account-a",
+    actorDeviceId: "root-device",
+    rootDeviceId: "root-device",
     at: "2026-11-17T09:59:59.000Z",
   });
 
@@ -182,6 +216,8 @@ test("un appareil révoqué ne peut pas avoir une dernière activité postérieu
   }), {
     type: "approve",
     actorAccountId: "account-a",
+    actorDeviceId: "root-device",
+    rootDeviceId: "root-device",
     at: "2026-11-17T10:15:00.000Z",
   });
 
