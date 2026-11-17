@@ -314,3 +314,8 @@ Aucune migration ne doit être créée avant :
 6. autorisation explicite de commencer le développement.
 
 Ce document décrit une architecture cible, pas un système déjà construit.
+
+
+## 12. Précision : aucun KMS validé pour J+30
+
+L'étude complémentaire dans [SECURITE_GPS_DESTRUCTION_CRYPTO.md](SECURITE_GPS_DESTRUCTION_CRYPTO.md) conclut qu'aucun candidat examiné (Google Cloud KMS, AWS KMS, AWS CloudHSM, secrets Workers) ne démontre à ce stade la destruction irréversible de toutes copies de clés au plus tard à J+30. Les fenêtres réversibles et sauvegardes doivent être considérées dans la menace. Aucun de ces services ne doit être sélectionné par défaut. Le contrôle serveur doit refuser toute lecture GPS dès l'échéance, mais ce contrôle n'est pas assimilé à une destruction cryptographique.
