@@ -62,7 +62,11 @@ Procédure obligatoire après toute restauration D1 :
 4. consigner le résultat sans coordonnées ;
 5. rouvrir le trafic seulement après réussite des contrôles.
 
-Ne pas exporter ni sauvegarder à long terme des coordonnées GPS en clair dans R2 ou ailleurs. La fenêtre Time Travel peut contenir des copies historiques après la suppression active. Pour garantir l'irréversibilité à J+30, une stratégie cryptographique avec destruction indépendante des clés, ou un stockage séparé dont les garanties de TTL et de purge sont démontrées, doit être validée avant toute migration GPS. Cette stratégie n'est pas encore implémentée et aucun stockage GPS ne doit être déclaré conforme avant les tests.
+**Exigence utilisateur ferme : après 30 jours, aucune restauration ne doit permettre de récupérer ou de rendre lisibles les coordonnées GPS expirées.** Cela inclut D1 Time Travel, les sauvegardes, snapshots, exports, réplications et restaurations partielles ou complètes.
+
+Une simple suppression SQL suivie d'une purge de rattrapage ne suffit pas : elle peut empêcher l'accès dans la base restaurée, mais ne détruit pas les copies historiques. La cible obligatoire est un chiffrement des positions avant persistance, avec clés isolées de D1 et destruction cryptographique vérifiable à l'échéance. Les clés détruites ne doivent pas être restaurables depuis les sauvegardes. Une restauration peut éventuellement réintroduire des données chiffrées, mais celles-ci doivent rester définitivement indéchiffrables. Le gestionnaire de clés et son cycle de vie doivent être audités et testés avant toute migration GPS.
+
+En attendant cette preuve, il est interdit de stocker des coordonnées GPS en clair dans D1, R2, un export ou une sauvegarde. Aucun stockage GPS ne doit être déclaré conforme tant que des tests de restauration d'une copie antérieure à J+30 ne démontrent pas l'impossibilité de récupérer les coordonnées.
 
 ## 6. Principes de sécurité
 
