@@ -17,7 +17,28 @@ function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
 }
 
 function requireContext(value: string, label: string): void {
-  if (!value.trim()) throw new Error(`Le contexte ${label} est obligatoire.`);
+  if (
+    typeof value !== "string" ||
+    !value.trim() ||
+    value.length > 256 ||
+    /[\\u0000-\\u001f\\u007f]/.test(value)
+  ) {
+    throw new Error(`Le contexte ${label} est invalide.`);
+  }
+}
+
+function isP256PublicJwk(value: unknown): value is JsonWebKey {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const jwk = value as Record<string, unknown>;
+  return (
+    jwk.kty === "EC" &&
+    jwk.crv === "P-256" &&
+    typeof jwk.x === "string" &&
+    /^[A-Za-z0-9_-]{43}$/.test(jwk.x) &&
+    typeof jwk.y === "string" &&
+    /^[A-Za-z0-9_-]{43}$/.test(jwk.y) &&
+    !("d" in jwk)
+  );
 }
 
 export interface LocationExchangeKeyPair {
@@ -55,6 +76,9 @@ export async function deriveLocationRecipientKey(
     throw new Error("Le sel de dérivation doit contenir 32 octets.");
   }
   if (
+    ownPrivateKey.type !== "private" ||
+    remotePublicKey.type !== "public" ||
+    !ownPrivateKey.usages.includes("deriveBits") ||
     ownPrivateKey.algorithm.name !== "ECDH" ||
     remotePublicKey.algorithm.name !== "ECDH" ||
     (ownPrivateKey.algorithm as EcKeyAlgorithm).namedCurve !== "P-256" ||
@@ -74,7 +98,7 @@ export async function deriveLocationRecipientKey(
       name: "HKDF",
       hash: "SHA-256",
       salt: toArrayBuffer(salt),
-      info: encoder.encode(`SAC:location-recipient:v1:${sessionId}:${recipientId}`),
+      info: encoder.encode(JSON.stringify(["SAC:location-recipient:v2", sessionId, recipientId])),
     },
     hkdfKey,
     { name: "AES-GCM", length: 256 },
@@ -100,12 +124,7 @@ function canonicalBundlePayload(
   exchangePublicKey: JsonWebKey,
 ): Uint8Array {
   requireContext(ownerId, "du propriétaire");
-  if (
-    exchangePublicKey.kty !== "EC" ||
-    exchangePublicKey.crv !== "P-256" ||
-    typeof exchangePublicKey.x !== "string" ||
-    typeof exchangePublicKey.y !== "string"
-  ) {
+  if (!isP256PublicJwk(exchangePublicKey)) {
     throw new Error("La clé publique ECDH P-256 est invalide.");
   }
   return encoder.encode(JSON.stringify([
@@ -138,9 +157,18 @@ export async function signLocationKeyBundleWithPublicKey(
   cryptoProvider: Crypto = globalThis.crypto,
 ): Promise<SignedLocationKeyBundle> {
   if (
+    exchangePublicKey.type !== "public" ||
+    identityPrivateKey.type !== "private" ||
+    identityPublicKey.type !== "public" ||
+    !exchangePublicKey.usages.includes("deriveBits") && exchangePublicKey.usages.length !== 0 ||
+    !identityPrivateKey.usages.includes("sign") ||
+    !identityPublicKey.usages.includes("verify") ||
     exchangePublicKey.algorithm.name !== "ECDH" ||
     identityPrivateKey.algorithm.name !== "ECDSA" ||
-    identityPublicKey.algorithm.name !== "ECDSA"
+    identityPublicKey.algorithm.name !== "ECDSA" ||
+    (exchangePublicKey.algorithm as EcKeyAlgorithm).namedCurve !== "P-256" ||
+    (identityPrivateKey.algorithm as EcKeyAlgorithm).namedCurve !== "P-256" ||
+    (identityPublicKey.algorithm as EcKeyAlgorithm).namedCurve !== "P-256"
   ) {
     throw new Error("Types de clés incompatibles pour la signature.");
   }
@@ -151,13 +179,17 @@ export async function signLocationKeyBundleWithPublicKey(
     identityPrivateKey,
     toArrayBuffer(canonicalBundlePayload(ownerId, exchangeJwk)),
   );
-  return {
+  const bundle: SignedLocationKeyBundle = {
     version: 1,
     ownerId,
     exchangePublicKey: exchangeJwk,
     identityPublicKey: identityJwk,
     signature: new Uint8Array(signature),
   };
+  if (!(await verifyLocationKeyBundle(bundle, cryptoProvider))) {
+    throw new Error("La clé privée de signature ne correspond pas à la clé publique fournie.");
+  }
+  return bundle;
 }
 
 /**
@@ -169,17 +201,23 @@ export async function verifyLocationKeyBundle(
   bundle: SignedLocationKeyBundle,
   cryptoProvider: Crypto = globalThis.crypto,
 ): Promise<boolean> {
-  if (
-    bundle.version !== 1 ||
-    !bundle.ownerId.trim() ||
-    bundle.identityPublicKey.kty !== "EC" ||
-    bundle.identityPublicKey.crv !== "P-256" ||
-    bundle.exchangePublicKey.kty !== "EC" ||
-    bundle.exchangePublicKey.crv !== "P-256"
-  ) {
-    return false;
-  }
   try {
+    if (
+      typeof bundle !== "object" ||
+      bundle === null ||
+      bundle.version !== 1 ||
+      typeof bundle.ownerId !== "string" ||
+      !bundle.ownerId.trim() ||
+      bundle.ownerId.length > 256 ||
+      /[\\u0000-\\u001f\\u007f]/.test(bundle.ownerId) ||
+      !isP256PublicJwk(bundle.identityPublicKey) ||
+      !isP256PublicJwk(bundle.exchangePublicKey) ||
+      !(bundle.signature instanceof Uint8Array) ||
+      bundle.signature.byteLength !== 64
+    ) {
+      return false;
+    }
+
     const identityKey = await cryptoProvider.subtle.importKey(
       "jwk",
       bundle.identityPublicKey,
