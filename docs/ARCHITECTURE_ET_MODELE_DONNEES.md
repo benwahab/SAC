@@ -118,7 +118,7 @@ Une alerte ne doit pas dépendre de la présence d'une position. Les coordonnée
 - `trip_locations` : positions partagées, horodatage et précision.
 - `arrival_checks` : confirmations d'arrivée, rappels et absence de confirmation.
 
-Les droits d'accès aux positions d'un trajet sont limités aux participants explicitement autorisés et à la durée choisie. Les durées fonctionnelles prévues sont : position ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à la clôture de l'alerte/du trajet selon le parcours. Chaque position conserve son horodatage et son niveau de précision ; une position ancienne n'est jamais présentée comme une position en direct. La durée de conservation technique après la fin du partage reste à valider avant migration.
+Les droits d'accès aux positions d'un trajet sont limités aux participants explicitement autorisés et à la durée choisie. Les durées fonctionnelles prévues sont : position ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à la clôture de l'alerte/du trajet selon le parcours. Chaque position conserve son horodatage et son niveau de précision ; une position ancienne n'est jamais présentée comme une position en direct. Décision validée : les positions GPS précises sont conservées 30 jours à compter de la fin du partage concerné, puis supprimées automatiquement et définitivement des données actives SAC. Pour un partage ponctuel, le délai part de la collecte. Les événements non géographiques peuvent être conservés dans l'historique sans coordonnées précises. Les coordonnées ne doivent pas être recopiées dans les journaux. La purge des sauvegardes doit respecter un cycle documenté garantissant leur disparition.
 
 ### 3.6 Programmation et notifications
 
@@ -148,7 +148,7 @@ Ne jamais journaliser les codes, OTP, secrets, jetons d'accès ou coordonnées d
 - Les tâches de rappel et d'alerte différée possèdent une clé d'idempotence unique.
 - Une notification est reliée à un destinataire et à un canal précis.
 - Un abonnement ne dépasse pas les limites de contacts de sa formule.
-- Les positions doivent toujours avoir un horodatage et un propriétaire/droit d'accès vérifiable. Les fenêtres de partage autorisées sont ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à clôture selon le parcours ; la politique de purge après partage reste un point bloquant avant migration.
+- Les positions doivent toujours avoir un horodatage et un propriétaire/droit d'accès vérifiable. Les fenêtres de partage autorisées sont ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à clôture selon le parcours. La conservation des positions précises est limitée à 30 jours après la fin du partage, puis une purge automatique définitive des données actives est obligatoire.
 
 ## 5. États métier proposés
 
@@ -275,7 +275,7 @@ Les index définitifs doivent être justifiés par les requêtes réelles et mes
 - Mécanisme de file de tâches et planification.
 - Fournisseur OTP, SMS, push et paiement.
 - Fournisseur cartographique.
-- Politique de rétention et purge des positions.
+- Cycle de purge des sauvegardes et vérification de l'effacement des positions GPS après 30 jours.
 - Politique de sauvegarde et de restauration.
 - Déploiement, hébergement et monitoring.
 
