@@ -128,10 +128,10 @@ test("ECDH dérive une clé d’envoi et une clé de réception compatibles et n
   const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
 
   const aliceKey = await deriveLocationDirectionalKey(
-    alice.privateKey, bob.publicKey, salt, "session-1", "alice", "bob", "alice",
+    alice.privateKey, bob.publicKey, salt, "account-test", "ceremony-test", "session-1", "alice", "bob", "alice",
   );
   const bobKey = await deriveLocationDirectionalKey(
-    bob.privateKey, alice.publicKey, salt, "session-1", "alice", "bob", "bob",
+    bob.privateKey, alice.publicKey, salt, "account-test", "ceremony-test", "session-1", "alice", "bob", "bob",
   );
 
   assert.equal(alice.privateKey.extractable, false);
@@ -149,16 +149,16 @@ test("les clés de transport sont distinctes et limitées à leur direction", as
   const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
 
   const aliceToBob = await deriveLocationDirectionalKey(
-    alice.privateKey, bob.publicKey, salt, "session-direction", "alice", "bob", "alice",
+    alice.privateKey, bob.publicKey, salt, "account-test", "ceremony-test", "session-direction", "alice", "bob", "alice",
   );
   const bobReceives = await deriveLocationDirectionalKey(
-    bob.privateKey, alice.publicKey, salt, "session-direction", "alice", "bob", "bob",
+    bob.privateKey, alice.publicKey, salt, "account-test", "ceremony-test", "session-direction", "alice", "bob", "bob",
   );
   const bobToAlice = await deriveLocationDirectionalKey(
-    bob.privateKey, alice.publicKey, salt, "session-direction", "bob", "alice", "bob",
+    bob.privateKey, alice.publicKey, salt, "account-test", "ceremony-test", "session-direction", "bob", "alice", "bob",
   );
   const aliceReceives = await deriveLocationDirectionalKey(
-    alice.privateKey, bob.publicKey, salt, "session-direction", "bob", "alice", "alice",
+    alice.privateKey, bob.publicKey, salt, "account-test", "ceremony-test", "session-direction", "bob", "alice", "alice",
   );
 
   assert.deepEqual(aliceToBob.usages, ["encrypt"]);
@@ -179,7 +179,7 @@ test("une identité locale qui ne correspond ni à l'émetteur ni au destinatair
   const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
   await assert.rejects(
     deriveLocationDirectionalKey(
-      alice.privateKey, bob.publicKey, salt, "session-1", "alice", "bob", "eve",
+      alice.privateKey, bob.publicKey, salt, "account-test", "ceremony-test", "session-1", "alice", "bob", "eve",
     ),
     /incohérents/,
   );
@@ -191,10 +191,10 @@ test("la clé dérivée est liée à l'identifiant du destinataire", async () =>
   const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
 
   const bobKey = await deriveLocationDirectionalKey(
-    alice.privateKey, bob.publicKey, salt, "session-1", "alice", "bob", "alice",
+    alice.privateKey, bob.publicKey, salt, "account-test", "ceremony-test", "session-1", "alice", "bob", "alice",
   );
   const otherRecipientKey = await deriveLocationDirectionalKey(
-    alice.privateKey, bob.publicKey, salt, "session-1", "alice", "other-contact", "alice",
+    alice.privateKey, bob.publicKey, salt, "account-test", "ceremony-test", "session-1", "alice", "other-contact", "alice",
   );
   const packet = await encryptLocationPayload("position-test", bobKey, "session-1");
 
@@ -207,7 +207,7 @@ test("ECDH refuse un sel de dérivation de longueur incorrecte", async () => {
 
   await assert.rejects(
     deriveLocationDirectionalKey(
-      alice.privateKey, bob.publicKey, new Uint8Array(8), "session-1", "alice", "bob", "alice",
+      alice.privateKey, bob.publicKey, new Uint8Array(8), "account-test", "ceremony-test", "session-1", "alice", "bob", "alice",
     ),
     /32 octets/,
   );
@@ -301,10 +301,10 @@ test("les contextes HKDF ne présentent pas de collision avec des identifiants c
   const salt = globalThis.crypto.getRandomValues(new Uint8Array(32));
 
   const firstContextKey = await deriveLocationDirectionalKey(
-    alice.privateKey, bob.publicKey, salt, "session", "a:b", "c", "a:b",
+    alice.privateKey, bob.publicKey, salt, "account-test", "ceremony-test", "session", "a:b", "c", "a:b",
   );
   const secondContextKey = await deriveLocationDirectionalKey(
-    alice.privateKey, bob.publicKey, salt, "session", "a", "b:c", "a",
+    alice.privateKey, bob.publicKey, salt, "account-test", "ceremony-test", "session", "a", "b:c", "a",
   );
   const packet = await encryptLocationPayload("context-bound", firstContextKey, "session");
 
@@ -372,7 +372,7 @@ test("les identifiants de contexte avec caractères de contrôle sont refusés",
 
   await assert.rejects(
     deriveLocationDirectionalKey(
-      alice.privateKey, bob.publicKey, salt, "session\nforged", "alice", "bob", "alice",
+      alice.privateKey, bob.publicKey, salt, "account-test", "ceremony-test", "session\nforged", "alice", "bob", "alice",
     ),
     /contexte/,
   );
