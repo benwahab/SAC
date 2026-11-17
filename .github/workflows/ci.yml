@@ -16,6 +16,8 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm run typecheck
+      - name: Test experimental location encryption primitive
+        run: npm run test:crypto
       - run: npm run build
       - name: Audit production dependencies (blocking)
         run: npm audit --omit=dev --audit-level=high
