@@ -245,12 +245,7 @@ export async function fingerprintLocationIdentityKey(
   identityPublicKey: JsonWebKey,
   cryptoProvider: Crypto = globalThis.crypto,
 ): Promise<string> {
-  if (
-    identityPublicKey.kty !== "EC" ||
-    identityPublicKey.crv !== "P-256" ||
-    typeof identityPublicKey.x !== "string" ||
-    typeof identityPublicKey.y !== "string"
-  ) {
+  if (!isP256PublicJwk(identityPublicKey)) {
     throw new Error("La clé d'identité publique P-256 est invalide.");
   }
   const canonical = encoder.encode(JSON.stringify([
