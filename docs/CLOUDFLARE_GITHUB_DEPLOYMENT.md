@@ -2,7 +2,7 @@
 
 **État vérifié le 17 novembre 2026.**  
 **Statut :** cible d'architecture corrigée ; environnement Cloudflare à remettre en place avant le premier déploiement.  
-**Périmètre :** documentation et audit uniquement. Aucun code applicatif ni service Cloudflare n'est créé dans cette étape.
+**Périmètre :** le socle applicatif initial est versionné dans GitHub ; aucun projet Pages ni déploiement Cloudflare n'est encore créé.
 
 ## 1. Source officielle
 
@@ -31,7 +31,7 @@ Le backend ne doit pas être remplacé par un Worker autonome déployé séparé
 - R2 n'est pas activé : l'API retourne l'erreur Cloudflare 10042 « Please enable R2 through the Cloudflare Dashboard ». Aucun bucket n'a été créé.
 - Le Worker `sac` a été audité : son unique source était le modèle Cloudflare `Hello world`, sans binding, sous-domaine désactivé et sans zone DNS associée. Il a été supprimé après vérification, car il ne contenait aucune logique SAC ni ressource liée.
 
-**Conséquence :** le dépôt contient maintenant le socle React/Vite/TypeScript, une route Pages Functions `/api/health` qui interroge D1, un manifeste PWA et un service worker minimal. Le projet Pages n'a pas encore été créé et R2 reste inactif. Le build et le déploiement ne sont pas encore vérifiés.
+**Conséquence :** le dépôt contient maintenant le socle React/Vite/TypeScript, une route Pages Functions `/api/health` qui interroge D1, un manifeste PWA et un service worker minimal. Le projet Pages n'a pas encore été créé et R2 reste inactif. Le build, le typage et l'audit bloquant des dépendances de production ont réussi dans GitHub Actions (run 44151374924, commit `6edbd77d41fe6c3baf2db9e6e76ef770df54d9ca`). Le déploiement Cloudflare Pages et les tests Preview/Production restent à effectuer.
 
 ## 4. Règles de reconstruction de l'environnement
 
