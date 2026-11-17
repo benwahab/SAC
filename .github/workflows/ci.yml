@@ -4,7 +4,7 @@ on:
     branches: [main]
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,10 +14,17 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - name: Audit des dépendances
+      - name: Corriger les dépendances vulnérables sans changement majeur
+        run: npm audit fix
+      - name: Enregistrer le lockfile corrigé
         run: |
-          npm audit --json > npm-audit.json || true
-          node -e "const a=require('./npm-audit.json'); for (const [n,v] of Object.entries(a.vulnerabilities || {})) console.log(n + ' | ' + v.severity + ' | ' + v.range + ' | fix=' + JSON.stringify(v.fixAvailable))"
-      - name: Audit des dépendances de production
-        run: npm audit --omit=dev --audit-level=high
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m "security: mettre à jour le lockfile npm"
+            git push
+          fi
+      - name: Audit complet des dépendances
+        run: npm audit --audit-level=high
       - run: npm run build
