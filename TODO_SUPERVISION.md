@@ -80,7 +80,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Documenter la séparation entre récupération du compte et récupération de la confiance/clé GPS.
 - [x] Documenter la limite : une révocation serveur ne peut pas effacer à distance un appareil hors ligne ni ses données locales.
 - [x] Ajouter le modèle conceptuel, les familles d'API et les critères de test dans l'architecture.
-- [ ] Concevoir le protocole complet d'identité racine et de certification des appareils ; ne pas connecter le prototype crypto actuel avant revue.
+- [ ] Finaliser le protocole complet d'identité racine et de certification des appareils ; ne pas connecter le prototype crypto actuel avant revue.
 - [ ] Définir le parcours UX de jumelage (QR/code de comparaison, approbation sur appareil existant, erreurs et annulation).
 - [ ] Définir la récupération après perte de tous les appareils et la procédure de revérification indépendante des contacts.
 - [ ] Définir les règles de révocation des sessions, push, certificats, clés ECDH et partages GPS en cours.
@@ -103,8 +103,13 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Réaliser une revue interne préliminaire des primitives ECDH/ECDSA/AES-GCM et consigner les constats dans docs/REVUE_CRYPTO_PRELIMINAIRE.md.
 - [x] Durcir le prototype : contexte HKDF non ambigu, validation défensive des bundles, contrôle de cohérence des clés de signature et rejet des JWK privés.
 - [ ] Faire réaliser une revue cryptographique indépendante par un spécialiste externe avant tout raccordement aux données GPS réelles.
-- [ ] Définir et tester les clés directionnelles et le contexte HKDF complet (compte, cérémonie, appareils, usage, direction, version).
-- [ ] Définir l'amorçage sécurisé de la première identité racine et les certificats d'appareil complets.
+- [x] Ajouter la dérivation directionnelle et le contexte HKDF v4 lié au compte et à la cérémonie ; tests CI run 44193976083 réussis. La validation des certificats et la revue indépendante restent séparées.
+- [ ] Définir l'amorçage sécurisé de la première identité racine et finaliser l'intégration des certificats d'appareil complets.
+- [x] Ajouter le prototype de certificat secondaire signé par une clé racine ECDSA P-256 préalablement approuvée, avec tests adversariaux dédiés ; validation CI en attente sur le commit courant.
 - [ ] Finaliser et tester le transcript canonique et la comparaison indépendante à six mots sur PWA, Android et iOS.
 - [ ] Démontrer les garanties de stockage et de révocation des clés sur les appareils cibles.
 - [ ] Prouver séparément la destruction irréversible des clés GPS à J+30, y compris contre toute restauration.
+
+- [ ] Vérifier la nouvelle CI incluant les tests de certificats racine avant de considérer ce prototype validé.
+- [ ] Intégrer obligatoirement la vérification du certificat et de son statut de révocation avant toute dérivation de clé ou autorisation d'échange.
+- [ ] Définir le modèle de révocation transactionnelle côté serveur : invalidation immédiate des sessions, push, nouveaux jumelages et autorisations ; aucun appareil hors ligne ne peut être effacé à distance.
