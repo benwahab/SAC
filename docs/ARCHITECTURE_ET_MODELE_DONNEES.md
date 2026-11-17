@@ -120,6 +120,16 @@ Une alerte ne doit pas dépendre de la présence d'une position. Les coordonnée
 
 Les droits d'accès aux positions d'un trajet sont limités aux participants explicitement autorisés et à la durée choisie. Les durées fonctionnelles prévues sont : position ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à la clôture de l'alerte/du trajet selon le parcours. Chaque position conserve son horodatage et son niveau de précision ; une position ancienne n'est jamais présentée comme une position en direct. Décision validée : les positions GPS précises sont conservées 30 jours à compter de la fin du partage concerné, puis supprimées automatiquement et définitivement des données actives SAC. Pour un partage ponctuel, le délai part de la collecte. Les événements non géographiques peuvent être conservés dans l'historique sans coordonnées précises. Les coordonnées ne doivent pas être recopiées dans les journaux. La purge des sauvegardes doit respecter un cycle documenté garantissant leur disparition.
 
+### 3.5.1 Purge, sauvegardes et restauration des positions GPS
+
+La rétention fonctionnelle est de 30 jours après la fin du partage (position ponctuelle : à partir de la collecte). Chaque enregistrement de position doit porter une échéance calculée côté serveur. Après cette échéance, la lecture est interdite même si la tâche de purge physique n'a pas encore été exécutée ; une tâche récurrente supprime ensuite les lignes expirées et vérifie le résultat.
+
+**Contrainte importante de Cloudflare D1 :** la base SAC a été vérifiée sur le stockage `production`, qui prend en charge Time Travel. Selon l'offre Cloudflare, l'historique restaurable est de 30 jours (Workers Paid) ou 7 jours (Workers Free). Cet historique peut contenir une version antérieure à la purge et une restauration peut donc réintroduire des positions expirées dans la base restaurée. Toute restauration doit se faire en maintenance, sans trafic utilisateur : réexécuter immédiatement la purge sur les échéances d'origine, vérifier l'absence de positions expirées, puis seulement rouvrir l'accès.
+
+Cette barrière après restauration évite de resservir des coordonnées expirées, mais ne supprime pas à elle seule les copies encore présentes dans l'historique Time Travel. En conséquence, **la suppression irréversible de toutes les copies à J+30 n'est pas encore démontrée avec un stockage GPS en clair dans D1**. Avant la première migration, il faut valider une stratégie de protection cryptographique avec destruction de clé indépendante de l'historique D1, ou choisir un stockage de positions dont le TTL et la suppression des sauvegardes sont démontrables. Aucun export ou backup externe contenant des coordonnées GPS en clair ne doit être activé entre-temps.
+
+Les journaux d'audit conservent uniquement les métadonnées nécessaires à la preuve de purge (identifiant technique non parlant, échéance, résultat et horodatage), jamais les coordonnées ni les clés. Les tests doivent couvrir la purge normale, la lecture après échéance, la restauration d'un point antérieur à la purge et la purge de rattrapage avant réouverture.
+
 ### 3.6 Programmation et notifications
 
 - `scheduled_alerts` : alerte différée, échéance, état, annulation et clé d'idempotence.
