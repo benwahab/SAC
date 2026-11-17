@@ -189,3 +189,63 @@ Les trois pistes supplémentaires ne valident pas encore l'exigence stricte :
 - AWS XKS : séparation de la clé externe intéressante, mais garanties de destruction et de non-restauration laissées au gestionnaire externe.
 
 Le prochain travail doit porter sur des gestionnaires externes XKS précis et sur la preuve de leur politique de sauvegarde/destruction. Le critère reste inchangé : aucune sauvegarde, réplication, restauration administrateur ou copie fournisseur ne doit pouvoir rendre la clé expirée à nouveau utilisable. Tant que cette preuve n'est pas disponible, aucune migration GPS ni intégration de clés n'est autorisée.
+
+
+## 10. Évaluation ciblée des implémentations AWS XKS : Entrust nShield et Thales CipherTrust
+
+### 10.1 AWS XKS : avantages et contraintes propres à l'architecture
+
+AWS confirme que la clé externe reste dans le gestionnaire externe et qu'une clé externe perdue ou supprimée rend le ciphertext associé irrécupérable. AWS KMS ne crée, ne supprime ni ne gère cette clé externe. Cette propriété peut fournir une séparation utile entre les sauvegardes SAC et le matériel de clé.
+
+Cependant, AWS indique aussi que :
+- le gestionnaire externe doit être accessible par un proxy XKS exploité par le client ou un tiers ;
+- la disponibilité, la durabilité, la capacité et les performances du gestionnaire/proxy relèvent de cette infrastructure externe ;
+- AWS recommande au moins deux instances liées du gestionnaire partageant les mêmes clés pour la redondance ;
+- la latence et le débit XKS sont moins favorables que les autres types de magasins de clés AWS ; AWS ne recommande pas XKS pour les charges à haut débit et indique l'absence de couverture SLA AWS pour le chemin externe.
+
+Pour SAC, cela crée un compromis réel : la redondance qui améliore la disponibilité multiplie les copies ou les chemins d'accès au matériel de clé qu'il faudra tous neutraliser à l'échéance. Une seule instance sans redondance ne serait pas acceptable pour un service d'urgence sans étude de disponibilité. XKS ne doit donc pas être adopté sur la seule base de sa propriété de double chiffrement.
+
+Sources officielles :
+- [AWS — External key stores](https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html)
+- [AWS — Key store overview et limites de disponibilité/performance](https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html)
+- [AWS — Création d'un XKS et exigences de redondance](https://docs.aws.amazon.com/kms/latest/developerguide/create-xks-keystore.html)
+
+### 10.2 Entrust nShield — destruction possible, mais portée et copies à maîtriser
+
+La documentation nShield indique qu'écarter (« discard ») une clé supprime ses informations du disque hôte, mais qu'une sauvegarde de l'environnement Security World peut restaurer cette clé. Elle précise que la destruction permanente nécessite de détruire l'Operator Card Set (OCS) qui protège la clé ou de supprimer le Security World entier.
+
+La documentation avertit aussi qu'une sauvegarde hebdomadaire du Security World, combinée aux cartes opérateur appropriées et à un HSM, peut permettre de retrouver les anciennes clés. Supprimer les fichiers sur un seul serveur ne supprime pas les copies des autres machines, du Remote File System ou des supports de sauvegarde.
+
+**Conclusion SAC :** nShield démontre un mécanisme de destruction cryptographique matériel, mais pas encore un service de destruction indépendante par position GPS avec toutes les copies de secours neutralisées. Une conception avec un OCS distinct par clé pourrait être étudiée sur le papier, mais sa faisabilité opérationnelle, la gestion physique des cartes, la redondance XKS et la destruction vérifiable de chaque copie ne sont pas démontrées. Détruire un Security World partagé détruirait potentiellement les clés d'autres utilisateurs : cette approche globale est rejetée pour la granularité attendue par SAC.
+
+Sources officielles :
+- [Entrust nShield — Discarding and restoring keys](https://nshielddocs.entrust.com/security-world-docs/v13.6.15/key-mgmt/working-with-keys.html)
+- [Entrust nShield — Deleting a Security World](https://nshielddocs.entrust.com/security-world-docs/v13.9.0/secworld-admin/delete-secworld.html)
+- [Entrust nShield — Key backup](https://nshielddocs.entrust.com/security-world-docs/v13.3/security-manual/key-management.html)
+
+### 10.3 Thales CipherTrust Manager / CCKM — non validé pour l'effacement individuel à J+30
+
+La documentation CipherTrust indique que les sauvegardes système sont des instantanés de la base de l'appliance et peuvent être restaurées sur une appliance identique ou une autre appliance. Ces sauvegardes contiennent notamment les clés, leurs attributs et leurs liens. Les sauvegardes sont chiffrées par une clé de sauvegarde nécessaire à leur restauration.
+
+Thales décrit aussi une possibilité de lier une sauvegarde à une clé HSM Root of Trust : sans le même RoT actif, la sauvegarde liée ne peut pas être restaurée. La documentation avertit toutefois que les copies des fichiers de sauvegarde peuvent être stockées ailleurs et que la perte ou suppression du RoT entraîne une perte de restauration. Cette propriété concerne la restauration de sauvegarde et ne démontre pas, à elle seule, la destruction sélective et non restaurable d'une clé GPS au sein d'un environnement partagé.
+
+La documentation CCKM XKS confirme que les clés HYOK peuvent pointer vers des matériaux source stockés dans Luna Network HSM ou CipherTrust Manager. Il faut donc examiner séparément les sauvegardes du gestionnaire source et les clés de sauvegarde.
+
+**Conclusion SAC :** non retenu pour l'instant. La restauration d'un instantané contenant les clés, même si le fichier est chiffré, est incompatible avec notre preuve stricte tant que le contrôle de restauration et la destruction de toutes les copies ne sont pas démontrés au niveau d'une clé individuelle.
+
+Sources officielles :
+- [Thales CipherTrust Manager — Backups](https://www.thalesdocs.com/ctp/cm/2.18/admin/cm_admin/backups/index.html)
+- [Thales CipherTrust Manager — AWS External Key Store resources](https://www.thalesdocs.com/ctp/cm/2.11/admin/cckm_ag/aws-xks-proxy/)
+- [Thales CipherTrust Manager — HSM Root of Trust et restauration](https://www.thalesdocs.com/ctp/cm/2.9/admin/cm_admin/backups/index.html)
+
+### 10.4 État de sélection après cette passe
+
+| Solution | Résultat pour SAC |
+|---|---|
+| AWS XKS seul | Interface de séparation intéressante ; ne garantit pas la destruction du matériel externe |
+| Entrust nShield | Destruction matérielle possible, mais restauration via sauvegarde/cartes à neutraliser ; granularité et exploitation non démontrées |
+| Thales CipherTrust / CCKM | Sauvegardes système restaurables contenant les clés ; destruction individuelle stricte non démontrée |
+| Fortanix DSM | Restauration de cluster documentée ; non retenu |
+| HashiCorp Vault Transit | Backup/restore de clés et snapshots ; non retenu |
+
+**Décision : aucun de ces produits n'est approuvé pour stocker les clés GPS SAC.** Le travail suivant doit chercher une solution qui offre nativement une destruction individualisée, vérifiable et non restaurable de chaque clé, y compris dans les sauvegardes, les répliques et les plans de reprise. Il faut également établir que sa disponibilité est compatible avec une application d'urgence et que la redondance ne recrée pas une copie de clé après destruction.
