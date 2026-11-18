@@ -247,9 +247,9 @@ Une suspension ne doit pas être interprétée comme une clôture ou une annulat
 - Cette décision documentaire n'autorise ni modification du code, ni migration D1, ni activation d'une route d'authentification.
 
 
-## 10. Proposition en attente — continuité d'une alerte pendant la suspension
+## 10. Décision validée — continuité d'une alerte pendant la suspension
 
-**Statut : proposition de conception, non validée par l'utilisateur ; aucune règle de code ne doit en être déduite.**
+**Statut : principe produit validé par l'utilisateur le 18 novembre 2026.** Cette décision reste documentaire : elle n'autorise aucune route API, permission serveur, session, migration D1 ou modification du code.
 
 ### Principe de continuité
 
@@ -260,9 +260,9 @@ Une suspension administrative ne doit jamais annuler, masquer, mettre en pause o
 - « J'ai reçu l'alerte » confirme la réception ; « Je prends la situation en charge » permet au premier répondant de devenir responsable principal, les autres pouvant également intervenir ;
 - la suspension ne retire pas aux proches les informations et actions nécessaires au traitement de l'alerte déjà reçue.
 
-### Accès du titulaire suspendu — proposition
+### Accès du titulaire suspendu — principe validé
 
-Le titulaire ne récupère pas son compte et ne reçoit aucune session générale. Pour éviter qu'une suspension empêche de mettre fin à une fausse alerte ou de confirmer sa sécurité, il pourrait conserver sur l'appareil d'origine une capacité cryptographique strictement liée à cette alerte, créée au moment de son émission. Cette capacité ne permettrait que :
+Le titulaire ne récupère pas son compte et ne reçoit aucune session générale. Pour éviter qu'une suspension empêche de mettre fin à une fausse alerte ou de confirmer sa sécurité, le principe d'une capacité d'urgence cryptographique strictement liée à cette seule alerte et à l'appareil d'origine est validé. Sa conception technique reste à spécifier et à faire examiner avant toute implémentation. Cette capacité ne pourra permettre que :
 
 1. consulter l'état minimal de cette alerte précise ;
 2. transmettre une mise à jour de sécurité ;
@@ -272,9 +272,8 @@ Elle ne permettrait jamais de se reconnecter, de consulter le profil ou les proc
 
 ### Limites et questions à arbitrer
 
-- Confirmer si cette capacité d'urgence restreinte doit être conservée malgré la suspension, ou si le titulaire doit être entièrement exclu de l'alerte après suspension.
 - Définir qui peut clôturer l'alerte si le titulaire n'a plus accès à son appareil : responsable principal, autre contact intervenant, ou procédure distincte.
-- Définir les conditions de clôture et les notifications envoyées à tous les destinataires initiaux.
-- Définir la conduite à tenir si le compte est suspendu pour abus lié précisément à l'alerte en cours ; une capacité de clôture ne doit pas devenir un moyen de supprimer les preuves ou d'empêcher l'assistance.
+- Définir les conditions de clôture, les notifications envoyées à tous les destinataires initiaux et la gestion des désaccords.
+- Définir les garde-fous applicables si le compte est suspendu pour abus lié précisément à l'alerte en cours ; la capacité ne doit pas devenir un moyen de supprimer les preuves ou d'empêcher l'assistance.
 
-**Aucune capacité d'urgence séparée, permission de clôture ou route API n'est approuvée par cette proposition.** La continuité des rappels et l'absence d'annulation automatique sont les exigences de conception retenues pour préserver la sécurité ; les permissions exactes restent à valider.
+**Principe validé :** une capacité d'urgence distincte, limitée à l'alerte existante, doit préserver la possibilité pour le titulaire de confirmer sa sécurité et de contribuer à la clôture sans récupérer l'accès au compte. Les rappels continuent vers les seuls destinataires initiaux, toutes les 5 minutes, sans ajout automatique de contacts. Les permissions détaillées, les contrôles anti-abus et le protocole cryptographique restent à spécifier et à faire valider. Cette décision n'autorise ni code, ni route API, ni migration D1, ni changement de session.
