@@ -24,7 +24,8 @@
     "test:registration-policy": "node --experimental-strip-types --test tests/registration-policy.test.ts",
     "test:otp-code": "node --experimental-strip-types --test tests/email-otp-code.test.ts",
     "test:password-hash": "node --experimental-strip-types --test tests/password-hash.test.ts",
-    "test:jcs": "node --experimental-strip-types --test tests/jcs-canonicalization.test.ts"
+    "test:jcs": "node --experimental-strip-types --test tests/jcs-canonicalization.test.ts",
+    "test:jcs-input": "node --experimental-strip-types --test tests/strict-json.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
