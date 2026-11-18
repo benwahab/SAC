@@ -594,3 +594,7 @@ Pour toute machine à états d'alerte, appliquer désormais le contrat docs/CONT
 - restauration : aucune donnée GPS ou alerte déjà supprimée ne peut réapparaître.
 
 Cet addendum remplace les anciennes durées GPS attachées à la fin du partage. Il ne change pas les règles de clôture par l'auteur ni l'exception administrative étroite déjà documentée. Il décrit la règle cible, pas une implémentation existante.
+
+## Référence complémentaire — conservation générale non GPS
+
+Pour les durées et règles de suppression des comptes, identités, appareils, sessions, invitations, relations, groupes, notifications, journaux, support, exports et données administratives, consulter `PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md`. Toutes les durées nouvelles restent à arbitrer ; ce document de machines à états ne doit pas être interprété comme une autorisation de purge. Le contrat spécialisé des alertes/GPS prévaut pour les données d'alerte.
