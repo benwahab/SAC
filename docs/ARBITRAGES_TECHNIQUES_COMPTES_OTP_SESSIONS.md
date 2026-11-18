@@ -316,3 +316,14 @@ Pour le cas précis d'une alerte SOS déjà transmise pendant la suspension du c
 La permission de clôture est indépendante des autres permissions. Seul le Super Admin peut l'attribuer, la modifier, la suspendre ou la retirer. Le délégataire ne peut ni déléguer ni transmettre son autorité. Une seule personne habilitée suffit, sans double validation.
 
 Chaque clôture conserve une trace d'audit : identité de l'administrateur, référence de l'alerte, date/heure, motif et éléments vérifiés. L'espace d'administration est réservé à l'ordinateur et à la tablette ; l'accès administratif sur téléphone n'est pas prévu. Cette décision ne met en œuvre aucun rôle ou contrôle d'accès et n'autorise aucune migration D1.
+
+
+## Séquence de contact du titulaire avant clôture — décision documentaire du 18 novembre 2026
+
+Pour le scénario précis d'une alerte déjà transmise pendant la suspension du compte initiateur, l'administrateur habilité tente d'abord une notification privée via SAC. Si un numéro vérifié est disponible, il effectue jusqu'à trois appels : immédiatement, puis environ cinq minutes après, puis cinq minutes après le deuxième appel. Un message écrit privé est envoyé en complément par un canal de contact vérifié disponible. Il ne faut pas exposer les détails sensibles de l'alerte à un tiers.
+
+Chaque tentative est journalisée avec date/heure, canal, résultat objectif et identité de l'administrateur. Un appel sans réponse, un message vocal, un échec technique ou un simple accusé d'envoi ne vaut pas réponse du titulaire. Si aucun canal direct n'est disponible ou si le titulaire ne répond pas, l'impossibilité est consignée et l'examen se poursuit avec les autres éléments fiables.
+
+La séquence d'appels représente environ dix minutes entre la première et la troisième tentative ; ce n'est ni un délai maximal de danger ni une échéance de clôture. L'absence de réponse ne prouve jamais la sécurité et ne permet jamais une clôture automatique. Si la fin du danger demeure insuffisamment vérifiée ou si les informations sont contradictoires, l'alerte reste active et les rappels continuent aux seuls destinataires initiaux. Une réponse du titulaire reste un élément à examiner ; seul l'administrateur habilité décide de la clôture selon la procédure validée.
+
+Cette règle ne présume pas qu'un numéro soit collecté, ne crée aucun canal ni envoi effectif et n'autorise aucune implémentation ou migration D1.
