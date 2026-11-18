@@ -1011,3 +1011,26 @@ Cette décision autorise uniquement la visibilité minimale décrite. Elle n'act
 - Tester accessibilité, contraste, zoom et lecteur d'écran avec un modèle de menace explicite.
 
 **NO-GO :** aucun test n'est exécuté ; aucune protection native ou écran réel n'est livré.
+
+## Audit — conservation physique et hors ligne du kit (18 novembre 2026)
+
+| Pratique / scénario | Risque | Règle |
+|---|---|---|
+| Papier dans une enveloppe verrouillée, séparée du téléphone | Vol ou accès physique | Méthode par défaut recommandée ; accès privé limité |
+| Kit dans portefeuille ou coque du téléphone | Vol simultané téléphone + kit | À proscrire |
+| Photo, scan, galerie, notes, messagerie | Synchronisation ou copie involontaire | À proscrire |
+| E-mail, SMS, cloud, dossier partagé | Compromission du compte ou partage | À proscrire |
+| Imprimante ou ordinateur public | Copies résiduelles / historique | À proscrire |
+| Clé USB | Malware, perte, copie, chiffrement mal maîtrisé | Pas une option par défaut ; analyse dédiée requise |
+| Gestionnaire synchronisé | Dépendance au fournisseur et à sa récupération | Ne pas recommander par défaut |
+| Duplicata papier | Plus de points d'exposition | Autorisation éventuelle à arbitrer ; protéger séparément |
+| Support perdu ou soupçonné copié | Usage frauduleux du kit | Remplacement immédiat depuis appareil approuvé sûr et destruction des copies connues |
+
+### Contrôles avant GO
+- Le kit n'est jamais transmis ni stocké par SAC.
+- L'écran présente les conseils sans proposer d'envoi, de photo, de scan, de copie automatique ou d'export.
+- Le texte explique que la confirmation de conservation est déclarative et non vérifiable.
+- Le parcours de remplacement invalide l'ancien kit même si une copie physique subsiste.
+- Aucun support ou emplacement de conservation n'est demandé au serveur.
+
+**NO-GO :** aucune fonctionnalité de stockage ou de transfert n'est implémentée.
