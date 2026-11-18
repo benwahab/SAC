@@ -80,3 +80,32 @@ Cette conclusion est volontaire : la matrice rend visibles les prérequis sans t
 6. Revue indépendante de sécurité et de cryptographie.
 7. Preuve de destruction J+30.
 8. Autorisation distincte avant toute migration ou ressource distante.
+
+
+## 6. Couverture existante dans le dépôt — distinction importante
+
+Les fichiers suivants existent actuellement sur `main`. Ils testent des contrats TypeScript purs ou des primitives cryptographiques ; **ils ne constituent pas des tests D1** et ne prouvent pas encore les contraintes relationnelles, transactions, accès SQL ou concurrence en base.
+
+| Code / suite existante | Domaines couverts aujourd'hui | Ce que cela ne prouve pas encore |
+|---|---|---|
+| `src/domain/account-lifecycle.ts` / `tests/account-lifecycle.test.ts` | Demande, attente, annulation et finalisation logique de suppression | Aucun effacement physique, aucune transaction D1, aucune purge/anonymisation |
+| `src/domain/alert-lifecycle.ts` / `tests/alert-lifecycle.test.ts` | Cycle de vie métier de l'alerte | Aucun accès SQL, destinataire réel, outbox ou concurrence D1 |
+| `src/domain/alert-responses.ts` / `tests/alert-responses.test.ts` | Accusé, volontariat et responsabilité selon le contrat pur | Aucun arbitrage post-révocation ni attribution concurrente en D1 |
+| `src/domain/device-management.ts` / `tests/device-lifecycle.test.ts` | Règle root-only et transitions pures d'appareil | L'acteur root réel doit être chargé et vérifié côté serveur |
+| `src/services/device/device-certificate.ts` / `tests/device-certificate.test.ts` | Signature et vérification du certificat root-signé | Pas de cérémonie complète, stockage, révocation serveur ou autorisation D1 |
+| `src/domain/session-authorization.ts` / `tests/session-authorization.test.ts` | Évaluation pure d'une session par compte/appareil | Pas de token transporté, de lecture D1 à chaque requête ni d'invalidation atomique |
+| `src/domain/trip-protection.ts` / `tests/trip-protection.test.ts` | Modes de trajet et transitions de confirmation | Pas de scheduler, outbox, coordonnées ou transaction D1 |
+| `src/services/location/key-exchange.ts` / `tests/location-crypto.test.ts` | Dérivation directionnelle expérimentale des clés | Pas de protocole final, identité complète, stockage GPS ni preuve J+30 |
+
+### Prochaine couche de tests à créer — seulement après validation des décisions et du schéma
+
+1. Tests de contraintes FK composites et isolation inter-comptes sur D1 local.
+2. Tests de permissions de lecture : auteur, destinataire, contact révoqué et compte supprimé.
+3. Tests atomiques : création alerte + instantané + événement + outbox.
+4. Tests concurrents : deux volontaires, retrait/transfert, clôture/rappel, révocation/émission.
+5. Tests outbox : double worker, bail expiré, résultat fournisseur ambigu, idempotence.
+6. Tests de suppression : compte actif, alerte orpheline, trajet actif, finalisation concurrente.
+7. Tests d'absence de fuite : champs libres, erreurs, logs, analytics, événements et payloads.
+8. Tests Preview : prouver que le binding D1 ciblé n'est jamais celui de Production.
+
+Aucun de ces tests D1 n'est déclaré présent tant qu'un vrai fichier de test d'intégration et son exécution contre D1 ne sont pas vérifiés.
