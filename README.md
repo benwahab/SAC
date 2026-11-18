@@ -45,3 +45,11 @@ Base relationnelle cible : Cloudflare D1. Stockage privé : Cloudflare R2 si act
 Le SOS réel, l'authentification complète, les alertes métier, les notifications réelles, les paiements et les migrations métier D1 ne sont pas déclarés opérationnels. Le GPS précis reste bloqué par l'exigence de destruction irréversible J+30. La console professionnelle et les services administratifs sont documentés comme conception, pas comme fonctionnalités livrées.
 
 Vérifier `TODO_SUPERVISION.md`, le code, les ressources Cloudflare et les résultats CI récents avant toute affirmation sur l'état d'une fonction.
+
+## Identité visuelle et langues de l'interface
+
+- La page citoyenne utilise désormais une première déclinaison vert clair Glassmorphism, avec rouge réservé à l'alerte et vert distinct pour la confirmation.
+- Les textes de l'interface sont centralisés dans `src/i18n/translations.ts`.
+- Langues disponibles sur la page actuelle : français, anglais et arabe ; la sélection est conservée localement et l'arabe active le sens RTL.
+- Les codes couleur actuels sont des tokens initiaux d'implémentation, pas une charte graphique hexadécimale définitivement validée.
+- Cette mise à jour concerne la page d'accueil et les métadonnées PWA ; elle ne signifie pas que tous les futurs écrans sont déjà traduits.
