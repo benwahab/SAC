@@ -23,7 +23,7 @@ test("RFC 8785 JCS-02: property names are sorted by UTF-16 code units", () => {
     "\u0080": "Control",
     "ö": "Latin Small Letter O With Diaeresis",
   };
-  const expected = String.raw`{"\r":"Carriage Return","1":"One","\u0080":"Control","ö":"Latin Small Letter O With Diaeresis","€":"Euro Sign","😀":"Emoji: Grinning Face","דּ":"Hebrew Letter Dalet With Dagesh"}`;
+  const expected = String.raw\`{"\r":"Carriage Return","1":"One","\u0080":"Control","ö":"Latin Small Letter O With Diaeresis","€":"Euro Sign","😀":"Emoji: Grinning Face","דּ":"Hebrew Letter Dalet With Dagesh"}\`.replace("\\u0080", "\u0080");
   assert.equal(canonicalize(input), expected);
 });
 
