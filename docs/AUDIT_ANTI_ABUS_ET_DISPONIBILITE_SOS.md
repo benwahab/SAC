@@ -579,3 +579,25 @@ La reconnaissance humaine peut éventuellement être étudiée comme signal comp
 Le format retenu pour la suite de la conception est une seule clé personnelle de récupération, générée localement, affichée une fois et à usage unique. Les risques de copie, photographie, vol, perte, rejeu et saisie automatisée restent à tester. La clé doit être invalidée atomiquement après récupération réussie ; aucune série de codes n'est retenue.
 
 Le choix de ce format ne valide pas encore l'entropie exacte, l'encodage, le stockage du vérificateur, les limites de tentatives ou les délais. La clé ne doit jamais permettre une restauration racine, une approbation d'appareil ou un accès GPS.
+
+
+### Complément — audit du format Base32 et du vérificateur (18 novembre 2026)
+
+**Orientation candidate :** 32 octets aléatoires (256 bits) générés localement, encodés en Base32 Crockford sur 52 caractères canoniques, avec regroupement visuel uniquement. Aucun checksum maison. Le format reste à tester et à faire auditer avant adoption définitive.
+
+| Risque | Contrôle/test requis |
+|---|---|
+| Entropie insuffisante ou générateur défaillant | Vérifier l'usage du CSPRNG natif et l'absence de graine prévisible ; tests et revue du code de génération |
+| Troncature ou altération du dernier symbole | Décodage strict, bits de remplissage canoniques, rejet des représentations non canoniques |
+| Confusion de caractères sur clavier mobile | Essais sur Android AZERTY/QWERTY, copie-coller, saisie manuelle, impression et lecture à voix haute |
+| Correction automatique/clavier qui transforme la clé | Champ dédié sans autocorrection ni capitalisation imprévue ; validation exacte après normalisation autorisée |
+| Faux sentiment de sécurité dû au checksum | Expliquer qu'un checksum ne prouve ni identité ni validité du facteur ; ne retenir qu'un mécanisme standard audité |
+| Fuite du vérificateur | Examiner SHA-256 domain-separé lié au compte versus HMAC avec secret serveur séparé ; vérifier les risques de rotation et de restauration du secret |
+| Fuite par télémétrie ou capture | Tests d'absence dans logs, analytics, rapports de crash, presse-papiers distant et traces réseau |
+| Brute force distribué | Limites atomiques multidimensionnelles, détection d'abus et réponses uniformes ; paramètres chiffrés à arbitrer |
+| Deux récupérations concurrentes | Une seule consommation atomique gagnante ; toutes les autres demandes échouent sans réutiliser le kit |
+| Régénération pendant une demande | Invalidation atomique de l'ancienne version et rejet des demandes liées à celle-ci |
+
+Le fait que 256 bits aléatoires rendent une attaque exhaustive impraticable ne dispense pas des limites anti-abus : elles protègent aussi le service contre le déni de service et les essais distribués. Aucun nombre de tentatives, délai de blocage ou délai de sécurité n'est fixé dans cette annexe.
+
+**NO-GO maintenu :** aucune implémentation ni activation du kit avant revue cryptographique indépendante, tests de saisie sur appareils réels, validation de la politique de session/récupération et preuve que le secret n'est jamais journalisé ou transmis en clair.
