@@ -75,3 +75,46 @@ Sources amont vérifiées :
 - PR #194, changement de parsing non correctif de sécurité : https://github.com/micromatch/picomatch/pull/194
 
 **Décision maintenue :** ne pas ajouter d'override vers un commit Git non publié, ne pas appliquer un patch artisanal, ne pas ignorer l'avis npm et ne pas forcer une rétrogradation. Surveiller la fusion, les suites complètes des dépendants, la publication npm et l'avis GHSA mis à jour. Après publication, vérifier l'arbre réel et exécuter toute la CI avant d'accepter le correctif.
+
+## 7. Rectification après la mise à jour de l'avis et CI du commit JCS — 19 novembre 2026
+
+Cette section prévaut sur les affirmations précédentes relatives au statut actuel de GHSA-fc5q-39xc-vjpf et au résultat le plus récent de l'audit npm.
+
+### 7.1 Statut de l'avis
+
+La fiche GitHub Advisory Database indique désormais que **GHSA-fc5q-39xc-vjpf / CVE-2026-112366 a été retiré le 18 novembre 2026**. Il ne faut donc plus présenter cet avis comme une vulnérabilité active confirmée ni comme une vulnérabilité corrigée par une nouvelle version de picomatch. Le retrait de l'avis et la publication d'un correctif logiciel sont deux choses différentes.
+
+La PR amont #235, qui proposait un correctif, est fermée sans fusion. Dans son commentaire du 21 octobre 2026, le mainteneur de picomatch conteste explicitement la qualification de vulnérabilité et recommande de ne pas laisser des utilisateurs non fiables définir des expressions glob/regex. Le retrait de l'avis concorde avec cette contestation, mais SAC ne doit pas transformer cette position en garantie mathématique qu'aucun motif ne peut provoquer un coût excessif.
+
+Sources primaires :
+- Fiche GitHub Advisory Database, statut « Withdrawn », retrait du 18 novembre 2026 : https://github.com/advisories/GHSA-fc5q-39xc-vjpf
+- PR #235 fermée sans fusion : https://github.com/micromatch/picomatch/pull/235
+- Commentaire du mainteneur : https://github.com/micromatch/picomatch/pull/235#issuecomment-6315749381
+
+### 7.2 Résultat CI le plus récent
+
+Le run GitHub Actions **#943**, ID `44421597647`, associé au commit `e27c64c30769c0f4834c299632b24deea4824bb4`, est terminé avec la conclusion **success** le 18 novembre 2026.
+
+Le journal établit :
+- Node.js `22.23.4` ;
+- npm `10.9.9` ;
+- `npm install` : 208 paquets ajoutés, 209 audités ;
+- `npm audit --omit=dev --audit-level=high` : **0 vulnérabilité** ;
+- `npm audit --audit-level=high` : **0 vulnérabilité** ;
+- typecheck, tests déclarés, migration D1 locale, compilation et les deux audits : tous réussis.
+
+Le résultat « zéro vulnérabilité » signifie que l'audit npm de cet arbre temporairement installé n'a remonté aucun avis actif. Il ne démontre pas à lui seul que picomatch a été corrigé ni que le même arbre sera installé lors d'un prochain run.
+
+### 7.3 Reproductibilité toujours non résolue
+
+Le run #943 a exécuté `npm install` sans lockfile commité. Le dépôt ne contient toujours pas de `package-lock.json`. Le runner a donc utilisé un arbre résolu à cet instant, non conservé comme référence versionnée.
+
+**Décisions maintenues :**
+1. Ne pas ajouter d'override picomatch sur la seule base de l'ancien avis retiré.
+2. Ne pas déclarer picomatch corrigé par une release, faute de preuve d'une telle release.
+3. Conserver le contrôle des motifs glob/regex non fiables dans les outils et scripts SAC.
+4. Générer un véritable `package-lock.json` avec npm dans un environnement Node/npm contrôlé, puis vérifier l'arbre et exécuter toute la suite.
+5. Ne passer à `npm ci` qu'après ajout et validation du lockfile.
+6. Ne pas fabriquer le lockfile manuellement.
+
+**État final de cet audit :** l'alerte GHSA citée a été retirée et la CI du commit JCS est verte avec zéro avis npm détecté ; la reproductibilité des installations reste le blocage technique ouvert.
