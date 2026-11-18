@@ -142,3 +142,14 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Valider les délais de grâce, les rappels à l'auteur et aux contacts, la pause/reprise, la fraîcheur des positions et le comportement hors ligne.
 - [ ] Spécifier le traitement atomique des confirmations concurrentes avec le planificateur d'échéance.
 - [ ] Ne pas créer de migration D1 ni d'API de trajet avant validation des règles produit et de la matrice de conservation.
+
+
+## Conformité des données — Niger
+
+- [x] Consulter le texte de base de la loi n° 2022-59 et les informations officielles HAPDP sur les modifications 2023/2024.
+- [x] Rédiger une pré-analyse des formalités, numéros de téléphone, données de santé, localisation, transferts internationaux, conservation, droits et sous-traitants dans `docs/CONFORMITE_DONNEES_NIGER.md`.
+- [ ] Obtenir et examiner la version consolidée intégrant les modifications 2023 et 2024.
+- [ ] Faire confirmer par la HAPDP les formalités précises applicables aux numéros de téléphone, urgences médicales, localisation et transferts transfrontaliers.
+- [ ] Cartographier les fournisseurs, pays, régions, sous-traitants et flux de données avant toute activation.
+- [ ] Déterminer les obligations de désignation du correspondant à la protection des données pour la personne morale porteuse de SAC.
+- [ ] Faire valider la matrice finale de conservation hors GPS par conseil juridique local et, si nécessaire, par la HAPDP.
