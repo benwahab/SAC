@@ -2,6 +2,7 @@
  * Politique métier validée pour les défis OTP e-mail SAC.
  * Ce module ne génère, ne persiste, n'envoie ni ne consomme encore de code.
  */
+export const EMAIL_OTP_CODE_LENGTH = 6;
 export const EMAIL_OTP_TTL_MS = 10 * 60 * 1000;
 export const EMAIL_OTP_MAX_ATTEMPTS = 6;
 export const EMAIL_OTP_RESEND_COOLDOWN_MS = 60 * 1000;
