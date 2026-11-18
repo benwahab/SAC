@@ -178,3 +178,23 @@ Les droits après révocation et après clôture sont des propositions soumises 
 - prouver l'application des contrôles dans les transactions D1.
 
 **Aucune matrice d'autorisation n'est considérée comme déployée tant que les contrôles serveur et les tests d'intégration D1 ne sont pas présents.**
+
+
+### 4.4 Révocation pendant une alerte active — complément de contrôle proposé
+
+La présence historique d'un contact dans l'instantané initial ne doit pas être interprétée comme une autorisation perpétuelle. Pour chaque nouvelle commande et chaque lecture protégée, le serveur doit vérifier séparément :
+- l'appartenance historique à l'instantané de cette alerte ;
+- l'état courant de la relation de confiance ;
+- l'état courant de l'alerte ;
+- le droit précis demandé (lecture, accusé, candidature, arrivée, résolution, responsabilité).
+
+**Proposition de politique après révocation (à valider) :**
+- couper immédiatement les nouvelles lectures et mutations du contact révoqué sur l'alerte active ;
+- empêcher la création de nouveaux push/rappels non encore acceptés pour ce contact ;
+- ne pas prétendre pouvoir rappeler une notification déjà acceptée par le service push ;
+- conserver l'instantané initial et les événements antérieurs pour l'historique de l'auteur et l'audit ;
+- ne pas exposer au contact révoqué les nouveaux événements de coordination après la révocation.
+
+Le contrôle doit être appliqué côté serveur à chaque route et worker ; masquer un bouton dans l'interface ne constitue pas une révocation d'accès. Le comportement des tâches déjà en file et la portée des notifications push sont à aligner avec le contrat outbox avant implémentation.
+
+La révocation par le propriétaire et le retrait d'acceptation par le contact sont deux causes métier distinctes, mais la proposition est qu'elles produisent le même effet immédiat sur les autorisations futures. L'événement conserve la cause et l'acteur exacts.
