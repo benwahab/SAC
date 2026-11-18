@@ -309,3 +309,9 @@ La règle produit confirmée remplace les anciennes formulations de conservation
 La durée de 30 jours est donc une durée de conservation de l'alerte clôturée, et non une période de conservation GPS. Le délai part de la clôture de l'alerte. Voir docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md.
 
 Les anciennes options de conservation d'un historique GPS précis pendant 30 jours sont supersédées. Cela ne lève pas le NO-GO technique : la collecte GPS réelle reste bloquée jusqu'à démonstration des purges, des sauvegardes/restaurations et des tests de non-résurrection.
+
+## 17. Arbitrage proposé — groupes privés — 18 novembre 2026
+
+Le document docs/PROPOSITIONS_ARBITRAGE_GROUPES_PRIVES.md consolide les règles de cycle de vie et les options de conception pour les groupes : séparation stricte de l'adhésion et de la relation de confiance, invitation et acceptation, rôles, retrait, transfert, suppression, sécurité et tests.
+
+Les règles déjà établies ne changent pas : un groupe n'accorde aucun accès aux alertes ou au GPS ; il ne rend pas une relation de confiance réciproque ; les destinataires SOS sont toujours choisis explicitement. Les valeurs et règles nouvelles du document restent des propositions non approuvées, notamment les plafonds, le nombre de groupes, les rôles, les invitations et le transfert de propriété.
