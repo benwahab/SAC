@@ -242,3 +242,18 @@ Toute nouvelle vérification doit mentionner :
 - écarts corrigés et écarts restants.
 
 Ne jamais transformer un élément « documenté », « prototype », « déclaré dans Wrangler » ou « testé en isolation » en fonctionnalité « opérationnelle ».
+
+## 11. Vérification de suivi — identité visuelle et i18n
+
+À la suite de l'audit, une première mise à jour de l'interface citoyenne a été enregistrée sur `main` le 18 novembre 2026.
+
+Fichiers concernés :
+- `src/App.tsx` : sélecteur de langue, dictionnaires utilisés, changement de `lang` et `dir`, interface d'accueil traduite en français/anglais/arabe ;
+- `src/i18n/translations.ts` : catalogue central des textes ;
+- `src/index.css` : fonds verts clairs, surfaces translucides, flous, ombres et adaptations RTL ;
+- `tailwind.config.js` : tokens de couleur vert clair, confirmation, alerte et surfaces ;
+- `index.html` et `public/manifest.webmanifest` : thème PWA vert clair.
+
+Cette mise à jour ne traduit que la page actuellement présente. Elle ne prouve pas la traduction de futurs parcours, ni la validation humaine des formulations sensibles. Les valeurs hexadécimales sont des tokens initiaux de réalisation, non une charte finale irrévocable.
+
+**État de validation :** fichiers écrits sur GitHub ; build, typecheck et tests du nouveau commit doivent encore être confirmés par un run CI correspondant. Aucun test visuel sur appareil Android n'a été exécuté dans le cadre de cette modification.
