@@ -598,3 +598,7 @@ Cet addendum remplace les anciennes durées GPS attachées à la fin du partage.
 ## Référence complémentaire — conservation générale non GPS
 
 Pour les durées et règles de suppression des comptes, identités, appareils, sessions, invitations, relations, groupes, notifications, journaux, support, exports et données administratives, consulter `PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md`. Toutes les durées nouvelles restent à arbitrer ; ce document de machines à états ne doit pas être interprété comme une autorisation de purge. Le contrat spécialisé des alertes/GPS prévaut pour les données d'alerte.
+
+## Contrat détaillé de suppression du compte — complément
+
+Le document [CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md](CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md) détaille les transitions de suppression, les activités actives, les comptes non vérifiés/suspendus et les courses concurrentes. Il ne modifie pas la machine à cinq états validée et ne rend aucune proposition nouvelle normative.
