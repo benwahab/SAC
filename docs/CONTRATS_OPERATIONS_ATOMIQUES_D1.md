@@ -247,3 +247,26 @@ Avant la première migration :
 - garder toute donnée GPS précise hors D1 et du backend tant que J+30 n'est pas prouvé.
 
 **Aucune migration ni route métier ne doit être créée sur la seule base de ce document.**
+
+
+## 14. Contrat — Protection des trajets
+
+Les trois modes ont des invariants distincts et doivent être stockés explicitement comme tels :
+
+| Mode | Heure estimée + délai de grâce | Partage de position |
+|---|---|---|
+| `arrival_check` | Obligatoires | Non requis |
+| `accompaniment` | Non applicables | Obligatoire et durée choisie |
+| `full_protection` | Obligatoires | Obligatoire et durée choisie |
+
+Le domaine TypeScript valide ces combinaisons et les transitions suivantes :
+- confirmation d'arrivée par l'auteur, y compris après une notification « arrivée non confirmée » ;
+- passage à « arrivée non confirmée » par un processus serveur uniquement après l'heure estimée + délai de grâce ;
+- maintien du trajet en état actif après absence de confirmation ;
+- clôture/annulation par l'auteur uniquement.
+
+L'événement « arrivée non confirmée » ne crée jamais une alerte SOS et ne prétend jamais qu'un accident est survenu.
+
+**Avant implémentation D1 :** définir le planificateur idempotent des échéances, le traitement des changements d'heure estimée, la concurrence entre confirmation et échéance, les notifications, la pause/reprise et les règles de suppression. Les paramètres de délai doivent provenir d'une politique explicitement validée ; aucune valeur par défaut n'est implicite.
+
+Aucune coordonnée GPS précise ne doit être persistée dans D1. Le prototype de domaine n'est pas une implémentation serveur.
