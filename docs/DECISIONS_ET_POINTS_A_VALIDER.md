@@ -116,6 +116,7 @@ Aucun fournisseur, compte externe, coût, intégration ou calendrier de destruct
 | 1.7 | Seuil d'escalade SMS validé : le lanceur choisit de 1 à 5 rappels push par alerte ; 2 rappels (10 minutes) sont présélectionnés. |
 
 | 1.8 | Cadre de sécurité du changement de numéro/e-mail : séparation des canaux, OTP non assimilé à une preuve d'identité, continuité des relations et arbitrages de récupération consignés. |
+| 1.9 | Politique OTP validée : e-mail comme canal standard pour les OTP SAC ; SMS réservé à l'escalade SOS ; aucun basculement OTP automatique vers SMS ; OTP e-mail ne remplace jamais la preuve de continuité ou la racine. |
 
 Mettre à jour ce tableau à chaque nouvelle validation importante.
 
@@ -458,3 +459,20 @@ Aucune décision ici ne permet d'effacer les données locales à distance, de co
 - Actions autorisées pendant une récupération racine et traitement d'une alerte active.
 
 **NO-GO :** pas de changement autonome fondé uniquement sur un OTP du nouveau canal ; pas de récupération racine par SMS/e-mail ; pas d'implémentation avant résolution des arbitrages critiques.
+
+
+## 3.9 Politique OTP à priorité e-mail (18 novembre 2026)
+
+**Décision validée :** les codes OTP SAC sont envoyés par e-mail comme canal standard, y compris pour les vérifications liées à la connexion, à la réinitialisation du mot de passe, au changement de coordonnées et à la récupération d'accès lorsque le parcours utilise un OTP.
+
+- Le SMS n'est pas un canal OTP standard. Il reste réservé à l'escalade SOS selon le seuil choisi par le lanceur.
+- Aucun basculement automatique d'un OTP vers SMS n'est autorisé en cas d'échec ou d'indisponibilité de l'e-mail. Toute voie de secours doit être arbitrée séparément.
+- Un OTP e-mail prouve uniquement le contrôle ponctuel de la boîte ; il ne prouve pas la continuité historique du compte, la possession de la racine ou l'approbation d'un appareil.
+- Un changement d'e-mail exige la vérification de la nouvelle adresse et une preuve de continuité indépendante ; un nouveau canal seul ne peut pas prendre le contrôle du compte.
+- La récupération d'accès au compte et la récupération cryptographique racine restent deux procédures séparées. L'e-mail seul ne rétablit jamais la racine.
+- Le SOS ne dépend jamais de la réception d'un OTP e-mail.
+- Aucun fournisseur, tarif contractuel, endpoint, quota, migration ou envoi réel n'est choisi ou autorisé par cette décision.
+
+**À préciser avant implémentation :** facteurs de continuité lorsque l'ancien e-mail est inaccessible, délais et limites OTP, stratégie de délivrabilité, gestion des résultats fournisseur ambigus et procédure de secours sans SMS automatique.
+
+**NO-GO :** aucun OTP réel ni fournisseur ne doit être activé avant spécification et tests ; aucune récupération racine ne peut reposer sur un OTP e-mail seul.
