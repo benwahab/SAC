@@ -240,6 +240,9 @@ Ces décisions sont bloquantes avant l'API de révocation, la suppression finale
 
 ## 11. Historique GPS, accès hors ligne et suppression stricte J+30
 
+> **Rectification normative du 18 novembre 2026 :** cette section est un historique de l'ancienne proposition d'historique GPS local 30 jours. Elle ne constitue pas une décision produit approuvée. Pour une alerte SOS, les positions GPS sont supprimées immédiatement à la clôture ; seule la catégorie de l'alerte reste 30 jours, puis l'entrée est supprimée à J+30. Aucune archive locale GPS post-clôture n'est autorisée. Pour les trajets indépendants d'une alerte, la conservation GPS reste non arbitrée et aucune collecte persistante n'est autorisée avant décision distincte et GO technique. Le contrat prioritaire est `docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md`.
+
+
 **Décision produit non validée — bloquante avant toute conservation d'historique GPS.**
 
 L'exigence de sécurité est que les positions GPS précises ne puissent plus être rendues lisibles après 30 jours, y compris après restauration d'une sauvegarde, retour à un ancien état logiciel, réinstallation, migration d'appareil ou accès administrateur.
