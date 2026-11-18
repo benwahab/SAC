@@ -115,3 +115,38 @@ Cette évolution ne prouve pas à elle seule l'authenticité des identifiants : 
 Un prototype distinct a été ajouté dans `src/services/device/device-certificate.ts`. La racine signe un transcript ordonné qui lie compte, appareil, plateforme, date, clés publiques ECDSA/ECDH, empreinte racine et domaine d'usage. Le vérificateur reçoit la clé racine de confiance en paramètre, recalcule son empreinte et vérifie la signature. La clé racine n'est jamais acceptée depuis le certificat lui-même.
 
 Les tests du certificat sont désormais une étape bloquante dédiée de la CI. Ce mécanisme ne remplace pas la cérémonie d'enrôlement, l'ancrage indépendant de la racine, la révocation serveur, le contrôle transactionnel ni la revue cryptographique externe.
+
+## 12. Rectification chronologique et constats de revue complémentaire — 18 novembre 2026
+
+Cette section prévaut sur les formulations historiques devenues obsolètes des sections 2.1 et 4.4 :
+
+- La mention du domaine HKDF `v3` et l'affirmation selon laquelle compte et cérémonie ne seraient pas encore liés décrivent un état antérieur du prototype.
+- Depuis la section 10, le domaine actif du prototype est `SAC:location-directional-key:v4`. L'information HKDF lie compte, cérémonie, session, émetteur, destinataire, usage et algorithme dans un tableau JSON ordonné.
+- Le point bloquant n'est donc plus l'absence de ces deux champs dans la dérivation expérimentale. Il reste l'authenticité de tous les identifiants, leur liaison au transcript signé, la validation de la cérémonie et l'orchestration serveur de certificats/révocation.
+- La présence d'un certificat secondaire signé par une racine dans un autre module ne signifie pas que le certificat est déjà vérifié et imposé avant chaque dérivation. Cette orchestration n'existe pas encore.
+
+### 12.1 Validation du bundle ECDH : test complémentaire requis
+
+La fonction `verifyLocationKeyBundle` vérifie la forme JWK de la clé ECDH incluse et la signature qui lie cette clé à la clé d'identité. Le contrôle de forme vérifie notamment le type EC, la courbe P-256 et le format des coordonnées ; il ne réalise pas lui-même l'import cryptographique de cette clé ECDH.
+
+Avant toute utilisation de ce bundle en production, ajouter un test et un contrôle explicite qui tentent d'importer la clé ECDH comme clé publique P-256 et rejettent un point invalide, même si les chaînes x/y ont la longueur attendue et que le bundle est correctement signé. La validation de la clé d'identité importée pour vérifier la signature ne remplace pas la validation de la clé ECDH transportée.
+
+### 12.2 Empreinte et enrôlement
+
+Le calcul d'empreinte SHA-256 est une primitive, pas un enrôlement de confiance. La comparaison par un canal indépendant, la gestion d'un changement de clé, la récupération après perte du téléphone et le transfert de confiance vers un nouvel appareil restent à spécifier et tester. Une empreinte obtenue uniquement depuis le même serveur que le bundle ne protège pas contre une substitution de ce serveur.
+
+### 12.3 Références de bonnes pratiques
+
+La revue doit être structurée au minimum autour de :
+- OWASP MASVS-CRYPTO-1 et MASVS-CRYPTO-2 pour l'usage de la cryptographie et le cycle de vie des clés ;
+- OWASP MASVS-STORAGE-1 et MASVS-STORAGE-2 pour le stockage sensible et les fuites par sauvegardes/logs ;
+- OWASP MASTG-KNOW-0047 pour les limites du stockage de clés et l'effacement mémoire ;
+- NIST SP 800-56A Rev. 3 pour les schémas d'établissement de clés ECDH et la confirmation de clé, en tenant compte du fait que le NIST a annoncé une révision future.
+
+Sources :
+- OWASP MASVS Cryptography : https://mas.owasp.org/MASVS/06-MASVS-CRYPTO/
+- OWASP MASVS Storage : https://mas.owasp.org/MASVS/05-MASVS-STORAGE/
+- OWASP MASTG Cryptographic Key Storage : https://mas.owasp.org/MASTG/knowledge/android/MASVS-STORAGE/MASTG-KNOW-0047/
+- NIST SP 800-56A Rev. 3 : https://csrc.nist.gov/pubs/sp/800/56/a/r3/final
+
+**Statut inchangé :** prototype expérimental seulement. Aucun raccordement GPS, aucune migration D1, aucun stockage local durable de clés GPS et aucune décision GO J+30 ne sont autorisés par cette revue.
