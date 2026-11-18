@@ -116,6 +116,7 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 
 - [Contrat de résilience, continuité et reprise après incident](docs/CONTRAT_RESILIENCE_CONTINUITE_ET_REPRISE_INCIDENT.md) — réseau faible, pannes API/D1/fournisseurs, outbox, sauvegardes, restauration, non-résurrection et tests de continuité SOS.
 
+- [Complément d'analyse juridique Niger — obligations données personnelles](docs/ANALYSE_JURIDIQUE_NIGER_SAC_2026-11-18_COMPLEMENT.md) — lecture des articles 29 à 86 du texte de base 2022-59, numéros de téléphone, données de santé, GPS, transferts, sécurité, incidents et droits ; réserve expresse sur les textes postérieurs à juin 2026.
 - [Contrat de gouvernance juridique et de conformité](docs/CONTRAT_GOUVERNANCE_JURIDIQUE_ET_CONFORMITE.md) — responsabilité du porteur, données sensibles, mineurs, droits, fournisseurs, transferts, incidents, conditions d'utilisation et vérifications réglementaires au Niger/pays de déploiement. Le statut institutionnel post-juin 2026 reste un blocage juridique à lever.
 
 - [Audit transversal de cohérence et de maturité (18 novembre 2026)](docs/AUDIT_TRANSVERSAL_COHERENCE_ET_MATURITE_2026-11-18.md) — synthèse des incohérences corrigées, blocages P0/P1, état réel du code et portes de lancement. À lire avant toute nouvelle implémentation.
