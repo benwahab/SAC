@@ -817,3 +817,19 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases
 - [ ] Obtenir une autorisation distincte avant toute API, migration D1, ressource Cloudflare ou déploiement.
 
 **Statut :** contrat documentaire enregistré ; P0 non fermé ; aucune implémentation autorisée ou effectuée.
+
+## Appareils, sessions et récupération — 18 novembre 2026
+
+- [x] Auditer les contrats existants de récupération sans appareil fiable, racine, multi-appareils, transcript, sessions et atomicité D1.
+- [x] Consolider les scénarios et frontières de confiance dans `docs/CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md`.
+- [x] Rappeler les durées validées : 30 jours consécutifs d'inactivité et 90 jours maximum absolus.
+- [x] Maintenir le remplacement de racine interdit en V1 et le GPS NO-GO.
+- [ ] Arbitrer les facteurs de récupération d'accès et le scénario de perte de tous les facteurs.
+- [ ] Définir la révocation urgente d'un appareil racine perdu/volé.
+- [ ] Choisir le modèle de renouvellement de session et le refresh token éventuel.
+- [ ] Résoudre les divergences du format canonique, signatures, nonces et SAS du protocole secondaire.
+- [ ] Arbitrer le SOS non-GPS pendant récupération ; ne pas le présenter comme techniquement disponible avant preuve.
+- [ ] Faire relire indépendamment le protocole cryptographique et prouver l'atomicité D1 en environnement isolé.
+- [ ] Obtenir une autorisation distincte avant code, API, migration D1, ressource Cloudflare ou déploiement.
+
+**Statut :** consolidation documentaire enregistrée ; aucune implémentation n'a été effectuée.
