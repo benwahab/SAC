@@ -9,7 +9,9 @@ Périmètre : premier blocage P0 de la revue relationnelle.
 | Sujet | Règle confirmée |
 |---|---|
 | États du compte | exactement cinq : `pending_verification`, `active`, `suspended`, `deletion_pending`, `deleted` |
-| Vérification initiale | OTP envoyé par e-mail ; code correct = adresse e-mail vérifiée et condition suffisante pour l'activation initiale |
+| E-mail du compte | obligatoire dès l'inscription ; aucune création/activation par téléphone seul |
+| Vérification initiale | OTP envoyé à l'adresse e-mail obligatoire ; code correct = adresse vérifiée et condition sine qua non de l'activation initiale |
+| Accès avant activation | aucun accès privé ni session tant que l'OTP e-mail n'est pas validé côté serveur |
 | Téléphone du compte | obligatoire à l'inscription, indicatif international, déclaré mais non vérifié |
 | OTP téléphone | aucun SMS OTP, appel automatisé de validation ou preuve téléphonique indépendante |
 | Mot de passe | minimum 12 caractères ; maximum technique accepté sans troncature ; espaces et Unicode admis |
@@ -94,9 +96,11 @@ Les changements TypeScript et les tests ne sont pas exécutés dans cette interv
 - Une invitation n'est pas une relation active ; l'acceptation et le consentement du proche doivent être enregistrés.
 - Un groupe privé ne remplace pas une relation de confiance.
 
-### 4.2 Problème à résoudre
+### 4.2 Règle compte applicable aux proches et points de preuve encore ouverts
 
-Les documents plus anciens évoquent parfois la vérification du téléphone ou de l'e-mail du proche. Cette formulation est trop large et contradictoire avec la règle actuelle : le téléphone n'est pas vérifié et aucun SMS OTP n'est prévu.
+Tout proche qui devient un contact SAC actif doit être titulaire d'un compte SAC actif. Par conséquent, il doit fournir une adresse e-mail et la vérifier par OTP avant activation ; le téléphone seul ne peut pas créer un compte, activer une relation ni remplacer le consentement. Le téléphone reste une coordonnée déclarée non vérifiée et aucun SMS OTP de compte n'est prévu.
+
+Les anciennes formulations du cahier des charges qui autorisaient une inscription par téléphone seul ou une vérification de contact par téléphone sont obsolètes et doivent être lues comme remplacées par cette règle. La personne sans adresse e-mail ne peut pas disposer d'un compte SAC actif ni être un contact SAC actif par un parcours téléphone seul.
 
 Il faut distinguer :
 1. l'existence d'une coordonnée fournie par l'invitant ;
@@ -107,9 +111,11 @@ Il faut distinguer :
 
 Un simple envoi de notification ou une réponse depuis un numéro déclaré n'est pas une preuve suffisante.
 
-### 4.3 Orientation de sécurité recommandée — non validée
+### 4.3 Conséquence obligatoire et détails du parcours à spécifier
 
-**Voie de référence recommandée : acceptation liée à un compte SAC dont l'e-mail a été vérifié.**
+**Condition obligatoire :** l'acceptation d'un proche doit être liée à un compte SAC actif dont l'adresse e-mail a été vérifiée par OTP. Ce n'est plus une simple recommandation, car tout compte SAC exige désormais cette vérification.
+
+Les détails de remise de l'invitation, de correspondance entre destination invitée et e-mail vérifié, de jeton et de consentement restent à spécifier et tester avant implémentation.
 
 1. L'invitant saisit l'adresse e-mail du proche ; l'adresse est normalisée côté serveur.
 2. SAC crée une invitation à durée limitée, à jeton aléatoire à usage unique ; seul le hash du jeton est stocké.
@@ -120,7 +126,7 @@ Un simple envoi de notification ou une réponse depuis un numéro déclaré n'es
 7. La création de la relation et la consommation de l'invitation sont atomiques.
 8. La relation reste inactive avant cette acceptation ; le propriétaire peut la révoquer ensuite.
 
-Cette orientation ne crée aucun SMS OTP. Elle suppose que le proche dispose d'une adresse e-mail accessible et d'un compte SAC. Si le produit doit accepter des proches sans e-mail ou sans compte, un autre parcours de preuve et de consentement doit être conçu et validé avant toute activation.
+Cette règle ne crée aucun SMS OTP. Elle implique qu'un proche ne peut devenir un contact SAC actif qu'après création et activation de son propre compte avec une adresse e-mail vérifiée. Un proche sans adresse e-mail ne peut pas contourner cette condition par téléphone. Toute éventuelle formule de destinataire externe sans compte serait une fonctionnalité distincte, non définie et non autorisée à ce stade.
 
 ### 4.4 Téléphone comme coordonnée secondaire
 
@@ -197,7 +203,7 @@ Les permissions d'alerte, d'accusé de réception, de prise en charge et de part
 2. Effet d'une demande de suppression sur un compte suspendu.
 3. Possibilité et procédure de réactivation d'un compte suspendu pendant une demande de suppression.
 4. Traitement d'une demande de suppression avant vérification e-mail.
-5. Acceptation d'un proche qui n'a pas d'adresse e-mail ou pas de compte SAC.
+5. Éventuelle fonctionnalité distincte de destinataire externe sans compte SAC (non définie ; ne doit pas contourner l'activation obligatoire par e-mail).
 6. Durée d'une invitation et nombre de relances.
 7. Niveau de détail visible dans l'invitation avant connexion.
 8. Permissions précises d'un proche après révocation pendant une alerte déjà active.
@@ -207,7 +213,7 @@ Ces choix ne sont pas nécessaires pour documenter les invariants déjà validé
 ## 8. Ordre de réalisation après arbitrage
 
 1. Valider les transitions ouvertes du cycle de compte.
-2. Valider ou remplacer l'orientation d'acceptation des proches par e-mail vérifié.
+2. Spécifier et tester le parcours d'invitation/acceptation d'un proche, obligatoirement lié à un compte SAC actif avec e-mail vérifié ; aucun parcours téléphone seul.
 3. Mettre à jour le contrat TypeScript et ses tests unitaires.
 4. Ajouter tests de propriétés et tests de concurrence.
 5. Revoir le modèle logique identité/invitation/relation et ses contraintes composites.
