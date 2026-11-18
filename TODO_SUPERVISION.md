@@ -153,3 +153,17 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Cartographier les fournisseurs, pays, régions, sous-traitants et flux de données avant toute activation.
 - [ ] Déterminer les obligations de désignation du correspondant à la protection des données pour la personne morale porteuse de SAC.
 - [ ] Faire valider la matrice finale de conservation hors GPS par conseil juridique local et, si nécessaire, par la HAPDP.
+
+
+## Suppression de compte et révocation d'un contact — 18 novembre 2026
+
+- [x] Ajouter le contrat TypeScript pur de suppression en deux phases : demande, annulation avant finalisation, finalisation logique seulement sans alerte ni trajet actif.
+- [x] Préserver la capacité de clôturer les activités existantes pendant la suppression en attente, tout en bloquant les nouvelles activités.
+- [x] Ajouter 12 tests dédiés au cycle de compte et les intégrer à la CI.
+- [x] Documenter les limites : aucun effacement physique/anonymisation, aucun délai de grâce, aucune clôture automatique et aucune durée hors GPS inventés.
+- [x] Décrire les contrats D1 futurs de suppression et de révocation pendant une alerte active.
+- [ ] Valider les droits exacts du contact révoqué pendant l'alerte : détail, accusé de réception, volontariat et retrait.
+- [ ] Définir le scénario d'une alerte active dont l'auteur ne revient jamais pour la clôturer.
+- [ ] Faire vérifier la finalisation de suppression par tests D1 concurrents avant toute activation.
+- [ ] Définir la matrice finale d'effacement/anonymisation et les durées de conservation hors GPS avec validation juridique Niger.
+- [ ] Exécuter et vérifier la CI du commit intégrant le contrat de compte.
