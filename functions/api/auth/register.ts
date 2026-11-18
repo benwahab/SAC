@@ -49,11 +49,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ error: "invalid_registration" }, 400);
   }
 
-  const validation = validateRegistrationInput(input as {
-    email?: unknown;
-    phone?: unknown;
-    password?: unknown;
-    language?: unknown;
+  const body = input as Record<string, unknown>;
+  const validation = validateRegistrationInput({
+    email: body.email,
+    phone: body.phone,
+    password: body.password,
+    language: body.language,
   });
   if (!validation.ok) return json({ error: validation.error }, 400);
 
