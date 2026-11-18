@@ -133,3 +133,7 @@ Les arbitrages prioritaires sont :
 6. confirmer le niveau de preuve exigé avant restauration d'une sauvegarde.
 
 Jusqu'à ces validations, toutes les durées restent des propositions et aucune purge automatique ne doit être implémentée sur leur seule base.
+
+## Complément — suppression du compte
+
+Pour les transitions entre les cinq états, les comptes non vérifiés ou suspendus, les activités SOS/trajets en cours et les courses concurrentes de suppression, consulter également `CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md`. Ce contrat distingue les invariants validés des parcours encore à arbitrer ; il ne transforme aucune durée de conservation proposée en décision approuvée.
