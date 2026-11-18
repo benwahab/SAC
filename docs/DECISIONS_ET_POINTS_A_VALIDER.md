@@ -476,3 +476,29 @@ Aucune décision ici ne permet d'effacer les données locales à distance, de co
 **À préciser avant implémentation :** facteurs de continuité lorsque l'ancien e-mail est inaccessible, délais et limites OTP, stratégie de délivrabilité, gestion des résultats fournisseur ambigus et procédure de secours sans SMS automatique.
 
 **NO-GO :** aucun OTP réel ni fournisseur ne doit être activé avant spécification et tests ; aucune récupération racine ne peut reposer sur un OTP e-mail seul.
+
+
+## 3.10 Perte d'accès à l'e-mail — parcours de récupération proposé (18 novembre 2026)
+
+**Statut :** principes de sécurité proposés ; les facteurs de récupération, délais, recours et privilèges temporaires restent à arbitrer. Aucun fournisseur ni flux réel n'est autorisé.
+
+### Principes retenus pour la conception
+
+- Si un appareil approuvé encore sûr est disponible, privilégier une preuve cryptographique liée à cet appareil, puis vérifier la nouvelle adresse par OTP e-mail. La session seule et le nouvel OTP ne suffisent pas.
+- Si aucun appareil approuvé n'est disponible, la possession d'une nouvelle adresse e-mail ou d'un numéro ne suffit pas à reprendre le compte historique. Il faut une méthode indépendante préalablement approuvée et testée.
+- Une demande de récupération en attente n'est pas une récupération réussie et ne donne pas accès automatiquement aux données privées.
+- Une boîte suspectée compromise ne reçoit aucun pouvoir de veto ni de validation privilégiée.
+- Récupération d'accès au compte et récupération de la racine restent séparées. Aucune récupération d'accès ne restaure l'ancienne racine ou les clés GPS.
+- Si aucune méthode indépendante n'est définie, le parcours doit refuser la prise de contrôle plutôt que prétendre vérifier l'identité.
+- Aucun basculement automatique OTP vers SMS ; le SMS reste réservé à l'escalade SOS.
+
+### Arbitrages ouverts
+
+1. Quels facteurs indépendants sont acceptables si tous les appareils approuvés sont perdus ?
+2. Les contacts de confiance peuvent-ils contribuer à la récupération d'accès, avec quelle preuve indépendante et quelles protections contre la collusion ou la coercition ?
+3. Quel délai de sécurité, quelle période de contestation et quelle expiration des demandes ?
+4. Quelles fonctions restent accessibles pendant l'attente ?
+5. Quelles sessions/appareils sont révoqués après récupération et comment informer les appareils encore sûrs sans exposer les données ?
+6. Que faire si tous les facteurs et appareils sont perdus et qu'aucune preuve indépendante n'est disponible ?
+
+**NO-GO :** aucune récupération complète sur la seule base d'un nouvel e-mail, d'un OTP, d'un SMS, d'un mot de passe ou du support ; aucune récupération racine via ce parcours.
