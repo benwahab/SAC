@@ -289,3 +289,65 @@ L'exigence J+30 demeure : après expiration, aucune restauration D1, sauvegarde,
 9. Revue séparée de la solution GPS J+30 ; aucune table GPS avant preuve.
 
 **Aucune migration ne doit être générée ou appliquée sur la base de cette proposition seule.**
+
+
+## 7. Amendments identifiés par la revue critique
+
+Cette section complète la proposition initiale. Elle reste conceptuelle et ne constitue pas du SQL exécutable.
+
+### 7.1 Liens composites obligatoires
+
+Le modèle final devra garantir par clés étrangères composites que :
+- `device_sessions(account_id, device_id)` référence un appareil du même compte ;
+- `device_certificates(account_id, device_id)` référence le même compte et appareil ;
+- `device_pairing_challenges(account_id, root_device_id)` et `(account_id, pending_device_id)` référencent deux appareils du même compte ;
+- les réponses et événements d'une alerte sont liés à des acteurs autorisés par l'instantané des destinataires ;
+- le destinataire d'une alerte ne peut pas être l'auteur.
+
+Les contraintes de compte ne remplacent pas les contrôles d'autorisation applicatifs. Les comportements `ON DELETE` seront définis table par table, sans cascade aveugle sur les alertes et événements.
+
+### 7.2 Abonnements push
+
+**`push_subscriptions`** (nouvelle table à concevoir)
+- `id`, `account_id`, `device_id`
+- `endpoint_ciphertext` ou représentation protégée adaptée au fournisseur
+- `endpoint_fingerprint` unique pour déduplication sans exposer le secret
+- clés publiques et paramètres requis par le protocole push, si applicables
+- `status` : active, revoked, expired
+- `created_at`, `last_used_at`, `revoked_at`
+
+Le format de protection du endpoint, le fournisseur et la rotation restent à choisir. L'abonnement doit être lié à un seul appareil. La révocation de l'appareil invalide ses abonnements dans la même opération atomique. Le worker d'envoi revalide l'état courant juste avant l'appel fournisseur.
+
+### 7.3 Outbox et rappels récupérables
+
+La table `notification_outbox` devra au minimum étudier :
+- `attempt_count`, `next_attempt_at` ;
+- `lease_owner`, `lease_until` pour les traitements temporaires ;
+- `deduplication_key` déterministe par alerte, destinataire, canal et occurrence ;
+- `reminder_sequence` ou identifiant d'occurrence ;
+- `cancelled_at`, `last_error_code`.
+
+Une ligne `processing` dont le bail a expiré doit pouvoir être reprise sans double envoi. Les workers concurrents doivent acquérir un bail par transition conditionnelle. La planification des rappels toutes les cinq minutes doit être idempotente et rester attachée aux destinataires figés de l'alerte. La clôture par l'auteur bloque les nouvelles occurrences et annule les lignes non envoyées ; la livraison tardive d'un message déjà accepté par un fournisseur reste une limite à expliquer.
+
+### 7.4 Responsable principal courant
+
+Le modèle final doit distinguer :
+- l'accusé de réception d'une alerte ;
+- la volonté de prendre la responsabilité ;
+- la responsabilité principale effectivement attribuée ;
+- le retrait de cette responsabilité.
+
+`alert_responsibility_history` conserve les périodes. Une seule responsabilité non terminée est autorisée par alerte, avec une contrainte d'unicité adaptée. L'attribution au premier volontaire est réalisée par une transition SQL atomique. Un contact ne peut jamais clôturer l'alerte de l'auteur.
+
+### 7.5 Immutabilité de l'historique
+
+Les événements restent append-only par les routes applicatives. Des triggers de refus UPDATE/DELETE pourront être étudiés pour réduire les erreurs accidentelles, mais ne sont pas une protection contre un administrateur ou une restauration. Les métadonnées doivent être validées champ par champ ; aucun JSON arbitraire ni donnée GPS/secret n'est accepté.
+
+### 7.6 Limitation des champs libres
+
+`alerts.description` et les libellés de destination ne doivent pas recevoir automatiquement une adresse, une coordonnée ou un payload de localisation. Si l'utilisateur saisit volontairement des coordonnées dans un texte libre, ce contenu doit être traité comme une donnée de localisation et ne peut pas bénéficier d'une conservation ordinaire dans D1. Les corps de requête et descriptions sont exclus des logs par défaut.
+
+### 7.7 Machine à états et conservation
+
+Avant migration, chaque table doit disposer d'une matrice : états autorisés, transitions, acteur autorisé, durée de conservation, règle de suppression/anonymisation, dépendances et effets sur les alertes en cours. Les états proposés dans les sections précédentes sont indicatifs jusqu'à validation de cette matrice.
+
