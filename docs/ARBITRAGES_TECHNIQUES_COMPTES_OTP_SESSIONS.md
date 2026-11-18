@@ -338,3 +338,12 @@ La collecte obligatoire ne vaut pas vérification du numéro. La méthode de vé
 Le numéro ne peut être utilisé comme moyen de contact fiable dans la procédure administrative de clôture que lorsque son caractère vérifié et son accessibilité sont établis. Si ce n'est pas le cas, l'administration consigne cette limite et poursuit les vérifications sans assimiler le silence à une preuve de sécurité. Aucun compte n'est clôturé automatiquement pour absence de réponse.
 
 Décision documentaire uniquement : aucun champ, validation, envoi SMS, service externe, endpoint ou migration D1 n'est implémenté ici.
+
+
+## Vérification du compte par OTP e-mail uniquement — clarification validée le 18 novembre 2026
+
+La vérification initiale du compte est effectuée par OTP envoyé à l'adresse e-mail. La saisie correcte de cet OTP valide l'adresse e-mail et suffit pour la vérification initiale du compte.
+
+Le numéro de téléphone demeure obligatoire à l'inscription, mais ne fait l'objet d'aucune vérification indépendante : aucun SMS OTP, appel automatisé de validation ou autre procédure de preuve de propriété. Le numéro déclaré peut être utilisé comme coordonnée de contact, y compris pour les tentatives d'appel de l'administration. Une réponse reçue depuis ce numéro ne prouve cependant pas à elle seule l'identité de l'interlocuteur et doit être appréciée et recoupée dans le contexte de l'alerte. Le silence ne constitue jamais une preuve de sécurité.
+
+Cette clarification remplace toute exigence antérieure de vérification du numéro avant son utilisation comme coordonnée de contact. Aucun SMS OTP n'est autorisé.
