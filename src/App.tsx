@@ -10,12 +10,189 @@ type LoginPageProps = {
 
 function LoginPage({ language, setLanguage }: LoginPageProps) {
   const copy = {
-    fr: { title: "Bienvenue sur SAC", subtitle: "Connectez-vous à votre espace personnel.", email: "Adresse e-mail", password: "Mot de passe", submit: "Se connecter", create: "Créer un compte", back: "Retour à l’accueil", unavailable: "L’inscription et la connexion sécurisées ne sont pas encore activées sur le serveur. Aucun identifiant ne sera envoyé ni enregistré tant que le service d’authentification réel n’est pas opérationnel.", language: "Langue", private: "Espace privé" },
-    en: { title: "Welcome to SAC", subtitle: "Sign in to your personal space.", email: "Email address", password: "Password", submit: "Sign in", create: "Create an account", back: "Back to home", unavailable: "Secure registration and sign-in are not yet enabled on the server. No credentials will be sent or stored until the real authentication service is operational.", language: "Language", private: "Private space" },
-    ar: { title: "مرحباً بك في SAC", subtitle: "سجّل الدخول إلى مساحتك الشخصية.", email: "البريد الإلكتروني", password: "كلمة المرور", submit: "تسجيل الدخول", create: "إنشاء حساب", back: "العودة إلى الصفحة الرئيسية", unavailable: "لم يتم تفعيل التسجيل وتسجيل الدخول الآمن على الخادم بعد. لن يتم إرسال بيانات الدخول أو تخزينها قبل تشغيل خدمة المصادقة الفعلية.", language: "اللغة", private: "مساحة خاصة" },
+    fr: {
+      title: "Bienvenue sur SAC", subtitle: "Votre espace personnel sécurisé.",
+      email: "Adresse e-mail", phone: "Téléphone avec indicatif international",
+      password: "Mot de passe", code: "Code de vérification à 6 chiffres",
+      signIn: "Connexion", create: "Créer un compte", register: "Créer mon compte",
+      verify: "Vérifier mon adresse", resend: "Renvoyer un code",
+      back: "Retour", home: "Retour à l’accueil", language: "Langue",
+      private: "Espace privé", loginUnavailable: "La connexion et les sessions sécurisées seront activées après la finalisation du protocole des appareils et des sessions.",
+      registerIntro: "Créez votre compte. Votre adresse e-mail doit être vérifiée avant toute activation.",
+      verifyIntro: "Saisissez le code envoyé à votre adresse e-mail. Il est valable 10 minutes.",
+      resendWait: "Vous pourrez demander un nouveau code dans", seconds: "s",
+      success: "Adresse e-mail vérifiée. Votre compte SAC est activé. L'accès privé sera ouvert après la finalisation sécurisée des appareils et des sessions.",
+      genericAccepted: "Si cette adresse est éligible, vous recevrez les instructions de vérification.",
+      serviceUnavailable: "Le service de vérification n’est pas encore configuré. Aucun compte n’a été activé.",
+      invalidCode: "Code incorrect, expiré ou déjà utilisé. Vérifiez le code ou demandez-en un nouveau.",
+      invalidEmail: "Adresse e-mail invalide.", invalidPhone: "Saisissez un numéro au format international, par exemple +22790000000.",
+      passwordShort: "Le mot de passe doit contenir au moins 12 caractères.",
+      invalidLanguage: "Langue non prise en charge.", requestError: "Impossible de traiter la demande. Réessayez plus tard.",
+      passwordHint: "12 caractères minimum. Les espaces et caractères Unicode sont acceptés.",
+      languageLabel: "Langue", emailSent: "Demande prise en compte. Consultez votre boîte e-mail si l’adresse est éligible.",
+    },
+    en: {
+      title: "Welcome to SAC", subtitle: "Your secure personal space.",
+      email: "Email address", phone: "Phone with international country code",
+      password: "Password", code: "6-digit verification code",
+      signIn: "Sign in", create: "Create an account", register: "Create my account",
+      verify: "Verify my email", resend: "Resend code",
+      back: "Back", home: "Back to home", language: "Language",
+      private: "Private space", loginUnavailable: "Sign-in and secure sessions will be enabled after the device and session protocol is completed.",
+      registerIntro: "Create your account. Your email address must be verified before activation.",
+      verifyIntro: "Enter the code sent to your email address. It is valid for 10 minutes.",
+      resendWait: "You can request another code in", seconds: "s",
+      success: "Email verified. Your SAC account is active. Private access will open after secure device and session setup is completed.",
+      genericAccepted: "If this address is eligible, you will receive verification instructions.",
+      serviceUnavailable: "The verification service is not configured yet. No account has been activated.",
+      invalidCode: "The code is incorrect, expired, or already used. Check it or request a new one.",
+      invalidEmail: "Invalid email address.", invalidPhone: "Enter an international number, for example +22790000000.",
+      passwordShort: "Your password must contain at least 12 characters.",
+      invalidLanguage: "Unsupported language.", requestError: "The request could not be processed. Try again later.",
+      passwordHint: "At least 12 characters. Spaces and Unicode characters are accepted.",
+      languageLabel: "Language", emailSent: "Request received. Check your inbox if the address is eligible.",
+    },
+    ar: {
+      title: "مرحباً بك في SAC", subtitle: "مساحتك الشخصية الآمنة.",
+      email: "البريد الإلكتروني", phone: "رقم الهاتف مع رمز الدولة الدولي",
+      password: "كلمة المرور", code: "رمز التحقق المكوّن من 6 أرقام",
+      signIn: "تسجيل الدخول", create: "إنشاء حساب", register: "إنشاء حسابي",
+      verify: "التحقق من بريدي", resend: "إعادة إرسال الرمز",
+      back: "رجوع", home: "العودة إلى الصفحة الرئيسية", language: "اللغة",
+      private: "مساحة خاصة", loginUnavailable: "سيتم تفعيل تسجيل الدخول والجلسات الآمنة بعد استكمال بروتوكول الأجهزة والجلسات.",
+      registerIntro: "أنشئ حسابك. يجب التحقق من بريدك الإلكتروني قبل تفعيل الحساب.",
+      verifyIntro: "أدخل الرمز المرسل إلى بريدك الإلكتروني. صلاحية الرمز 10 دقائق.",
+      resendWait: "يمكنك طلب رمز جديد خلال", seconds: "ث",
+      success: "تم التحقق من البريد الإلكتروني وتفعيل حساب SAC. سيتم فتح المساحة الخاصة بعد استكمال إعداد الأجهزة والجلسات بأمان.",
+      genericAccepted: "إذا كان هذا العنوان مؤهلاً، فستصلك تعليمات التحقق.",
+      serviceUnavailable: "خدمة التحقق غير مهيأة بعد. لم يتم تفعيل أي حساب.",
+      invalidCode: "الرمز غير صحيح أو منتهي الصلاحية أو مستخدم مسبقاً. تحقق منه أو اطلب رمزاً جديداً.",
+      invalidEmail: "عنوان بريد إلكتروني غير صالح.", invalidPhone: "أدخل رقماً دولياً، مثل +22790000000.",
+      passwordShort: "يجب ألا تقل كلمة المرور عن 12 حرفاً.",
+      invalidLanguage: "اللغة غير مدعومة.", requestError: "تعذرت معالجة الطلب. حاول مرة أخرى لاحقاً.",
+      passwordHint: "12 حرفاً على الأقل. المسافات ومحارف Unicode مقبولة.",
+      languageLabel: "اللغة", emailSent: "تم استلام الطلب. تحقق من بريدك إذا كان العنوان مؤهلاً.",
+    },
   }[language];
-  const [notice, setNotice] = useState(false);
+
+  type Mode = "login" | "register" | "verify" | "complete";
+  const [mode, setMode] = useState<Mode>("login");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
+  const [resendAt, setResendAt] = useState<number | null>(null);
+  const [secondsRemaining, setSecondsRemaining] = useState(0);
   const rtl = language === "ar";
+
+  useEffect(() => {
+    if (resendAt === null) {
+      setSecondsRemaining(0);
+      return;
+    }
+    const update = () => setSecondsRemaining(Math.max(0, Math.ceil((resendAt - Date.now()) / 1000)));
+    update();
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, [resendAt]);
+
+  function errorMessage(codeValue: string | undefined): string {
+    switch (codeValue) {
+      case "invalid_email": return copy.invalidEmail;
+      case "invalid_phone": return copy.invalidPhone;
+      case "password_too_short": return copy.passwordShort;
+      case "invalid_language": return copy.invalidLanguage;
+      case "invalid_or_expired_code": return copy.invalidCode;
+      case "verification_service_not_configured":
+      case "verification_email_unavailable": return copy.serviceUnavailable;
+      default: return copy.requestError;
+    }
+  }
+
+  async function submitRegistration(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, phone, password, language }),
+      });
+      const payload = await response.json() as { error?: string; message?: string; retryAfterSeconds?: number };
+      if (!response.ok) {
+        setError(errorMessage(payload.error));
+        return;
+      }
+      setPassword("");
+      setCode("");
+      setMode("verify");
+      setNotice(payload.message ?? copy.genericAccepted);
+      setResendAt(Date.now() + (payload.retryAfterSeconds ?? 60) * 1000);
+    } catch {
+      setError(copy.requestError);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function submitVerification(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch("/api/auth/verify-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
+      });
+      const payload = await response.json() as { error?: string; verified?: boolean; accountActivated?: boolean };
+      if (!response.ok || !payload.verified || !payload.accountActivated) {
+        setError(errorMessage(payload.error ?? "invalid_or_expired_code"));
+        return;
+      }
+      setCode("");
+      setMode("complete");
+      setNotice(copy.success);
+    } catch {
+      setError(copy.requestError);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resendCode() {
+    if (busy || secondsRemaining > 0) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch("/api/auth/resend-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const payload = await response.json() as { error?: string; message?: string; retryAfterSeconds?: number };
+      if (!response.ok) {
+        setError(errorMessage(payload.error));
+        return;
+      }
+      setNotice(payload.message ?? copy.emailSent);
+      setResendAt(Date.now() + (payload.retryAfterSeconds ?? 60) * 1000);
+    } catch {
+      setError(copy.requestError);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const inputClass = "min-h-12 w-full rounded-xl border border-white/90 bg-white/75 px-4 text-base text-sac-ink outline-none transition focus:border-sac-confirm focus:ring-2 focus:ring-sac-confirm/20 disabled:opacity-60";
+  const primaryButton = "min-h-12 w-full rounded-xl bg-sac-primary-strong px-4 font-extrabold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60";
 
   return (
     <main className="sac-shell flex min-h-screen items-center justify-center px-5 py-10 text-sac-ink" dir={rtl ? "rtl" : "ltr"}>
@@ -25,27 +202,67 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
             <span className="text-xl font-black tracking-[0.2em]">SAC</span>
             <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-sac-muted">{copy.private}</span>
           </a>
-          <div className="flex items-center gap-1 rounded-full border border-white/90 bg-white/70 p-1 shadow-glass" role="group" aria-label={copy.language} dir="ltr">
+          <div className="flex items-center gap-1 rounded-full border border-white/90 bg-white/70 p-1 shadow-glass" role="group" aria-label={copy.languageLabel} dir="ltr">
             {languages.map((item) => (
               <button key={item.code} type="button" onClick={() => setLanguage(item.code)} aria-pressed={language === item.code} aria-label={item.label} className={"min-h-9 min-w-9 rounded-full px-2 text-xs font-extrabold " + (language === item.code ? "bg-sac-primary-strong text-white" : "text-sac-muted hover:bg-sac-primary/60")}>{item.nativeLabel}</button>
             ))}
           </div>
         </div>
+
         <div className="mt-10">
           <h1 className="text-3xl font-black tracking-tight">{copy.title}</h1>
-          <p className="mt-2 text-sm leading-6 text-sac-muted">{copy.subtitle}</p>
+          <p className="mt-2 text-sm leading-6 text-sac-muted">{mode === "register" ? copy.registerIntro : mode === "verify" ? copy.verifyIntro : mode === "complete" ? copy.success : copy.subtitle}</p>
         </div>
-        <form className="mt-8 space-y-4" onSubmit={(event) => { event.preventDefault(); setNotice(true); }}>
-          <label className="block text-sm font-bold" htmlFor="sac-login-email">{copy.email}</label>
-          <input id="sac-login-email" type="email" autoComplete="email" required className="min-h-12 w-full rounded-xl border border-white/90 bg-white/70 px-4 text-base text-sac-ink outline-none disabled:opacity-70" />
-          <label className="block text-sm font-bold" htmlFor="sac-login-password">{copy.password}</label>
-          <input id="sac-login-password" type="password" autoComplete="current-password" required className="min-h-12 w-full rounded-xl border border-white/90 bg-white/70 px-4 text-base text-sac-ink outline-none disabled:opacity-70" />
-          <button type="submit" disabled className="min-h-12 w-full cursor-not-allowed rounded-xl bg-sac-primary-strong px-4 font-extrabold text-white opacity-60">{copy.submit}</button>
-          <button type="button" disabled className="min-h-12 w-full cursor-not-allowed rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 font-bold text-sac-ink opacity-60">{copy.create}</button>
-        </form>
-        <p role="status" aria-live="polite" className="mt-6 rounded-xl border border-sac-alert/20 bg-sac-alert/5 p-4 text-xs leading-6 text-sac-muted">{copy.unavailable}</p>
-        {notice && <p className="mt-3 text-xs text-sac-muted" role="status">{copy.unavailable}</p>}
-        <a href="/" className="mt-7 inline-flex min-h-10 items-center text-sm font-bold text-sac-confirm hover:underline">{copy.back}</a>
+
+        {mode === "login" && (
+          <div className="mt-8 space-y-4">
+            <p className="rounded-xl border border-sac-alert/20 bg-sac-alert/5 p-4 text-sm leading-6 text-sac-muted">{copy.loginUnavailable}</p>
+            <button type="button" className={primaryButton} onClick={() => { setMode("register"); setError(""); setNotice(""); }}>{copy.create}</button>
+          </div>
+        )}
+
+        {mode === "register" && (
+          <form className="mt-8 space-y-4" onSubmit={submitRegistration}>
+            <div>
+              <label className="mb-2 block text-sm font-bold" htmlFor="sac-register-email">{copy.email}</label>
+              <input id="sac-register-email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} className={inputClass} />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-bold" htmlFor="sac-register-phone">{copy.phone}</label>
+              <input id="sac-register-phone" type="tel" inputMode="tel" autoComplete="tel" required placeholder="+22790000000" value={phone} onChange={(event) => setPhone(event.target.value)} className={inputClass} />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-bold" htmlFor="sac-register-password">{copy.password}</label>
+              <input id="sac-register-password" type="password" autoComplete="new-password" required minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} />
+              <p className="mt-2 text-xs leading-5 text-sac-muted">{copy.passwordHint}</p>
+            </div>
+            <button type="submit" disabled={busy} className={primaryButton}>{busy ? "…" : copy.register}</button>
+            <button type="button" disabled={busy} onClick={() => { setMode("login"); setError(""); setNotice(""); }} className="min-h-11 w-full rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 text-sm font-bold text-sac-ink disabled:opacity-60">{copy.back}</button>
+          </form>
+        )}
+
+        {mode === "verify" && (
+          <form className="mt-8 space-y-4" onSubmit={submitVerification}>
+            <p className="rounded-xl border border-white/90 bg-white/55 p-3 text-sm font-semibold" dir="ltr">{email}</p>
+            <label className="block text-sm font-bold" htmlFor="sac-email-code">{copy.code}</label>
+            <input id="sac-email-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} className={inputClass + " text-center text-2xl font-black tracking-[0.45em]"} dir="ltr" />
+            <button type="submit" disabled={busy || code.length !== 6} className={primaryButton}>{busy ? "…" : copy.verify}</button>
+            <button type="button" disabled={busy || secondsRemaining > 0} onClick={resendCode} className="min-h-11 w-full rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 text-sm font-bold text-sac-ink disabled:cursor-not-allowed disabled:opacity-50">{copy.resend}</button>
+            {secondsRemaining > 0 && <p className="text-center text-xs text-sac-muted">{copy.resendWait} {secondsRemaining}{copy.seconds}</p>}
+            <button type="button" disabled={busy} onClick={() => { setMode("register"); setCode(""); setError(""); setNotice(""); }} className="min-h-10 w-full text-sm font-bold text-sac-muted">{copy.back}</button>
+          </form>
+        )}
+
+        {mode === "complete" && (
+          <div className="mt-8 space-y-4">
+            <div className="rounded-xl border border-sac-confirm/25 bg-sac-confirm/10 p-4 text-sm leading-6 text-sac-ink" role="status">{copy.success}</div>
+            <a href="/" className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-white/90 bg-white/70 px-4 text-sm font-bold text-sac-ink">{copy.home}</a>
+          </div>
+        )}
+
+        {notice && mode !== "complete" && <p role="status" aria-live="polite" className="mt-5 rounded-xl border border-sac-confirm/20 bg-sac-confirm/5 p-4 text-xs leading-6 text-sac-muted">{notice}</p>}
+        {error && <p role="alert" aria-live="assertive" className="mt-4 rounded-xl border border-sac-alert/25 bg-sac-alert/5 p-4 text-xs leading-6 text-sac-alert">{error}</p>}
+        {mode !== "login" && mode !== "complete" && <a href="/" className="mt-6 inline-flex min-h-10 items-center text-sm font-bold text-sac-confirm hover:underline">{copy.home}</a>}
       </section>
     </main>
   );
