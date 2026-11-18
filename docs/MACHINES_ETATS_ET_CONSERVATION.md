@@ -583,3 +583,14 @@ Une alerte produit une intention de notification vers un destinataire. Le servic
 ## 10. Référentiel inter-domaines — complément du 18 novembre 2026
 
 Le document `MODELE_GLOBAL_DONNEES_SAC.md` consolide les domaines et relève les écarts entre les machines à états, le cahier des charges, la proposition D1 et les contrats TypeScript. Les états qui y sont signalés comme incohérents doivent être harmonisés avant migration. Les objets groupes, alertes programmées, SOS discret et paiements restent à spécifier. Ce renvoi ne vaut ni validation SQL ni autorisation d'implémentation.
+
+## Addendum normatif — clôture et expiration d'une alerte — 18 novembre 2026
+
+Pour toute machine à états d'alerte, appliquer désormais le contrat docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md :
+
+- transition effective vers l'état clôturé : suppression immédiate de toutes les positions GPS associées ;
+- état historique pendant 30 jours à compter de la clôture : seule la nature/catégorie de l'alerte reste conservée ;
+- échéance J+30 : suppression définitive de l'entrée et de sa catégorie ;
+- restauration : aucune donnée GPS ou alerte déjà supprimée ne peut réapparaître.
+
+Cet addendum remplace les anciennes durées GPS attachées à la fin du partage. Il ne change pas les règles de clôture par l'auteur ni l'exception administrative étroite déjà documentée. Il décrit la règle cible, pas une implémentation existante.
