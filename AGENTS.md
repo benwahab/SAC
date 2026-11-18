@@ -106,3 +106,6 @@ Avant toute évolution du schéma, des comptes administratifs, missions, permiss
 ## Référentiel global des données
 
 Avant toute évolution du modèle relationnel, lire `docs/MODELE_GLOBAL_DONNEES_SAC.md`, puis les contrats spécialisés qu'il référence. Le nom conceptuel canonique de l'identité est `accounts` ; ne pas créer une seconde table d'identité `users` pour l'administration. Les tables mentionnées comme « à ajouter » ou « conditionnelles » ne sont pas approuvées pour SQL. Le modèle reste NON PRÊT POUR MIGRATION.
+
+
+Avant toute proposition SQL ou migration, lire aussi `docs/REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md`. Son verdict est NON PRÊT POUR MIGRATION. Ne pas transformer les recommandations P0/P1 en décisions produit sans validation. Aucun SQL ne doit être créé sur la seule base de la carte globale.
