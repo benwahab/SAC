@@ -25,6 +25,7 @@ function makeContext(overrides: Partial<SessionAuthorizationContext> = {}): Sess
   return {
     expectedAccountId: "account-a",
     expectedDeviceId: "device-a",
+    accountStatus: "active",
     currentDeviceAuthVersion: 3,
     deviceStatus: "active",
     now,
@@ -138,4 +139,13 @@ test("refuse une dernière activité postérieure à l'heure serveur", () => {
   assert.deepEqual(authorizeDeviceSession(session, makeContext()), {
     ok: false, error: "invalid_session_record",
   });
+});
+
+
+test("refuse tout accès de session si le compte n'est pas actif", () => {
+  for (const accountStatus of ["pending_verification", "suspended", "deletion_pending", "deleted"] as const) {
+    assert.deepEqual(authorizeDeviceSession(makeSession(), makeContext({
+      accountStatus,
+    })), { ok: false, error: "account_not_active" });
+  }
 });
