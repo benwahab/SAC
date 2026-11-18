@@ -65,6 +65,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Ajouter une empreinte SHA-256 lisible de la clé publique d'identité ; typecheck, tests existants et build validés par CI run 44189915423 (commit 7b3afdadd).
 - [x] Valider en CI les tests de stabilité, différence et validation d'empreinte : 18 tests réussis, 0 échec, typecheck et build réussis (run 44189940721, commit 0f83c114).
 - [x] Vérifier la CI du commit f9093d20 : typecheck, tests crypto, cycle de vie appareils, certificats racine, autorisation des sessions, build et audits de dépendances réussis (run 44195249590).
+- [x] Vérifier les commits documentaires du contrat D1 et du suivi : run 44258827197 et run 44258840470, succès complets.
 - [ ] Concevoir puis faire valider l'écran et la procédure de comparaison indépendante des empreintes entre proches ; ne jamais considérer une clé reçue du serveur comme authentifiée par défaut.
 - [ ] Spécifier et tester rotation, révocation, multi-appareils et récupération de compte sans rétablissement silencieux de la confiance.
 - [ ] Étendre les tests crypto à la rotation, à la révocation, au rejeu, à la liaison session/destinataire et à l'interopérabilité Android/iOS.
@@ -111,7 +112,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Démontrer les garanties de stockage et de révocation des clés sur les appareils cibles.
 - [ ] Prouver séparément la destruction irréversible des clés GPS à J+30, y compris contre toute restauration.
 
-- [ ] Vérifier la nouvelle CI incluant les tests de certificats racine avant de considérer ce prototype validé.
+- [x] Vérifier la CI incluant les tests de certificats racine et de sessions par appareil : run 44195249590, succès complet.
 - [ ] Intégrer obligatoirement la vérification du certificat et de son statut de révocation avant toute dérivation de clé ou autorisation d'échange.
 - [x] Durcir le contrat métier pur : seule l'identité d'appareil racine peut être l'acteur d'une approbation secondaire ; tests de refus ajoutés. Le contrôleur serveur doit encore charger le root actif depuis D1.
 - [x] Spécifier le contrat de session par appareil et la règle d'invalidation par auth_version dans docs/PROTOCOLE_MULTI_APPAREILS.md.
