@@ -443,3 +443,8 @@ Lire `docs/CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md` pour les r
 ## Gouvernance juridique et conformité — complément du 18 novembre 2026
 
 `docs/CONTRAT_GOUVERNANCE_JURIDIQUE_ET_CONFORMITE.md` complète la mise à jour juridique Niger et la pré-analyse de conformité. Il formalise la gouvernance de l'entité porteuse, la cartographie des traitements, les données sensibles, les mineurs, les droits des personnes, les responsabilités, les fournisseurs/transferts, les incidents et la conformité pays par pays. L'incertitude postérieure à la suppression de la HAPDP en juin 2026 demeure un blocage : ordonnance 2026-30 et circuits ministériels doivent être authentifiés. Aucun avis juridique définitif ni autorisation de lancement n'est prétendu.
+
+
+## Audit transversal de cohérence — 18 novembre 2026
+
+Le point de convergence actuel est `AUDIT_TRANSVERSAL_COHERENCE_ET_MATURITE_2026-11-18.md`. Il identifie les contradictions et dépendances P0/P1, distingue les propositions des décisions validées et rappelle l'état réellement implémenté. Les corrections GPS dans l'architecture, le cahier des charges et la machine à états alignent ces documents sur `CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md`. L'écart TypeScript des cinq états du compte reste à corriger avant migration, sans modification de code dans l'audit.
