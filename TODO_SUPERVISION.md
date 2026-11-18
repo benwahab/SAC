@@ -878,3 +878,18 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases
 - [ ] Obtenir une autorisation explicite distincte avant tout code, test applicatif, migration D1, fournisseur, ressource Cloudflare ou déploiement.
 
 **Statut :** consolidation documentaire uniquement ; aucun parcours SOS réel ni contrôle supplémentaire n'a été activé.
+
+
+## Sécurité des notifications et communications — 18 novembre 2026
+
+- [x] Auditer les contrats SOS, proches/invitations, sessions, confidentialité et conservation avant consolidation.
+- [x] Formaliser les exigences push, e-mail, SMS de secours, abonnements, webhooks, fournisseurs, révocation, pannes et contenus minimaux dans `docs/CONTRAT_SECURITE_NOTIFICATIONS_ET_COMMUNICATIONS.md`.
+- [x] Préserver les invariants : e-mail vérifié obligatoire avant activation, téléphone déclaré/non vérifié, aucun SMS OTP de compte, destinataires SOS figés, rappels à cinq minutes et SMS de secours distinct.
+- [ ] Arbitrer la preuve de contrôle du numéro avant tout SMS de secours ; aucun numéro déclaré ne doit être réputé vérifié.
+- [ ] Choisir les fournisseurs après revue sécurité, juridique, régionale, coûts, sous-traitance et réversibilité.
+- [ ] Valider le contenu discret des messages et les essais d'aperçu sur appareils/écrans verrouillés.
+- [ ] Arbitrer la gestion des abonnements push, rotation, retry, webhooks et durées de conservation.
+- [ ] Réaliser les tests de révocation, anti-rejeu, panne, restauration et absence de fuite avant activation réelle.
+- [ ] Autorisation distincte obligatoire avant code, endpoint, secrets, stockage, D1, fournisseur, Cloudflare ou déploiement.
+
+**Statut :** documentation uniquement ; aucun canal ni fournisseur réel activé.
