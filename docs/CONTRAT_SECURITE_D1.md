@@ -141,15 +141,25 @@ Les tests de concurrence doivent être exécutés sur le runtime D1 de test et n
 
 ## 10. Conditions de passage à l'implémentation
 
-Aucune migration ou API d'authentification ne doit être créée avant :
-- validation du schéma relationnel complet et de ses contraintes ;
+### 10.1 Tranche limitée compte / OTP e-mail
+
+La migration `migrations/0001_account_email_otp.sql` et les routes `/api/auth/register`, `/api/auth/resend-email` et `/api/auth/verify-email` constituent une première tranche explicitement limitée au compte en attente, aux identités e-mail/téléphone et au défi de vérification e-mail.
+
+Cette tranche ne crée aucune session, aucun appareil, aucun certificat, aucune racine cryptographique, aucun contact de confiance, aucune alerte ni donnée GPS. Ses invariants locaux sont documentés dans `ARBITRAGES_TECHNIQUES_COMPTES_OTP_SESSIONS.md` et testés avec SQLite dans `tests/d1_email_otp_schema.test.py`.
+
+La migration est versionnée mais **n'a pas été appliquée à la base distante**. Les tests SQLite ne remplacent pas encore une validation sur le runtime D1 Cloudflare isolé. L'activation de l'authentification publique reste bloquée tant que le test runtime D1, la configuration des secrets d'envoi et la revue sécurité n'ont pas été réalisés.
+
+### 10.2 Périmètre restant soumis aux conditions préalables
+
+Pour toute extension vers les appareils, certificats, racines, sessions, récupération, autorisations ou mutations métier, les préconditions suivantes restent obligatoires :
+- validation du schéma relationnel détaillé et de ses contraintes pour le domaine concerné ;
 - validation des contrats de compte, appareil, session et récupération ;
 - conception détaillée des opérations atomiques, y compris révocation de soi-même ;
-- définition du transport du jeton et du mécanisme OTP ;
-- tests d'intégration D1 démontrant les invariants ci-dessus ;
+- définition et revue du transport du jeton, CSRF, XSS et comportement PWA ;
+- tests d'intégration D1 démontrant les invariants de concurrence et d'autorisation ;
 - confirmation que le déploiement Pages Preview est isolé de la base de production.
 
-Les choix de fournisseur OTP, push, SMS et paiement restent indépendants et non sélectionnés.
+Aucune migration de ces domaines ne découle de la migration OTP. Le choix du fournisseur Resend est indépendant des fournisseurs push, SMS et paiement, qui restent non sélectionnés.
 
 
 ## Référence complémentaire — restauration et continuité
