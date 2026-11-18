@@ -423,3 +423,8 @@ Le document `PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md` formalise les menac
 ## Sécurité des comptes et appareils en situation d'urgence — complément du 18 novembre 2026
 
 `docs/CONTRAT_SECURITE_COMPTES_ET_APPAREILS_EN_URGENCE.md` complète la consolidation comptes/sessions/appareils. Il formalise les scénarios de perte, vol, compromission, SIM swap, e-mail compromis et perte de tous les appareils. Il réaffirme la séparation stricte entre accès applicatif, appareil approuvé et racine cryptographique : en V1, aucune racine perdue ou compromise n'est remplaçable par OTP, mot de passe, SMS, support, Super Admin ou appareil secondaire. Les parcours d'urgence restent à arbitrer ; aucune implémentation n'est autorisée par ce document.
+
+
+## Confidentialité familiale et isolation des données — complément du 18 novembre 2026
+
+Lire `docs/CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md` pour les règles de cloisonnement des comptes, relations de confiance, groupes, alertes, téléphones partagés, notifications, caches, recherches et exports. La famille ne constitue pas une autorité d'accès ; un proche ne reçoit pas le compte complet et un groupe n'hérite d'aucun droit SOS/GPS. Les mécanismes de verrouillage, de cache et les droits détaillés restent à arbitrer. Aucun changement applicatif n'est autorisé par ce document.
