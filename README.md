@@ -91,3 +91,5 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 - [Propositions d'arbitrage — SOS programmé et SOS discret](docs/PROPOSITIONS_ARBITRAGE_SOS_PROGRAMME_ET_DISCRET.md) — distingue les deux mécanismes, reprend les règles validées et isole les points restant à arbitrer.
 
 - [Proposition de politique générale de conservation des données](docs/PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md) — matrice proposée pour comptes, appareils, invitations, groupes, notifications, journaux, support et sauvegardes ; durées à valider, sans modifier le contrat déjà approuvé des alertes/GPS.
+
+- [Contrat proposé de suppression du compte et cas particuliers](docs/CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md) — cinq états, demande/finalisation, comptes non vérifiés ou suspendus, alertes/trajets actifs, courses concurrentes et arbitrages ouverts.
