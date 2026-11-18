@@ -530,3 +530,23 @@ Cette section est documentaire. Elle ne crée aucun fournisseur, endpoint, quota
 - absence d'accès aux données privées pendant l'attente.
 
 **NO-GO :** ne pas déclarer le parcours sûr avant sélection et validation des facteurs indépendants, des délais, des droits temporaires, des règles de session et des tests adversariaux.
+
+
+## Annexe — Risques de récupération sociale par les contacts (18 novembre 2026)
+
+**Recommandation :** ne pas autoriser les contacts de confiance à récupérer le compte par vote, quorum ou simple reconnaissance humaine.
+
+| Menace | Conséquence possible | Contrôle proposé |
+|---|---|---|
+| Collusion de plusieurs contacts | Prise de contrôle coordonnée du compte | Aucun quorum de contacts ne donne accès au compte ni ne change les coordonnées |
+| Contact sous coercition | Validation forcée d'une récupération | Aucune réponse d'un contact n'est suffisante pour authentifier le titulaire |
+| Compte d'un contact compromis | Faux signal de reconnaissance | Authentification propre du contact et vérification d'empreinte par canal indépendant ; pas d'accès au compte titulaire |
+| Faux contact ajouté pendant la récupération | Renforcement frauduleux de la demande | N'accepter que les relations actives antérieures à l'ouverture de la récupération |
+| Contact silencieux ou injoignable | Blocage de la vérification | Ne jamais transformer le silence en accord ; maintenir la relation GPS bloquée |
+| Réponses divulguées entre contacts | Pression, manipulation ou coordination | Isoler les réponses et ne pas exposer les coordonnées ou les facteurs du titulaire |
+
+La reconnaissance humaine peut éventuellement être étudiée comme signal complémentaire non décisif. Elle ne doit jamais remplacer un facteur indépendant de récupération d'accès, ni autoriser une session, un changement d'e-mail, une approbation d'appareil ou une restauration racine.
+
+**Tests adversariaux à prévoir :** contacts complices, contact sous contrainte, compte contact compromis, relation ajoutée pendant la récupération, réponses contradictoires, silence, usurpation vocale et tentative d'obtenir les nouvelles coordonnées du titulaire.
+
+**NO-GO :** aucun mécanisme de récupération sociale du compte ou de quorum racine n'est autorisé par cette annexe.
