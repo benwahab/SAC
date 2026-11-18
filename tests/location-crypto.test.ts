@@ -409,3 +409,42 @@ test("l'empreinte refuse un JWK contenant du matériel privé", async () => {
     /invalide/,
   );
 });
+
+test("un bundle correctement signé avec un point ECDH hors courbe est rejeté", async () => {
+  const identity = await createLocationIdentityKeyPair();
+  const identityPublicKey = await globalThis.crypto.subtle.exportKey(
+    "jwk",
+    identity.publicKey,
+  );
+  // Coordonnées de 32 octets encodées correctement en base64url,
+  // mais correspondant au point (0, 0), qui n'appartient pas à P-256.
+  const exchangePublicKey = {
+    kty: "EC",
+    crv: "P-256",
+    x: "A".repeat(43),
+    y: "A".repeat(43),
+  } satisfies JsonWebKey;
+  const payload = new TextEncoder().encode(JSON.stringify([
+    "SAC:identity-key-bundle:v1",
+    "contact-bob",
+    exchangePublicKey.kty,
+    exchangePublicKey.crv,
+    exchangePublicKey.x,
+    exchangePublicKey.y,
+  ]));
+  const signature = new Uint8Array(await globalThis.crypto.subtle.sign(
+    { name: "ECDSA", hash: "SHA-256" },
+    identity.privateKey,
+    payload,
+  ));
+
+  const accepted = await verifyLocationKeyBundle({
+    version: 1,
+    ownerId: "contact-bob",
+    exchangePublicKey,
+    identityPublicKey,
+    signature,
+  });
+
+  assert.equal(accepted, false);
+});
