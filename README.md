@@ -100,3 +100,5 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 - [Contrat de protection des données, accès internes et audit](docs/CONTRAT_PROTECTION_DONNEES_ACCES_INTERNES_ET_AUDIT.md) — minimisation C0-C4, consultation C3, exports, intégrité des journaux et contrôle des accès Super Admin/délégataires ; compléments à arbitrer, non implémentés.
 
 - [Contrat de sécurité du cycle SOS et de l'intégrité des alertes](docs/CONTRAT_SECURITE_CYCLE_SOS_ET_INTEGRITE_ALERTES.md) — authenticité du déclenchement, destinataires figés, idempotence, confidentialité, chronologie, rappels, anti-abus et restauration ; compléments à arbitrer, non implémentés.
+
+- [Contrat de sécurité des notifications et communications](docs/CONTRAT_SECURITE_NOTIFICATIONS_ET_COMMUNICATIONS.md) — confidentialité des push/e-mails/SMS, abonnements, fournisseurs, webhooks, révocation, pannes et prévention des fuites ; arbitrages requis, non implémenté.
