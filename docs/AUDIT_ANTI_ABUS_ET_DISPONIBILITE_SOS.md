@@ -303,3 +303,113 @@ La règle la plus importante de cet audit est la suivante :
 **SAC doit freiner les abus sans fermer la porte à une vraie urgence.** Les contrôles anti-abus doivent être mesurables, réversibles et testés ; aucune détection de risque ne doit bloquer silencieusement un SOS.
 
 Aucune route, migration, règle de quota, verrouillage de compte, fournisseur, secret, ressource Cloudflare, donnée GPS ou activation SOS n'est créée par cet audit.
+
+
+## 9. Audit ciblé — fraude à la récupération du compte SAC
+
+**Date : 18 novembre 2026**  
+**Statut : analyse et recommandations à valider ; aucune protection supplémentaire n'est implémentée par cette section.**
+
+### 9.1 Objectifs et frontières de sécurité
+
+Un attaquant peut chercher à obtenir l'accès au compte sans posséder le téléphone racine. Les actifs à protéger sont distincts :
+- accès au compte et sessions ;
+- autorité cryptographique de l'appareil racine ;
+- appareils secondaires et leurs certificats ;
+- contacts de confiance et invitations ;
+- alertes actives et données privées ;
+- autorisations de partage GPS.
+
+La réussite d'une récupération de mot de passe ou d'une vérification OTP ne doit jamais être interprétée comme preuve de possession de la racine. Elle ne peut ni rétablir les clés GPS, ni approuver un appareil, ni changer l'empreinte racine, ni reprendre un partage GPS.
+
+### 9.2 Scénarios de menace et protections proposées
+
+| Attaque | Risque | Protection proposée |
+|---|---|---|
+| Échange frauduleux de SIM / portage du numéro | L'attaquant reçoit les SMS destinés à la victime | Ne jamais considérer le contrôle du numéro ou un OTP SMS comme preuve suffisante pour une récupération racine. Prévoir un canal de récupération indépendant à définir. |
+| Compromission de la boîte e-mail | L'attaquant utilise un lien de réinitialisation | Liens à usage unique, liés au compte et au but précis, durée limitée à définir, invalidation après usage, stockage serveur sous forme non réutilisable, notification de sécurité après changement. Le lien ne donne aucune autorité racine. |
+| Vol d'un OTP | Connexion ou récupération frauduleuse | Expiration, usage unique, limitation des tentatives et des renvois, liaison au contexte de demande, invalidation des codes précédents selon une règle documentée, aucune valeur en clair dans les journaux. |
+| Hameçonnage / faux support | La victime remet codes, liens ou approbations | SAC ne demande jamais de communiquer un OTP, un mot de passe, une clé privée ou un code de récupération à un agent. Aucune validation de racine par simple ticket support. Messages de sécurité courts et non ambigus. |
+| Vol de session / jeton de renouvellement | L'attaquant agit sans connaître le mot de passe | Rotation des jetons de renouvellement, détection du rejeu, révocation ciblée de l'appareil, contrôle du statut appareil à chaque mutation sensible et invalidation serveur après révocation. |
+| Changement de numéro après SIM swap | L'attaquant remplace le canal de récupération | Changement de numéro traité comme opération sensible distincte, notification aux anciens canaux encore sûrs et délai de protection proposé ; le nouveau numéro ne devient pas instantanément une preuve de propriété. |
+| Épuisement OTP / déni de service | La victime ne peut plus récupérer son compte | Quotas par compte, destination, appareil et signaux réseau, réponse uniforme ; temporisation progressive et voie de recours. Ne pas verrouiller globalement le compte ni bloquer le SOS pour une seule limite IP. |
+| Énumération de comptes | L'attaquant découvre les numéros ou e-mails inscrits | Réponses externes uniformes pour compte existant/inexistant, temps et parcours aussi proches que possible, aucun détail personnel dans les erreurs. |
+| Usurpation du support | Un opérateur est poussé à contourner les contrôles | Séparation des rôles, procédure documentée, double contrôle pour toute action administrative sensible, journal append-only, aucun accès support aux clés privées et aucun bouton « forcer la racine ». |
+| Réinitialisation pendant une alerte active | Un attaquant prend le compte pendant une urgence | Les changements d'authentification ne clôturent, ne modifient ni ne suppriment une alerte ; chaque action sur l'alerte continue de vérifier l'autorisation serveur. Les contacts ne reçoivent pas une fausse annonce de prise en charge. |
+| Restauration d'une ancienne session ou sauvegarde | Réactivation d'un jeton ou certificat révoqué | Vérification en ligne du statut de session/appareil et de l'époque ; aucune restauration locale ne peut annuler la révocation serveur. |
+
+### 9.3 Protection contre le SIM swap et limites de détection
+
+Un changement soudain de SIM, un portage ou une réattribution de numéro n'est pas toujours observable par une application. SAC ne doit pas prétendre détecter un SIM swap sans signal fiable fourni par un opérateur ou un service spécialisé effectivement intégré et évalué.
+
+En l'absence d'un tel signal :
+- un OTP SMS prouve uniquement que le demandeur reçoit le SMS à cet instant ;
+- il ne prouve pas l'identité civile du demandeur, la possession de l'ancien appareil ni la continuité cryptographique ;
+- il ne suffit pas pour rétablir la racine, approuver un nouvel appareil ou réactiver le GPS ;
+- la modification du numéro de récupération doit rester une opération sensible, distincte de la récupération racine.
+
+Aucun fournisseur de détection SIM swap n'est choisi ni supposé disponible.
+
+### 9.4 Politique de sessions proposée
+
+- Chaque session est liée à un appareil identifié et à une famille de jetons de renouvellement.
+- Les jetons de renouvellement sont rotatifs ; un jeton déjà consommé présenté de nouveau déclenche une détection de rejeu et la révocation de la famille concernée selon une politique à définir.
+- Une révocation d'appareil est vérifiée côté serveur sur chaque action protégée ; l'expiration cryptographique locale seule n'est pas le contrôle principal.
+- Une récupération de mot de passe ne réactive aucun appareil révoqué.
+- Les sessions des autres appareils ne sont pas automatiquement supprimées par une simple révocation d'un appareil. L'effet exact d'une récupération d'accès sur les sessions existantes reste à décider.
+- Toute notification de sécurité est émise après commit ; une notification non livrée n'annule pas la transition.
+
+### 9.5 Protections OTP et liens de récupération
+
+Exigences proposées :
+- codes et jetons aléatoires à usage unique, liés à un compte, une finalité et une demande précise ;
+- stockage sous forme de vérificateur non réutilisable, avec secret serveur adapté pour protéger les OTP de faible entropie ;
+- expiration courte, à définir selon le canal et les contraintes réelles ;
+- limites atomiques de tentatives et de renvois, sans seuil arbitraire dans cet audit ;
+- invalidation des codes précédents selon une règle cohérente, sans permettre à plusieurs codes actifs de multiplier les chances d'essai ;
+- réponses d'erreur qui ne révèlent ni l'existence du compte ni le code attendu ;
+- aucune valeur OTP, aucun lien complet, aucun jeton, aucune clé ni donnée GPS dans les logs, analytics ou tickets support ;
+- défi consommé atomiquement : deux requêtes simultanées ne peuvent pas utiliser le même code ;
+- protection contre les renvois massifs et maîtrise des coûts fournisseur.
+
+Le canal SMS ne doit pas être l'unique facteur de récupération de l'autorité racine.
+
+### 9.6 Support et récupération exceptionnelle
+
+Le support ne peut pas :
+- demander ou recevoir un mot de passe, un OTP, une clé privée, un QR complet ou un code secret ;
+- changer directement la clé publique racine ;
+- réactiver un certificat révoqué ;
+- marquer un contact comme ayant vérifié une empreinte ;
+- rétablir le GPS ;
+- contourner l'expiration, l'idempotence ou les contrôles de concurrence.
+
+Toute intervention de support qui affecte le compte doit être limitée, authentifiée, justifiée, auditée et soumise à une séparation des rôles. L'existence d'une procédure de récupération exceptionnelle et les personnes autorisées restent à décider ; aucune procédure de contournement n'est créée ici.
+
+### 9.7 Anti-abus sans bloquer les urgences
+
+Les contrôles de récupération peuvent appliquer des limites strictes, mais ne doivent pas être réutilisés comme un verrouillage générique du parcours SOS. Une limite OTP, une IP partagée, un changement de réseau mobile ou un signal de risque ne doit pas bloquer silencieusement une alerte déclenchée depuis une session déjà authentifiée et valide.
+
+Si une session est réellement révoquée ou invalide, le serveur doit refuser honnêtement l'action protégée ; il ne doit pas inventer une alerte envoyée. Les erreurs et la disponibilité du SOS restent distinctes des mécanismes de récupération.
+
+### 9.8 Tests adversariaux complémentaires
+
+- SIM swap simulé : OTP reçu, tentative de récupération racine refusée ;
+- boîte e-mail compromise : lien utilisé deux fois, après expiration ou pour une autre finalité ;
+- OTP deviné, renvoyé en rafale, rejoué ou utilisé en concurrence ;
+- énumération de comptes par numéro, e-mail, temps de réponse et messages ;
+- jeton de renouvellement ancien rejoué après rotation ;
+- session volée utilisée après révocation de l'appareil ;
+- changement de numéro immédiatement après récupération ;
+- support sollicité pour remplacer une racine ou révéler un code ;
+- tentative de changement de mot de passe pendant alerte active ;
+- limites anti-abus déclenchées sur une IP partagée avec plusieurs utilisateurs légitimes ;
+- vérification que les contrôles OTP ne bloquent pas un SOS valide ;
+- vérification de l'absence de secrets dans journaux, analytics, notifications et tickets.
+
+### 9.9 Décision de sécurité
+
+**NO-GO pour une récupération de compte en production tant que les facteurs, les limites, les sessions, les notifications et les procédures de recours ne sont pas spécifiés et testés.**  
+**NO-GO permanent pour toute récupération racine fondée uniquement sur SMS, e-mail, mot de passe ou support.**
+
+Cette section est documentaire. Elle ne crée aucun fournisseur, endpoint, quota chiffré, verrouillage, ressource Cloudflare, SMS réel ni mécanisme GPS.
