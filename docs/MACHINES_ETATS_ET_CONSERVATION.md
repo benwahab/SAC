@@ -278,7 +278,7 @@ Un worker ne doit pas tenir un verrou pendant un appel réseau. Le système doit
 
 - intervalle produit : cinq minutes ;
 - destinataires : instantané initial ;
-- arrêt de la création des rappels : annulation ou clôture par l'auteur ;
+- arrêt de la création des rappels : clôture explicite par l'auteur ; une annulation après déclenchement est une clôture avec motif « annulée » ;
 - accusé de réception ou prise en charge : ne stoppe pas les rappels ;
 - erreur push/SMS : ne ferme pas l'alerte ;
 - un rappel doit avoir une clé de déduplication stable par alerte, destinataire, canal et numéro d'occurrence.
