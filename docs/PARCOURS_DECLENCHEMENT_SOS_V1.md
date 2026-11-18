@@ -145,6 +145,21 @@ L'action « Annuler l'alerte » après déclenchement est une clôture explicite
 | Double appui / réponse réseau perdue | Reprendre la même commande idempotente et retrouver la même alerte, sans doublon |
 | Alerte clôturée pendant une tâche de rappel | Empêcher les nouvelles tâches non envoyées ; conserver le statut des envois déjà acceptés |
 
+### Proposition UX — aucun contact éligible (à valider)
+
+Lorsqu'aucun contact éligible n'est disponible, SAC ne doit ni fabriquer un destinataire, ni créer une alerte présentée comme transmise, ni laisser croire qu'un proche a été prévenu.
+
+Comportement proposé :
+
+1. Dans le parcours guidé, après vérification de la liste finale, si elle est vide, le bouton d'envoi est remplacé par un état explicite : **« Aucun contact ne peut recevoir cette alerte »**.
+2. SAC explique brièvement pourquoi : aucun contact actif, accepté et vérifié n'est disponible. Il propose de revenir à la gestion des contacts ou de quitter le parcours.
+3. Pour un SOS critique, le raccourci immédiat reste indisponible tant qu'une catégorie et au moins un destinataire éligible ne sont pas configurés. L'écran de configuration doit être accessible sans prétendre qu'une alerte a été déclenchée.
+4. Aucun enregistrement serveur d'alerte, aucune tâche push et aucune escalade SMS ne sont créés tant que la liste finale est vide. Un brouillon local éventuel ne doit jamais apparaître dans l'historique comme une alerte envoyée ou active.
+5. En situation de danger immédiat, l'écran rappelle de contacter directement les services d'urgence locaux ou une personne à proximité. SAC ne doit afficher un numéro d'urgence cliquable que si ce numéro a été vérifié et validé pour le pays concerné ; aucun numéro ne doit être deviné.
+6. Si le problème est une absence de connexion plutôt qu'une absence de contact éligible, appliquer séparément le comportement « Internet indisponible » : ne pas confondre les deux situations et ne jamais promettre une transmission hors ligne non implémentée.
+
+**Statut : proposition de conception uniquement.** Cette règle ne devient une décision produit qu'après validation explicite. Elle n'autorise aucune implémentation, API, migration, intégration téléphonique ou notification réelle.
+
 ## 7. Décisions actées et points encore ouverts
 
 ### Décision validée — deux parcours SOS complémentaires
