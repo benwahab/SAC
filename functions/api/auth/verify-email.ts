@@ -79,7 +79,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   if (!record) return json({ error: "invalid_or_expired_code" }, 400);
   if (record.account_status === "active" && record.verified_at !== null) {
-    return json({ verified: true, accountActivated: true });
+    return json({ error: "invalid_or_expired_code" }, 400);
   }
   if (record.account_status !== "pending_verification" || !record.challenge_id) {
     return json({ error: "invalid_or_expired_code" }, 400);
