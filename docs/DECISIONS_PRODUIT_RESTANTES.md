@@ -430,3 +430,8 @@ Le contrat `CONTRAT_GOUVERNANCE_JURIDIQUE_ET_CONFORMITE.md` regroupe la gouverna
 Blocage juridique Niger : l'ANP a rapporté la suppression de la HAPDP et le transfert de ses missions aux ministères de la Justice et de l'Intérieur en juin 2026. Le texte authentique de l'ordonnance n° 2026-30, les dispositions précises modifiées et les procédures ministérielles opérationnelles doivent être obtenus et vérifiés. Les pages historiques de l'ancienne HAPDP ne suffisent pas à établir les formalités actuelles.
 
 Restent ouverts : entité porteuse/responsable du traitement, formalités et bases applicables, traitement de données de santé/téléphone/GPS, transferts, sous-traitants, conservation hors GPS, destinataire/délai des violations, âge V1, conditions d'utilisation et validation de chaque pays. Aucun pays additionnel, fournisseur, transfert ou parcours mineur n'est approuvé.
+
+
+## Audit transversal — 18 novembre 2026
+
+Consulter `AUDIT_TRANSVERSAL_COHERENCE_ET_MATURITE_2026-11-18.md` pour la liste consolidée des blocages et contradictions. Les arbitrages concernant le contact révoqué pendant un SOS actif, la séquence push/SMS, la récupération du compte, les trajets, groupes et SOS programmés/discrets restent ouverts lorsqu'ils sont explicitement marqués comme propositions. L'audit ne les transforme pas en décisions approuvées.
