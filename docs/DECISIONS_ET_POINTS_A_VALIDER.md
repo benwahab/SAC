@@ -611,3 +611,42 @@ Contrôles proposés : secret à forte entropie, affichage unique, vérificateur
 **Contrôles obligatoires à spécifier avant code :** normalisation canonique, validation stricte des 52 caractères et des bits de bourrage, liaison au compte et à la version du kit, consommation atomique unique, limites anti-essais distribuées, réponses uniformes, absence du secret dans logs/analytics/crash reports, et tests sur claviers Android réels.
 
 Cette proposition ne modifie pas la décision utilisateur déjà actée (une seule clé hors ligne). Elle ne fixe pas encore définitivement l'encodage, le checksum, le vérificateur, les limites chiffrées ou les délais, et n'autorise aucun code, endpoint ni schéma D1.
+
+
+## 3.8 Parcours proposé — téléphone perdu, ancienne adresse inaccessible, clé hors ligne disponible (18 novembre 2026)
+
+**Statut : proposition de conception à valider ; aucune récupération réelle n'est activée.**
+
+### Scénario couvert
+Le titulaire a perdu son téléphone, ne peut plus accéder à son ancienne adresse e-mail, mais possède toujours l'unique clé personnelle de récupération hors ligne. Il dispose d'un nouvel appareil et peut fournir une nouvelle adresse e-mail qu'il contrôle.
+
+### Séquence proposée
+1. Depuis le nouvel appareil, le titulaire choisit explicitement « J'ai perdu mon téléphone et je n'ai plus accès à mon ancienne adresse e-mail ».
+2. SAC crée une demande de récupération en attente, avec un identifiant opaque, une finalité unique et une expiration. La réponse ne révèle pas si le compte existe.
+3. Le titulaire saisit sa clé hors ligne. Le serveur vérifie le vérificateur protégé ; la clé brute ne transite jamais et n'est jamais journalisée.
+4. Le titulaire indique une nouvelle adresse et la vérifie par OTP e-mail. Cet OTP prouve uniquement le contrôle ponctuel de cette nouvelle boîte ; il ne prouve ni l'identité historique, ni la possession de l'ancienne racine.
+5. La demande ne devient pas immédiatement une session complète. Une période de sécurité, les contestations possibles et les privilèges temporaires doivent être arbitrés avant toute activation.
+6. Après satisfaction de la politique validée, le compte peut retrouver un accès limité depuis le nouvel appareil. Cet appareil reste non approuvé cryptographiquement tant qu'une cérémonie d'approbation distincte n'a pas eu lieu.
+7. L'ancien téléphone est traité comme perdu/à révoquer. La politique de révocation de ses sessions, jetons et abonnements push doit être exécutée atomiquement selon la décision de session qui reste à prendre.
+8. La clé est consommée une seule fois, atomiquement, uniquement lorsque la récupération atteint son état de succès défini. Toutes les demandes concurrentes liées à cette version deviennent invalides.
+
+### Limites non négociables
+- La clé ne restaure pas l'ancienne racine, ne certifie pas le nouvel appareil, ne réactive aucun appareil révoqué et ne débloque pas le GPS.
+- Le nouvel OTP e-mail ne remplace jamais la clé et ne constitue pas une preuve d'identité à lui seul.
+- Aucun contact de confiance, administrateur ou support ne peut approuver la récupération du compte par vote, reconnaissance humaine ou intervention manuelle.
+- Aucune nouvelle coordonnée privée n'est communiquée aux contacts.
+- Aucun accès GPS précis, historique GPS ou clé GPS n'est restauré.
+- Une demande en attente n'accorde aucun privilège privé implicite et ne doit pas être présentée comme une récupération réussie.
+- Le SOS essentiel ne doit pas être bloqué par une vérification e-mail lorsqu'il est déclenché depuis une session encore autorisée.
+
+### Arbitrages encore ouverts
+1. La combinaison « clé hors ligne + OTP sur nouvelle adresse » suffit-elle pour récupérer l'accès au compte, ou faut-il un contrôle indépendant supplémentaire ?
+2. Quel délai de sécurité s'applique avant l'accès rétabli ? Faut-il une notification neutre aux anciens canaux ou aux contacts, sans leur donner de droit de veto ?
+3. Quels droits précis sont accordés pendant l'attente puis après succès : simple reprise de connexion, consultation du compte, modification des coordonnées, gestion des contacts ?
+4. Au succès, faut-il révoquer toutes les sessions et tous les jetons existants, ou seulement ceux de l'appareil perdu et les sessions à risque ? Comment traiter les autres appareils encore actifs ?
+5. Le nouvel appareil reste-t-il dans un état « récupération limitée / non approuvé » jusqu'à une cérémonie distincte ? Quelles opérations lui sont interdites ?
+6. Quelle durée de validité, quel nombre d'essais, quelle temporisation et quelle procédure en cas de demande interrompue ou de résultat réseau ambigu ?
+7. Comment traiter une clé perdue, volée, photographiée, déjà utilisée ou soupçonnée compromise ? Aucune récupération alternative n'est présumée.
+
+**NO-GO :** pas d'implémentation avant validation explicite des facteurs, délais, contestations, droits temporaires, politique de sessions, états et tests adversariaux. La récupération du compte reste distincte de la récupération de la racine.
+
