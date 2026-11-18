@@ -135,6 +135,48 @@ export async function deriveLocationDirectionalKey(
   );
 }
 
+/**
+ * Valide une clé publique ECDH au-delà de son import JWK.
+ *
+ * Certains fournisseurs WebCrypto peuvent accepter à l'import un point EC
+ * hors courbe. L'accord ECDH effectif doit donc également être tenté avec
+ * une clé privée éphémère locale ; aucun secret dérivé n'est conservé.
+ */
+export async function validateLocationExchangePublicKey(
+  publicJwk: JsonWebKey,
+  cryptoProvider: Crypto = globalThis.crypto,
+): Promise<boolean> {
+  try {
+    if (!isP256PublicJwk(publicJwk)) return false;
+    const publicKey = await cryptoProvider.subtle.importKey(
+      "jwk",
+      publicJwk,
+      { name: "ECDH", namedCurve: "P-256" },
+      false,
+      [],
+    );
+    if (
+      publicKey.type !== "public" ||
+      publicKey.algorithm.name !== "ECDH" ||
+      (publicKey.algorithm as EcKeyAlgorithm).namedCurve !== "P-256"
+    ) return false;
+
+    const ephemeral = await cryptoProvider.subtle.generateKey(
+      { name: "ECDH", namedCurve: "P-256" },
+      false,
+      ["deriveBits"],
+    );
+    await cryptoProvider.subtle.deriveBits(
+      { name: "ECDH", public: publicKey },
+      ephemeral.privateKey,
+      256,
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export interface SignedLocationKeyBundle {
   readonly version: 1;
   readonly ownerId: string;
@@ -247,22 +289,9 @@ export async function verifyLocationKeyBundle(
       return false;
     }
 
-    // Valider aussi le point ECDH lui-même : le contrôle regex JWK
-    // vérifie la forme des coordonnées, pas leur appartenance à P-256.
-    // WebCrypto doit refuser les points hors courbe / non valides avant
-    // que cette clé puisse être utilisée dans un accord ECDH.
-    const exchangeKey = await cryptoProvider.subtle.importKey(
-      "jwk",
-      bundle.exchangePublicKey,
-      { name: "ECDH", namedCurve: "P-256" },
-      false,
-      [],
-    );
-    if (
-      exchangeKey.type !== "public" ||
-      exchangeKey.algorithm.name !== "ECDH" ||
-      (exchangeKey.algorithm as EcKeyAlgorithm).namedCurve !== "P-256"
-    ) {
+    // Ne pas supposer que tous les fournisseurs valident le point EC
+    // dès importKey : effectuer aussi un accord ECDH éphémère de contrôle.
+    if (!(await validateLocationExchangePublicKey(bundle.exchangePublicKey, cryptoProvider))) {
       return false;
     }
 
