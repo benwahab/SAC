@@ -22,6 +22,7 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
       verifyIntro: "Saisissez le code envoyé à votre adresse e-mail. Il est valable 10 minutes.",
       resendWait: "Vous pourrez demander un nouveau code dans", seconds: "s",
       success: "Adresse e-mail vérifiée. Votre compte SAC est activé. L'accès privé sera ouvert après la finalisation sécurisée des appareils et des sessions.",
+      completeIntro: "Vérification terminée",
       genericAccepted: "Si cette adresse est éligible, vous recevrez les instructions de vérification.",
       serviceUnavailable: "Le service de vérification n’est pas encore configuré. Aucun compte n’a été activé.",
       invalidCode: "Code incorrect, expiré ou déjà utilisé. Vérifiez le code ou demandez-en un nouveau.",
@@ -43,6 +44,7 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
       verifyIntro: "Enter the code sent to your email address. It is valid for 10 minutes.",
       resendWait: "You can request another code in", seconds: "s",
       success: "Email verified. Your SAC account is active. Private access will open after secure device and session setup is completed.",
+      completeIntro: "Verification complete",
       genericAccepted: "If this address is eligible, you will receive verification instructions.",
       serviceUnavailable: "The verification service is not configured yet. No account has been activated.",
       invalidCode: "The code is incorrect, expired, or already used. Check it or request a new one.",
@@ -64,6 +66,7 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
       verifyIntro: "أدخل الرمز المرسل إلى بريدك الإلكتروني. صلاحية الرمز 10 دقائق.",
       resendWait: "يمكنك طلب رمز جديد خلال", seconds: "ث",
       success: "تم التحقق من البريد الإلكتروني وتفعيل حساب SAC. سيتم فتح المساحة الخاصة بعد استكمال إعداد الأجهزة والجلسات بأمان.",
+      completeIntro: "اكتمل التحقق",
       genericAccepted: "إذا كان هذا العنوان مؤهلاً، فستصلك تعليمات التحقق.",
       serviceUnavailable: "خدمة التحقق غير مهيأة بعد. لم يتم تفعيل أي حساب.",
       invalidCode: "الرمز غير صحيح أو منتهي الصلاحية أو مستخدم مسبقاً. تحقق منه أو اطلب رمزاً جديداً.",
@@ -211,7 +214,7 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
 
         <div className="mt-10">
           <h1 className="text-3xl font-black tracking-tight">{copy.title}</h1>
-          <p className="mt-2 text-sm leading-6 text-sac-muted">{mode === "register" ? copy.registerIntro : mode === "verify" ? copy.verifyIntro : mode === "complete" ? copy.success : copy.subtitle}</p>
+          <p className="mt-2 text-sm leading-6 text-sac-muted">{mode === "register" ? copy.registerIntro : mode === "verify" ? copy.verifyIntro : mode === "complete" ? copy.completeIntro : copy.subtitle}</p>
         </div>
 
         {mode === "login" && (
