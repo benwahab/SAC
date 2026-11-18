@@ -799,3 +799,32 @@ La récupération du compte historique doit être refusée. Le support, un conta
 
 ### Arbitrages encore ouverts
 Nature d'un éventuel facteur indépendant préenregistré ; preuve de récupération en son absence ; délais et contestation ; politique de sessions ; conditions de création d'un nouveau compte sans rattachement à l'ancien. NO-GO maintenu pour tout développement de récupération additionnelle.
+
+
+## Étude des facteurs alternatifs de récupération — recommandation (18 novembre 2026)
+
+**Statut : étude comparative et recommandation, pas une décision d'activation.** La décision validée reste un seul kit personnel de récupération hors ligne. Aucun deuxième secret n'est ajouté à ce stade.
+
+| Option | Avantage | Limite déterminante | Avis SAC |
+|---|---|---|---|
+| Passkey synchronisée dans un compte fournisseur (ex. gestionnaire de mots de passe de plateforme) | Facile à retrouver sur un nouveau téléphone si le compte fournisseur est récupéré | Dépend de la récupération du compte tiers, de sa synchronisation et de sa sécurité ; contrôle de la passkey ne prouve ni l'identité historique SAC ni la possession de la racine | Ne pas considérer comme preuve indépendante suffisante |
+| Passkey liée à un second appareil préalablement approuvé | Bonne preuve de possession si cet appareil reste disponible ; expérience fluide | Si tous les appareils sont perdus, elle ne résout pas le scénario ; reste soumise aux règles d'approbation/révocation | Déjà couvert par la stratégie multi-appareils approuvés, sans nouvelle voie de récupération |
+| Clé matérielle FIDO2 séparée | Facteur physique distinct, résistant au phishing si correctement déployé | Coût, perte/casse, compatibilité et besoin de garder un second objet ; une clé unique peut être perdue avec le téléphone | À étudier seulement si l'utilisateur accepte une dépendance matérielle supplémentaire |
+| Deuxième code ou deuxième clé hors ligne | Simple à comprendre techniquement | Double les secrets à protéger et le risque de perte, copie ou stockage dangereux ; contredit le choix d'un seul kit | Rejeté comme option par défaut |
+| SMS ou OTP sur nouvel e-mail | Facile à déployer | Prouve seulement le contrôle ponctuel du canal ; SIM swap, recyclage du numéro, boîte nouvellement créée ou compromise | Insuffisant ; SMS réservé à l'escalade SOS |
+| Validation par contacts ou support | Semble humainement accessible | Ingénierie sociale, coercition, collusion, comptes compromis ; contredit la séparation des rôles | Interdit comme preuve de récupération du compte |
+
+### Recommandation actuelle
+Ne pas ajouter de facteur alternatif obligatoire. Conserver :
+1. un seul kit de récupération hors ligne ;
+2. les appareils approuvés existants comme voie de reprise lorsqu'un appareil reste disponible ;
+3. le refus honnête de récupérer le compte historique lorsqu'aucun appareil approuvé ni kit valide ne subsiste.
+
+Une passkey synchronisée peut éventuellement servir à l'authentification ordinaire ou à la commodité, mais elle ne doit pas être qualifiée de facteur indépendant de récupération sans analyse du compte fournisseur, de la synchronisation, de la récupération du fournisseur et du modèle de menace. Elle ne restaure jamais la racine cryptographique, l'approbation d'appareil ou le GPS.
+
+### Points à arbitrer avant toute évolution
+- L'utilisateur souhaite-t-il un jour prendre en charge une clé matérielle FIDO2 distincte ?
+- Si oui, quelles plateformes, modèles, coûts, procédures de perte et tests de compatibilité ?
+- Une passkey synchronisée doit-elle rester un simple moyen de connexion, sans privilège de récupération ?
+
+**NO-GO :** aucune intégration passkey, FIDO2, fournisseur tiers ou facteur alternatif n'est autorisée par cette étude.
