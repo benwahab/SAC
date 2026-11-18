@@ -656,3 +656,16 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Définir la conservation, la purge et la preuve d'intégrité du journal d'audit.
 - [ ] Faire réaliser une revue indépendante de sécurité et conformité.
 - [ ] Ne créer aucun rôle, permission, mission active, endpoint, session administrative ou migration D1 sans autorisation distincte.
+
+
+## Modèle de menaces et plan de sécurité administratif — 18 novembre 2026
+
+- [x] Cartographier les actifs critiques et frontières de confiance.
+- [x] Décrire les adversaires, erreurs et scénarios de menace prioritaires.
+- [x] Définir les contrôles cibles pour autorisation, sessions, journaux, données et exports.
+- [x] Définir un flux de gestion des incidents administratifs.
+- [x] Définir les tests de sécurité et les conditions de passage en production.
+- [ ] Faire examiner le modèle par une personne indépendante en sécurité applicative.
+- [ ] Transformer les exigences validées en conception technique détaillée avant toute implémentation.
+- [ ] Vérifier la conformité juridique, la conservation, la purge et les obligations de notification.
+- [ ] Ne pas déclarer les contrôles opérationnels avant preuve dans le code, tests et CI.
