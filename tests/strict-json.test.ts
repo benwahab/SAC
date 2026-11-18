@@ -51,6 +51,7 @@ test("le parseur applique la grammaire JSON et rejette les données finales", ()
 
 test("la limite de taille est calculée en octets UTF-8", () => {
   assert.throws(() => parseStrictJson('{"x":"😀"}', { maxBytes: 8, maxDepth: 4 }), /max_bytes/);
+  assert.throws(() => parseStrictJson('{"x":"é"}', { maxBytes: 9, maxDepth: 4 }), /max_bytes/);
   assert.doesNotThrow(() => parseStrictJson('{"x":"😀"}', { maxBytes: 32, maxDepth: 4 }));
 });
 
