@@ -392,3 +392,8 @@ La matrice finale devra prévoir la minimisation ou pseudonymisation des donnée
 La matrice détaillée table par table est désormais consignée dans `docs/MATRICE_TRACABILITE_SCHEMA_D1.md`. Elle relie les 21 tables conceptuelles aux invariants, contraintes/index, tests D1 et questions de conservation.
 
 La matrice conclut explicitement que le schéma n'est **pas prêt pour migration**. Elle ne constitue ni une validation du modèle ni une autorisation d'écrire du SQL.
+
+
+## 11. Référentiel global — complément du 18 novembre 2026
+
+Lire désormais `MODELE_GLOBAL_DONNEES_SAC.md` comme carte de cohérence inter-domaines. Il identifie les objets absents de cette première proposition (groupes, alertes programmées, SOS discret, abonnements/paiements) et les incohérences de vocabulaire/états à résoudre. Cette proposition initiale reste non validée et non exécutable ; aucun objet complémentaire n'est autorisé en SQL par ce renvoi.
