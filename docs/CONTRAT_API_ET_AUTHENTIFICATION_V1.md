@@ -855,3 +855,21 @@ Le droit est interdit si aucun destinataire préconfiguré n'est éligible. La s
 
 **NO-GO :** cette proposition ne constitue ni une route API, ni une permission D1, ni une activation de l'envoi SOS.
 
+
+
+### Décision utilisateur — lecture de l'état du SOS de secours depuis la session limitée (18 novembre 2026)
+
+Le titulaire peut lire uniquement l'état agrégé de son propre SOS de secours. La réponse logique doit être une projection minimale calculée côté serveur, limitée à l'identifiant de l'alerte autorisée et aux transitions confirmées.
+
+Champs fonctionnels admissibles :
+- état de traitement de l'alerte par SAC ;
+- état de notification par canal, avec distinction stricte entre planifié, accepté par le fournisseur, livré si preuve disponible, échec ou état inconnu ;
+- accusé humain de réception, uniquement s'il existe ;
+- prise en charge principale confirmée ou absence de prise en charge ;
+- clôture confirmée par l'auteur.
+
+Ne jamais retourner dans cette projection : nom, téléphone, e-mail, identifiant de compte, avatar ou profil d'un contact ; contenu de réponse libre ou conversation ; coordonnées GPS/adresse ; historique d'une autre alerte ; données privées des contacts ; facteurs de récupération ou données de l'appareil.
+
+Les états de fournisseur ne doivent jamais être présentés comme une lecture humaine. Une notification acceptée n'est pas une livraison ; une livraison n'est pas une lecture ; un accusé de réception n'est pas une prise en charge.
+
+Le contrôle d'accès doit vérifier côté serveur que l'utilisateur est l'auteur de cette alerte, que la session limitée est encore valide et que l'alerte correspond au SOS de secours autorisé. Aucun identifiant fourni par le client ne doit permettre de lire une autre alerte. Aucun endpoint n'est défini ou créé par cette annexe.
