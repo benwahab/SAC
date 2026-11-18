@@ -128,3 +128,8 @@ SAC devra donc tenir un registre des fournisseurs, contrats de sous-traitance, a
 ## Référence transversale actualisée — 18 novembre 2026
 
 Lire `CONTRAT_GOUVERNANCE_JURIDIQUE_ET_CONFORMITE.md` pour la gouvernance du responsable de traitement, la qualification des données sensibles, les mineurs, les transferts, les fournisseurs, les droits et les conditions d'utilisation. Cette pré-analyse ne vaut pas avis juridique ; ses références historiques à la HAPDP et à ses formalités ne doivent pas être utilisées comme procédure opérationnelle actuelle après juin 2026.
+
+
+## Complément de recherche juridique — 18 novembre 2026
+
+Lire `ANALYSE_JURIDIQUE_NIGER_SAC_2026-11-18_COMPLEMENT.md` avant toute décision. Il précise les articles du texte de base 2022-59 relatifs aux formalités, à l'autorisation historique des traitements portant sur les numéros de téléphone et les transferts vers des pays tiers, aux données médicales, à la localisation, aux obligations de sécurité, à la notification des violations, à la conservation et aux droits. Ces références sont expressément historiques tant que l'ordonnance 2026-30 et les textes d'organisation des missions transférées n'ont pas été authentifiés.
