@@ -109,3 +109,8 @@ Les fichiers suivants existent actuellement sur `main`. Ils testent des contrats
 8. Tests Preview : prouver que le binding D1 ciblé n'est jamais celui de Production.
 
 Aucun de ces tests D1 n'est déclaré présent tant qu'un vrai fichier de test d'intégration et son exécution contre D1 ne sont pas vérifiés.
+
+
+## 7. Référentiel global — complément du 18 novembre 2026
+
+Lire `MODELE_GLOBAL_DONNEES_SAC.md` pour les domaines absents de la première matrice : groupes privés, alertes programmées, SOS discret, sous-modèle abonnements/paiements et intégration à l'identité canonique des comptes administratifs. Ces objets sont des lacunes à spécifier, pas des tables validées. La matrice initiale ne couvre donc pas encore l'ensemble du produit SAC.
