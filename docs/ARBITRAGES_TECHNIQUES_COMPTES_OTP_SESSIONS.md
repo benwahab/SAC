@@ -373,3 +373,29 @@ L'intégrité doit être détectable et vérifiable. Le chaînage cryptographiqu
 
 Aucune implémentation n'est autorisée par cette section : aucun rôle ou droit opérationnel, middleware, endpoint, table ou migration D1, journal effectif, ressource Cloudflare ou écran administratif n'est créé. Le modèle détaillé, les tests négatifs, l'intégrité, la conservation et la revue de sécurité précèdent toute autorisation de code.
 
+
+## 15. Modèle des rôles, permissions et missions — 18 novembre 2026
+
+Trois notions sont séparées : le rôle décrit une fonction générale ; la permission autorise une action précise sur une ressource et un périmètre ; la mission est une délégation personnelle et encadrée, accordée par le Super Admin pour un objectif, une liste de permissions, un périmètre et une période. Aucun droit ne découle implicitement d'une équipe, d'une URL ou de la simple existence d'un compte administratif.
+
+| Rôle | Cadre retenu |
+|---|---|
+| Super Admin | Autorité suprême ; seul à créer, attribuer, modifier, suspendre, reprendre, révoquer ou terminer les délégations et missions. Ses actions sont auditées. |
+| Administrateur sécurité | Aucun pouvoir de délégation. Droits supplémentaires uniquement sur attribution explicite du Super Admin. La permission spéciale de clôture d'alerte doit être attribuée séparément et nominativement. |
+| Support | Assistance limitée aux informations et opérations explicitement autorisées ; aucun droit de délégation, d'attribution de permissions, de clôture d'alerte ou d'effacement des traces. |
+| Auditeur | Lecture seule dans un périmètre autorisé ; aucun droit de modification, suspension, délégation, clôture ou suppression. Consultation et export sont séparés et tracés. |
+
+Le catalogue distingue les permissions de consultation, assistance, sécurité, gestion des comptes, délégations, clôture administrative, audit/export et configuration. Les actions consulter, créer, modifier, suspendre, révoquer, clôturer et exporter constituent des droits distincts. Le rôle seul ne suffit pas à les accorder.
+
+Chaque mission doit identifier le délégataire, son objectif, les permissions exactes, le périmètre des ressources, les limites et interdictions, la date de début et de fin (ou une absence d'échéance exceptionnelle à réexaminer), les conditions de suspension/révocation et le motif de décision du Super Admin. Elle est personnelle, non transférable et non sous-délégable. Le délégataire ne peut pas inviter un autre administrateur, attribuer des droits ou étendre sa mission. Il peut seulement demander au Super Admin une extension ou une nouvelle délégation.
+
+À chaque requête, le serveur vérifie l'état du compte et de la session, l'acteur, l'existence et l'état de la mission, la permission précise, le périmètre de la ressource, les éventuelles révocations et les conditions de l'action. Le refus par défaut s'applique. Aucun héritage automatique entre rôles, équipes, utilisateurs ou missions ; aucun cumul ne doit créer un accès global. En cas de conflit, la règle la plus restrictive prévaut.
+
+Cycle de vie de conception : brouillon non actif, active, suspendue, expirée, révoquée, terminée. Seul le Super Admin gère ces transitions ; elles sont auditées. Une modification n'élargit pas rétroactivement les droits ; les événements passés gardent le contexte effectif au moment de l'action. La révocation est appliquée côté serveur sans attendre le rafraîchissement de l'interface.
+
+La clôture administrative d'une alerte dans le scénario spécial demeure une permission distincte, nominative, non transférable et attribuée uniquement par le Super Admin à lui-même ou à un administrateur sécurité explicitement habilité. Support, auditeur, proches et titulaire suspendu en sont exclus. Une seule personne habilitée suffit, sans double validation.
+
+Restent à spécifier avant implémentation : catalogue exhaustif des ressources/actions, périmètres disponibles et combinaisons, données visibles par Support, vues et exports de l'Auditeur, durées par défaut et renouvellement des missions, suspension d'urgence et effets sur sessions ouvertes, conflits et demandes d'extension. En attendant, aucun droit supplémentaire n'est implicite.
+
+Aucune implémentation n'est créée par ce document : aucun rôle actif, compte, droit, mission, écran, endpoint, middleware ou schéma/migration D1. Une matrice exhaustive testable, une revue sécurité et une autorisation explicite sont nécessaires avant le code.
+
