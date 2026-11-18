@@ -42,6 +42,7 @@ Il ne remplace pas ces contrats détaillés et ne valide pas les propositions cr
 
 ### Appareils et racine
 - Un appareil secondaire ne s'approuve pas lui-même et ne se promeut jamais racine.
+- Pour la V1, l'appareil racine unique est le seul autorisé à approuver l'ajout d'un appareil secondaire ; aucun appareil secondaire ne peut approuver un autre appareil. Cette décision produit a été validée le 17 novembre 2026.
 - Un appareil révoqué ne peut plus ouvrir ou renouveler de session ; sa révocation ne supprime pas le compte ni les autres appareils.
 - OTP, mot de passe, réinitialisation de mot de passe, e-mail, SMS et intervention du support ne restaurent pas une clé privée racine.
 - La récupération d'accès au compte ne restaure pas l'identité cryptographique.
