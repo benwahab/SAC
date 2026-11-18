@@ -271,9 +271,11 @@ Cette décision résout l'arbitrage produit sur les cinq états, mais ne modifie
 
 La suspension ne doit pas annuler ni interrompre une alerte déjà transmise. Les destinataires initiaux continueraient à recevoir les rappels toutes les 5 minutes jusqu'à clôture, sans ajout automatique de contacts. Les actions de réception et de prise en charge restent disponibles ; le premier contact qui choisit « Je prends la situation en charge » devient responsable principal, les autres pouvant intervenir.
 
-Pour le titulaire suspendu, le principe d'une capacité cryptographique d'urgence liée à une seule alerte et à l'appareil d'origine, distincte de toute session de compte, est validé. Elle sera limitée à la consultation de l'état minimal de cette alerte, à la transmission d'une mise à jour de sécurité et à la demande/confirmation de clôture de cette seule alerte. Le protocole et ses contrôles restent à spécifier. Aucun accès au compte, aux proches, aux paramètres, aux autres alertes, à la création d'une nouvelle alerte ou à la modification des destinataires ne serait permis. Chaque action serait vérifiée côté serveur, limitée à cette alerte, journalisée et anti-rejeu.
+Pour le titulaire suspendu, le principe d'une capacité cryptographique d'urgence liée à une seule alerte et à l'appareil d'origine, distincte de toute session de compte, est validé. Elle sera limitée à la consultation de l'état minimal de cette alerte, à la transmission d'une mise à jour de sécurité et à la transmission d'une demande de clôture à l'administration SAC pour cette seule alerte. Le titulaire suspendu ne peut pas clôturer l'alerte. Le protocole et ses contrôles restent à spécifier. Aucun accès au compte, aux proches, aux paramètres, aux autres alertes, à la création d'une nouvelle alerte ou à la modification des destinataires ne serait permis. Chaque action serait vérifiée côté serveur, limitée à cette alerte, journalisée et anti-rejeu.
 
-Points encore ouverts : personne autorisée à clôturer si le titulaire a perdu son appareil ; conditions de clôture et notifications ; garde-fous et conservation des éléments de preuve en cas de suspension pour abus lié à l'alerte.
+La clôture appartient exclusivement à l'administration SAC. Ni le titulaire suspendu ni les proches, y compris le responsable principal, ne peuvent clôturer l'alerte. Un proche peut signaler que la situation est terminée et demander une clôture administrative ; la décision et l'action de clôture restent réservées à l'administration SAC.
+
+Points encore ouverts : procédure de vérification de la demande, personnes habilitées au sein de l'administration, conditions de décision et notifications ; garde-fous et conservation des éléments de preuve en cas de suspension pour abus lié à l'alerte.
 
 ### Garde-fou validé contre l'abus de clôture
 
@@ -283,7 +285,7 @@ La distinction suivante est validée :
 - Une **demande ou confirmation de clôture** du titulaire suspendu ne suffit pas, à elle seule, à clôturer automatiquement une alerte lorsque la suspension est liée à un abus potentiel sur cette alerte. Des contrôles supplémentaires côté serveur sont obligatoires avant toute clôture.
 - Aucun événement, accusé de réception, prise en charge ou élément d'audit ne peut être supprimé ou réécrit par cette capacité. La continuité de l'assistance des contacts doit être préservée.
 
-Les critères de déclenchement du contrôle renforcé, l'autorité finale de clôture et les notifications restent à spécifier. Cette décision ne crée aucune permission opérationnelle ni route API.
+Les critères de déclenchement du contrôle renforcé, la procédure administrative de clôture et les notifications restent à spécifier. L'autorité finale est toutefois tranchée : administration SAC uniquement. Cette décision ne crée aucune permission opérationnelle ni route API.
 
 Règles validées : la suspension ne ferme ni n'annule l'alerte ; les rappels continuent toutes les 5 minutes vers les seuls destinataires initiaux, sans ajout automatique ; les actions de réception et de prise en charge restent disponibles ; la capacité du titulaire est limitée à l'alerte concernée et ne rétablit aucun accès général. La révocation générale des sessions reste immédiate.
 
