@@ -619,3 +619,18 @@ SAC ne doit pas traiter comme équivalents :
 - Comment traiter un compte dont tous les canaux et appareils sont perdus, sans récupération techniquement ou humainement vérifiable ?
 
 **NO-GO :** pas de récupération complète fondée uniquement sur une nouvelle adresse, un OTP, un SMS, un mot de passe ou le support ; pas d'implémentation avant validation des facteurs, des états, des délais, des recours et des tests adversariaux.
+
+
+## Annexe — Limites du rôle des contacts pendant une récupération (18 novembre 2026)
+
+**Statut :** recommandation de sécurité proposée ; aucun mécanisme de vote ou de récupération sociale n'est autorisé.
+
+- Les contacts de confiance ne peuvent pas récupérer le compte à la place du titulaire, réinitialiser son mot de passe, changer son e-mail, recevoir un OTP de récupération, approuver un appareil ou restaurer une racine.
+- Une reconnaissance humaine éventuelle peut être étudiée comme signal complémentaire, mais ne suffit jamais à ouvrir l'accès au compte ni à remplacer une preuve indépendante.
+- Les contacts peuvent exercer leur rôle distinct de vérification indépendante de la nouvelle empreinte racine, chacun pour sa propre relation, après une récupération cryptographique séparée.
+- Cette vérification d'empreinte n'accorde aucun accès aux données privées du titulaire et ne modifie pas les coordonnées du compte.
+- Seules les relations établies avant l'ouverture de la récupération peuvent être considérées pour cette vérification ; aucun contact ajouté pendant la récupération ne renforce la preuve.
+- Les contacts ne reçoivent ni OTP, ni clé, ni code de récupération, ni nouvelle coordonnée privée, ni détail sensible sur les autres réponses.
+- Le silence ou le refus d'un contact n'est pas une approbation et ne doit pas être contourné par un quorum improvisé.
+
+**Verrou :** aucune récupération sociale par vote ou quorum ne doit être implémentée. Le mécanisme indépendant de récupération d'accès reste à définir ; la vérification des nouvelles empreintes reste une étape cryptographique distincte, relation par relation.
