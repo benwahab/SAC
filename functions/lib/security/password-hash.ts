@@ -11,6 +11,12 @@ const SALT_BYTES = 16;
 const TAG_BYTES = 32;
 const VERIFIER_CONTEXT = new TextEncoder().encode("SAC password verifier v1");
 
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
+}
+
 function toBase64Url(bytes: Uint8Array): string {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
@@ -35,13 +41,13 @@ async function deriveVerifierKey(
 ): Promise<CryptoKey> {
   const material = await cryptoProvider.subtle.importKey(
     "raw",
-    new TextEncoder().encode(password),
+    toArrayBuffer(new TextEncoder().encode(password)),
     "PBKDF2",
     false,
     ["deriveKey"],
   );
   return cryptoProvider.subtle.deriveKey(
-    { name: "PBKDF2", salt, iterations: ITERATIONS, hash: "SHA-256" },
+    { name: "PBKDF2", salt: toArrayBuffer(salt), iterations: ITERATIONS, hash: "SHA-256" },
     material,
     { name: "HMAC", hash: "SHA-256", length: 256 },
     false,
@@ -59,7 +65,7 @@ export async function hashAccountPassword(
   const salt = cryptoProvider.getRandomValues(new Uint8Array(SALT_BYTES));
   const key = await deriveVerifierKey(cryptoProvider, password, salt);
   const tag = new Uint8Array(
-    await cryptoProvider.subtle.sign("HMAC", key, VERIFIER_CONTEXT),
+    await cryptoProvider.subtle.sign("HMAC", key, toArrayBuffer(VERIFIER_CONTEXT)),
   );
   if (tag.length !== TAG_BYTES) throw new Error("password_hash_failed");
   return [ALGORITHM, String(ITERATIONS), toBase64Url(salt), toBase64Url(tag)].join("$");
@@ -79,5 +85,5 @@ export async function verifyAccountPassword(
   if (!salt || salt.length !== SALT_BYTES || !tag || tag.length !== TAG_BYTES) return false;
 
   const key = await deriveVerifierKey(cryptoProvider, password, salt);
-  return cryptoProvider.subtle.verify("HMAC", key, tag, VERIFIER_CONTEXT);
+  return cryptoProvider.subtle.verify("HMAC", key, toArrayBuffer(tag), toArrayBuffer(VERIFIER_CONTEXT));
 }
