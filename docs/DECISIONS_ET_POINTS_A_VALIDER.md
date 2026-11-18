@@ -994,3 +994,50 @@ Une suspension peut être déclenchée abusivement et provoquer un déni de serv
 - Définir la procédure distincte de création et vérification d'une nouvelle racine.
 
 **NO-GO :** aucun flux réel, endpoint, session, OTP, consommation de kit, migration ou révocation n'est implémenté par cette proposition.
+
+
+## Kit de récupération volé alors que l'ancienne adresse e-mail reste accessible (18 novembre 2026)
+
+**Statut : analyse et proposition de sécurité ; aucune nouvelle voie de récupération n'est validée.**
+
+### Principe
+Un kit signalé volé doit être considéré comme compromis. L'accès à l'ancienne boîte e-mail ne remplace pas le kit, ne prouve pas l'identité historique et ne restaure ni la racine ni un appareil. L'OTP e-mail prouve uniquement le contrôle ponctuel de la boîte.
+
+### Cas A — un appareil approuvé sûr reste disponible
+- Depuis cet appareil, le titulaire peut déclarer le kit compromis.
+- Le serveur invalide le kit et toute demande en attente qui l'utilise, de façon atomique.
+- Les sessions et appareils restent soumis à leurs statuts propres ; le signalement du kit ne révoque pas automatiquement tous les appareils.
+- Un nouveau kit peut être généré uniquement depuis une session de confiance, affiché une seule fois et confirmé par le titulaire.
+- Toute demande de récupération concurrente utilisant l'ancien kit est refusée.
+- Si l'appareil approuvé est lui-même suspecté compromis, ne pas l'utiliser comme preuve : appliquer la procédure de compromission/récupération racine.
+
+### Cas B — aucun appareil approuvé, kit volé, ancienne boîte e-mail accessible
+- L'ancienne boîte peut recevoir une notification neutre de tentative de récupération et un code OTP de vérification.
+- Le contrôle de cette boîte peut servir à signaler « je ne reconnais pas cette demande » et à placer la demande concernée en pause de sécurité temporaire, sous limitation de fréquence.
+- Cette action négative ne donne aucun accès au compte, ne change aucun identifiant, ne réinitialise aucun mot de passe, ne révoque pas une racine, ne crée pas d'appareil et ne génère pas de nouveau kit.
+- Le signalement par e-mail ne doit pas être présenté comme preuve d'identité ; il peut être abusé pour provoquer un déni de service. Les pauses doivent être bornées, journalisées et protégées contre les répétitions.
+- Le titulaire ne peut pas récupérer le compte historique avec le seul ancien e-mail : le kit est compromis et aucun appareil approuvé n'est disponible.
+- Sans facteur indépendant préalablement enregistré et validé, la récupération du compte historique est refusée. Il ne faut pas inventer une vérification manuelle par support, contact, pièce d'identité, SMS ou connaissances personnelles.
+- Une création éventuelle d'un nouveau compte reste séparée : aucune fusion, reprise automatique d'historique, de contacts, d'abonnement, d'alertes ou de droits.
+
+### Cas C — une récupération frauduleuse est déjà en attente
+- Envoyer une notification neutre à l'ancienne adresse, sans révéler nouvelle adresse, contenu d'alerte, contacts ni position.
+- Un lien/code de contestation à usage unique peut uniquement suspendre la demande identifiée ; il ne peut pas annuler une révocation, rétablir une session ou modifier le compte.
+- La demande suspendue ne reprend pas automatiquement à l'expiration d'une simple minuterie : elle exige une preuve indépendante définie ou est refusée.
+- Un attaquant contrôlant la boîte peut aussi déclencher une pause ; c'est un risque de disponibilité à limiter par anti-abus, sans transformer l'e-mail en facteur positif de récupération.
+
+### Notifications et confidentialité
+- Ne jamais envoyer le kit, le secret brut, une nouvelle adresse complète, une empreinte de racine, des coordonnées de contacts ou le contenu d'une alerte dans les e-mails de sécurité.
+- Les messages doivent être neutres et ne pas confirmer l'existence d'un compte à un tiers non authentifié.
+- Les liens de contestation sont à usage unique, liés à une demande précise, expirent et ne confèrent aucun privilège positif.
+- Les notifications ne prouvent ni livraison ni lecture.
+
+### Conclusion et arbitrages
+Recommandation : si un appareil approuvé sûr existe, invalider l'ancien kit depuis cet appareil et en générer un nouveau. Si aucun appareil approuvé n'existe et que le kit est compromis, l'ancienne adresse e-mail peut seulement aider à contester une demande suspecte ; elle ne permet pas de récupérer le compte historique.
+
+Points à arbitrer :
+- Autoriser la pause temporaire d'une demande par un lien de contestation e-mail à privilège négatif uniquement.
+- Durée, limitation de fréquence et gestion des contestations répétées.
+- Choix futur d'un facteur indépendant préenregistré, si l'utilisateur souhaite éviter l'irrécupérabilité de ce scénario.
+
+**NO-GO :** aucune fonction de contestation e-mail, invalidation de kit, nouveau facteur, endpoint, fournisseur, migration ou notification réelle n'est implémentée.
