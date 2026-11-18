@@ -118,11 +118,11 @@ Une alerte ne doit pas dépendre de la présence d'une position. Les coordonnée
 - `trip_locations` : positions partagées, horodatage et précision.
 - `arrival_checks` : confirmations d'arrivée, rappels et absence de confirmation.
 
-Les droits d'accès aux positions d'un trajet sont limités aux participants explicitement autorisés et à la durée choisie. Les durées fonctionnelles prévues sont : position ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à la clôture de l'alerte/du trajet selon le parcours. Chaque position conserve son horodatage et son niveau de précision ; une position ancienne n'est jamais présentée comme une position en direct. Décision validée : les positions GPS précises sont conservées 30 jours à compter de la fin du partage concerné, puis supprimées automatiquement et définitivement des données actives SAC. Pour un partage ponctuel, le délai part de la collecte. Les événements non géographiques peuvent être conservés dans l'historique sans coordonnées précises. Les coordonnées ne doivent pas être recopiées dans les journaux. La purge des sauvegardes doit respecter un cycle documenté garantissant leur disparition.
+Les droits d'accès aux positions d'un trajet sont limités aux participants explicitement autorisés et à la durée choisie. Les durées fonctionnelles prévues sont : position ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à la clôture de l'alerte/du trajet selon le parcours. Chaque position conserve son horodatage et son niveau de précision ; une position ancienne n'est jamais présentée comme une position en direct. **Correction normative — contrat du 18 novembre 2026 :** pour les positions GPS associées à une alerte SOS, toutes les positions précises sont supprimées dès la clôture de l'alerte. Seule la nature/catégorie de l'alerte reste dans l'historique pendant 30 jours à compter de la clôture ; l'entrée et sa catégorie sont ensuite supprimées définitivement. Les sauvegardes/restaurations ne doivent jamais ressusciter ces données. Cette règle remplace les anciennes formulations de rétention GPS 30 jours après fin du partage. Pour les trajets hors alerte, la durée de conservation GPS n'est pas encore arbitrée : aucune rétention de 30 jours ne doit être déduite. GPS réel NO-GO tant que la preuve technique de suppression/non-résurrection n'est pas établie.
 
 ### 3.5.1 Purge, sauvegardes et restauration des positions GPS
 
-La rétention fonctionnelle est de 30 jours après la fin du partage (position ponctuelle : à partir de la collecte). Chaque enregistrement de position doit porter une échéance calculée côté serveur. Après cette échéance, la lecture est interdite même si la tâche de purge physique n'a pas encore été exécutée ; une tâche récurrente supprime ensuite les lignes expirées et vérifie le résultat.
+**Disposition obsolète remplacée :** ne pas appliquer une échéance GPS J+30 après fin de partage aux alertes SOS. Pour une alerte, la purge GPS est immédiate à la clôture et J+30 porte uniquement sur l'entrée d'historique et sa catégorie. Pour les trajets, échéance GPS non définie ; aucune collecte persistante avant arbitrage et GO technique.
 
 **Contrainte importante de Cloudflare D1 :** la base SAC a été vérifiée sur le stockage `production`, qui prend en charge Time Travel. Selon l'offre Cloudflare, l'historique restaurable est de 30 jours (Workers Paid) ou 7 jours (Workers Free). Cet historique peut contenir une version antérieure à la purge et une restauration peut donc réintroduire des positions expirées dans la base restaurée. Toute restauration doit se faire en maintenance, sans trafic utilisateur : réexécuter immédiatement la purge sur les échéances d'origine, vérifier l'absence de positions expirées, puis seulement rouvrir l'accès.
 
@@ -172,7 +172,7 @@ Ne jamais journaliser les codes, OTP, secrets, jetons d'accès ou coordonnées d
 - Les tâches de rappel et d'alerte différée possèdent une clé d'idempotence unique.
 - Une notification est reliée à un destinataire et à un canal précis.
 - Un abonnement ne dépasse pas les limites de contacts de sa formule.
-- Les positions doivent toujours avoir un horodatage et un propriétaire/droit d'accès vérifiable. Les fenêtres de partage autorisées sont ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à clôture selon le parcours. La conservation des positions précises est limitée à 30 jours après la fin du partage, puis une purge automatique définitive des données actives est obligatoire.
+- Les positions, si le partage GPS est ultérieurement autorisé, doivent avoir un horodatage et un droit d'accès vérifiable. Les fenêtres fonctionnelles envisagées ne valent pas validation de conservation. Pour les alertes SOS, suppression immédiate à la clôture ; pour les trajets, durée à arbitrer. Aucune coordonnée réelle avant GO.
 
 ## 5. États métier proposés
 
@@ -299,7 +299,7 @@ Les index définitifs doivent être justifiés par les requêtes réelles et mes
 - Mécanisme de file de tâches et planification.
 - Fournisseur OTP, SMS, push et paiement.
 - Fournisseur cartographique.
-- Cycle de purge des sauvegardes et vérification de l'effacement des positions GPS après 30 jours.
+- Cycle de purge et preuve de non-résurrection conformes au contrat spécialisé : GPS d'alerte supprimé dès clôture ; alerte/catégorie supprimées à J+30 ; durée GPS des trajets à arbitrer séparément.
 - Politique de sauvegarde et de restauration.
 - Déploiement, hébergement et monitoring.
 
