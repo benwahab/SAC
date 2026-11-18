@@ -652,3 +652,16 @@ SAC ne doit pas traiter comme équivalents :
 **À spécifier avant implémentation :** format, entropie exacte, checksum, stockage hors ligne, vérificateur serveur, délais, contestation, révocation des sessions, limites de tentatives, perte du kit et tests adversariaux.
 
 **Verrou :** cette proposition ne vaut pas autorisation d'API, de schéma D1, de code métier ou de récupération réelle. La récupération d'accès reste distincte de la récupération de la racine.
+
+
+### Décision utilisateur — clé unique de récupération (18 novembre 2026)
+
+L'utilisateur a choisi **l'option A : une seule clé personnelle de récupération hors ligne**, et non une série de codes.
+
+- Une seule clé aléatoire de forte entropie est générée localement et présentée une fois.
+- La clé est à usage unique et devient invalide après une récupération réussie ; un nouveau kit devra être créé après reprise authentifiée du compte.
+- Le secret brut n'est jamais transmis ni conservé en clair côté serveur ; seul un vérificateur protégé est envisagé.
+- Le format, l'entropie exacte, le checksum et la méthode de vérification restent à spécifier et à auditer.
+- La clé autorise uniquement le parcours de récupération d'accès à définir ; elle ne restaure pas la racine, ne certifie aucun appareil et ne débloque pas le GPS.
+
+Cette décision porte uniquement sur le choix du format. Elle n'autorise aucun endpoint, schéma D1, code ou flux de récupération réel.
