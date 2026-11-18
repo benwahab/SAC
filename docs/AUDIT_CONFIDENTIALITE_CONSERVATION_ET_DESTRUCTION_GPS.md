@@ -262,3 +262,14 @@ La meilleure décision actuelle pour protéger les futurs utilisateurs est de ne
 La suppression de compte, les durées hors GPS, les accès après révocation et la conformité juridique restent également des prérequis avant une mise en service réelle.
 
 Aucune route, migration, table, politique de purge, ressource Cloudflare, fournisseur, donnée GPS ou activation de fonctionnalité n'est créée par cet audit.
+
+## Addendum — décision produit confirmée sur les alertes clôturées — 18 novembre 2026
+
+Les formulations antérieures de cet audit sur une conservation GPS J+30 sont remplacées par la décision confirmée et détaillée dans docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md :
+
+- GPS associé à l'alerte : suppression automatique immédiate à la clôture ;
+- historique : seule la nature/catégorie de l'alerte reste pendant 30 jours après clôture ;
+- à l'expiration : suppression définitive de l'entrée d'historique et de sa catégorie ;
+- sauvegardes, snapshots, Time Travel, réplications, exports et restaurations ne doivent jamais ressusciter les positions ni les alertes supprimées.
+
+Le NO-GO GPS demeure : cet addendum est une décision de produit et une exigence d'architecture, pas une preuve que les purges ou les restaurations sont déjà correctement implémentées. Toute contradiction antérieure dans cet audit doit être lue à la lumière de cet addendum.
