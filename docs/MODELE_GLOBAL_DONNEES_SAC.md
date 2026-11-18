@@ -417,3 +417,9 @@ La revue détaillée des cardinalités, FK composites, politiques de suppression
 ## 12. Arbitrage détaillé du cycle compte et preuve des proches
 
 Voir `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` pour les états de compte et `CONTRAT_CYCLE_VIE_PROCHES_ET_INVITATIONS.md` pour le parcours complet d'invitation et de relation. Tout compte, y compris celui d'un proche, exige un e-mail vérifié par OTP avant activation. Le téléphone reste déclaré non vérifié ; les arbitrages encore ouverts sont listés dans le contrat spécialisé.
+
+## Groupes privés — proposition de cycle de vie du 18 novembre 2026
+
+Le document docs/PROPOSITIONS_ARBITRAGE_GROUPES_PRIVES.md formalise une proposition complète : séparation entre compte, relation de confiance et adhésion ; invitation/acceptation ; rôles propriétaire/membre ; sortie, retrait, transfert et suppression ; sécurité et tests.
+
+Les principes déjà établis restent fermes : groupe privé, aucun accès SOS/GPS par appartenance, aucune réciprocité implicite et aucune sélection automatique des destinataires. Les rôles, limites de taille, nombre de groupes, invitation de non-contacts, transfert de propriété et rétention des événements restent à arbitrer. Les entités groups/group_members/group_invitations/group_events restent conceptuelles ; aucune migration n'est autorisée.
