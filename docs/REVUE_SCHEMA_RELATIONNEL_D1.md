@@ -248,3 +248,8 @@ Une expiration du partage de position peut arrêter les nouvelles positions sans
 ## 5. Conclusion actualisée
 
 Les amendements conceptuels sur les droits par destinataire, la suppression et les alertes orphelines sont ajoutés à la proposition. Le schéma demeure non validé : les arbitrages produit, la matrice de conservation et la preuve J+30 restent des prérequis absolus avant toute migration D1.
+
+
+## 7. Revue finale inter-domaines — complément du 18 novembre 2026
+
+La revue finale de cohérence est maintenant centralisée dans `REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md`. Elle reprend les constats de cette revue critique et les étend aux groupes, trajets, alertes programmées, SOS discret, abonnements/paiements et modèle administratif. Le verdict reste NON PRÊT POUR MIGRATION.
