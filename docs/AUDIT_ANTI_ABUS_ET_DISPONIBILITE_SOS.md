@@ -780,3 +780,32 @@ Le droit SOS est un cas distinct : tester l'usurpation, les alertes abusives et 
 **Tests requis :** tenter de lire une autre alerte ; modifier l'identifiant de l'alerte ; demander les champs interdits ; déduire l'identité d'un contact depuis les états ; présenter une notification acceptée comme livrée ou lue ; lire après expiration/révocation ; vérifier que la prise en charge n'est affichée qu'après transition atomique confirmée.
 
 Cette décision autorise uniquement la visibilité minimale décrite. Elle n'active pas le SOS de secours, ne définit aucun endpoint et ne lève pas le NO-GO d'implémentation.
+
+
+## Audit anti-abus — perte de tous les moyens de récupération (18 novembre 2026)
+
+**Statut :** analyse de menace ; facteur alternatif non sélectionné.
+
+| Situation | Risque | Règle de sécurité proposée |
+|---|---|---|
+| Téléphone perdu, autre appareil approuvé disponible | Session volée ou appareil secondaire compromis | Preuve cryptographique fraîche et contrôle de révocation au commit |
+| Téléphone et kit perdus, appareil approuvé secondaire disponible | Réémission abusive du kit | Authentifier depuis l'appareil approuvé ; invalider l'ancien kit ; générer un nouveau kit une seule fois |
+| Aucun appareil approuvé, facteur indépendant préenregistré | Facteur faible, volé ou rejoué | Ne pas activer avant protocole, tests et revue indépendante |
+| Aucun appareil approuvé ni facteur indépendant | Prise de compte par ingénierie sociale | Refuser la récupération historique ; aucun contournement support/contact/OTP |
+| Attaquant contrôle une nouvelle boîte e-mail | Substitution du canal de connexion | OTP prouve uniquement le contrôle de cette boîte, jamais l'identité historique |
+| Attaquant se fait passer pour le titulaire auprès du support | Réinitialisation manuelle abusive | Support sans pouvoir de substitution des preuves ni accès aux secrets |
+| Nouveau compte créé après refus | Fusion abusive avec l'ancien compte | Identité distincte ; aucune fusion, transfert d'historique ou relation automatique |
+
+### Tests adversariaux requis
+- perte du kit alors qu'un appareil approuvé est encore accessible ;
+- appareil approuvé révoqué juste avant la preuve ou pendant la transaction ;
+- appareil secondaire légitime et appareil secondaire compromis ;
+- kit perdu déclaré, ancien vérificateur présenté après invalidation ;
+- facteur alternatif absent, expiré, révoqué, rejoué ou compromis ;
+- OTP valide sur une adresse contrôlée par un attaquant sans autre preuve ;
+- demande de récupération par support, contact ou administrateur ;
+- tentatives d'énumération pour découvrir si le compte possède un kit ou un facteur ;
+- tentative de rattacher un nouveau compte aux alertes, contacts, abonnement ou racine historiques ;
+- preuve qu'aucune voie de récupération de compte ne restaure la racine ou les données GPS expirées.
+
+**NO-GO :** aucune récupération sans appareil approuvé ni facteur indépendant préenregistré tant qu'une méthode n'a pas été explicitement choisie, documentée, testée et revue. Si aucune preuve suffisante n'existe, le refus est le comportement sûr attendu.
