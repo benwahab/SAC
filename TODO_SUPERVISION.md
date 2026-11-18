@@ -755,7 +755,9 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Confirmer que tout proche devenant contact SAC actif doit disposer d'un compte SAC actif avec adresse e-mail vérifiée par OTP.
 - [x] Exclure l'activation d'un contact SAC par téléphone seul ou SMS OTP.
 - [x] Consolider le parcours logique d'invitation, acceptation, refus, expiration, retrait, révocation, réinvitation, sécurité et tests dans `docs/CONTRAT_CYCLE_VIE_PROCHES_ET_INVITATIONS.md`.
-- [ ] Arbitrer les détails opérationnels : durée, relances, fournisseur e-mail, révocation symétrique, limites anti-abus et permissions proposées.
+- [x] Préparer un paquet cohérent de valeurs par défaut recommandées dans `docs/PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md` sans les déclarer approuvées.
+- [ ] Faire confirmer explicitement les propositions : durée 7 jours, relance à 48 h, seuils anti-abus, révocation symétrique, accès/rappels après révocation et transfert de responsabilité.
+- [ ] Choisir le fournisseur e-mail après revue régionale, juridique, de délivrabilité et de sécurité.
 - [ ] Décider séparément si une fonctionnalité de destinataire externe sans compte SAC est souhaitée ; elle n'est pas définie et ne doit pas contourner l'obligation d'activation e-mail.
 - [ ] Autoriser distinctement la mise à jour du contrat TypeScript et des tests.
 - [ ] Refaire la revue de préparation D1 après alignement code/produit.
