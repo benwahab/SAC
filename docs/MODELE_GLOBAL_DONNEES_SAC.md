@@ -452,3 +452,8 @@ Lire `CONTRAT_SECURITE_NOTIFICATIONS_ET_COMMUNICATIONS.md` avant toute évolutio
 ## Trajets et localisation — référence sécurité
 
 Lire `CONTRAT_SECURITE_TRAJETS_ET_LOCALISATION.md` avant toute évolution des trajets, partages GPS, autorisations ou rétention. Le modèle conceptuel ne vaut pas autorisation de collecte ni validation des durées. La conservation des positions de trajet reste à arbitrer ; le contrat spécifique des GPS liés aux alertes conserve ses règles validées distinctes. GPS réel NO-GO.
+
+
+## Confidentialité familiale et isolation des données — complément du 18 novembre 2026
+
+Lire `CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md` avant de finaliser le modèle des comptes, relations, groupes, destinataires, trajets, notifications, exports et stockage local. Chaque compte est une sphère privée ; les relations et groupes n'accordent aucun droit implicite. Les caches et données locales doivent être isolés par compte/appareil. La matrice exacte des champs et les parcours de téléphones partagés restent à arbitrer. Ce complément ne valide aucune table, permission ou migration D1.
