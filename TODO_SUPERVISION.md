@@ -758,3 +758,15 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Refaire la revue de préparation D1 après alignement code/produit.
 
 **Statut : blocage P0 clarifié mais non fermé.** Aucun code, test, API, migration, base D1 ou ressource Cloudflare n'a été modifié.
+
+## Condition obligatoire d'activation du compte — 18 novembre 2026
+
+- [x] Confirmer que toute inscription SAC exige une adresse e-mail.
+- [x] Confirmer que la vérification de cette adresse par OTP e-mail est une condition sine qua non de l'activation.
+- [x] Exclure toute création/activation par téléphone seul ou tout contournement en l'absence d'adresse e-mail.
+- [x] Maintenir le compte en `pending_verification`, sans accès privé ni session, tant que l'OTP e-mail n'est pas validé côté serveur.
+- [x] Maintenir le téléphone obligatoire comme coordonnée déclarée, sans qu'il puisse remplacer l'e-mail.
+- [x] Confirmer qu'aucun SMS OTP de compte n'est autorisé ; les usages SMS SOS restent distincts.
+- [ ] Implémenter ultérieurement le parcours uniquement après autorisation distincte, fournisseur e-mail choisi, conception OTP validée et tests de sécurité.
+
+**Portée de cette décision :** règle produit/documentaire uniquement. Aucun code d'authentification, fournisseur, SMS, endpoint, schéma ou migration D1 n'est créé par cette mise à jour.
