@@ -357,7 +357,7 @@ Chaque utilisateur SAC doit obligatoirement renseigner un numéro de téléphone
 
 Cette obligation de collecte ne signifie pas à elle seule que le numéro est vérifié. Les règles de changement et de mise à jour du numéro restent à spécifier. La vérification initiale du compte repose uniquement sur l'OTP e-mail.
 
-Pour la procédure administrative de vérification d'une alerte suspendue, le numéro obligatoire pourra servir de moyen de contact uniquement lorsque son caractère vérifié et son accessibilité auront été établis. Si le numéro n'est pas vérifié ou ne permet pas de joindre le titulaire, cette limite est consignée ; l'absence de réponse ne prouve jamais la sécurité et ne permet pas de clôture automatique.
+Pour la procédure administrative de vérification d'une alerte suspendue, le numéro déclaré peut être utilisé comme coordonnée de contact sans vérification téléphonique indépendante. Une réponse provenant de ce numéro ne prouve pas à elle seule l'identité de l'interlocuteur ; elle doit être appréciée et recoupée. L'absence de réponse ne prouve jamais la sécurité et ne permet pas de clôture automatique.
 
 Cette décision est documentaire et n'implémente aucun champ, validation, SMS, service externe, endpoint ou migration D1.
 
