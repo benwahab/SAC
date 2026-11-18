@@ -834,3 +834,31 @@ Cette décision autorise uniquement la visibilité minimale décrite. Elle n'act
 - support et contacts incapables de contourner les preuves.
 
 **NO-GO :** aucun facteur alternatif ou fournisseur tiers ne peut être activé sur la seule base de cette comparaison. La politique actuelle reste : kit unique ou appareil approuvé encore disponible ; sinon refus de récupération historique.
+
+
+## Scénarios d'abus — perte ou vol d'un appareil avec appareil survivant (18 novembre 2026)
+
+| Scénario | Risque | Contrôle attendu |
+|---|---|---|
+| Téléphone secondaire volé, racine disponible | L'attaquant utilise une session encore valide | Révocation explicite par la racine ; invalidation sessions, jetons et push |
+| Téléphone racine volé, secondaire disponible | Le secondaire s'attribue abusivement l'autorité racine | Interdiction d'auto-promotion ; demande seulement, récupération racine séparée |
+| Ancien téléphone revient en ligne | Réactivation ou renouvellement après révocation | Vérification serveur du statut révoqué à chaque renouvellement et opération sensible |
+| Révocation et renouvellement concurrents | Course entre session active et révocation | Transaction atomique ; la révocation empêche tout renouvellement postérieur |
+| Racine survivante compromise | L'attaquant révoque les autres appareils ou approuve le sien | Suspendre les opérations dépendantes et utiliser la récupération racine si compromission suspectée |
+| Fausse déclaration de perte | Un titulaire révoque volontairement son propre appareil | Confirmation explicite, cible clairement identifiée, audit non sensible |
+| Perte pendant un SOS actif | Alertes et tâches de notification interrompues à tort | Conserver alerte, instantané destinataires et tâches SOS ; ne pas confondre révocation appareil et clôture |
+| GPS après remplacement racine | Nouvelle clé interprétée comme continuité de l'ancienne | Bloquer partage GPS jusqu'à vérification indépendante de la nouvelle empreinte par relation |
+| Effacement à distance supposé | Utilisateur croit ses données supprimées d'un téléphone hors ligne | Expliquer que révocation serveur bloque les accès futurs mais n'efface pas les données déjà stockées hors ligne |
+
+### Tests de sécurité requis avant implémentation
+- Révoquer un appareil secondaire depuis la racine et vérifier que ses sessions, jetons et abonnements push sont inutilisables.
+- Remettre en ligne l'ancien appareil après révocation : aucune réactivation possible.
+- Faire concourir renouvellement de session, envoi push et révocation ; aucun droit ne doit survivre à la révocation confirmée.
+- Vérifier qu'un secondaire ne peut pas approuver un autre appareil ni modifier la racine.
+- Vérifier que la perte de la racine déclenche le parcours racine distinct et que le GPS reste bloqué.
+- Vérifier qu'une alerte active conserve son instantané initial, ses tâches, son état et son historique après révocation.
+- Vérifier qu'aucune révocation appareil ne clôture une alerte ou ne supprime contacts/abonnement/historique.
+- Vérifier les notifications de sécurité sans fuite de coordonnées, contenu d'alerte ou GPS.
+- Vérifier qu'aucune interface ne prétend effacer à distance un téléphone hors ligne.
+
+**NO-GO :** aucun scénario n'est déclaré testé. Aucun code, API, migration, notification réelle ou commande de révocation n'est ajouté.
