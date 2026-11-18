@@ -332,3 +332,20 @@ La permission de clôture est distincte des autres permissions administratives. 
 Chaque décision de clôture doit conserver une trace d'audit comprenant au minimum l'identité de l'administrateur, la référence de l'alerte, la date et l'heure, le motif et les éléments de vérification consultés. L'espace d'administration SAC est réservé à un usage sur ordinateur ou tablette ; son accès administratif depuis un téléphone n'est pas prévu.
 
 Ces règles sont documentaires. Elles n'implémentent aucun rôle, permission, endpoint ou contrôle d'accès opérationnel et n'autorisent aucune migration D1.
+
+
+## Tentatives de contact direct du titulaire avant clôture — règle documentaire du 18 novembre 2026
+
+Dans le scénario précis d'une alerte déjà transmise pendant la suspension du compte initiateur, l'administrateur habilité suit une séquence de contact traçable :
+
+1. À l'ouverture de l'examen, envoyer une notification privée via le canal SAC disponible, sans exposer les informations de l'alerte à un tiers.
+2. Si un numéro de téléphone vérifié et utilisable est associé au compte, effectuer jusqu'à trois tentatives d'appel : première tentative immédiatement, deuxième environ cinq minutes après, troisième environ cinq minutes après la deuxième. Ne pas considérer une sonnerie, un message vocal ou un accusé technique comme une réponse du titulaire.
+3. En complément, envoyer un message écrit privé au titulaire par le canal de contact vérifié disponible. Le message demande uniquement de confirmer sa situation et, si nécessaire, de fournir des éléments permettant de vérifier la fin du danger. Il ne contient pas de données sensibles inutiles.
+4. Consigner chaque tentative : date et heure, canal, résultat objectif (appel abouti, sans réponse, occupé, échec technique, message envoyé) et identité de l'administrateur. Distinguer clairement un envoi technique d'une lecture ou d'une réponse réelle.
+5. Si aucun canal direct n'est disponible ou si le titulaire ne répond pas, noter cette impossibilité et poursuivre l'examen avec les éléments fiables déjà disponibles. L'absence de réponse n'est jamais une preuve de sécurité et ne déclenche jamais une clôture automatique.
+
+Le délai indicatif de cette séquence d'appels est d'environ dix minutes entre la première et la troisième tentative. Il ne constitue ni un délai maximal de danger ni une échéance automatique de clôture. Si les éléments restent insuffisants, contradictoires ou invérifiables, l'alerte demeure active et les rappels continuent vers les seuls destinataires initiaux. L'administrateur habilité peut poursuivre les vérifications ultérieurement.
+
+Une réponse du titulaire est un élément à examiner, pas une autorisation de clôture. La clôture reste une décision de l'administrateur SAC habilité selon la procédure déjà validée. Aucun proche ni le titulaire suspendu ne peut clôturer cette alerte.
+
+Cette séquence est une règle produit documentaire. Elle ne suppose pas qu'un numéro de téléphone soit déjà collecté ou vérifié, ne crée aucun nouveau canal, n'envoie actuellement aucun message et n'autorise aucune implémentation technique ou migration D1.
