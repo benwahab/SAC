@@ -738,3 +738,23 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Obtenir une autorisation explicite distincte avant création/application de migrations D1.
 
 **Verdict actuel : NON PRÊT POUR MIGRATION.** Aucune modification applicative, API, D1, Cloudflare ou déploiement n'est autorisée par cette revue documentaire.
+
+
+## Arbitrage P0 — cycle de compte et preuve des proches — 18 novembre 2026
+
+- [x] Reconfirmer les cinq états de compte déjà validés.
+- [x] Relever les deux états manquants dans `src/domain/account-lifecycle.ts`.
+- [x] Documenter la matrice des transitions connues et marquer les transitions non décidées.
+- [x] Séparer l'état de vérification e-mail de l'état du compte.
+- [x] Rappeler que le téléphone obligatoire reste non vérifié et qu'aucun SMS OTP de compte n'est autorisé.
+- [x] Distinguer invitation, preuve de destination, compte destinataire et consentement explicite.
+- [x] Documenter une voie recommandée par e-mail vérifié sans la présenter comme approuvée.
+- [x] Définir les tests de transitions, OTP, invitation, rejeu, concurrence et révocation.
+- [ ] Arbitrer la durée et l'expiration d'une inscription non vérifiée.
+- [ ] Arbitrer les transitions suppression/suspension concomitantes.
+- [ ] Valider ou remplacer le parcours d'acceptation des proches par e-mail vérifié.
+- [ ] Définir un parcours alternatif si un proche n'a pas d'adresse e-mail ou de compte SAC.
+- [ ] Autoriser distinctement la mise à jour du contrat TypeScript et des tests.
+- [ ] Refaire la revue de préparation D1 après alignement code/produit.
+
+**Statut : blocage P0 clarifié mais non fermé.** Aucun code, test, API, migration, base D1 ou ressource Cloudflare n'a été modifié.
