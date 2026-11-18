@@ -438,3 +438,5 @@ Le serveur devra consommer le défi et faire passer l'enrôlement à son état t
 - Perte réseau avant/après commit : récupération idempotente sans réutilisation du défi.
 
 **Statut :** constat d'audit documentaire et prototype ; aucune API ni migration n'est créée. Le format final du transcript doit être conçu et revu avant modification du code du certificat.
+
+La proposition de format et de séquence est maintenant détaillée dans [TRANSCRIPT_CEREMONIE_MULTI_APPAREILS.md](TRANSCRIPT_CEREMONIE_MULTI_APPAREILS.md). Elle reste candidate : elle ne doit pas être traitée comme un contrat approuvé ou une implémentation.
