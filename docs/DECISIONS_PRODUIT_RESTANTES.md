@@ -376,3 +376,12 @@ Le contrat `CONTRAT_SECURITE_NOTIFICATIONS_ET_COMMUNICATIONS.md` consolide les e
 Les invariants restent inchangés : e-mail vérifié par OTP obligatoire avant activation du compte ; téléphone obligatoire mais déclaré/non vérifié ; aucun SMS OTP de compte ; destinataires SOS figés ; rappels push toutes les cinq minutes ; SMS de secours distinct et non opérationnel sans intégration vérifiée.
 
 Points à arbitrer : preuve de contrôle du numéro avant SMS, fournisseurs et régions, contenus des messages, nombre d'appareils, rotation des abonnements, retry, webhooks et conservation des métadonnées. Aucune technologie, durée, fournisseur ou nouvelle permission n'est approuvée. Aucune implémentation n'est autorisée.
+
+
+## 26. Sécurité des trajets et de la localisation — 18 novembre 2026
+
+Le contrat `CONTRAT_SECURITE_TRAJETS_ET_LOCALISATION.md` consolide les règles de consentement explicite, de séparation des trois modes (vérification d'arrivée, accompagnement, protection complète), de sélection des proches, d'autorisation serveur, de révocation, de fraîcheur et de fonctionnement en réseau faible.
+
+Les paramètres chiffrés déjà proposés dans `PROPOSITIONS_ARBITRAGE_TRAJETS_ET_ALERTES_ORPHELINES.md` restent non approuvés : délais de grâce, durées d'accompagnement, plafond de partage, seuils de fraîcheur et durée du partage d'une alerte orpheline. Aucune durée de conservation des positions GPS de trajet n'est validée.
+
+Le GPS réel demeure NO-GO jusqu'à preuve de suppression irréversible et de non-résurrection, revue indépendante et autorisation explicite. La règle déjà approuvée pour les GPS liés aux alertes (suppression immédiate à la clôture, catégorie seule 30 jours, purge définitive à J+30) reste inchangée et ne doit pas être confondue avec la conservation des trajets.
