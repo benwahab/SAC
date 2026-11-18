@@ -172,9 +172,9 @@ La piste d'une expiration entièrement locale a été confrontée aux documentat
 
 ### 8.1 Android Keystore / StrongBox
 
-La documentation Android confirme que StrongBox dispose d'un minuteur sécurisé et d'une broche de notification de redémarrage (ou équivalent). Le document de compatibilité Android décrit toutefois l'horloge interne StrongBox avec une précision raisonnable de ±10 %. Cette tolérance ne permet pas de promettre une échéance civile exacte à J+30.
+La documentation Android confirme que StrongBox dispose d'une horloge interne protégée contre la manipulation par le processeur principal. Le document de compatibilité Android lui impose toutefois une précision raisonnable de ±10 %. Cette tolérance est incompatible avec une promesse d'expiration civile exacte à J+30.
 
-Plus important encore, Android précise que les autorisations temporelles de validité d'une clé ne sont généralement pas appliquées par le matériel sécurisé, car celui-ci ne dispose normalement pas d'une horloge temps réel indépendante et sécurisée. Les autorisations peuvent alors être appliquées par le système Android non sécurisé. L'API permet bien de définir une date de fin de validité, mais cette possibilité API ne prouve pas que la date sera imposée matériellement sur chaque appareil.
+Nuance importante : Android n'affirme pas que toute expiration est toujours logicielle. Certains matériels peuvent appliquer les autorisations temporelles dans le composant sécurisé. L'attestation distingue les autorisations « hardwareEnforced » des autorisations « softwareEnforced ». Mais Android précise que les autorisations temporelles ne sont généralement pas imposées par le matériel, car celui-ci ne dispose normalement pas d'une horloge temps réel indépendante et sécurisée. L'API permettant de définir une date de fin ne prouve donc pas, à elle seule, que l'appareil l'impose matériellement. Même lorsque l'attestation prouve une application matérielle, la tolérance StrongBox publiée de ±10 % ne démontre pas une échéance exacte à J+30.
 
 Références officielles :
 - Android Keystore : https://developer.android.com/privacy-and-security/keystore
@@ -211,3 +211,64 @@ Références officielles :
 | Apple Keychain ThisDeviceOnly | Non-migration vers un autre appareil | N'est pas une expiration temporelle |
 
 **Conclusion : aucune solution locale Android/iOS ne peut actuellement être approuvée pour la promesse SAC stricte.** La compatibilité offline pendant 30 jours et la destruction irréversible exactement à J+30 restent non démontrées. Ne pas transformer ces capacités matérielles réelles mais partielles en garantie de sécurité produit.
+
+
+## 9. Gestionnaire de clés externe (HYOK/XKS) — piste de crypto-effacement centralisé
+
+Une piste distincte des KMS classiques est l'utilisation d'un gestionnaire de clés externe contrôlé séparément du stockage des données. AWS documente les External Key Stores (XKS) : le matériel de clé externe reste dans le gestionnaire du client ; AWS KMS ne peut ni créer, ni consulter, ni gérer, ni supprimer cette clé externe. Si l'accès à cette clé est définitivement révoqué, les ciphertexts correspondants deviennent irrécupérables.
+
+Références officielles :
+- AWS — External key stores : https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html
+- AWS — How unusable KMS keys affect data keys : https://docs.aws.amazon.com/kms/latest/developerguide/unusable-kms-keys.html
+
+### 9.1 Ce que cette piste apporte
+
+- La clé racine ou clé externe peut rester hors du fournisseur qui héberge les données.
+- La révocation définitive de la clé externe peut rendre les sauvegardes chiffrées inutilisables, même si les blocs chiffrés subsistent.
+- La destruction peut être opérée par le gestionnaire externe, sans demander au stockage de supprimer toutes les copies de ciphertext.
+- Cette séparation peut réduire le risque qu'une restauration du stockage de données restaure aussi le secret qui permet de lire ces données.
+
+### 9.2 Les limites à résoudre
+
+AWS signale explicitement une exception : les services qui ont déjà mis en cache des clés de données peuvent continuer à les utiliser jusqu'à désactivation de la ressource ou expiration du cache. La simple révocation de la clé externe ne suffit donc pas si une clé de données en clair est déjà présente dans un cache ou dans un processus.
+
+Pour SAC, toute architecture candidate devrait interdire :
+- la conservation d'une clé de données en clair sur le téléphone ou dans un stockage local ;
+- les caches persistants de clés de données sur le serveur ;
+- les copies de clés dans les journaux, traces, files d'attente, rapports d'erreur ou outils d'observabilité ;
+- les sauvegardes ou exports du gestionnaire externe qui permettraient de restaurer une clé supprimée ;
+- tout chemin de restauration permettant de réimporter la clé ou son secret source.
+
+Le serveur ne pourrait obtenir une capacité de déchiffrement qu'au moment d'une consultation autorisée, avec la clé en mémoire volatile pendant l'opération. Même cette approche nécessite une analyse de la mémoire, des crash dumps, des copies temporaires et des garanties de destruction du fournisseur d'exécution.
+
+### 9.3 Pourquoi cela ne résout pas encore J+30
+
+XKS est une interface de délégation cryptographique, pas une promesse de destruction programmée à une date absolue. AWS ne gère pas la suppression des clés externes : cette responsabilité revient au gestionnaire externe. Il faudrait identifier un gestionnaire dont le contrat garantit la destruction automatique à l'échéance, l'absence de restauration par sauvegarde, la suppression des réplicas et la preuve d'exécution. Aucun fournisseur répondant à l'ensemble de ces critères n'a été validé dans cette recherche.
+
+L'indisponibilité du gestionnaire externe bloque aussi le déchiffrement. Cette dépendance peut convenir à un historique consultable uniquement en ligne, mais elle ne permet pas l'accès hors ligne si aucune clé n'est conservée sur l'appareil. Conserver une clé locale pour permettre l'accès hors ligne réintroduirait précisément le risque de copie/restauration qui motive l'exigence J+30.
+
+### 9.4 Décision de recherche
+
+**XKS/HYOK devient une piste à approfondir, pas une architecture approuvée.** Elle pourrait servir à une conservation chiffrée consultable en ligne, si un gestionnaire externe et ses engagements de destruction sont validés. Elle ne satisfait pas à ce stade la combinaison « accès hors ligne pendant 30 jours + destruction irréversible exactement à J+30 ». Aucun service, compte, HSM ou secret n'a été créé ou connecté pour cette étude.
+
+## 10. État juridique nigérien — pièces consultées et limites de preuve
+
+### 10.1 Éléments établis par des sources consultées
+
+- Le texte officiel de la loi n° 2022-59 du 16 décembre 2022 est consultable sur l'ancien site de la HAPDP. Il définit expressément les données de localisation (article premier) et prévoit notamment des obligations de sécurité et de conservation (articles 82 et 84), ainsi que des droits d'effacement (articles 73 et 74).
+- La page de législation de l'ancien site HAPDP présente la loi 2022-59 consolidée avec ses textes modificatifs, la loi 2023-31 et les ordonnances 2024-16 et 2024-29. Cette page est manifestement ancienne sur la situation institutionnelle et ne constitue pas une preuve de l'état juridique après juin 2026.
+- L'Agence Nigérienne de Presse rapporte que le décret signé le 8 juin 2026 supprime la HAPDP et transfère ses missions au ministère de la Justice et au ministère de l'Intérieur.
+
+Références :
+- Loi 2022-59 publiée sur l'ancien site HAPDP : https://www.hapdp.ne/uploads/files/Loi-N%C2%B02022-59HAPDP.pdf
+- Page législation HAPDP : https://www.hapdp.ne/legislation-nationale
+- ANP, 12 juin 2026 : https://anp.ne/niger-plusieurs-services-rattaches-ou-sous-tutelle-de-la-presidence-de-la-primature-et-du-secretariat-general-du-gouvernement-supprimes/
+
+### 10.2 Pièces qui restent non authentifiées
+
+Le préambule d'une copie diffusée sur Scribd du décret de suppression cite une ordonnance n° 2026-30 du 8 juin 2026 portant abrogation de certaines lois de création d'autorités et de certaines dispositions de la loi 2022-59. Toutefois, la copie disponible n'est pas une publication officielle authentifiée ; son en-tête comporte une divergence de numéro entre 2026-310 et 2026-340. Des sources secondaires reprennent le numéro 2026-310, mais cela ne remplace pas le Journal officiel.
+
+À la date de cette recherche, le texte intégral authentifié de l'ordonnance 2026-30 et la copie officielle du Journal officiel contenant le décret n'ont pas été retrouvés. Il est donc impossible de déterminer précisément quels articles de la loi 2022-59 ont été abrogés, quelles dispositions ont été conservées, ou comment les pouvoirs transférés sont désormais exercés.
+
+Ne pas écrire dans les documents SAC que la loi 2022-59 a été entièrement abrogée, ni que toutes ses dispositions restent inchangées. Toute conclusion juridique opérationnelle doit attendre la publication officielle et une revue par un juriste nigérien.
+
