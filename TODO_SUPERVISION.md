@@ -957,3 +957,20 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases
 - [ ] Réaliser une revue sécurité/confidentialité avant toute implémentation.
 
 **Statut :** documentation uniquement ; aucun seuil, WAF, anti-bot, modération, code, D1, fournisseur ou ressource Cloudflare activé.
+
+
+## Résilience, continuité et reprise après incident — 18 novembre 2026
+
+- [x] Auditer les contrats SOS, communications, trajets/GPS, conservation, D1, plan directeur et état réel du code.
+- [x] Formaliser les états réseau, pannes, reprise outbox, restauration, non-résurrection et tests dans `docs/CONTRAT_RESILIENCE_CONTINUITE_ET_REPRISE_INCIDENT.md`.
+- [x] Consigner la limite réelle : `/api/health` vérifie une requête D1 élémentaire, pas le fonctionnement du SOS ; le service worker ne garantit pas un SOS hors ligne.
+- [ ] Définir RTO/RPO par fonction et les objectifs de disponibilité réalistes.
+- [ ] Concevoir une source indépendante et durable des suppressions/révocations postérieures aux sauvegardes.
+- [ ] Définir fréquence/chiffrement des sauvegardes et procédure de restauration isolée.
+- [ ] Exécuter les tests de restauration, révocation, outbox et non-résurrection avant ouverture utilisateur.
+- [ ] Définir les capacités réservées au SOS et les priorités de files/quotas.
+- [ ] Tester réseau faible, perte de réponse après commit, application suspendue et reprise sur Android/iOS.
+- [ ] Définir les rôles d'incident, remplaçants, runbooks et communication de crise.
+- [ ] Effectuer un exercice complet de panne/restauration et conserver ses preuves.
+
+**Statut :** contrat documentaire uniquement ; aucun mécanisme de sauvegarde, bascule, reprise ou service SOS réel activé.
