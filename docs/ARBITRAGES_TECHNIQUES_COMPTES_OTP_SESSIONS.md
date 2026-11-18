@@ -320,7 +320,7 @@ Chaque clôture conserve une trace d'audit : identité de l'administrateur, réf
 
 ## Séquence de contact du titulaire avant clôture — décision documentaire du 18 novembre 2026
 
-Pour le scénario précis d'une alerte déjà transmise pendant la suspension du compte initiateur, l'administrateur habilité tente d'abord une notification privée via SAC. Si le numéro déclaré est disponible, il effectue jusqu'à trois appels : immédiatement, puis environ cinq minutes après, puis cinq minutes après le deuxième appel. Un message écrit privé est envoyé en complément par un canal de contact vérifié disponible. Il ne faut pas exposer les détails sensibles de l'alerte à un tiers.
+Pour le scénario précis d'une alerte déjà transmise pendant la suspension du compte initiateur, l'administrateur habilité tente d'abord une notification privée via SAC. Si le numéro déclaré est disponible, il effectue jusqu'à trois appels : immédiatement, puis environ cinq minutes après, puis cinq minutes après le deuxième appel. Un message écrit privé est envoyé en complément par un canal de contact disponible. Il ne faut pas exposer les détails sensibles de l'alerte à un tiers.
 
 Chaque tentative est journalisée avec date/heure, canal, résultat objectif et identité de l'administrateur. Un appel sans réponse, un message vocal, un échec technique ou un simple accusé d'envoi ne vaut pas réponse du titulaire. Si aucun canal direct n'est disponible ou si le titulaire ne répond pas, l'impossibilité est consignée et l'examen se poursuit avec les autres éléments fiables.
 
