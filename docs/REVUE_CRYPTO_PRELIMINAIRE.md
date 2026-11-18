@@ -239,3 +239,43 @@ La revue devra notamment vérifier : récupération du mot de passe sans changem
 Le mécanisme d'authentification forte, les facteurs de récupération, la période d'attente éventuelle, la politique d'approbation des contacts, les délais d'expiration, l'annulation et la liste précise des fonctions secondaires pendant root_recovery_required ne sont pas choisis. Ils doivent être arbitrés avant toute route ou migration.
 
 **Conclusion :** cette section ne réduit pas le verrou existant. Les primitives ECDSA/ECDH restent expérimentales ; aucune récupération racine n'est implémentée ; la revue cryptographique indépendante et la preuve de destruction GPS J+30 restent obligatoires avant tout GPS réel.
+
+
+## 15. Risques cryptographiques liés à la récupération frauduleuse du compte
+
+**Statut :** analyse préliminaire interne, non audit indépendant et non certification.
+
+### 15.1 L'authentification du compte n'est pas une preuve de clé
+
+Un mot de passe, un OTP, un lien e-mail ou un facteur SMS peuvent contribuer à authentifier l'accès au compte. Ils ne prouvent pas la possession de la clé privée racine. Une récupération d'identifiants ne doit donc jamais :
+- remplacer la clé publique racine ou modifier son époque ;
+- signer un certificat d'appareil ;
+- réactiver un certificat révoqué ;
+- restaurer des clés privées ou des clés GPS ;
+- déclarer un contact vérifié.
+
+### 15.2 Stockage et consommation des défis
+
+Les OTP ont une entropie limitée : un simple hash rapide d'un code court n'est pas une protection suffisante contre une attaque hors ligne après fuite de base. Le futur système devra employer un vérificateur non réutilisable protégé par un secret serveur, avec limites de tentatives atomiques, expiration et consommation à usage unique. Les liens de récupération doivent également être liés à une finalité et une demande, et ne pas être acceptés deux fois.
+
+Les secrets serveur doivent rester hors dépôt et être soumis à une politique de rotation et d'accès. Aucun secret concret ou fournisseur n'est défini ici.
+
+### 15.3 Rejeu, sessions et appareils
+
+La rotation des jetons de renouvellement doit permettre de détecter un ancien jeton présenté après consommation. Le traitement d'un rejeu doit être atomique et limité à la famille de session concernée selon une politique à valider. Les opérations sensibles doivent vérifier le statut actuel de l'appareil côté serveur ; la validité locale d'une signature ou la date d'expiration d'un jeton ne suffit pas si l'appareil a été révoqué depuis.
+
+### 15.4 SIM swap, e-mail et support
+
+La réception d'un SMS ou l'accès à une boîte e-mail ne prouve pas la continuité cryptographique. Sans intégration opérateur vérifiée, l'application ne peut pas savoir de manière fiable qu'un SIM swap a eu lieu. La récupération racine doit donc rester indépendante de ces seuls canaux.
+
+Le support est une frontière d'autorité à risque : il ne doit jamais détenir, générer ou substituer des clés privées, ni marquer un contact comme ayant vérifié une empreinte. Toute éventuelle procédure exceptionnelle exige une analyse de menace et une séparation des rôles.
+
+### 15.5 Effet sur la confidentialité et GPS J+30
+
+Aucun parcours de récupération ne doit restaurer une ancienne clé GPS, une archive locale expirée ou un export supprimé. La nouvelle identité racine ne doit pas disposer d'un mécanisme implicite de déchiffrement rétroactif. La preuve de destruction irréversible J+30 reste une exigence séparée et non démontrée par la seule rotation de racine.
+
+### 15.6 Tests requis
+
+OTP faible entropie et fuite de vérificateur ; rejeu et double consommation ; lien détourné entre finalités ; SIM swap simulé ; récupération e-mail compromise ; jeton de renouvellement réutilisé ; révocation pendant requête ; session secondaire compromise ; procédure support abusive ; absence de secrets dans traces ; impossibilité de restaurer clés GPS expirées.
+
+**Conclusion :** aucun nouveau mécanisme cryptographique n'est validé ici. La conception doit être revue indépendamment avant implémentation ; aucune route, migration ou intégration n'est créée.
