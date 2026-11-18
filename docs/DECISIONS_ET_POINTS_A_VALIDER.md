@@ -705,3 +705,53 @@ Le titulaire a perdu son téléphone, ne peut plus accéder à son ancienne adre
 
 **Verrou :** cette matrice est une proposition de moindre privilège ; aucune permission n'est encore implémentée ou activée.
 
+
+
+## 3.11 SOS depuis une session de récupération limitée — politique candidate (18 novembre 2026)
+
+**Statut : recommandation à valider ; aucun droit SOS n'est activé par cette annexe.**
+
+### Recommandation
+Autoriser un **SOS de secours sans GPS**, depuis une session de récupération limitée achevée, mais seulement vers les contacts déjà préconfigurés avant la récupération et toujours éligibles au moment du déclenchement.
+
+Ce droit exceptionnel ne transforme pas le nouvel appareil en appareil approuvé et ne lui ouvre aucun accès aux données privées.
+
+### Conditions proposées
+- La récupération du compte est entièrement achevée ; une demande encore en attente ne peut pas lancer de SOS.
+- La session limitée est valide, non expirée, non révoquée et liée au nouvel appareil et à la récupération achevée.
+- Le serveur vérifie à nouveau les états de compte, de session, de récupération et de révocation au moment du déclenchement.
+- Destinataires : uniquement l'instantané de contacts SOS préconfiguré avant la récupération, sans affichage de la liste privée et sans ajout/retrait ponctuel.
+- L'instantané est revalidé selon les règles dynamiques de relation : relation active, contact éligible et canal utilisable. Aucun contact révoqué ou relation terminée ne reçoit le SOS.
+- Aucune position GPS, adresse, historique ou donnée de localisation n'est collectée ou jointe.
+- L'alerte indique clairement aux destinataires : « SOS envoyé depuis un appareil en récupération limitée ; appareil non encore approuvé ; localisation non disponible ».
+- Le titulaire peut choisir une catégorie et un niveau d'urgence parmi les valeurs SAC déjà définies. Pas de texte libre ni de pièce jointe dans ce mode candidat.
+- Le déclenchement ne demande aucun OTP e-mail et ne dépend pas de la réception d'un e-mail.
+- Le SMS d'escalade SOS, s'il fait partie du mécanisme validé, reste distinct de l'OTP et suit les règles d'escalade déjà définies. Aucune escalade ne doit être inventée pour ce mode sans décision spécifique.
+
+### Restrictions supplémentaires
+- Pas de SOS critique immédiat vers une liste modifiable ; seuls les destinataires SOS préconfigurés avant la récupération sont utilisés.
+- Pas de partage GPS même si une permission système est déjà accordée.
+- Pas d'accès à l'historique ou aux réponses privées des contacts via cette session.
+- Pas de modification de l'alerte après déclenchement, sauf les actions strictement nécessaires de l'auteur prévues par le cycle SAC ; les contacts ne peuvent pas clôturer.
+- Le serveur doit empêcher doublons, rejeu et déclenchements concurrents non intentionnels.
+- Prévoir un contrôle anti-abus proportionné. Ne pas imposer une limite arbitraire qui pourrait empêcher une nouvelle alerte en situation réellement distincte ; définir une politique de répétition et de détection à tester.
+- Si aucun contact préconfiguré n'est éligible, expliquer avant le déclenchement qu'aucun destinataire ne peut être notifié ; ne jamais afficher une confirmation de succès mensongère.
+
+### Comportement en cas de panne
+- Si le réseau est indisponible, afficher que l'alerte n'a pas été confirmée par le serveur ; ne pas prétendre qu'un SMS ou un push est parti.
+- Si le serveur a accepté la demande mais que la réponse est perdue, retrouver l'état avec une référence idempotente sans créer une deuxième alerte.
+- Ne pas promettre un fonctionnement hors ligne ou un SMS direct depuis le téléphone dans ce mode.
+
+### Après la cérémonie de confiance
+Quand le nouvel appareil est devenu approuvé selon la procédure cryptographique distincte, les fonctions SOS normales peuvent être réévaluées selon les permissions habituelles. L'approbation ne restaure jamais les anciennes données GPS expirées ni une racine révoquée.
+
+### Validation utilisateur requise
+Confirmer :
+1. autoriser ou non ce SOS de secours sans GPS ;
+2. conserver uniquement les contacts SOS préconfigurés avant récupération ;
+3. interdire l'ajout/retrait de destinataires, le texte libre et les pièces jointes ;
+4. afficher explicitement aux destinataires que l'appareil est encore non approuvé ;
+5. maintenir les règles d'escalade SOS existantes sans créer de raccourci SMS.
+
+**NO-GO :** aucune permission SOS depuis la session limitée n'est implémentée avant validation explicite de ces cinq points et tests de sécurité/disponibilité.
+
