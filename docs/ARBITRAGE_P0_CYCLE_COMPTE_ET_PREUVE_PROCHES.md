@@ -229,3 +229,7 @@ Ces choix ne sont pas nécessaires pour documenter les invariants déjà validé
 Cette intervention est documentaire. Aucun code TypeScript, test, API, schéma SQL, migration D1, ressource Cloudflare, fournisseur e-mail/SMS ou déploiement n'a été modifié. Les orientations marquées « recommandées » ne sont pas des décisions utilisateur.
 
 **Statut : blocage P0 clarifié, mais non fermé.** Le contrat de domaine doit encore être aligné dans une intervention de code autorisée et les choix ouverts doivent être arbitrés avant migration.
+
+## Complément — contrat détaillé de suppression et cas particuliers
+
+Lire [CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md](CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md) pour la matrice détaillée des cinq états, le traitement des alertes/trajets actifs, les courses concurrentes et les propositions concernant les comptes non vérifiés ou suspendus. Les décisions nouvelles y sont explicitement non approuvées. Le P0 reste ouvert jusqu'à arbitrage.
