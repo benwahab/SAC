@@ -416,3 +416,28 @@ Références officielles consultées :
 ### 15.1 Référence méthodologique NIST
 
 Le NIST SP 800-88 Rev. 2 est la version finale publiée en septembre 2025 et remplace la révision 1. Elle traite explicitement de l'effacement cryptographique parmi les méthodes de sanitisation des supports. Elle constitue une référence méthodologique utile pour cadrer les preuves et le programme de sanitisation, mais sa seule citation ne certifie ni un fournisseur ni le respect de l'échéance J+30 par SAC. Le plan de validation SAC doit donc rester fondé sur les scénarios concrets de restauration, de copies et de récupération.
+
+
+## 16. Luna HSM — destruction d'objet, purge mémoire et zeroization
+
+La documentation Thales Luna consultée montre qu'il faut distinguer plusieurs niveaux souvent regroupés à tort sous le mot « destruction ».
+
+Dans une politique de sécurité publiée pour un module Luna, la fonction PKCS #11 `C_DestroyObject` invalide l'objet ; la matière chiffrée peut rester dans la mémoire flash ou RAM jusqu'à la réallocation de ses emplacements, moment auquel ils sont purgés/zeroisés avant réutilisation. La documentation distingue ce comportement d'une destruction provoquée par une réinitialisation de token ou par certains événements d'authentification, qui peuvent déclencher une zeroization plus large.
+
+La documentation Thales sur les rôles HSM indique par ailleurs que les opérations de zeroization du module sont des fonctions privilégiées du Security Officer. Les recommandations de sauvegarde et de reprise après sinistre prévoient des HSM de sauvegarde hors ligne : ces copies sont utiles pour la continuité d'activité, mais deviennent précisément un risque à traiter lorsqu'une clé doit être irrécupérable après J+30.
+
+**Conséquence pour SAC :** un journal indiquant qu'un objet PKCS #11 a été détruit ne suffit pas à démontrer que ses octets ont déjà été physiquement purgés, ni que des copies de sauvegarde, HA ou DR ne peuvent pas le restaurer. Pour notre garantie, le critère de sécurité principal est l'impossibilité de déchiffrer dès la première reprise après J+30, même si la mémoire physique n'a pas encore été réallouée ; la preuve de sanitisation physique doit être documentée séparément selon le modèle et la certification du module.
+
+Questions à poser au fabricant pour chaque modèle et firmware :
+- Après `C_DestroyObject`, la clé est-elle seulement invalidée, ou sa matière est-elle immédiatement zeroisée ? Quelles différences selon mémoire volatile, flash et type d'objet ?
+- Existe-t-il une opération de zeroization ciblée par partition, distincte de l'effacement complet du token ou du module ?
+- Les sauvegardes HSM, HSM HA, Backup HSM, exports chiffrés et procédures DR conservent-ils une copie restaurable de la clé ?
+- La destruction d'une clé peut-elle être programmée pour une date absolue, exécutée même si le système applicatif est hors ligne, et rendue non annulable par tous les rôles administratifs ?
+- Quels journaux signés, attestations ou rapports de sanitisation prouvent l'opération, et quelles limites sont explicitement exclues ?
+
+**Décision : non approuvé.** Les documents établissent des mécanismes de destruction et de zeroization, mais pas une fonction démontrée de destruction sélective, autonome, non restaurable et planifiée à J+30 pour SAC.
+
+Références officielles :
+- Thales Luna — Best Practices for HSMs, rôles, partitions, sauvegarde et reprise : https://thalesdocs.com/gphsm/luna/7/docs/network/Content/Product_Overview/best_practices_hsms_partitions_clients.htm
+- NIST CMVP — Security Policy d'un module Luna Backup HSM, section 3.6 « Cryptographic Material Management » (décrit le comportement de `C_DestroyObject`) : https://csrc.nist.gov/csrc/media/projects/cryptographic-module-validation-program/documents/security-policies/140sp2429.pdf
+- Thales CipherTrust Manager — Root of Trust HSM, suppression de clés RoT et sauvegardes liées au HSM : https://thalesdocs.com/ctp/cm/2.17/admin/cm_admin/hardware-security-module/index.html
