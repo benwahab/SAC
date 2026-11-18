@@ -164,3 +164,50 @@ Aucun des mécanismes étudiés (clé locale, Cloudflare KV, Google Cloud KMS, A
 Le seul comportement qui peut être retenu sans cette preuve est l'absence d'archive GPS historique persistante : position transmise en direct uniquement pendant la durée autorisée, sans conservation ultérieure sous contrôle de SAC.
 
 Cette décision provisoire ne supprime pas l'objectif produit de J+30 ; elle interdit seulement de prétendre que l'objectif est déjà techniquement garanti. Une nouvelle proposition devra être évaluée par un spécialiste indépendant en cryptographie appliquée et testée sur les copies de clés et les chemins de restauration réels.
+
+
+## 8. Horloge sécurisée embarquée — Android StrongBox et Apple Secure Enclave
+
+La piste d'une expiration entièrement locale a été confrontée aux documentations officielles des plateformes. Le résultat ne permet pas de valider une destruction à J+30.
+
+### 8.1 Android Keystore / StrongBox
+
+La documentation Android confirme que StrongBox dispose d'un minuteur sécurisé et d'une broche de notification de redémarrage (ou équivalent). Le document de compatibilité Android décrit toutefois l'horloge interne StrongBox avec une précision raisonnable de ±10 %. Cette tolérance ne permet pas de promettre une échéance civile exacte à J+30.
+
+Plus important encore, Android précise que les autorisations temporelles de validité d'une clé ne sont généralement pas appliquées par le matériel sécurisé, car celui-ci ne dispose normalement pas d'une horloge temps réel indépendante et sécurisée. Les autorisations peuvent alors être appliquées par le système Android non sécurisé. L'API permet bien de définir une date de fin de validité, mais cette possibilité API ne prouve pas que la date sera imposée matériellement sur chaque appareil.
+
+Références officielles :
+- Android Keystore : https://developer.android.com/privacy-and-security/keystore
+- API KeyGenParameterSpec.Builder / setKeyValidityEnd : https://developer.android.com/reference/android/security/keystore/KeyGenParameterSpec.Builder
+- Android Compatibility Definition Document, section StrongBox (horloge interne ±10 %) : https://source.android.com/docs/compatibility/android-cdd
+- Android KeyMint/Keymaster, autorisations temporelles et horloge fournie par le monde non sécurisé : https://android.googlesource.com/platform/docs/source.android.com/+/f8cc3333edbe85cb7cf5e4ac8ef8a54b6fb4fb5f/en/security/keystore/features.html
+
+Android documente également la résistance au retour arrière des clés : lorsqu'elle est effectivement prise en charge et attestée, le matériel peut garantir qu'une clé supprimée ne sera plus utilisable après restauration d'un ancien blob. Mais cette protection n'est pas garantie pour chaque clé/appareil ; la documentation indique qu'une clé peut être créée sans cette propriété lorsque le stockage anti-rollback n'est pas disponible. La résistance au rollback ne résout donc pas à elle seule le problème de l'heure exacte J+30.
+
+Référence : https://android.googlesource.com/platform/docs/source.android.com/+/04426e67ca3ee557a0083f9b3c6ba789021bd7a0/en/security/keystore/implementer-ref.html
+
+**Évaluation SAC :** StrongBox est une brique de protection intéressante, mais ni sa présence ni la configuration d'une date d'expiration Android ne prouvent l'application matérielle d'une échéance exacte J+30 sur l'ensemble des téléphones. Une validation appareil par appareil, avec attestation de l'application effective des autorisations matérielles, serait nécessaire ; même cela ne résout pas la tolérance de l'horloge décrite dans le CDD.
+
+### 8.2 Apple Secure Enclave / Keychain
+
+Apple documente des clés protégées par Secure Enclave qui restent liées au matériel et ne sont pas exportées en clair. L'attribut Keychain « ThisDeviceOnly » empêche également la migration de l'élément vers un autre appareil. Ces propriétés réduisent certains risques de copie et de restauration inter-appareils.
+
+Les documentations consultées ne décrivent toutefois pas de mécanisme public permettant à une application de programmer la destruction cryptographique d'une clé Secure Enclave à une date absolue exacte, garantie même lorsque l'appareil reste éteint. « ThisDeviceOnly » signifie non migrable ; cela ne signifie pas « expire à J+30 ». Une restriction d'accès ou une suppression de l'élément Keychain par l'application ne doit pas être présentée comme une destruction temporelle matériellement garantie.
+
+Références officielles :
+- Apple — Protecting keys with the Secure Enclave : https://developer.apple.com/documentation/Security/protecting-keys-with-the-secure-enclave
+- Apple — kSecAttrAccessibleWhenUnlockedThisDeviceOnly : https://developer.apple.com/documentation/security/ksecattraccessiblewhenunlockedthisdeviceonly
+
+**Évaluation SAC :** excellente protection de certaines clés liées à l'appareil, mais preuve insuffisante pour l'expiration irréversible à J+30 en cas d'arrêt prolongé, de restauration ou de manipulation de l'heure.
+
+### 8.3 Conclusion comparative
+
+| Mécanisme | Propriété documentée | Limite pour SAC |
+|---|---|---|
+| Android StrongBox | Élément sécurisé, minuteur interne, stockage sécurisé | Horloge ±10 % dans le CDD ; expiration de clé généralement non imposée matériellement |
+| Android Keystore expiration | Date de validité configurable | L'API seule ne prouve pas l'application matérielle ; dépend du matériel et de l'implémentation |
+| Android anti-rollback | Une clé réellement protégée contre rollback ne doit pas redevenir utilisable après suppression | Propriété non garantie pour chaque clé/appareil ; ne fournit pas l'heure exacte |
+| Apple Secure Enclave | Clés matérielles non exportables | Pas de mécanisme public documenté de destruction automatique à date absolue J+30 |
+| Apple Keychain ThisDeviceOnly | Non-migration vers un autre appareil | N'est pas une expiration temporelle |
+
+**Conclusion : aucune solution locale Android/iOS ne peut actuellement être approuvée pour la promesse SAC stricte.** La compatibilité offline pendant 30 jours et la destruction irréversible exactement à J+30 restent non démontrées. Ne pas transformer ces capacités matérielles réelles mais partielles en garantie de sécurité produit.
