@@ -445,3 +445,39 @@ Ne pas créer de migration avant :
 10. solution GPS J+30 prouvée séparément avant toute donnée de localisation réelle.
 
 **État final : les machines à états sont documentées comme contrat de travail. Plusieurs règles restent ouvertes ; aucune migration ni API métier n'est autorisée par ce document.**
+
+
+### 5.4.1 Événements concurrents de coordination — proposition à valider
+
+Les événements suivants sont distincts et ne doivent pas être fusionnés dans un statut générique « pris en charge » :
+
+- `volunteer_submitted` : candidature d'un contact ;
+- `primary_assigned` : attribution effective du responsable principal ;
+- `primary_withdrawn` : retrait explicite du responsable courant ;
+- `arrival_reported` : déclaration d'arrivée sur place ;
+- `resolution_reported` : déclaration d'un contact estimant la situation résolue ;
+- `author_closed` : clôture par l'auteur uniquement.
+
+**Invariants métier**
+1. Au plus une attribution principale active par alerte ; au plus une période de responsabilité ouverte.
+2. Une candidature, une arrivée déclarée et un signalement de résolution ne donnent jamais le rôle principal par eux-mêmes.
+3. `arrival_reported` et `resolution_reported` sont informatifs : ils ne changent pas l'état actif/clôturé, ne stoppent pas les rappels et ne bloquent pas l'escalade SMS.
+4. Seul `author_closed`, émis par l'auteur authentifié, peut faire passer une alerte active à clôturée.
+5. Après clôture, aucune nouvelle candidature, attribution, arrivée ou déclaration de résolution n'est acceptée comme transition métier. Les événements acceptés avant la clôture restent dans l'historique.
+6. Un responsable peut produire un compte rendu ou se retirer ; il ne peut jamais clôturer au nom de l'auteur.
+
+**Arbitrage des courses**
+- Toute commande de coordination vérifie dans une même transaction que l'alerte est encore active et que l'acteur a le rôle/droit requis.
+- L'attribution utilise une transition conditionnelle depuis `unassigned`. Une seule transaction peut réussir ; les autres obtiennent un conflit métier « responsable déjà attribué » et ne créent pas de deuxième période.
+- Les candidatures sont ordonnées par séquence serveur monotone attribuée lors de leur acceptation. En cas d'égalité technique exceptionnelle, l'identifiant stable de candidature sert de dernier départage. Les horloges client ne sont jamais une source d'ordre.
+- Le retrait et la promotion du prochain volontaire admissible sont atomiques : clôture de l'ancienne période et ouverture de la nouvelle dans la même transaction. Si aucun volontaire n'est disponible, l'état devient `unassigned`.
+- La clôture auteur et les opérations contact partagent le même contrôle conditionnel de l'état actif. L'ordre de commit serveur détermine l'ordre des événements ; aucun état intermédiaire contradictoire ne doit être visible.
+- Chaque commande porte une clé d'idempotence liée à l'acteur, l'alerte et l'action. Un rejeu retourne le résultat initial sans répéter l'effet métier.
+
+**Journal**
+- Le journal métier est append-only : les événements acceptés ne sont ni réécrits ni supprimés pour masquer une course.
+- Chaque événement contient au minimum l'identifiant d'alerte, l'acteur, le type d'action, l'horodatage serveur, la séquence serveur, la clé d'idempotence ou son empreinte, et le résultat métier.
+- Les événements de transport (push/SMS) restent séparés des événements humains.
+- Les notifications aux destinataires sont produites après commit via outbox idempotente. Elles annoncent uniquement un responsable confirmé ou un événement informatif confirmé ; aucune donnée privée d'un autre contact n'est incluse.
+
+**Statut : proposition de machine d'états et de persistance à valider.** Aucun schéma D1, endpoint ou code métier n'est créé par cette spécification.
