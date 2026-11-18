@@ -412,3 +412,8 @@ Cette consolidation ne modifie ni code applicatif, ni API, ni schéma D1, ni res
 ## 11. Revue finale de cohérence relationnelle — complément du 18 novembre 2026
 
 La revue détaillée des cardinalités, FK composites, politiques de suppression, concurrence et critères d'acceptation est consignée dans `REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md`. Ce document est le contrôle préalable au futur schéma SQL ; son verdict actuel est NON PRÊT POUR MIGRATION.
+
+
+## 12. Arbitrage détaillé du cycle compte et preuve des proches
+
+Voir `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` pour la matrice des transitions, les attributs d'identité/vérification, le contrat logique des invitations et les tests d'acceptation. Le téléphone reste déclaré non vérifié ; l'e-mail vérifié est recommandé comme preuve d'acceptation, sans être encore une décision approuvée.
