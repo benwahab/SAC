@@ -150,5 +150,26 @@ class EmailOtpD1SchemaTests(unittest.TestCase):
             )
 
 
+    def test_pending_account_cannot_be_activated_without_consumed_email_otp(self):
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "account_activation_requires_email_otp"):
+            self.db.execute(
+                "UPDATE accounts SET status='active' WHERE id='account-1'"
+            )
+
+    def test_email_identity_cannot_be_verified_without_consumed_challenge(self):
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "email_identity_requires_consumed_otp"):
+            self.db.execute(
+                "UPDATE account_identities SET verified_at=? WHERE id='email-1'",
+                (self.now + 1,),
+            )
+
+    def test_phone_identity_cannot_be_verified_in_account_otp_flow(self):
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "phone_identity_verification_not_supported"):
+            self.db.execute(
+                "UPDATE account_identities SET verified_at=? WHERE id='phone-1'",
+                (self.now + 1,),
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
