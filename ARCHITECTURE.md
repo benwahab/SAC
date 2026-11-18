@@ -34,3 +34,8 @@ Ce fichier est le point d'entrée architectural du dépôt. Le détail du modèl
 ## Modèle de données administratif
 
 Lire également [docs/MODELE_DONNEES_ADMIN_ET_INTEGRATION_SAC.md](docs/MODELE_DONNEES_ADMIN_ET_INTEGRATION_SAC.md) avant tout travail sur les comptes administratifs, missions, permissions, sessions, audits, clôtures et exports. Ce modèle est conceptuel et ne constitue pas un schéma SQL approuvé.
+
+
+## Référentiel global des données
+
+Le référentiel de cohérence entre les domaines est [docs/MODELE_GLOBAL_DONNEES_SAC.md](docs/MODELE_GLOBAL_DONNEES_SAC.md). Il complète la proposition D1, sa revue critique et la matrice de traçabilité. Son statut est conceptuel ; il n'autorise aucune migration.
