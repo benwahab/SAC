@@ -188,6 +188,10 @@ Les détails transactionnels sont dans `docs/CONTRATS_OPERATIONS_ATOMIQUES_D1.md
 
 Les fournisseurs et leurs contrats restent à choisir et à tester.
 
+## Audit transversal de cohérence — 18 novembre 2026
+
+Le document `AUDIT_TRANSVERSAL_COHERENCE_ARCHITECTURE_2026-11-18.md` est la synthèse des écarts P0/P1 relevés entre les contrats, le modèle relationnel, le code existant et les décisions validées. Il confirme le statut **NON PRÊT POUR MIGRATION, SOS réel et lancement public**. Il identifie notamment l'écart des cinq états du compte dans le code, la nécessité d'isoler l'archive GPS locale de 30 jours de la règle de suppression immédiate du GPS d'alerte à la clôture, l'unification de l'exception administrative de clôture, et le blocage juridique nigérien. Les propositions restent non approuvées. Ce document n'autorise aucune modification applicative ou infrastructurelle.
+
 ## 9. GPS et confidentialité — blocage absolu avant activation
 
 L'exigence produit est ferme : les positions GPS précises doivent devenir irrécupérables au plus tard 30 jours après la fin du partage ; pour une position ponctuelle, le délai part de la collecte.
