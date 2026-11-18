@@ -62,6 +62,9 @@ export function parseStrictJson(
   if (typeof source !== "string") {
     throw new Error("strict_json_invalid:source_type");
   }
+  if (source.length > limits.maxBytes) {
+    throw new Error("strict_json_invalid:max_bytes");
+  }
   if (new TextEncoder().encode(source).byteLength > limits.maxBytes) {
     throw new Error("strict_json_invalid:max_bytes");
   }
