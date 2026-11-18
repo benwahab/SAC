@@ -394,3 +394,7 @@ Le document [PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md](PROPOSITION
 ## Appareils, sessions et récupération — référence transversale
 
 Le document `CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md` centralise les scénarios de perte/changement d'appareil, les sessions 30/90 jours validées, les règles de révocation, la séparation récupération du compte/enrôlement/racine, les divergences cryptographiques et les blocages V1. Les contrats spécialisés restent les références détaillées ; aucune récupération de racine n'est autorisée en V1.
+
+## Sécurité des connexions et sessions
+
+Le document `PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md` formalise les menaces et contrôles à arbitrer concernant les tentatives frauduleuses, le vol/rejeu de session, les connexions multi-appareils, la révocation, les changements de mot de passe et les notifications. Il complète la consolidation appareils/sessions/récupération sans transformer ses recommandations en décisions validées.
