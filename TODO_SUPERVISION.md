@@ -513,3 +513,18 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Définir le profil administratif habilité, les contrôles renforcés déclenchés par suspicion d'abus et les notifications de clôture aux contacts.
 - [ ] Spécifier et faire examiner indépendamment les contrôles serveur et la traçabilité avant toute implémentation.
 - [ ] Ne créer aucune route API, permission opérationnelle, session spéciale ou migration D1 sans autorisation distincte.
+
+
+## Habilitation à la clôture administrative — 18 novembre 2026
+
+- [x] Valider que le Super Admin peut clôturer une alerte concernée après les vérifications prévues.
+- [x] Valider qu'un administrateur sécurité ne peut clôturer que si le Super Admin lui attribue explicitement la permission dédiée ; aucun droit par défaut.
+- [x] Exclure le support, l'auditeur, les proches et le titulaire suspendu de l'autorité de clôture dans ce scénario.
+- [x] Séparer la permission de clôture des autres permissions ; seul le Super Admin peut l'attribuer, la modifier, la suspendre ou la retirer.
+- [x] Interdire au délégataire de transmettre ou déléguer cette permission ; une seule personne habilitée suffit, sans double validation.
+- [x] Exiger une trace d'audit minimale : identité de l'administrateur, référence de l'alerte, date/heure, motif et éléments vérifiés.
+- [x] Réserver l'espace d'administration à l'ordinateur et à la tablette ; pas d'accès administratif prévu sur téléphone.
+- [ ] Définir les contrôles techniques empêchant toute élévation ou délégation par un administrateur délégué.
+- [ ] Définir le parcours d'attribution et de retrait de la permission dédiée par le Super Admin.
+- [ ] Spécifier les événements d'audit, leur intégrité, leur conservation et leur consultation.
+- [ ] Ne créer aucun rôle, endpoint, permission opérationnelle ou migration D1 sans autorisation distincte.
