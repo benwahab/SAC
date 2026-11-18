@@ -146,3 +146,33 @@ test("le délai de grâce reste paramétré et n'est pas fixé globalement par l
   assert.deepEqual(before, { ok: false, error: "grace_period_not_elapsed" });
   assert.equal(after.ok, true);
 });
+
+
+test("un mode inconnu est rejeté même si les autres champs semblent cohérents", () => {
+  const result = transitionTripProtection(makeTrip({ mode: "unexpected" as TripProtectionRecord["mode"] }), {
+    type: "confirm_arrival", actorAccountId: "author-a", at: eta,
+  });
+  assert.deepEqual(result, { ok: false, error: "invalid_trip" });
+});
+
+test("un mode accompagnement ne peut pas être activé sans partage de position", () => {
+  const result = transitionTripProtection(makeTrip({
+    mode: "accompaniment",
+    expectedArrivalAt: null,
+    gracePeriodMinutes: null,
+    arrivalStatus: "not_applicable",
+    locationSharing: { enabled: false, duration: "30_minutes" },
+  }), {
+    type: "close", actorAccountId: "author-a", at: eta, reason: "cancelled",
+  });
+  assert.deepEqual(result, { ok: false, error: "invalid_trip" });
+});
+
+test("un historique d'événements incohérent est refusé", () => {
+  const result = transitionTripProtection(makeTrip({
+    events: [{ type: "arrival_confirmed", actorAccountId: "author-a", at: eta, late: false }],
+  }), {
+    type: "close", actorAccountId: "author-a", at: afterGrace, reason: "completed",
+  });
+  assert.deepEqual(result, { ok: false, error: "invalid_trip" });
+});
