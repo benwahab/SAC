@@ -54,16 +54,17 @@ Toute personne pouvant utiliser un smartphone ou un navigateur mobile. L'interfa
 
 ### 3.2 Création de compte
 
-- Inscription avec un numéro de téléphone ou une adresse e-mail.
-- Vérification initiale par code à usage unique (OTP).
-- Possibilité d'ajouter et de vérifier ultérieurement le second moyen de contact.
+- Inscription avec une adresse e-mail obligatoire, un mot de passe et un numéro de téléphone obligatoire avec indicatif international.
+- Activation uniquement après vérification de l'adresse e-mail par OTP envoyé à cette adresse ; sans e-mail vérifié, le compte reste en attente, sans accès privé ni session.
+- Le téléphone est une coordonnée déclarée non vérifiée ; il ne remplace jamais l'e-mail et ne permet aucune inscription ou activation par téléphone seul.
+- Aucun SMS OTP pour l'inscription, la vérification ou l'activation du compte. Les SMS du parcours SOS restent distincts.
 - Aucun mot de passe ou code OTP ne doit être stocké en clair.
 - Les sessions et appareils connectés doivent pouvoir être consultés et révoqués.
 - Les parcours de récupération de compte doivent être sécurisés et documentés avant lancement.
 
 ### 3.3 Profil et paramètres
 
-Le profil comprend au minimum : identité d'affichage, téléphone et/ou e-mail vérifiés, langue, paramètres de notification, préférences de confidentialité, contacts de confiance, formule et appareils connectés.
+Le profil comprend au minimum : identité d'affichage, adresse e-mail vérifiée, numéro de téléphone obligatoire mais déclaré non vérifié, langue, paramètres de notification, préférences de confidentialité, contacts de confiance, formule et appareils connectés.
 
 L'utilisateur doit pouvoir modifier ses informations, gérer ses autorisations, exporter les informations prévues par la politique de données et demander la suppression de son compte selon une procédure définie.
 
@@ -92,8 +93,10 @@ Le paiement devra être confirmé côté serveur par une preuve fiable du presta
 
 ### 5.1 Gestion
 
-- L'utilisateur peut inviter des proches par téléphone ou e-mail.
-- Le contact doit accepter l'invitation et vérifier le téléphone ou l'e-mail associé avant de devenir un destinataire autorisé.
+- L'utilisateur peut initier une invitation à un proche ; le canal de remise de l'invitation ne constitue pas en lui-même une preuve d'identité.
+- Pour devenir un contact de confiance actif et un destinataire autorisé, le proche doit disposer d'un compte SAC actif, donc d'une adresse e-mail vérifiée par OTP, puis accepter explicitement l'invitation qui lui est destinée.
+- Un numéro de téléphone déclaré, un SMS reçu ou une réponse depuis ce numéro ne peut pas remplacer le compte actif, la vérification e-mail ou le consentement explicite.
+- Une personne sans adresse e-mail ne peut pas créer/activer un compte SAC et ne peut donc pas devenir un contact SAC actif par un parcours téléphone seul.
 - Une invitation en attente ne donne accès ni aux alertes, ni au compte, ni à la localisation de l'utilisateur.
 - Chaque contact peut être classé : famille, ami, voisin, collègue ou autre.
 - L'utilisateur peut retirer un contact ou révoquer ses autorisations.
@@ -408,7 +411,7 @@ Un espace d'administration minimal pourra gérer les comptes, signalements techn
 
 Le produit ne pourra pas être considéré comme prêt tant que les scénarios suivants ne sont pas vérifiés :
 
-1. Un compte peut s'inscrire et vérifier un téléphone ou un e-mail.
+1. Toute inscription exige un e-mail et un téléphone ; seul l'OTP e-mail valide permet l'activation du compte. Aucun compte téléphone seul n'est accepté.
 2. Un utilisateur gratuit ne peut pas dépasser deux contacts actifs.
 3. Un utilisateur Premium actif peut gérer jusqu'à dix contacts.
 4. Un contact non accepté ne reçoit aucune nouvelle alerte.
