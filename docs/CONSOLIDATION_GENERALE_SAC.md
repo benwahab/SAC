@@ -413,3 +413,8 @@ Le document `PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md` formalise les menac
 ## Sécurité des notifications et communications — complément du 18 novembre 2026
 
 `docs/CONTRAT_SECURITE_NOTIFICATIONS_ET_COMMUNICATIONS.md` complète les contrats SOS, invitations, sessions, confidentialité et conservation. Il formalise les frontières de confiance des canaux push/e-mail/SMS, la protection des abonnements, les webhooks, la distinction entre acceptation et livraison, les révocations, les pannes et la prévention des fuites. Le téléphone déclaré reste non vérifié et ne peut être considéré comme destination SMS fiable sans arbitrage/proof adaptée. Aucun fournisseur ou canal réel n'est activé.
+
+
+## Sécurité des trajets et de la localisation — complément du 18 novembre 2026
+
+`docs/CONTRAT_SECURITE_TRAJETS_ET_LOCALISATION.md` complète les propositions de trajets et les contrats SOS, GPS J+30, communications, invitations et confidentialité. Il formalise le consentement explicite, la sélection des proches, les trois modes, la révocation, la fraîcheur des positions, le réseau faible, les limites des copies externes et les tests de non-résurrection. Les valeurs de durée et la conservation GPS des trajets restent à arbitrer. Le GPS réel demeure NO-GO.
