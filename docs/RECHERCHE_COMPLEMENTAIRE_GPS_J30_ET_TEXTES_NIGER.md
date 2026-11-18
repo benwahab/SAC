@@ -508,3 +508,26 @@ Références officielles vérifiées le 18 novembre 2026 :
 - Cloudflare D1 — Time Travel and backups : https://developers.cloudflare.com/d1/reference/time-travel/
 - Android Keystore — temporal validity intervals et enforcement matériel : https://developer.android.com/privacy-and-security/keystore
 - Android Open Source Project — distinction hardwareEnforced / softwareEnforced : https://source.android.com/docs/security/features/keystore/features
+
+## 19. Sauvegardes natives Android/iOS — constat officiel (18 novembre 2026)
+
+### Android Auto Backup
+La documentation Android confirme que, par défaut, Auto Backup inclut la plupart des préférences, fichiers privés internes, bases de données et fichiers du stockage externe applicatif. Les sauvegardes peuvent être restaurées à l'installation de l'application, avant son premier lancement. Les répertoires cache, code cache et noBackupFilesDir sont exclus par défaut, mais cette exclusion ne couvre pas les copies manuelles ou les transferts non maîtrisés.
+
+Pour Android 12+ ciblant API 31+, les règles dataExtractionRules séparent cloud-backup et device-transfer ; cross-platform-transfer vers iOS est disponible à partir d'Android 16 QPR2. Si une section de transfert est absente, ce mode peut rester activé par défaut. Les applications ciblant API 30 ou inférieur doivent aussi garder le jeu de règles fullBackupContent legacy. Point critique : sur certains appareils de fabricants, allowBackup=false peut désactiver la sauvegarde cloud sans empêcher le transfert direct appareil-à-appareil.
+
+Conséquence SAC : les archives GPS, clés, parts de clés, DEK, clés dérivées et états de restauration doivent être explicitement exclus de chaque mode applicable et vérifiés dans l'APK puis sur appareils réels. Le chiffrement de la sauvegarde Android ne suffit pas à prouver une destruction J+30.
+
+### iOS Keychain et fichiers
+Apple documente que l'attribut ThisDeviceOnly empêche la migration d'un élément Keychain vers un autre appareil, mais qu'un élément peut être restauré sur le même appareil depuis une sauvegarde. ThisDeviceOnly n'est donc pas une protection contre la restauration sur le même appareil. Les secrets GPS ne doivent pas être synchronisables via iCloud Keychain ; les éléments synchronisables peuvent être répliqués et les opérations de mise à jour/suppression affectent les copies synchronisées.
+
+Apple documente aussi l'exclusion des fichiers via isExcludedFromBackup. Certaines opérations de fichiers peuvent remettre le drapeau à false : il doit être réappliqué et vérifié après chaque écriture/remplacement/déplacement pertinent.
+
+### Conclusion
+Ces contrôles sont des prérequis de réduction de surface, non une preuve d'effacement cryptographique à J+30. Aucun test natif n'a été exécuté, car SAC ne possède pas encore d'application native et aucun appareil de test dédié n'a été autorisé. Les scénarios GPS-27 à GPS-36 ont été ajoutés au plan de validation. La conservation de l'historique GPS reste NO-GO.
+
+Sources officielles :
+- Android Auto Backup : https://developer.android.com/identity/data/autobackup
+- Apple isExcludedFromBackup : https://developer.apple.com/documentation/foundation/urlresourcekey/isexcludedfrombackupkey
+- Apple Keychain accessibility / ThisDeviceOnly : https://developer.apple.com/documentation/security/restricting-keychain-item-accessibility
+- Apple Keychain synchronizable : https://developer.apple.com/documentation/security/ksecattrsynchronizable
