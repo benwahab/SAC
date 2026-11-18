@@ -428,3 +428,8 @@ Le document `PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md` formalise les menac
 ## Confidentialité familiale et isolation des données — complément du 18 novembre 2026
 
 Lire `docs/CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md` pour les règles de cloisonnement des comptes, relations de confiance, groupes, alertes, téléphones partagés, notifications, caches, recherches et exports. La famille ne constitue pas une autorité d'accès ; un proche ne reçoit pas le compte complet et un groupe n'hérite d'aucun droit SOS/GPS. Les mécanismes de verrouillage, de cache et les droits détaillés restent à arbitrer. Aucun changement applicatif n'est autorisé par ce document.
+
+
+## Prévention des abus, usurpations et saturation — complément du 18 novembre 2026
+
+`docs/CONTRAT_PREVENTION_ABUS_USURPATION_ET_SATURATION.md` complète les contrats SOS, communications, invitations, comptes/appareils, confidentialité et audit. Il traite le harcèlement, l'usurpation, les fausses alertes, les automatismes, le déni de service et les abus internes. Il réaffirme que l'anti-abus doit protéger la disponibilité du SOS : pas de blocage automatique fondé uniquement sur la fréquence des alertes, pas de CAPTCHA/paiement obligatoire par défaut et pas de dépendance externe dans le chemin critique. Les seuils et procédures restent à arbitrer ; aucune implémentation n'est autorisée.
