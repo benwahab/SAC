@@ -127,6 +127,8 @@ L'interface doit être mobile-first, légère sur réseau faible, accessible et 
 ## 6. Comptes, contacts et appareils
 
 Principes :
+- toute inscription exige une adresse e-mail ; la vérification de cette adresse par OTP e-mail est une condition sine qua non de l'activation du compte ; aucun compte ne peut être créé ou activé par téléphone seul ;
+- le téléphone reste obligatoire comme coordonnée déclarée, mais ne remplace jamais l'adresse e-mail ; aucun SMS OTP de compte n'est autorisé ;
 - chaque compte possède ses propres données et moyens de contact vérifiés ;
 - les invitations doivent être acceptées et vérifiées avant activation ;
 - une invitation en attente ne donne aucun accès ;
