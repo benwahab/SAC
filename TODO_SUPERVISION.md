@@ -833,3 +833,17 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases
 - [ ] Obtenir une autorisation distincte avant code, API, migration D1, ressource Cloudflare ou déploiement.
 
 **Statut :** consolidation documentaire enregistrée ; aucune implémentation n'a été effectuée.
+
+## Sécurité des connexions et sessions — 18 novembre 2026
+
+- [x] Auditer les contrats de session, appareil, autorisation D1 et récupération.
+- [x] Rédiger `docs/PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md` avec menaces, contrôles et tests.
+- [ ] Arbitrer seuils et fenêtres anti-brute-force sans risque de verrouillage abusif.
+- [ ] Choisir le transport de session PWA et futur client natif.
+- [ ] Décider sessions limitées sans refresh token ou renouvellement rotatif.
+- [ ] Définir la réponse à un rejeu et aux renouvellements concurrents.
+- [ ] Arbitrer les effets d'un changement de mot de passe et la révocation globale.
+- [ ] Définir les événements, le canal et la rétention des notifications/journaux.
+- [ ] Obtenir une autorisation distincte avant code, API, D1, fournisseur ou Cloudflare.
+
+**Statut :** proposition documentaire uniquement ; aucune fonctionnalité de sécurité supplémentaire n'est activée.
