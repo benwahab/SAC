@@ -183,6 +183,8 @@ Les règles exactes de sélection, notamment le cas où aucun contact n'est acti
 
 ## 5. Alerte SOS
 
+Le contrat TypeScript pur de clôture et d'éligibilité des rappels est prototypé dans `src/domain/alert-lifecycle.ts` avec tests dans `tests/alert-lifecycle.test.ts`. Il ne persiste rien, n'authentifie pas l'acteur et ne remplace pas les conditions SQL atomiques décrites dans les contrats D1.
+
 ### 5.1 États métier
 
 États proposés pour une alerte déjà déclenchée :
