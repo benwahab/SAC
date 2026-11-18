@@ -115,7 +115,7 @@ Règles :
 - la sélection des destinataires d'une alerte est toujours explicite et validée par le serveur ;
 - les limites de l'offre s'appliquent au nombre de proches autorisés.
 
-**Règle désormais établie :** tout proche qui devient un contact SAC actif doit disposer d'un compte SAC actif. Ce compte exige une adresse e-mail vérifiée par OTP ; le téléphone déclaré seul ne peut ni activer le compte ni la relation. Les anciennes formulations du cahier des charges qui autorisaient le téléphone seul sont remplacées. Restent à spécifier : canal de remise de l'invitation, correspondance entre destination invitée et e-mail vérifié, durée/jeton et preuve du consentement. Aucun SMS OTP ne doit être ajouté.
+**Règle désormais établie :** tout proche qui devient un contact SAC actif doit disposer d'un compte SAC actif avec adresse e-mail vérifiée par OTP ; téléphone seul et SMS ne suffisent jamais. Le parcours de bout en bout, les entités logiques, les états et les tests sont détaillés dans `CONTRAT_CYCLE_VIE_PROCHES_ET_INVITATIONS.md`. Les durées, relances, fournisseur, révocation symétrique et droits après révocation pendant une alerte restent à arbitrer. Aucun SMS OTP ne doit être ajouté.
 
 Les groupes privés figurent au cahier des charges, mais ils ne figurent pas dans la première proposition relationnelle D1. Leur cardinalité, limites, invitations, retrait, rôle de gestion et règles de suppression restent à spécifier. Aucun droit d'alerte ne doit être hérité d'un groupe.
 
@@ -416,4 +416,4 @@ La revue détaillée des cardinalités, FK composites, politiques de suppression
 
 ## 12. Arbitrage détaillé du cycle compte et preuve des proches
 
-Voir `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` pour la matrice des transitions, les attributs d'identité/vérification, le contrat logique des invitations et les tests d'acceptation. Tout compte, y compris celui d'un proche, exige un e-mail vérifié par OTP avant activation. Le téléphone reste déclaré non vérifié ; les détails de correspondance de l'invitation et de consentement restent à spécifier.
+Voir `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` pour les états de compte et `CONTRAT_CYCLE_VIE_PROCHES_ET_INVITATIONS.md` pour le parcours complet d'invitation et de relation. Tout compte, y compris celui d'un proche, exige un e-mail vérifié par OTP avant activation. Le téléphone reste déclaré non vérifié ; les arbitrages encore ouverts sont listés dans le contrat spécialisé.
