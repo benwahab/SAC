@@ -459,3 +459,8 @@ Lire `docs/CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md` pour les r
 ## Audit transversal de cohérence — 18 novembre 2026
 
 Le point de convergence actuel est `AUDIT_TRANSVERSAL_COHERENCE_ET_MATURITE_2026-11-18.md`. Il identifie les contradictions et dépendances P0/P1, distingue les propositions des décisions validées et rappelle l'état réellement implémenté. Les corrections GPS dans l'architecture, le cahier des charges et la machine à états alignent ces documents sur `CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md`. L'écart TypeScript des cinq états du compte reste à corriger avant migration, sans modification de code dans l'audit.
+
+
+## Complément juridique Niger — 18 novembre 2026
+
+`docs/ANALYSE_JURIDIQUE_NIGER_SAC_2026-11-18_COMPLEMENT.md` détaille les exigences du texte de base 2022-59 et leurs implications pour les numéros de téléphone, les données de santé, les GPS, les transferts, les sous-traitants, les incidents, les droits et les durées. Il ne vaut pas avis juridique et ne lève pas le blocage post-juin 2026 : l'ordonnance 2026-30, le décret de suppression de la HAPDP et les services ministériels compétents restent à authentifier. Aucun traitement réel ni transfert fournisseur n'est autorisé.
