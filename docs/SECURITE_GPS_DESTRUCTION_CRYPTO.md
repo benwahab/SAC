@@ -5,20 +5,22 @@
 
 ## 1. Direction d'architecture retenue pour SAC
 
-**Décision de conception retenue : aucune conservation GPS précise durable côté serveur.** Les positions sont chiffrées sur le téléphone, partagées en direct aux contacts autorisés par un relais éphémère, puis l'historique conservé par SAC reste uniquement sur l'appareil de l'auteur pendant 30 jours après la fin du partage (ou, pour une position ponctuelle, pendant 30 jours à compter de sa collecte). À l'échéance, la clé locale dédiée doit être détruite et l'archive chiffrée supprimée.
+**Cible produit : aucune conservation GPS précise durable côté serveur.** Les positions sont chiffrées sur le téléphone, partagées en direct aux contacts autorisés par un relais éphémère. L'historique éventuellement conservé par SAC doit rester uniquement sur l'appareil de l'auteur pendant 30 jours après la fin du partage (ou, pour une position ponctuelle, pendant 30 jours à compter de sa collecte). À l'échéance, la clé dédiée doit devenir irrécupérable et l'archive chiffrée doit être supprimée.
 
-Cette direction remplace les anciennes pistes d'archivage GPS serveur décrites dans les sections historiques qui suivent. Elle ne signifie pas que la garantie technique J+30 est déjà prouvée ou implémentée.
+**Important : l'archive locale + Android Keystore/iOS Keychain n'est pas encore une architecture approuvée pour garantir J+30.** La documentation Android indique que les contraintes temporelles sont généralement appliquées par le logiciel, faute d'horloge indépendante dans le matériel sécurisé. iOS documente la non-migration de certaines clés, pas leur destruction automatique à une date donnée. Si le téléphone est éteint à l'échéance, l'application ne peut pas exécuter sa purge. La faisabilité de l'exigence stricte est donc un bloqueur. Voir obligatoirement `docs/PLAN_VALIDATION_DESTRUCTION_GPS_J30.md`.
+
+Cette cible remplace les anciennes pistes d'archivage GPS serveur décrites dans les sections historiques. Elle ne signifie pas que la garantie technique J+30 est prouvée ou implémentée.
 
 Règles non négociables :
 1. Aucune coordonnée GPS précise ni aucun payload GPS ne doit être persisté dans D1, R2, KV, Durable Objects, files, journaux, traces, analytics, exports ou sauvegardes serveur.
 2. Le téléphone chiffre les positions avant leur transmission. Le serveur authentifie, vérifie les droits et relaie les paquets chiffrés sans les déchiffrer ni créer d'historique GPS durable.
 3. Le relais est éphémère : les paquets ne sont conservés que le temps technique nécessaire à la livraison et ne sont jamais utilisés comme archive.
 4. L'archive de 30 jours est locale au téléphone de l'auteur, chiffrée avec une clé propre à chaque session de partage ou trajet. Aucune synchronisation automatique vers un autre appareil ou vers le compte SAC ne doit copier l'archive ou sa clé privée.
-5. À J+30, l'accès doit être refusé dès la première instruction exécutée, même si le téléphone était éteint à l'échéance ; le nettoyage des fichiers et la suppression de clé sont relancés à chaque reprise. Cette protection d'accès n'est pas encore une preuve que l'OS a détruit le matériel de clé exactement à J+30.
-6. La PWA seule ne peut pas être présentée comme preuve de destruction matérielle irréversible. Les garanties Android Keystore/TEE/StrongBox et iOS Keychain doivent être testées sur les appareils compatibles.
+5. À J+30, l'accès doit être refusé même si le téléphone était éteint à l'échéance. Une vérification au prochain démarrage ne suffit pas à elle seule : il faut une expiration cryptographique résistante à la restauration et à la manipulation de l'horloge.
+6. La PWA seule ne peut pas être présentée comme preuve de destruction matérielle irréversible. Android Keystore/TEE/StrongBox et iOS Keychain ne doivent pas être considérés comme suffisants avant démonstration d'une expiration J+30 indépendante de l'application.
 7. Si la clé locale est perdue, l'archive devient irrécupérable avant J+30 : la confidentialité prime sur la récupération de l'historique. La récupération de compte ou l'ajout d'un appareil ne restaure jamais les anciennes clés GPS.
 
-**État réel :** direction de conception actée ; aucun GPS réel connecté, aucun mécanisme local de production implémenté, aucune preuve de destruction J+30 validée. Les tests sur appareils natifs, la résistance aux sauvegardes/restaurations locales et la gestion des téléphones éteints restent des bloqueurs.
+**État réel :** cible produit documentée ; architecture de conservation locale non approuvée tant que l'expiration hors ligne et téléphone éteint n'est pas démontrée. Aucun GPS réel connecté, aucun mécanisme de production implémenté, aucune preuve de destruction J+30 validée. Les tests natifs, la résistance aux sauvegardes/restaurations et la gestion des téléphones éteints restent des bloqueurs.
 
 ## 2. Pistes KMS historiques — non retenues pour l'architecture actuelle
 
