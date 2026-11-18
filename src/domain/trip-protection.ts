@@ -70,8 +70,15 @@ function validSnapshot(snapshot: readonly AlertRecipientSnapshot[]): boolean {
 }
 
 function isValidTrip(trip: TripProtectionRecord): boolean {
-  if (!trip.tripId.trim() || !trip.authorAccountId.trim() || !isUtc(trip.createdAt) || !validSnapshot(trip.recipientSnapshot)) return false;
-  const hasArrival = trip.mode !== "accompaniment";
+  if (
+    !trip.tripId.trim() ||
+    !trip.authorAccountId.trim() ||
+    !isUtc(trip.createdAt) ||
+    !validSnapshot(trip.recipientSnapshot) ||
+    !Array.isArray(trip.events) ||
+    !["arrival_check", "accompaniment", "full_protection"].includes(trip.mode)
+  ) return false;
+  const hasArrival = trip.mode === "arrival_check" || trip.mode === "full_protection";
   if (hasArrival) {
     if (!trip.expectedArrivalAt || !isUtc(trip.expectedArrivalAt) || Date.parse(trip.expectedArrivalAt) < Date.parse(trip.createdAt)) return false;
     if (!Number.isSafeInteger(trip.gracePeriodMinutes) || (trip.gracePeriodMinutes ?? -1) < 0) return false;
@@ -85,13 +92,35 @@ function isValidTrip(trip: TripProtectionRecord): boolean {
   if (trip.mode === "arrival_check") {
     if (trip.locationSharing !== null) return false;
   } else {
-    if (!trip.locationSharing?.enabled || !trip.locationSharing.duration) return false;
+    if (
+      !trip.locationSharing ||
+      trip.locationSharing.enabled !== true ||
+      !["one_time", "15_minutes", "30_minutes", "1_hour", "until_closure"].includes(trip.locationSharing.duration)
+    ) return false;
   }
 
   if (trip.status !== "active" && trip.status !== "closed_by_author") return false;
+  let previousEventAt = Date.parse(trip.createdAt);
+  let lastArrivalEvent: "arrival_confirmed" | "arrival_marked_unconfirmed" | null = null;
+  let closed = false;
   for (const event of trip.events) {
-    if (!isUtc(event.at) || Date.parse(event.at) < Date.parse(trip.createdAt)) return false;
+    if (!event || !isUtc(event.at) || Date.parse(event.at) < previousEventAt) return false;
+    previousEventAt = Date.parse(event.at);
+    if (event.type === "arrival_confirmed") {
+      if (!hasArrival || event.actorAccountId !== trip.authorAccountId || typeof event.late !== "boolean") return false;
+      lastArrivalEvent = "arrival_confirmed";
+    } else if (event.type === "arrival_marked_unconfirmed") {
+      if (!hasArrival || event.actorAccountId !== "system") return false;
+      lastArrivalEvent = "arrival_marked_unconfirmed";
+    } else if (event.type === "closed") {
+      if (event.actorAccountId !== trip.authorAccountId || (event.reason !== "completed" && event.reason !== "cancelled") || closed) return false;
+      closed = true;
+    } else return false;
   }
+  if ((trip.arrivalStatus === "confirmed" && lastArrivalEvent !== "arrival_confirmed") ||
+      (trip.arrivalStatus === "unconfirmed" && lastArrivalEvent !== "arrival_marked_unconfirmed") ||
+      (trip.arrivalStatus === "pending" && lastArrivalEvent !== null) ||
+      (trip.status === "closed_by_author") !== closed) return false;
   return true;
 }
 
