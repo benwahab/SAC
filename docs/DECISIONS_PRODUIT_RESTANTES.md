@@ -412,3 +412,12 @@ Le contrat `CONTRAT_PREVENTION_ABUS_USURPATION_ET_SATURATION.md` consolide les m
 Invariant critique : la défense anti-abus ne doit pas punir le SOS. Une répétition technique identique est traitée par idempotence ; une nouvelle urgence explicite ne doit pas être supprimée par une limite aveugle. Aucun blocage automatique fondé uniquement sur le nombre de SOS, aucune CAPTCHA/paiement obligatoire par défaut dans le parcours critique, et aucune dépendance fournisseur ne doit empêcher la création d'alerte lorsque le service SOS est disponible.
 
 Restent à arbitrer : seuils de débit, capacité réservée au SOS, anti-automatisation, traitement des plaintes, revue humaine, recours, mesures anti-harcèlement, conservation des preuves et contrôle indépendant. Les seuils d'invitation du document de propositions restent non approuvés. Aucun mécanisme n'est implémenté.
+
+
+## 30. Résilience, continuité et reprise après incident — 18 novembre 2026
+
+Le contrat `CONTRAT_RESILIENCE_CONTINUITE_ET_REPRISE_INCIDENT.md` formalise les états réseau, la vérité des confirmations, l'indépendance du cycle SOS vis-à-vis des fournisseurs, l'outbox récupérable, la reprise après panne, la restauration et les tests de non-résurrection.
+
+Invariants : aucune confirmation de SOS sans commit serveur ; perte de réponse traitée par idempotence ; les pannes push/e-mail/SMS/GPS ne suppriment pas une alerte confirmée ; le ping health D1 ne prouve pas le fonctionnement métier ; une restauration ne réactive aucun état révoqué ou supprimé et ne ressuscite jamais GPS/alertes purgés.
+
+Restent à arbitrer : RTO/RPO, disponibilité cible, capacité d'astreinte, source d'autorité des révocations post-sauvegarde, fréquence/chiffrement des sauvegardes, stratégie de retry, capacité réservée au SOS, procédure de crise et exercices de restauration. Aucun fournisseur ou objectif chiffré n'est approuvé.
