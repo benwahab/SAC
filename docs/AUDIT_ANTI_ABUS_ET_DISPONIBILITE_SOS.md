@@ -494,3 +494,39 @@ Cette section est documentaire. Elle ne crée aucun fournisseur, endpoint, quota
 - Aucun SMS OTP réel, fournisseur e-mail, endpoint, quota chiffré ou ressource Cloudflare n'est créé par cette annexe.
 
 **À tester avant mise en production :** boîte compromise, ancienne adresse inaccessible, nouvel e-mail contrôlé par un tiers, renvois concurrents, résultat fournisseur ambigu, énumération, épuisement ciblé, panne e-mail pendant une urgence et preuve qu'aucun SMS OTP de secours n'est déclenché automatiquement.
+
+
+## Annexe — Menaces liées à la perte ou à la compromission de l'e-mail (18 novembre 2026)
+
+**Statut :** exigences de conception et scénarios de test ; aucun facteur de récupération ni fournisseur n'est choisi.
+
+| Scénario | Risque | Contrôle exigé |
+|---|---|---|
+| Ancienne boîte inaccessible, appareil racine encore sûr | Blocage légitime ou changement détourné | Preuve cryptographique fraîche depuis l'appareil approuvé, puis OTP à la nouvelle adresse ; contrôle atomique de révocation et de version |
+| Ancienne boîte compromise | Attaquant intercepte les codes/liens | Ne pas traiter l'ancienne boîte comme autorité ; parcours depuis appareil sûr ou récupération indépendante |
+| Aucun appareil approuvé, nouvel e-mail contrôlé | Prise de contrôle du compte par simple OTP | Refuser la récupération complète tant qu'un facteur indépendant validé n'est pas fourni |
+| Téléphone et e-mail perdus | Faux sentiment de preuve par cumul de nouveaux canaux | Aucun cumul de nouveaux OTP ne prouve la continuité ; procédure indépendante séparée |
+| Demande concurrente avec révocation d'appareil | Une demande continue après révocation | Revalidation atomique au commit ; révocation gagnante fait échouer la demande |
+| Faux support | Ingénierie sociale pour contourner les facteurs | Support sans pouvoir de remplacer la racine ou d'accepter un OTP comme preuve suffisante |
+| Demande en attente | Accès privé accordé avant vérification | État d'attente sans privilèges implicites ; réponse uniforme et journalisation minimale |
+
+### Disponibilité et protection de l'urgence
+
+- La perte de l'e-mail ne doit pas transformer l'OTP en prérequis au SOS depuis une session toujours valide.
+- Une récupération d'accès en attente ne doit pas afficher « compte récupéré » ni prétendre que des contacts ou appareils ont été vérifiés.
+- Ne pas révéler l'existence d'un compte, les coordonnées complètes ou l'état précis d'une demande à un demandeur non authentifié.
+- Ne pas envoyer automatiquement un SMS OTP de remplacement lorsque l'e-mail échoue.
+
+### Tests obligatoires à préparer
+
+- appareil racine valide + ancienne boîte inaccessible + nouvel e-mail vérifié ;
+- appareil secondaire valide mais racine perdue ;
+- aucun appareil approuvé + nouvel e-mail et nouveau numéro contrôlés ;
+- ancienne boîte compromise qui tente d'annuler ou détourner la demande ;
+- révocation concurrente avant et pendant la validation ;
+- demande répétée, expirée, annulée, rejouée et concurrente ;
+- récupération d'accès sans restauration de racine, de clé GPS ou d'autorisation d'appareil ;
+- SOS valide pendant indisponibilité e-mail ;
+- absence d'accès aux données privées pendant l'attente.
+
+**NO-GO :** ne pas déclarer le parcours sûr avant sélection et validation des facteurs indépendants, des délais, des droits temporaires, des règles de session et des tests adversariaux.
