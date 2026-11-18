@@ -429,3 +429,7 @@ Les principes déjà établis restent fermes : groupe privé, aucun accès SOS/G
 Le document docs/PROPOSITIONS_ARBITRAGE_SOS_PROGRAMME_ET_DISCRET.md détaille les deux mécanismes, leurs invariants déjà validés, les propositions de cycle, les risques, le modèle conceptuel et les tests.
 
 Le SOS programmé reste distinct d'une alerte déjà déclenchée ; annulation avant échéance = aucun SOS créé. Le SOS discret reste un mécanisme de contrainte séparé, avec écran neutre déjà validé ; il doit ensuite créer une seule alerte normale et réutiliser le cycle SOS existant. Les propositions concernant revalidation des destinataires, fuseaux, reprise après panne, code, essais, hors-ligne et notifications restent à arbitrer. Aucun schéma SQL ni implémentation n'est autorisé par cette annexe.
+
+## Politique générale de conservation — complément du 18 novembre 2026
+
+Lire également [PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md](PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md) avant toute évolution des comptes, identités, appareils, sessions, invitations, relations, groupes, notifications, journaux, support, exports ou données administratives/financières. Cette matrice est une proposition documentaire : ses durées restent non approuvées, aucune durée légale n'est affirmée et aucune purge ne doit être implémentée sans validation. Le contrat spécialisé de conservation des alertes et GPS prévaut pour ce domaine.
