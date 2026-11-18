@@ -128,3 +128,17 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Spécifier le contrat de session par appareil et la règle d'invalidation par auth_version dans docs/PROTOCOLE_MULTI_APPAREILS.md.
 - [x] Documenter les garanties et limites de D1 batch, les contrôles d'autorisation conditionnels, les risques de concurrence et les tests d'intégration requis dans docs/CONTRAT_SECURITE_D1.md. Aucune migration ni API D1 n'a été créée.
 - [ ] Implémenter et tester la transaction D1 de révocation et les contrôles d'accès conditionnels sur chaque lecture/écriture sensible.
+
+
+## Protection des trajets — travail du 18 novembre 2026
+
+- [x] Ajouter un contrat TypeScript pur distinguant `arrival_check`, `accompaniment` et `full_protection`.
+- [x] Exiger un délai de grâce explicite au niveau du trajet, sans inventer de valeur par défaut.
+- [x] Modéliser la confirmation tardive et l'état « arrivée non confirmée » sans déclenchement automatique d'un SOS.
+- [x] Réserver la clôture du trajet à son auteur dans le contrat métier pur.
+- [x] Ajouter 12 tests dédiés et les intégrer à la CI.
+- [x] Documenter les limites du prototype et les contrats D1 futurs.
+- [ ] Exécuter et vérifier la CI du commit intégrant ces changements.
+- [ ] Valider les délais de grâce, les rappels à l'auteur et aux contacts, la pause/reprise, la fraîcheur des positions et le comportement hors ligne.
+- [ ] Spécifier le traitement atomique des confirmations concurrentes avec le planificateur d'échéance.
+- [ ] Ne pas créer de migration D1 ni d'API de trajet avant validation des règles produit et de la matrice de conservation.
