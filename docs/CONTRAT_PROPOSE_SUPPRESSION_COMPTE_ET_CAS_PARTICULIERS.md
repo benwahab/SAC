@@ -251,3 +251,7 @@ Une commande doit utiliser un état/version attendu, une clé d'idempotence et u
 Cette intervention est documentaire. Elle ne modifie aucun code, test, API, SQL, migration D1, ressource Cloudflare, fournisseur, notification ou déploiement. Les valeurs et parcours signalés « à confirmer » ne sont pas des décisions utilisateur.
 
 **Verdict :** les invariants de demande/finalisation et les cinq états sont consolidés ; le P0 reste ouvert tant que les transitions des comptes non vérifiés/suspendus, les activités orphelines, le mode restreint et les durées de conservation ne sont pas arbitrés.
+
+## Complément d'arbitrage
+
+Lire `RECOMMANDATIONS_ARBITRAGE_FINAL_SUPPRESSION_COMPTES.md` pour les recommandations regroupées par état, les courses concurrentes et les effets sur les invitations/groupes. Ces recommandations restent non approuvées et ne remplacent pas les invariants de ce contrat.
