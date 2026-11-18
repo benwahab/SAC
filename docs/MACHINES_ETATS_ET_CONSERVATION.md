@@ -177,9 +177,11 @@ Effets de révocation :
 
 ### 4.3 Préférences d'alertes
 
-Les préférences activent/désactivent une catégorie pour une relation active. Elles sont consultées au déclenchement et copiées dans l'instantané des destinataires. Une modification ultérieure ne change jamais les destinataires d'une alerte déjà déclenchée.
+Les préférences activent/désactivent une catégorie pour une relation active. Elles déterminent la sélection initiale du parcours guidé et les destinataires du raccourci SOS critique immédiat.
 
-Les règles exactes de sélection, notamment le cas où aucun contact n'est activé pour une catégorie, doivent être testées ; le système ne doit pas prétendre qu'une alerte a été envoyée si aucun destinataire n'a été sélectionné.
+**Exception ponctuelle validée pour le parcours guidé :** avant le déclenchement, l'auteur peut modifier la sélection initiale en retirant ou en ajoutant des contacts de confiance dont la relation est active, l'invitation acceptée et le moyen de contact vérifié. Cette sélection explicite pour une alerte peut déroger aux préférences habituelles de catégorie, sans les modifier. Les limites de l'offre restent appliquées. Le raccourci critique immédiat n'autorise pas cette modification et utilise la liste préconfigurée.
+
+La sélection finale est figée dans l'instantané atomique de l'alerte. Une modification ultérieure des préférences ou de la relation ne réécrit jamais cet instantané. Les règles exactes du cas où aucun contact n'est sélectionné restent à valider ; le système ne doit pas prétendre qu'une alerte a été transmise si aucun destinataire n'a été retenu.
 
 ## 5. Alerte SOS
 
@@ -205,11 +207,12 @@ Les événements distinguent au minimum déclenchement, transmission tentée, an
 
 ### 5.2 Destinataires figés
 
-Au déclenchement :
-1. le serveur vérifie que les relations sont actives et que les contacts sont éligibles ;
-2. applique les préférences de catégorie et la limite de l'offre ;
-3. crée la liste des destinataires dans la même opération métier que l'alerte ;
-4. fige cette liste pour toute la durée de cette alerte.
+Avant le déclenchement :
+1. le parcours guidé présente les contacts préconfigurés pour la catégorie et permet à l'auteur d'ajuster explicitement la sélection pour cette alerte ; le raccourci critique immédiat utilise la liste préconfigurée sans édition ;
+2. le serveur reçoit la sélection finale explicite et vérifie que chaque relation est active, que l'invitation a été acceptée, que le moyen de contact est vérifié et que la limite de l'offre est respectée ;
+3. le serveur ne complète jamais la liste par ajout automatique ;
+4. il crée l'alerte, l'instantané final des destinataires, l'événement initial et les tâches de notification dans la même opération métier ;
+5. il fige cette liste pour toute la durée de cette alerte.
 
 Les rappels toutes les cinq minutes vont aux destinataires initiaux jusqu'à la clôture explicite par l'auteur. Si l'auteur choisit « Annuler l'alerte » après son déclenchement, cette action constitue une clôture avec motif « annulée ». Une relation révoquée après déclenchement ne réécrit pas l'instantané. L'accès aux contenus et la livraison après révocation restent à spécifier explicitement avant API.
 
