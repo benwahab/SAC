@@ -34,6 +34,7 @@ Ce document évite de confondre une décision de l'utilisateur avec une proposit
 | Collaboration IA | Claude et Qwen peuvent intervenir via les consignes partagées, sans changer la stack ni les conventions |
 | Langues prévues | Français, Hausa, Zarma et anglais |
 | SMS de secours | Prévoir un mécanisme SMS de secours lorsque l'accès Internet est indisponible, sous réserve des capacités réelles du terminal et du fournisseur |
+| Notifications SOS | Push dans l'application en canal principal ; rappels toutes les 5 minutes ; SMS de secours après le nombre de rappels choisi par le lanceur pour chaque alerte, si aucun responsable principal n'est attribué |
 | Groupes familiaux | Disponibles avec limites selon l'offre gratuite/Premium ; plafonds précis à valider |
 | Base de données | Cloudflare D1 comme base relationnelle cible |
 | Stockage fichiers | Cloudflare R2 si le service est activé et autorisé ; sinon préparer les interfaces/configurations sans prétendre qu'il est opérationnel |
@@ -80,7 +81,7 @@ Aucun fournisseur, compte externe, coût, intégration ou calendrier de destruct
 3. **Premium :** liste précise des options supplémentaires incluses dans les 5 000 FCFA/mois.
 4. **Groupes :** nombre maximal de groupes, membres, rôles et règles d'invitation.
 5. **Paiement :** prestataire(s) acceptés au Niger, frais, renouvellement, remboursement et gestion des paiements échoués.
-6. **SMS :** prestataire, coût, disponibilité et règles de bascule depuis les notifications push.
+6. **SMS :** prestataire, coût et disponibilité. La règle de bascule est actée : après le seuil de rappels push choisi par le lanceur ; la plage et la valeur par défaut proposées (1 à 5, défaut 2) restent à valider.
 7. **Données GPS :** fréquence d'échantillonnage et conception du chiffrement/destruction indépendante des clés ; la règle est décidée : aucune restauration ne doit rendre les positions expirées lisibles après 30 jours.
 8. **Compte :** récupération après perte du téléphone, changement de numéro/e-mail et suppression du compte.
 9. **SOS discret :** scénarios techniquement réalisables sur Android, iOS et PWA ; limites de permissions et de fonctionnement en arrière-plan.
