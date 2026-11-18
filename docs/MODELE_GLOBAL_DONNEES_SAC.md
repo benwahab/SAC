@@ -423,3 +423,9 @@ Voir `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` pour les états de compte 
 Le document docs/PROPOSITIONS_ARBITRAGE_GROUPES_PRIVES.md formalise une proposition complète : séparation entre compte, relation de confiance et adhésion ; invitation/acceptation ; rôles propriétaire/membre ; sortie, retrait, transfert et suppression ; sécurité et tests.
 
 Les principes déjà établis restent fermes : groupe privé, aucun accès SOS/GPS par appartenance, aucune réciprocité implicite et aucune sélection automatique des destinataires. Les rôles, limites de taille, nombre de groupes, invitation de non-contacts, transfert de propriété et rétention des événements restent à arbitrer. Les entités groups/group_members/group_invitations/group_events restent conceptuelles ; aucune migration n'est autorisée.
+
+## SOS programmé et SOS discret — consolidation du 18 novembre 2026
+
+Le document docs/PROPOSITIONS_ARBITRAGE_SOS_PROGRAMME_ET_DISCRET.md détaille les deux mécanismes, leurs invariants déjà validés, les propositions de cycle, les risques, le modèle conceptuel et les tests.
+
+Le SOS programmé reste distinct d'une alerte déjà déclenchée ; annulation avant échéance = aucun SOS créé. Le SOS discret reste un mécanisme de contrainte séparé, avec écran neutre déjà validé ; il doit ensuite créer une seule alerte normale et réutiliser le cycle SOS existant. Les propositions concernant revalidation des destinataires, fuseaux, reprise après panne, code, essais, hors-ligne et notifications restent à arbitrer. Aucun schéma SQL ni implémentation n'est autorisé par cette annexe.
