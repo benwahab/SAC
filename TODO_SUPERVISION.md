@@ -229,7 +229,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 
 - [x] Réaliser une lecture croisée des références architecture, décisions, contrats spécialisés, modèle global, revue relationnelle, état réel du code et suivi.
 - [x] Documenter les écarts P0/P1, les règles cohérentes à préserver et l'ordre de résolution dans `docs/AUDIT_TRANSVERSAL_COHERENCE_ARCHITECTURE_2026-11-18.md`.
-- [ ] Clarifier dans toutes les références la portée de l'archive GPS locale de 30 jours : elle ne doit jamais conserver les positions d'une alerte après sa clôture ; la conservation des trajets reste à arbitrer.
+- [x] Clarifier la portée de l'ancienne archive GPS locale candidate : aucune conservation locale GPS de 30 jours n'est approuvée pour les alertes ; les positions d'alerte sont supprimées à la clôture. La conservation GPS des trajets reste à arbitrer et NO-GO.
 - [ ] Aligner le contrat TypeScript de compte sur les cinq états validés, après arbitrage des transitions suspension/suppression.
 - [ ] Unifier le périmètre de l'exception administrative de clôture SOS et son audit, sans créer de droit général.
 - [ ] Harmoniser les contrats d'invitation et le modèle relationnel sur la preuve de destination e-mail vérifiée.
@@ -240,10 +240,10 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 
 - [x] Auditer la cohérence entre l'étude KMS, le contrat D1, les machines à états et la matrice de schéma.
 - [x] Corriger `docs/SECURITE_GPS_DESTRUCTION_CRYPTO.md` : la conservation GPS serveur par KMS est désormais explicitement historique et hors cible.
-- [x] Mettre en tête la direction retenue : relais chiffré éphémère sans persistance GPS serveur ; archive locale chiffrée sur le téléphone de l'auteur pendant 30 jours.
+- [x] Historique corrigé le 18 novembre 2026 : l'archive locale chiffrée de 30 jours est une ancienne cible candidate non approuvée, et non une direction retenue. Elle ne doit jamais conserver les positions GPS d'une alerte après clôture. Pour les trajets, aucune conservation GPS persistante n'est autorisée avant arbitrage distinct et GO technique.
 - [x] Retirer comme point à rediscuter la portée des copies reçues par les contacts ; le périmètre de la garantie est celui des données sous contrôle de SAC.
-- [ ] Tester l'archive locale sur Android/iOS, les sauvegardes/restaurations, la réinstallation, la perte de téléphone et les appareils sans matériel sécurisé compatible.
-- [ ] Démontrer le refus d'accès dès la première reprise après J+30 et caractériser séparément la limite de suppression physique lorsque le téléphone reste éteint.
+- [ ] Si une conservation GPS locale est un jour proposée pour les trajets, la soumettre à une décision produit distincte, à une preuve cryptographique et à des tests natifs ; ce point ne concerne pas les alertes clôturées.
+- [ ] Démontrer la purge immédiate des positions GPS d'alerte à la clôture, y compris stockage local géré par SAC, caches, buffers et tâches en vol ; démontrer séparément la purge J+30 de l'entrée d'alerte.
 - [ ] Prouver qu'aucun payload GPS n'est écrit dans D1, R2, KV, Durable Objects, files, logs, traces, analytics, crash reports ou sauvegardes.
 - [ ] Tester le relais éphémère en direct, réseau faible et destinataires hors ligne ; distinguer alerte transmise et position effectivement disponible.
 
