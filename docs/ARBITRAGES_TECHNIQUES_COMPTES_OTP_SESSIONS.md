@@ -265,14 +265,16 @@ Cette décision résout l'arbitrage produit sur les cinq états, mais ne modifie
 **Mise à jour du registre :** l'ancien point « décider si les états d'inscription en attente et de suspension appartiennent au cycle du compte » est clos. Les paramètres OTP, le fournisseur e-mail, le changement d'adresse, la récupération cryptographique et le jumelage multi-appareils restent ouverts.
 
 
-## 13. Proposition en attente — alerte SOS déjà active pendant une suspension
+## 13. Décision validée — alerte SOS déjà active pendant une suspension
 
-**Statut : proposition à arbitrer, non validée.**
+**Statut : principe produit validé par l'utilisateur le 18 novembre 2026 ; détails de clôture et garde-fous anti-abus encore ouverts.** Cette validation documentaire n'autorise aucune implémentation.
 
 La suspension ne doit pas annuler ni interrompre une alerte déjà transmise. Les destinataires initiaux continueraient à recevoir les rappels toutes les 5 minutes jusqu'à clôture, sans ajout automatique de contacts. Les actions de réception et de prise en charge restent disponibles ; le premier contact qui choisit « Je prends la situation en charge » devient responsable principal, les autres pouvant intervenir.
 
-Pour le titulaire suspendu, proposition d'une capacité cryptographique d'urgence liée à une seule alerte et à l'appareil d'origine, distincte de toute session de compte. Elle pourrait uniquement permettre de consulter l'état minimal de l'alerte, transmettre une mise à jour de sécurité et demander/confirmer la clôture de cette alerte. Aucun accès au compte, aux proches, aux paramètres, aux autres alertes, à la création d'une nouvelle alerte ou à la modification des destinataires ne serait permis. Chaque action serait vérifiée côté serveur, limitée à cette alerte, journalisée et anti-rejeu.
+Pour le titulaire suspendu, le principe d'une capacité cryptographique d'urgence liée à une seule alerte et à l'appareil d'origine, distincte de toute session de compte, est validé. Elle sera limitée à la consultation de l'état minimal de cette alerte, à la transmission d'une mise à jour de sécurité et à la demande/confirmation de clôture de cette seule alerte. Le protocole et ses contrôles restent à spécifier. Aucun accès au compte, aux proches, aux paramètres, aux autres alertes, à la création d'une nouvelle alerte ou à la modification des destinataires ne serait permis. Chaque action serait vérifiée côté serveur, limitée à cette alerte, journalisée et anti-rejeu.
 
-Points non décidés : maintien ou non de cette capacité en cas de suspension pour abus lié à l'alerte ; personne autorisée à clôturer si le titulaire a perdu son appareil ; conditions de clôture et notifications ; conservation des éléments de preuve en cas d'abus.
+Points encore ouverts : personne autorisée à clôturer si le titulaire a perdu son appareil ; conditions de clôture et notifications ; garde-fous et conservation des éléments de preuve en cas de suspension pour abus lié à l'alerte.
 
-Cette proposition n'autorise ni route API, ni permission, ni code, ni changement de session. La révocation générale des sessions reste immédiate. La continuité des alertes déjà transmises et des rappels aux destinataires initiaux doit être préservée.
+Règles validées : la suspension ne ferme ni n'annule l'alerte ; les rappels continuent toutes les 5 minutes vers les seuls destinataires initiaux, sans ajout automatique ; les actions de réception et de prise en charge restent disponibles ; la capacité du titulaire est limitée à l'alerte concernée et ne rétablit aucun accès général. La révocation générale des sessions reste immédiate.
+
+Cette décision reste documentaire : aucune route API, permission serveur, capacité cryptographique opérationnelle, modification de session, migration D1 ou modification du code n'est autorisée à ce stade.
