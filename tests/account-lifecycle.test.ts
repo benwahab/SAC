@@ -122,3 +122,29 @@ test("un compte supprimé est un état terminal logique", () => {
     type: "request_deletion", actorAccountId: "account-a", at: "2026-11-18T11:00:00.000Z",
   }), { ok: false, error: "account_not_active" });
 });
+
+test("les cinq états du compte sont reconnus sans ouvrir d'activité hors compte actif", () => {
+  const pendingVerification = makeAccount({ status: "pending_verification" });
+  const suspended = makeAccount({ status: "suspended" });
+
+  const pendingResult = transitionAccountLifecycle(pendingVerification, {
+    type: "request_deletion", actorAccountId: "account-a", at: requestedAt,
+  });
+  const suspendedResult = transitionAccountLifecycle(suspended, {
+    type: "request_deletion", actorAccountId: "account-a", at: requestedAt,
+  });
+
+  assert.deepEqual(pendingResult, { ok: false, error: "account_not_active" });
+  assert.deepEqual(suspendedResult, { ok: false, error: "account_not_active" });
+  assert.equal(canAccountCloseExistingActivity("pending_verification"), false);
+  assert.equal(canAccountCloseExistingActivity("suspended"), false);
+});
+
+test("un compte suspendu ne reçoit aucune autorisation générale de clôture", () => {
+  const suspended = makeAccount({ status: "suspended" });
+  const result = transitionAccountLifecycle(suspended, {
+    type: "cancel_deletion", actorAccountId: "account-a", at: requestedAt,
+  });
+  assert.deepEqual(result, { ok: false, error: "deletion_not_pending" });
+  assert.equal(canAccountCloseExistingActivity("suspended"), false);
+});
