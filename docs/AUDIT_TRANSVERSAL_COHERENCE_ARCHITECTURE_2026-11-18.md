@@ -46,14 +46,9 @@ Les éléments explicitement marqués « proposition », « à arbitrer » ou «
 
 **Précision issue du recoupement :** la ligne du suivi a depuis été qualifiée de cible candidate non approuvée, et non d'architecture effectivement retenue. La section 11 de `DECISIONS_PRODUIT_RESTANTES.md` décrit également une ancienne proposition d'historique GPS local hors ligne. Ces éléments doivent rester visibles comme historique, mais ne peuvent être lus comme une autorisation de conservation. Les anciennes formulations « 30 jours après la fin du partage » sont hors périmètre des alertes clôturées.
 
-**Action requise :**
-- marquer explicitement les formulations historiques comme supersédées ou candidates non approuvées ;
-- confirmer qu'aucune archive GPS locale post-clôture n'est autorisée pour les alertes ;
-- ne pas appliquer cette durée aux trajets sans décision distincte : leur conservation reste à arbitrer ;
-- définir le moment exact de purge des caches, buffers, paquets en transit, copies locales et clés ;
-- maintenir GPS NO-GO jusqu'à preuve de non-résurrection et revue indépendante.
+**État après correction documentaire :** les références principales ont été rectifiées dans `TODO_SUPERVISION.md`, `DECISIONS_PRODUIT_RESTANTES.md`, `CONSOLIDATION_GENERALE_SAC.md` et `SECURITE_GPS_DESTRUCTION_CRYPTO.md`. L'ancienne archive locale de 30 jours est explicitement historique/non approuvée ; aucune archive GPS locale post-clôture n'est autorisée pour une alerte. Les trajets restent séparés, sans durée de conservation validée ni collecte persistante autorisée.
 
-Aucune interprétation technique ne doit modifier la règle produit de suppression immédiate du GPS d'une alerte à sa clôture. Le recoupement documentaire a permis de qualifier l'ancienne archive locale de candidate non approuvée ; il ne s'agit donc pas d'une décision à implémenter. Le présent P0 documentaire est traité par la rectification des références, sans lever le NO-GO technique.
+**P0 documentaire : traité.** Restent des exigences de conception/validation technique, non des contradictions de décision : définir et tester la purge immédiate des caches, buffers, paquets en transit, copies locales gérées par SAC et clés ; prouver la non-résurrection après restauration ; maintenir GPS NO-GO jusqu'à revue indépendante et preuves concluantes. Aucune interprétation technique ne doit modifier la règle produit de suppression immédiate du GPS d'une alerte à sa clôture.
 
 ### P0-03 — Autorité de clôture SOS et exception administrative
 
