@@ -37,9 +37,9 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
         </div>
         <form className="mt-8 space-y-4" onSubmit={(event) => { event.preventDefault(); setNotice(true); }}>
           <label className="block text-sm font-bold" htmlFor="sac-login-email">{copy.email}</label>
-          <input id="sac-login-email" type="email" autoComplete="email" required disabled className="min-h-12 w-full rounded-xl border border-white/90 bg-white/70 px-4 text-base text-sac-ink outline-none disabled:opacity-70" />
+          <input id="sac-login-email" type="email" autoComplete="email" required className="min-h-12 w-full rounded-xl border border-white/90 bg-white/70 px-4 text-base text-sac-ink outline-none disabled:opacity-70" />
           <label className="block text-sm font-bold" htmlFor="sac-login-password">{copy.password}</label>
-          <input id="sac-login-password" type="password" autoComplete="current-password" required disabled className="min-h-12 w-full rounded-xl border border-white/90 bg-white/70 px-4 text-base text-sac-ink outline-none disabled:opacity-70" />
+          <input id="sac-login-password" type="password" autoComplete="current-password" required className="min-h-12 w-full rounded-xl border border-white/90 bg-white/70 px-4 text-base text-sac-ink outline-none disabled:opacity-70" />
           <button type="submit" disabled className="min-h-12 w-full cursor-not-allowed rounded-xl bg-sac-primary-strong px-4 font-extrabold text-white opacity-60">{copy.submit}</button>
           <button type="button" disabled className="min-h-12 w-full cursor-not-allowed rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 font-bold text-sac-ink opacity-60">{copy.create}</button>
         </form>
@@ -112,7 +112,7 @@ export default function App() {
           <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-sac-muted">{t.appName}</span>
         </a>
         <div className="flex items-center gap-3">
-          <a href="/connexion" className="hidden rounded-full border border-white/90 bg-white/65 px-4 py-2 text-xs font-extrabold text-sac-ink shadow-glass hover:bg-white sm:inline-flex">Connexion</a>
+          <a href="/connexion" className="hidden rounded-full border border-white/90 bg-white/65 px-4 py-2 text-xs font-extrabold text-sac-ink shadow-glass hover:bg-white sm:inline-flex">{signInLabel}</a>
           <div className="hidden items-center gap-2 rounded-full border border-white/80 bg-white/55 px-3 py-2 text-xs font-semibold text-sac-ink shadow-glass sm:flex">
             <LockKeyhole size={14} className="text-sac-confirm" />{t.privateApp}
           </div>
