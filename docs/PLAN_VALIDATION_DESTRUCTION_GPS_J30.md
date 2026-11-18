@@ -104,7 +104,7 @@ Une simple disparition de l'écran, une suppression de fichier ou un refus de l'
 
 ## 7. Règle de décision
 
-- **GO** uniquement si les tests GPS-02 à GPS-18 sont PASS sur chaque plateforme supportée et si une revue indépendante confirme que la restauration ne peut pas récupérer la clé.
+- **GO** uniquement selon le critère renforcé de la section 10 : tous les scénarios critiques disponibles doivent être PASS sur chaque plateforme/configuration supportée, y compris les scénarios de restauration mobile GPS-27 à GPS-36, avec revue indépendante. Un scénario critique NON TESTABLE maintient le NO-GO.
 - **NO-GO** si la garantie dépend du lancement de l'application, d'une horloge modifiable, d'une purge différée ou d'un administrateur qui promet de ne pas restaurer.
 - **NO-GO PWA pour l'archive historique GPS** tant que la PWA ne peut pas démontrer les mêmes garanties ; le relais éphémère chiffré peut être évalué séparément.
 - En cas de NO-GO, ne pas conserver d'historique GPS précis au-delà de la session de partage. Ne jamais afficher « supprimé définitivement » sans preuve.
@@ -182,7 +182,7 @@ Les scénarios GPS-19 à GPS-26 doivent recevoir un résultat PASS / FAIL / NON 
 ## 10. Critère GO renforcé
 
 La décision GO exige désormais :
-- PASS des scénarios GPS-02 à GPS-25 sur chaque plateforme et configuration effectivement supportées ;
+- PASS des scénarios GPS-02 à GPS-25 et GPS-27 à GPS-36 sur chaque plateforme et configuration effectivement supportées ;
 - GPS-26 documenté comme limite de menace, avec mesures de réduction et information produit ;
 - preuve fournisseur sur toutes les copies et voies de restauration si un KMS/HSM est utilisé ;
 - revue cryptographique indépendante ;
