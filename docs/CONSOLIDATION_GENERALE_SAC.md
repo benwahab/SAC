@@ -375,3 +375,14 @@ Le document `MODELE_GLOBAL_DONNEES_SAC.md` relie les domaines comptes, identité
 ## Arbitrage P0 — compte et preuve des proches
 
 Le document `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` consolide les cinq états validés, la matrice de transitions, les divergences de `account-lifecycle.ts` et la séparation entre coordonnée, preuve de destination et consentement. La règle d'activation par e-mail vérifié est désormais obligatoire pour tous les comptes. Le document `CONTRAT_CYCLE_VIE_PROCHES_ET_INVITATIONS.md` rassemble le parcours de bout en bout : invitation, acceptation, refus, expiration, retrait, révocation, réinvitation, contrôles anti-abus et tests. Les valeurs et comportements recommandés mais non approuvés sont détaillés dans `PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md` : durée/relances, anti-abus, révocation symétrique et droits pendant une alerte active.
+
+## Conservation des alertes et suppression GPS — décision confirmée du 18 novembre 2026
+
+Le contrat de référence est docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md et prévaut sur les formulations plus anciennes de ce document concernant le GPS J+30 :
+
+- à la clôture effective d'une alerte, ses positions GPS sont supprimées immédiatement ;
+- seule la nature/catégorie de l'alerte reste dans l'historique pendant 30 jours ;
+- à J+30 après clôture, l'alerte et sa catégorie sont supprimées définitivement ;
+- sauvegardes et restaurations ne peuvent jamais faire réapparaître les positions ou alertes supprimées.
+
+Les 30 jours ne sont pas une durée de conservation GPS. Le GPS réel reste NO-GO jusqu'à preuve technique indépendante de la suppression immédiate, de la purge J+30 et de la non-résurrection après restauration.
