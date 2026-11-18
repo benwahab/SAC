@@ -270,3 +270,8 @@ Références de travail : docs/PLAN_VALIDATION_DESTRUCTION_GPS_J30.md, docs/SECU
 ## 13. Lacunes du modèle global — 18 novembre 2026
 
 Le référentiel `MODELE_GLOBAL_DONNEES_SAC.md` rassemble les domaines et signale les décisions qui restent ouvertes. Il ne transforme pas ces propositions en décisions validées. Les sujets à arbitrer comprennent notamment : preuve du moyen de contact d'un proche, droits après révocation, alerte orpheline hors exception administrative, règles des groupes, programmation SOS, anti-abus du SOS discret, cycle financier Premium et conservation hors GPS. Les incohérences entre états produit et contrats TypeScript doivent être corrigées avant SQL.
+
+
+## 14. Cycle de compte et preuve des proches — clarification du 18 novembre 2026
+
+Le document `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` sépare les règles déjà validées des transitions encore ouvertes. Il propose l'acceptation d'un proche par compte SAC avec e-mail vérifié, sans SMS OTP ; cette orientation reste à valider. Le téléphone déclaré ne prouve ni la propriété du numéro ni le consentement du proche.
