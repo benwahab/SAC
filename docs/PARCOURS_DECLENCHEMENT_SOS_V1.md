@@ -346,3 +346,38 @@ Ce document ne constitue ni une activation du bouton, ni une API, ni une migrati
 - `docs/MACHINES_ETATS_ET_CONSERVATION.md`.
 - `docs/PLAN_VALIDATION_DESTRUCTION_GPS_J30.md`.
 - `docs/SECURITE_GPS_DESTRUCTION_CRYPTO.md`.
+
+
+### Proposition complémentaire — interventions simultanées de plusieurs proches (à valider)
+
+Cette règle complète la coordination précédente. Elle distingue strictement la présence sur place, la proposition d'aide, la responsabilité principale et la résolution déclarée.
+
+**Plusieurs volontaires au même moment**
+- Chaque contact peut envoyer une candidature idempotente. Le serveur attribue un numéro d'ordre monotone à chaque candidature acceptée ; l'heure du téléphone n'est jamais utilisée pour départager.
+- Si aucun responsable n'existe, la première commande valide qui gagne la transition atomique devient responsable principal. Toutes les autres candidatures restent enregistrées comme candidatures non retenues et reçoivent « Un responsable principal est déjà désigné ».
+- En cas de retrait, le serveur attribue le rôle au volontaire encore admissible le plus ancien selon l'ordre serveur. Une seule période de responsabilité peut être ouverte à la fois.
+- Une candidature arrivée pendant le retrait est arbitrée dans le même ordre transactionnel : elle est soit retenue comme prochain volontaire, soit refusée si l'alerte est déjà clôturée ou si un autre responsable a gagné.
+
+**Plusieurs proches arrivent sur place**
+- « Je suis arrivé(e) » est un compte rendu informatif, horodaté et attribué à son auteur ; il ne crée ni ne transfère la responsabilité principale.
+- Plusieurs contacts peuvent signaler leur arrivée. L'écran de l'auteur peut afficher chaque déclaration séparément, sans transformer ces déclarations en preuve GPS ou en preuve indépendante d'arrivée.
+- Une arrivée déclarée ne clôture pas l'alerte, ne stoppe pas les rappels et ne bloque pas à elle seule l'escalade SMS.
+- Un proche présent peut proposer sa candidature comme responsable, mais doit obtenir l'attribution serveur explicite.
+
+**Un contact annonce que la situation est résolue**
+- Ajouter une action distincte « Je pense que la situation est résolue » / « Je signale une résolution ». Elle enregistre une déclaration informative, son auteur et son heure serveur.
+- Cette déclaration ne clôture jamais l'alerte, ne modifie pas son état actif et n'arrête ni les rappels ni l'escalade.
+- L'auteur de l'alerte reçoit cette information et reste seul habilité à clôturer. Le responsable principal peut transmettre un compte rendu, mais ne peut pas clôturer à sa place.
+- Les libellés doivent dire « Résolution signalée par [nom] » et non « Alerte résolue ». SAC ne vérifie pas la réalité de la résolution.
+
+**Visibilité et confidentialité**
+- Les destinataires peuvent voir le nom choisi et les événements de coordination nécessaires (responsable actuel, candidature, arrivée déclarée, résolution signalée).
+- Ne jamais révéler entre contacts les numéros, e-mails, coordonnées privées ou position non partagée par l'auteur.
+- Les notifications de changement de responsable sont envoyées après confirmation serveur ; elles ne doivent jamais annoncer une attribution provisoire.
+
+**Clôture concurrente**
+- La clôture par l'auteur et toute commande d'un contact sont arbitrées sur l'état serveur courant. Si la clôture gagne, les commandes de prise en charge, retrait, arrivée ou résolution suivantes sont refusées comme actions métier sur alerte clôturée.
+- Si une commande de contact est validée juste avant la clôture, son événement reste dans l'historique ; la clôture suivante termine l'alerte. Aucun événement antérieur n'est effacé.
+- Les commandes répétées avec la même clé d'idempotence ne créent pas de doublon.
+
+**Statut : proposition UX et métier à valider.** Les règles déjà actées restent inchangées : un seul responsable principal à la fois, les rappels continuent après prise en charge et seul l'auteur clôture.
