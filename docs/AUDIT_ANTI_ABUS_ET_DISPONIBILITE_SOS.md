@@ -751,3 +751,32 @@ Le droit SOS est un cas distinct : tester l'usurpation, les alertes abusives et 
 
 **NO-GO :** aucun SOS de secours depuis session limitée avant validation du périmètre et réussite des tests adversariaux et de disponibilité.
 
+
+
+### Audit de confidentialité — états visibles du SOS de secours (18 novembre 2026)
+
+**Décision utilisateur :** le titulaire en récupération limitée peut consulter l'état de son propre SOS de secours et savoir si un proche l'a pris en charge. Cette permission n'ouvre aucun accès aux réponses privées ou aux données des contacts.
+
+| Information demandée | Autorisation |
+|---|---|
+| État de traitement de l'alerte côté SAC | Autorisé, si confirmé |
+| État technique push/SMS | Autorisé avec libellé exact du niveau de preuve |
+| Accusé humain de réception | Autorisé sous forme agrégée, sans identité du contact |
+| Prise en charge principale | Autorisé si transition confirmée, sans identité du répondant |
+| Clôture par l'auteur | Autorisé si confirmée |
+| Texte libre, chat ou pièce jointe d'un contact | Interdit |
+| Nom, numéro, e-mail, avatar ou profil d'un contact | Interdit |
+| Position, adresse ou historique GPS | Interdit |
+| Liste des destinataires ou activité détaillée de chaque contact | Interdit |
+| Toute autre alerte ou historique privé du compte | Interdit |
+
+**Risques et contrôles :**
+- Énumération d'alertes : autorisation côté serveur sur l'auteur et l'identifiant de l'alerte ; identifiants opaques ; aucune confiance dans le filtrage client.
+- Inférence de présence d'un contact : états agrégés uniquement, pas de chronologie détaillée par destinataire ni d'horodatage individuel superflu.
+- Confusion de statut : libellés séparés pour acceptation fournisseur, livraison confirmée, accusé humain, prise en charge et clôture.
+- Fuite de conversation : aucun contenu libre ni pièce jointe dans la projection de session limitée.
+- Session expirée/révoquée : toute lecture ultérieure refusée côté serveur.
+
+**Tests requis :** tenter de lire une autre alerte ; modifier l'identifiant de l'alerte ; demander les champs interdits ; déduire l'identité d'un contact depuis les états ; présenter une notification acceptée comme livrée ou lue ; lire après expiration/révocation ; vérifier que la prise en charge n'est affichée qu'après transition atomique confirmée.
+
+Cette décision autorise uniquement la visibilité minimale décrite. Elle n'active pas le SOS de secours, ne définit aucun endpoint et ne lève pas le NO-GO d'implémentation.
