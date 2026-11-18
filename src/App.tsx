@@ -64,6 +64,7 @@ export default function App() {
     }
   });
   const t = translations[language];
+  const signInLabel = language === "fr" ? "Connexion" : language === "en" ? "Sign in" : "تسجيل الدخول";
   const isLoginPage = window.location.pathname === "/connexion";
   const isRtl = language === "ar";
 
