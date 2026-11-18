@@ -380,3 +380,13 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Demander au service du Journal officiel / Ministère de la Justice une copie authentifiée du numéro spécial du 8 juin 2026.
 - [ ] Vérifier les articles abrogatoires et transitoires de l'ordonnance 2026-30 sur l'exemplaire authentique.
 - [ ] Obtenir le décret de suppression de la HAPDP authentifié afin de résoudre la divergence OCR 2026-310 / 2026-340.
+
+## Veille picomatch ReDoS — 18 novembre 2026
+
+- [x] Vérifier GHSA-fc5q-39xc-vjpf / CVE-2026-112366 dans GitHub Advisory Database et NVD : picomatch jusqu'à 4.0.7 affecté, version corrigée non indiquée.
+- [x] Examiner PR amont #238 : correctif candidat pour master/4.x, encore ouvert et non publié ; limite connue sur certains extglobs imbriqués.
+- [x] Examiner PR amont #246 : proposition pour branche v2 uniquement, ouverte et non publiée.
+- [x] Examiner PR #194 : changement de parsing distinct, explicitement non correctif de sécurité ; +(*a) reste vulnérable.
+- [ ] Surveiller fusion et publication d'une version picomatch 4.x corrigée.
+- [ ] Après publication, confirmer que l'avis GHSA identifie la version corrigée, vérifier l'arbre npm réel et exécuter toute la CI.
+- [ ] Ne pas utiliser de commit Git non publié, patch artisanal, override non vérifié, suppression de l'audit ou rétrogradation forcée.
