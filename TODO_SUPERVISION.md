@@ -279,3 +279,14 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Pour chaque gestionnaire externe candidat, obtenir les garanties écrites sur l'effacement des réplicas, sauvegardes, archives, exports, clés de récupération et clés de données en cache.
 - [ ] Tester une destruction de clé avec tentative de restauration de toutes les sauvegardes, réplicas et exports disponibles ; conserver les preuves et journaux d'audit.
 - [ ] Évaluer le coût, la latence, la disponibilité et la localisation juridique d'un service HSM externe avant toute décision d'architecture.
+
+
+## Recherche HSM/KMS — Thales, Oracle OCI et HashiCorp — 18 novembre 2026
+
+- [x] Examiner la documentation Thales CipherTrust Manager sur sauvegardes, restauration, planification des sauvegardes et clé Root of Trust HSM.
+- [x] Examiner Oracle OCI Vault : suppression planifiée de 7 à 30 jours et possibilité d'annulation avant l'échéance.
+- [x] Examiner HashiCorp Vault Transit : trim irréversible de versions, sauvegarde exportable et API de restauration.
+- [x] Consigner les limites et décisions dans `docs/RECHERCHE_COMPLEMENTAIRE_GPS_J30_ET_TEXTES_NIGER.md`.
+- [ ] Pour Thales ou tout HSM dédié, obtenir par écrit le comportement exact des sauvegardes, réplicas, nœuds, clés de restauration et procédures de reprise après destruction d'une clé individuelle.
+- [ ] Pour tout service candidat, démontrer qu'aucun administrateur ne peut annuler, restaurer, réimporter ou récupérer la clé après l'instant J+30.
+- [ ] Ne pas lancer de prototype d'archive GPS historique avant qu'une solution candidate satisfasse les tests GO/NO-GO de `docs/PLAN_VALIDATION_DESTRUCTION_GPS_J30.md`.
