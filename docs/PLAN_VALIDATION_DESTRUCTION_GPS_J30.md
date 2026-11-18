@@ -190,3 +190,61 @@ La décision GO exige désormais :
 - décision explicite sur la disponibilité hors ligne, qui ne peut être annoncée sans preuve propre à chaque classe d'appareil.
 
 Tout cas NON TESTABLE sur une voie de récupération critique maintient le statut NO-GO pour l'historique GPS.
+
+## 11. Revue ciblée des sauvegardes natives — Android et iOS
+
+**Sources officielles consultées le 18 novembre 2026.** Cette section définit des exigences pour un futur client natif ; elle ne signifie pas que SAC dispose déjà d'une application Android/iOS native ni que ces contrôles sont implémentés.
+
+### 11.1 Android — Auto Backup et transfert appareil-à-appareil
+
+La documentation Android indique que la sauvegarde Auto Backup inclut par défaut la plupart des données privées de l'application : préférences, fichiers internes, bases locales et fichiers externes applicatifs. Les répertoires cache, code cache et noBackupFilesDir() sont exclus par défaut, mais cela ne suffit pas à définir toute la politique de sauvegarde.
+
+Points de contrôle obligatoires :
+- Définir explicitement android:allowBackup dans le manifeste ; ne pas s'appuyer sur sa valeur par défaut.
+- Pour les versions et configurations ciblées Android 12+ (API 31+), définir android:dataExtractionRules avec des exclusions explicites des données GPS, archives chiffrées, DEK, parts de clé et états de restauration dans chaque mode : cloud-backup, device-transfer et, lorsque disponible, cross-platform-transfer.
+- Pour Android 11 et inférieur, maintenir également les règles android:fullBackupContent correspondantes. La documentation exige un jeu de règles distinct pour ces anciennes versions.
+- Ne pas supposer que android:allowBackup="false" bloque tous les transferts : sur certains appareils de fabricants, Android 12+ peut encore permettre le transfert appareil-à-appareil même lorsque les sauvegardes cloud sont désactivées.
+- Si une règle de mode de transfert est absente, Android peut considérer ce mode activé pour toutes les données sauf les répertoires explicitement exclus par défaut. Il faut donc tester les trois modes et les règles effectivement embarquées dans l'APK.
+- noBackupFilesDir() est une mesure complémentaire utile pour les secrets et artefacts non sauvegardables, pas une preuve contre une copie manuelle, une extraction privilégiée ou un appareil compromis.
+- Le chiffrement de la sauvegarde par Android ne résout pas le problème J+30 : une sauvegarde chiffrée peut rester restaurable dans son cycle de vie normal.
+
+### 11.2 iOS — fichiers et éléments Keychain
+
+Points de contrôle obligatoires :
+- Les fichiers contenant une archive GPS ou un artefact cryptographique doivent être exclus des sauvegardes par le mécanisme documenté isExcludedFromBackup / NSURLIsExcludedFromBackupKey.
+- Cette exclusion doit être appliquée à chaque création ou réécriture du fichier : Apple précise que certaines opérations courantes de fichiers peuvent remettre le drapeau à false.
+- Un élément Keychain marqué ThisDeviceOnly n'est pas migré vers un autre appareil lors d'une restauration sur nouvel appareil ; cependant, la documentation précise qu'il peut être restauré sur le même appareil depuis une sauvegarde. Ce qualificatif ne suffit donc pas à prouver l'impossibilité de restauration sur le même appareil.
+- Les secrets de clé SAC ne doivent pas être synchronisables via iCloud Keychain. Apple documente que les éléments synchronisables peuvent être répliqués entre appareils et que les modifications/suppressions s'appliquent aux copies synchronisées ; cela crée une surface de réplication à exclure de la conception J+30.
+- Les attributs d'accessibilité Keychain et ThisDeviceOnly répondent à des questions d'accès et de migration ; ils ne constituent pas une minuterie de destruction à J+30.
+
+### 11.3 Politique native provisoire à faire implémenter et vérifier
+
+Pour toute future archive GPS locale :
+1. Ne jamais inclure archive, clé, part de clé, DEK, clé dérivée, cache de déchiffrement ou état de restauration dans une sauvegarde ou un transfert d'appareil.
+2. Désactiver les mécanismes de synchronisation inter-appareils pour tous les secrets GPS.
+3. Traiter chaque restauration ou réinstallation comme une nouvelle installation : aucune archive GPS antérieure ne doit être importée ni réactivée.
+4. Vérifier les exclusions dans les artefacts compilés et sur les versions réelles d'OS ; la seule présence d'un fichier de règles dans le dépôt n'est pas une preuve.
+5. Si une copie GPS ou un secret réapparaît après restauration, le test est FAIL et l'historique GPS reste NO-GO.
+
+### 11.4 Scénarios de validation ajoutés
+
+| ID | Scénario | Résultat exigé |
+|---|---|---|
+| GPS-27 | Android 12+ : restauration cloud avec règles effectives | aucune archive GPS ni clé réimportée |
+| GPS-28 | Android 12+ : transfert direct appareil-à-appareil OEM | aucune archive GPS ni clé transférée |
+| GPS-29 | Android : appareil cible API 30 ou inférieur / règles legacy | aucune archive GPS ni clé restaurée |
+| GPS-30 | Android 12+ : allowBackup=false sur plusieurs OEM | vérifier qu'aucun transfert D2D ne réintroduit les données |
+| GPS-31 | Android 16 QPR2+ : transfert inter-plateforme vers iOS | aucune archive GPS ni clé transférée |
+| GPS-32 | iOS : restauration d'une sauvegarde sur le même appareil avec Keychain ThisDeviceOnly | aucune clé/part GPS expirée ne redevient utilisable |
+| GPS-33 | iOS : migration/restauration vers un nouvel appareil | aucune clé/part GPS n'est migrée |
+| GPS-34 | iOS : vérification des éléments Keychain non synchronisables | aucun secret GPS répliqué via iCloud Keychain |
+| GPS-35 | iOS : réécriture, remplacement ou déplacement d'un fichier exclu | l'exclusion de sauvegarde est réappliquée et vérifiée |
+| GPS-36 | Inspection des APK/IPA et tests de sauvegarde/restauration réels | règles présentes, effectives et aucun artefact GPS restauré |
+
+Aucun test GPS-27 à GPS-36 n'est déclaré exécuté. Le statut reste NON TESTÉ tant que les applications natives et les appareils de test ne sont pas disponibles.
+
+Références officielles :
+- Android Developers — Auto Backup, répertoires inclus par défaut, restauration, allowBackup, règles Android 11 et Android 12+, modes cloud/D2D/cross-platform : https://developer.android.com/identity/data/autobackup
+- Apple Developer — isExcludedFromBackup et nécessité de réappliquer l'attribut après certaines opérations : https://developer.apple.com/documentation/foundation/urlresourcekey/isexcludedfrombackupkey
+- Apple Developer — accessibilité Keychain et ThisDeviceOnly : https://developer.apple.com/documentation/security/restricting-keychain-item-accessibility
+- Apple Developer — synchronisation Keychain et copies synchronisées : https://developer.apple.com/documentation/security/ksecattrsynchronizable
