@@ -27,7 +27,8 @@
     "test:jcs": "node --experimental-strip-types --test tests/jcs-canonicalization.test.ts",
     "test:jcs-input": "node --experimental-strip-types --test tests/strict-json.test.ts",
     "test:jcs-worker": "node --experimental-strip-types --test tests/jcs-worker-runtime.test.ts",
-    "test:ecdsa": "node --experimental-strip-types --test tests/ecdsa-p256-interoperability.test.ts"
+    "test:ecdsa": "node --experimental-strip-types --test tests/ecdsa-p256-interoperability.test.ts",
+    "test:ecdsa-der": "node --experimental-strip-types --test tests/ecdsa-der-format.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
