@@ -544,3 +544,8 @@ Ces points ne doivent pas être résolus par des permissions trop larges. En att
 
 Ce modèle est une spécification documentaire, pas un système actif. Il ne crée ni rôle opérationnel, ni compte administrateur, ni permission, ni mission, ni écran, ni endpoint, ni middleware, ni table ou migration D1. Le modèle doit être transformé en matrice testable, relu en sécurité et explicitement autorisé avant toute implémentation.
 
+
+
+## Catalogue des ressources et matrice de permissions
+
+La matrice de référence et le catalogue des ressources sont détaillés dans [docs/CATALOGUE_RESSOURCES_MATRICE_PERMISSIONS.md](CATALOGUE_RESSOURCES_MATRICE_PERMISSIONS.md). Ce document complète les principes de rôles, missions, moindre privilège et contrôle côté serveur. Il reste documentaire et n'autorise aucune implémentation.
