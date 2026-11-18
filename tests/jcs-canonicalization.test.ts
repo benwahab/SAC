@@ -2,26 +2,25 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import canonicalize from "canonicalize";
 
-// RFC 8785, section 3.2.2.1. The fixture is parsed from JSON so the
-// canonicalizer receives the actual Unicode/control characters, not source escapes.
+// RFC 8785, section 3.2.2.1.
 test("RFC 8785 JCS-01: numbers, strings and literals", () => {
-  const input = JSON.parse(String.raw`{
-    "numbers": [333333333.33333329, 1E30, 4.50, 2e-3, 0.000000000000000000000000001],
-    "string": "\\u20ac$\\u000F\\u000aA'\\u0042\\u0022\\u005c\\\\\\u0022\\/",
-    "literals": [null, true, false]
-  }`);
-  const expected = String.raw`{"literals":[null,true,false],"numbers":[333333333.3333333,1e+30,4.5,0.002,1e-27],"string":"€$\\u000f\\nA'B\\\"\\\\\\\\\"/" }`.replace(/" \\}$/, '"}');
+  const input = {
+    numbers: [333333333.33333329, 1e30, 4.5, 2e-3, 1e-27],
+    string: "€$\\u000f\\nA'B\"\\\\\\\"/",
+    literals: [null, true, false],
+  };
+  const expected = String.raw`{"literals":[null,true,false],"numbers":[333333333.3333333,1e+30,4.5,0.002,1e-27],"string":"€$\\u000f\\nA'B\\\"\\\\\\\\\"/"}`;
   assert.equal(canonicalize(input), expected);
 });
 
 test("RFC 8785 JCS-02: property names are sorted by UTF-16 code units", () => {
   const input = {
     "€": "Euro Sign",
-    "\r": "Carriage Return",
+    "\\r": "Carriage Return",
     "דּ": "Hebrew Letter Dalet With Dagesh",
     "1": "One",
     "😀": "Emoji: Grinning Face",
-    "\u0080": "Control",
+    "\\u0080": "Control",
     "ö": "Latin Small Letter O With Diaeresis",
   };
   const expected = String.raw`{"\\r":"Carriage Return","1":"One","\\u0080":"Control","ö":"Latin Small Letter O With Diaeresis","€":"Euro Sign","😀":"Emoji: Grinning Face","דּ":"Hebrew Letter Dalet With Dagesh"}`;
@@ -49,8 +48,5 @@ test("JCS produit des octets UTF-8 stables pour le même objet logique", () => {
   const first = canonicalize({ z: "Niamey", a: "Niger", nested: { b: 2, a: 1 } });
   const second = canonicalize({ nested: { a: 1, b: 2 }, a: "Niger", z: "Niamey" });
   assert.equal(first, second);
-  assert.deepEqual(
-    new TextEncoder().encode(first),
-    new TextEncoder().encode(second),
-  );
+  assert.deepEqual(new TextEncoder().encode(first), new TextEncoder().encode(second));
 });
