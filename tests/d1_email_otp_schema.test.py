@@ -171,5 +171,13 @@ class EmailOtpD1SchemaTests(unittest.TestCase):
             )
 
 
+    def test_identity_contact_value_cannot_be_silently_changed(self):
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "account_identity_immutable_fields"):
+            self.db.execute(
+                "UPDATE account_identities SET normalized_value=? WHERE id='email-1'",
+                ("attacker@example.ne",),
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
