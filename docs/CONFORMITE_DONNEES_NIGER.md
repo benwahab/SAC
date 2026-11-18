@@ -6,12 +6,12 @@
 
 ## 1. Texte de référence à jour
 
-Le cadre de référence est la loi nigérienne n° 2022-59 du 16 décembre 2022 relative à la protection des données à caractère personnel. Le site officiel de la HAPDP indique que cette loi a été modifiée par la loi n° 2023-31 du 4 juillet 2023 et par les ordonnances n° 2024-16 du 26 avril 2024 et n° 2024-29 du 24 juin 2024.
+Le cadre de référence est la loi nigérienne n° 2022-59 du 16 décembre 2022 relative à la protection des données à caractère personnel. Le site officiel de la HAPDP répertorie désormais explicitement une **version consolidée de la loi n° 2022-59 avec ses textes modificatifs subséquents**, ainsi que les textes séparés : loi n° 2023-31 du 4 juillet 2023, ordonnance n° 2024-16 du 26 avril 2024 et ordonnance n° 2024-29 du 24 juin 2024.
 
-La version PDF de la loi n° 2022-59 consultée pour cette pré-analyse est le texte de base publié par la HAPDP. Avant toute déclaration, demande d'autorisation ou mise en production, il faut obtenir et examiner la version consolidée intégrant toutes les modifications de 2023 et 2024, ainsi que les délibérations et procédures actuelles de la HAPDP.
+**Correction de méthode :** la version consolidée est donc bien annoncée par la HAPDP ; il ne faut plus écrire qu'elle reste à obtenir. Il reste à télécharger et examiner intégralement ce document consolidé, puis à confronter les articles cités ci-dessous à sa numérotation et à son texte exact avant tout avis juridique final. La présente pré-analyse s'appuie encore sur le texte de base accessible et ne prétend pas avoir vérifié chaque modification dans le PDF consolidé.
 
 Références officielles :
-- HAPDP — [Législation nationale](https://www.hapdp.ne/legislation-nationale)
+- HAPDP — [Législation nationale et version consolidée annoncée](https://www.hapdp.ne/legislation-nationale)
 - HAPDP — [Loi n° 2022-59, texte PDF](https://www.hapdp.ne/uploads/files/Loi-N%C2%B02022-59HAPDP.pdf)
 - HAPDP — [Formalités](https://www.hapdp.ne/formalites)
 - HAPDP — [Droits des personnes concernées](https://www.hapdp.ne/les-droits-des-personnes-concernees-par-le-traitement)
