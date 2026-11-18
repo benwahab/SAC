@@ -659,3 +659,20 @@ La politique OTP validée utilise l'e-mail comme canal standard pour les codes d
 - La portée de révocation des sessions et les fonctions accessibles pendant une récupération restent à définir explicitement ; aucune révocation globale arbitraire n'est présumée.
 
 **Verrou :** aucun nouvel appareil ne peut être approuvé sur la seule base d'un nouvel e-mail, d'un OTP, d'un mot de passe ou d'une intervention du support.
+
+
+## Annexe — Contacts de confiance : vérification d'identité, pas récupération du compte (18 novembre 2026)
+
+**Recommandation de sécurité proposée :** les contacts de confiance n'exercent aucun pouvoir d'authentification ou d'administration sur le compte du titulaire.
+
+- Un contact ne peut pas se connecter au compte, réinitialiser son mot de passe, changer son adresse e-mail, approuver un appareil, annuler une révocation ou signer à la place de la racine.
+- Aucun vote ou quorum de contacts ne peut remplacer une preuve indépendante de récupération d'accès ou recréer l'ancienne racine.
+- Après perte de la racine, la nouvelle identité est générée localement selon la procédure dédiée. Chaque contact concerné vérifie indépendamment la nouvelle empreinte pour sa propre relation avant reprise du partage GPS.
+- La vérification d'un contact n'approuve pas automatiquement les autres relations et n'accorde pas au contact un accès au compte ou à l'historique.
+- Seuls les contacts dont la relation était active avant l'ouverture de la récupération peuvent être sollicités ; une relation créée ou réactivée pendant la récupération ne peut pas servir de preuve.
+- Les réponses des contacts restent privées les unes par rapport aux autres. Aucun contact ne voit les nouvelles coordonnées, les facteurs de récupération, les codes ou les réponses des autres.
+- Un contact injoignable ou refusant de vérifier laisse sa relation GPS bloquée ; cela ne doit pas déclencher une approbation automatique ou une substitution silencieuse.
+
+**À arbitrer :** méthode indépendante acceptable (présence physique, appel vocal initié par un canal déjà connu, comparaison d'empreinte sur deux canaux réellement indépendants), traitement des contacts injoignables et éventuelle confirmation humaine complémentaire sans pouvoir d'accès.
+
+**Verrou :** ne pas transformer les contacts de confiance en mécanisme de récupération sociale du compte ni en autorité racine collective.
