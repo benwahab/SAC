@@ -421,3 +421,12 @@ Le contrat `CONTRAT_RESILIENCE_CONTINUITE_ET_REPRISE_INCIDENT.md` formalise les 
 Invariants : aucune confirmation de SOS sans commit serveur ; perte de réponse traitée par idempotence ; les pannes push/e-mail/SMS/GPS ne suppriment pas une alerte confirmée ; le ping health D1 ne prouve pas le fonctionnement métier ; une restauration ne réactive aucun état révoqué ou supprimé et ne ressuscite jamais GPS/alertes purgés.
 
 Restent à arbitrer : RTO/RPO, disponibilité cible, capacité d'astreinte, source d'autorité des révocations post-sauvegarde, fréquence/chiffrement des sauvegardes, stratégie de retry, capacité réservée au SOS, procédure de crise et exercices de restauration. Aucun fournisseur ou objectif chiffré n'est approuvé.
+
+
+## 31. Gouvernance juridique et conformité — 18 novembre 2026
+
+Le contrat `CONTRAT_GOUVERNANCE_JURIDIQUE_ET_CONFORMITE.md` regroupe la gouvernance de l'entité porteuse, la qualification des traitements, les données sensibles et GPS, les mineurs, les droits, les conditions d'utilisation, les fournisseurs, les transferts, les incidents et les fiches pays.
+
+Blocage juridique Niger : l'ANP a rapporté la suppression de la HAPDP et le transfert de ses missions aux ministères de la Justice et de l'Intérieur en juin 2026. Le texte authentique de l'ordonnance n° 2026-30, les dispositions précises modifiées et les procédures ministérielles opérationnelles doivent être obtenus et vérifiés. Les pages historiques de l'ancienne HAPDP ne suffisent pas à établir les formalités actuelles.
+
+Restent ouverts : entité porteuse/responsable du traitement, formalités et bases applicables, traitement de données de santé/téléphone/GPS, transferts, sous-traitants, conservation hors GPS, destinataire/délai des violations, âge V1, conditions d'utilisation et validation de chaque pays. Aucun pays additionnel, fournisseur, transfert ou parcours mineur n'est approuvé.
