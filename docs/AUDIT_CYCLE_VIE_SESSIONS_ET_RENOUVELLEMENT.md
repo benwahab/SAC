@@ -114,3 +114,7 @@ Aucun endpoint, migration D1, fournisseur OTP/SMS, stockage de refresh token ou 
 Aucune donnée GPS précise ne doit être ajoutée aux sessions, jetons, journaux ou mécanismes de renouvellement. Le verrou de destruction irréversible J+30 reste indépendant et inchangé.
 
 **Conclusion :** le contrôle de session et la révocation par appareil sont correctement posés comme invariants, mais le cycle de renouvellement n'est pas encore spécifié. Le point le plus important à trancher est l'existence ou non d'un refresh token séparé ; tant que ce choix et ses règles anti-rejeu ne sont pas validés, il ne faut pas implémenter de renouvellement silencieux.
+
+## Complément de politique de sécurité
+
+La proposition transversale `PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md` traite les attaques par force brute, le vol/rejeu de jetons, le multi-appareils, les effets d'un changement de mot de passe et les notifications. Elle ne choisit pas le mécanisme de renouvellement : les options restent ouvertes jusqu'à arbitrage.
