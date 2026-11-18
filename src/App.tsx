@@ -2,6 +2,55 @@ import { useEffect, useState } from "react";
 import { ArrowUpRight, HeartHandshake, LockKeyhole, MapPin, ShieldCheck, UsersRound, Wifi } from "lucide-react";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
 
+
+type LoginPageProps = {
+  language: Language;
+  setLanguage: (language: Language) => void;
+};
+
+function LoginPage({ language, setLanguage }: LoginPageProps) {
+  const copy = {
+    fr: { title: "Bienvenue sur SAC", subtitle: "Connectez-vous à votre espace personnel.", email: "Adresse e-mail", password: "Mot de passe", submit: "Se connecter", create: "Créer un compte", back: "Retour à l’accueil", unavailable: "L’inscription et la connexion sécurisées ne sont pas encore activées sur le serveur. Aucun identifiant ne sera envoyé ni enregistré tant que le service d’authentification réel n’est pas opérationnel.", language: "Langue", private: "Espace privé" },
+    en: { title: "Welcome to SAC", subtitle: "Sign in to your personal space.", email: "Email address", password: "Password", submit: "Sign in", create: "Create an account", back: "Back to home", unavailable: "Secure registration and sign-in are not yet enabled on the server. No credentials will be sent or stored until the real authentication service is operational.", language: "Language", private: "Private space" },
+    ar: { title: "مرحباً بك في SAC", subtitle: "سجّل الدخول إلى مساحتك الشخصية.", email: "البريد الإلكتروني", password: "كلمة المرور", submit: "تسجيل الدخول", create: "إنشاء حساب", back: "العودة إلى الصفحة الرئيسية", unavailable: "لم يتم تفعيل التسجيل وتسجيل الدخول الآمن على الخادم بعد. لن يتم إرسال بيانات الدخول أو تخزينها قبل تشغيل خدمة المصادقة الفعلية.", language: "اللغة", private: "مساحة خاصة" },
+  }[language];
+  const [notice, setNotice] = useState(false);
+  const rtl = language === "ar";
+
+  return (
+    <main className="sac-shell flex min-h-screen items-center justify-center px-5 py-10 text-sac-ink" dir={rtl ? "rtl" : "ltr"}>
+      <section className="sac-glass-panel w-full max-w-md rounded-[2rem] p-6 sm:p-9">
+        <div className="flex items-start justify-between gap-4">
+          <a href="/" className="flex flex-col" aria-label="SAC accueil">
+            <span className="text-xl font-black tracking-[0.2em]">SAC</span>
+            <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-sac-muted">{copy.private}</span>
+          </a>
+          <div className="flex items-center gap-1 rounded-full border border-white/90 bg-white/70 p-1 shadow-glass" role="group" aria-label={copy.language} dir="ltr">
+            {languages.map((item) => (
+              <button key={item.code} type="button" onClick={() => setLanguage(item.code)} aria-pressed={language === item.code} aria-label={item.label} className={"min-h-9 min-w-9 rounded-full px-2 text-xs font-extrabold " + (language === item.code ? "bg-sac-primary-strong text-white" : "text-sac-muted hover:bg-sac-primary/60")}>{item.nativeLabel}</button>
+            ))}
+          </div>
+        </div>
+        <div className="mt-10">
+          <h1 className="text-3xl font-black tracking-tight">{copy.title}</h1>
+          <p className="mt-2 text-sm leading-6 text-sac-muted">{copy.subtitle}</p>
+        </div>
+        <form className="mt-8 space-y-4" onSubmit={(event) => { event.preventDefault(); setNotice(true); }}>
+          <label className="block text-sm font-bold" htmlFor="sac-login-email">{copy.email}</label>
+          <input id="sac-login-email" type="email" autoComplete="email" required disabled className="min-h-12 w-full rounded-xl border border-white/90 bg-white/70 px-4 text-base text-sac-ink outline-none disabled:opacity-70" />
+          <label className="block text-sm font-bold" htmlFor="sac-login-password">{copy.password}</label>
+          <input id="sac-login-password" type="password" autoComplete="current-password" required disabled className="min-h-12 w-full rounded-xl border border-white/90 bg-white/70 px-4 text-base text-sac-ink outline-none disabled:opacity-70" />
+          <button type="submit" disabled className="min-h-12 w-full cursor-not-allowed rounded-xl bg-sac-primary-strong px-4 font-extrabold text-white opacity-60">{copy.submit}</button>
+          <button type="button" disabled className="min-h-12 w-full cursor-not-allowed rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 font-bold text-sac-ink opacity-60">{copy.create}</button>
+        </form>
+        <p role="status" aria-live="polite" className="mt-6 rounded-xl border border-sac-alert/20 bg-sac-alert/5 p-4 text-xs leading-6 text-sac-muted">{copy.unavailable}</p>
+        {notice && <p className="mt-3 text-xs text-sac-muted" role="status">{copy.unavailable}</p>}
+        <a href="/" className="mt-7 inline-flex min-h-10 items-center text-sm font-bold text-sac-confirm hover:underline">{copy.back}</a>
+      </section>
+    </main>
+  );
+}
+
 type HealthState = "checking" | "connected" | "unavailable";
 
 export default function App() {
@@ -15,6 +64,7 @@ export default function App() {
     }
   });
   const t = translations[language];
+  const isLoginPage = window.location.pathname === "/connexion";
   const isRtl = language === "ar";
 
   useEffect(() => {
@@ -42,6 +92,8 @@ export default function App() {
     return () => controller.abort();
   }, []);
 
+  if (isLoginPage) return <LoginPage language={language} setLanguage={setLanguage} />;
+
   const statusDot =
     health === "connected" ? "bg-sac-confirm" :
     health === "unavailable" ? "bg-sac-alert" : "animate-pulse bg-sac-primary-strong";
@@ -60,6 +112,7 @@ export default function App() {
           <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-sac-muted">{t.appName}</span>
         </a>
         <div className="flex items-center gap-3">
+          <a href="/connexion" className="hidden rounded-full border border-white/90 bg-white/65 px-4 py-2 text-xs font-extrabold text-sac-ink shadow-glass hover:bg-white sm:inline-flex">Connexion</a>
           <div className="hidden items-center gap-2 rounded-full border border-white/80 bg-white/55 px-3 py-2 text-xs font-semibold text-sac-ink shadow-glass sm:flex">
             <LockKeyhole size={14} className="text-sac-confirm" />{t.privateApp}
           </div>
