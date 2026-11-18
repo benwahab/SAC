@@ -95,3 +95,8 @@ Aucun de ces points ouverts ne doit être comblé par un droit général implici
 ## 8. Portée et interdiction d'implémentation implicite
 
 Ce catalogue est une base de spécification. Il ne crée aucun rôle actif, compte, permission, mission, interface, endpoint, middleware, journal opérationnel, table ou migration D1. Toute implémentation exige une autorisation explicite, une revue de sécurité et des tests positifs et négatifs.
+
+
+## Gouvernance des missions
+
+Les règles détaillées de cycle de vie, suspension d'urgence, expiration, révocation, conflits, sessions administratives, exports et tests sont centralisées dans [GOUVERNANCE_MISSIONS_ADMIN_ET_CYCLE_DE_VIE.md](GOUVERNANCE_MISSIONS_ADMIN_ET_CYCLE_DE_VIE.md). Les durées et contrôles renforcés proposés dans ce document restent à valider.
