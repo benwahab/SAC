@@ -266,7 +266,7 @@ Le titulaire ne récupère pas son compte et ne reçoit aucune session général
 
 1. consulter l'état minimal de cette alerte précise ;
 2. transmettre une mise à jour de sécurité ;
-3. demander ou confirmer la clôture de cette alerte précise.
+3. transmettre à l'administration SAC une demande de clôture de cette alerte précise, sans pouvoir la clôturer.
 
 Elle ne permettrait jamais de se reconnecter, de consulter le profil ou les proches, de créer une alerte, de changer les destinataires, de modifier les paramètres du compte ou d'agir sur une autre alerte. Chaque action serait authentifiée côté serveur, limitée à l'identifiant de l'alerte, journalisée et protégée contre le rejeu. La révocation de session générale resterait immédiate.
 
@@ -275,15 +275,15 @@ Elle ne permettrait jamais de se reconnecter, de consulter le profil ou les proc
 La capacité d'urgence ne doit pas donner au titulaire suspendu un pouvoir unilatéral de faire disparaître une alerte ou d'interrompre une assistance. La distinction suivante est validée :
 
 - **Mise à jour de sécurité :** le titulaire conserve la possibilité de signaler qu'il est en sécurité, même si la suspension est liée à cette alerte. Cette mise à jour est horodatée, authentifiée et ajoutée à la trace ; elle ne clôture pas automatiquement l'alerte et n'efface aucun événement antérieur.
-- **Clôture :** une demande ou confirmation du titulaire suspendu n'est pas, à elle seule, suffisante pour clôturer automatiquement une alerte lorsqu'il existe un motif de suspicion d'abus lié à cette alerte. La clôture doit appliquer des contrôles supplémentaires définis côté serveur, préserver les preuves et tenir compte de l'état de prise en charge par les proches.
+- **Clôture :** le titulaire suspendu peut signaler que l'alerte peut être clôturée et transmettre une demande à l'administration SAC, mais il ne clôture jamais lui-même l'alerte. Les proches, y compris le responsable principal, ne disposent pas non plus du pouvoir de clôture. Seule l'administration SAC décide et exécute la clôture, après vérifications adaptées, en préservant les preuves et en tenant compte de l'état de prise en charge.
 - **Aucune suppression de preuve :** ni la mise à jour ni la demande de clôture ne peuvent supprimer, réécrire ou masquer les événements, accusés de réception, prises en charge ou éléments d'audit déjà enregistrés.
 
-Les critères précis déclenchant le contrôle renforcé, l'autorité finale de clôture et les notifications restent à spécifier. Cette règle ne doit pas empêcher les contacts et les services d'urgence de poursuivre l'assistance.
+Les critères précis de contrôle, les personnes habilitées au sein de l'administration SAC, la procédure de décision et les notifications restent à spécifier. Cette règle ne doit pas empêcher les contacts et les services d'urgence de poursuivre l'assistance.
 
 ### Limites et questions à arbitrer
 
-- Définir qui peut clôturer l'alerte si le titulaire n'a plus accès à son appareil : responsable principal, autre contact intervenant, ou procédure distincte.
+- Définir la procédure administrative de clôture lorsque le titulaire n'a plus accès à son appareil, y compris la vérification de la demande transmise par les proches.
 - Définir les conditions de clôture, les notifications envoyées à tous les destinataires initiaux et la gestion des désaccords.
 - Définir les garde-fous applicables si le compte est suspendu pour abus lié précisément à l'alerte en cours ; la capacité ne doit pas devenir un moyen de supprimer les preuves ou d'empêcher l'assistance.
 
-**Principe validé :** une capacité d'urgence distincte, limitée à l'alerte existante, doit préserver la possibilité pour le titulaire de confirmer sa sécurité et de contribuer à la clôture sans récupérer l'accès au compte. Les rappels continuent vers les seuls destinataires initiaux, toutes les 5 minutes, sans ajout automatique de contacts. Les permissions détaillées, les contrôles anti-abus et le protocole cryptographique restent à spécifier et à faire valider. Cette décision n'autorise ni code, ni route API, ni migration D1, ni changement de session.
+**Principe validé :** une capacité d'urgence distincte, limitée à l'alerte existante, doit préserver la possibilité pour le titulaire de confirmer sa sécurité et de demander une clôture à l'administration SAC sans récupérer l'accès au compte. Seule l'administration SAC peut clôturer l'alerte ; aucun proche ni titulaire suspendu ne peut le faire. Les rappels continuent vers les seuls destinataires initiaux, toutes les 5 minutes, sans ajout automatique de contacts. Les permissions détaillées, les contrôles anti-abus et le protocole cryptographique restent à spécifier et à faire valider. Cette décision n'autorise ni code, ni route API, ni migration D1, ni changement de session.
