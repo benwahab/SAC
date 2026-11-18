@@ -436,3 +436,41 @@ Chaque mutation métier ajoute un événement immuable avec acteur, type, horoda
 - révocation concurrente à une action : résultat conforme à la règle d'accès retenue.
 
 **Statut : proposition de contrat à valider.** Aucun endpoint, table, migration, scheduler ou envoi réel n'est créé ici.
+
+
+## 18. Contrat proposé — révocation concurrente à la coordination SOS (à valider)
+
+La relation de confiance, les candidatures et les périodes de responsabilité doivent être arbitrées dans un ordre transactionnel unique. Une vérification de relation effectuée avant la transaction ne constitue pas une preuve d'admissibilité.
+
+### 18.1 Invariant d'autorisation
+
+Toute commande de candidature, attribution, promotion, arrivée déclarée, résolution signalée, accusé ou retrait doit vérifier la relation active dans la même transaction D1 que l'écriture métier. Le contrôle s'applique aussi aux workers qui promeuvent un volontaire.
+
+### 18.2 Ordre de concurrence
+
+- **Révocation commit en premier :** toute candidature ou attribution ultérieure du contact est refusée ; une candidature antérieure non encore attribuée devient inadmissible.
+- **Candidature commit en premier :** l'événement de candidature reste dans le journal, mais la révocation la rend inadmissible pour les attributions futures.
+- **Attribution commit en premier :** l'attribution est conservée dans l'historique ; la transaction de révocation termine la période active du contact révoqué et tente une promotion atomique du volontaire admissible suivant.
+- **Révocation et promotion concurrentes :** la transaction de promotion doit relire et verrouiller/logiquement sérialiser la relation active du candidat au moment du commit. Si la relation est révoquée avant le commit de promotion, le candidat est ignoré et le suivant est examiné.
+- **Aucun candidat admissible :** état `unassigned`, alerte toujours active, rappels régis par le contrat existant.
+
+Le résultat final exigé est qu'aucun contact dont la relation est révoquée ne puisse être responsable principal après le commit de cette révocation.
+
+### 18.3 Transaction de révocation
+
+La transaction doit :
+1. vérifier que l'acteur est autorisé à révoquer cette relation et que la relation est encore active ;
+2. enregistrer la révocation avec horodatage et séquence serveur ;
+3. invalider les autorisations futures du contact pour cette relation ;
+4. rendre inadmissibles ses candidatures non attribuées ;
+5. si ce contact est responsable principal, fermer sa période avec cause `relationship_revoked` et promouvoir atomiquement le volontaire actif admissible le plus ancien, ou laisser l'alerte `unassigned` ;
+6. enregistrer les événements append-only et les résultats idempotents ;
+7. produire les notifications de coordination après commit, sans révéler de données privées.
+
+Si la révocation est rejouée avec la même clé d'idempotence, retourner le résultat initial sans fermer une seconde période ni promouvoir un autre volontaire.
+
+### 18.4 Limites non tranchées
+
+Ce contrat ne décide pas encore si le destinataire révoqué conserve un accès en lecture à une alerte active, ni si les rappels push déjà prévus continuent à lui être transmis. Ces règles doivent être décidées explicitement et harmonisées avec l'instantané initial, les exigences de confidentialité et l'outbox. Ne pas modifier silencieusement les rappels existants.
+
+**Tests D1 obligatoires :** révocation avant candidature ; révocation après candidature mais avant attribution ; révocation juste après attribution ; révocation concurrente à la promotion ; révocation du premier candidat avec deuxième volontaire disponible ; révocation sans volontaire de remplacement ; rejeu idempotent ; révocation concurrente à clôture auteur ; aucun double responsable ni période ouverte orpheline.
