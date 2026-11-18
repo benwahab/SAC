@@ -143,7 +143,7 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
     }
   }
 
-  async function submitVerification(event: React.FormEvent<HTMLFormElement>) {
+  async function submitVerification(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setError("");
