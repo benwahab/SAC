@@ -272,3 +272,59 @@ Le préambule d'une copie diffusée sur Scribd du décret de suppression cite un
 
 Ne pas écrire dans les documents SAC que la loi 2022-59 a été entièrement abrogée, ni que toutes ses dispositions restent inchangées. Toute conclusion juridique opérationnelle doit attendre la publication officielle et une revue par un juriste nigérien.
 
+
+
+## 11. Évaluation de deux gestionnaires HSM/KMS supplémentaires
+
+### 11.1 Fortanix DSM — expiration vs destruction
+
+La documentation Fortanix distingue clairement trois opérations :
+
+- **Expiration/désactivation** : à la date configurée, l'objet passe en état « Deactivated ». Une clé désactivée ne peut plus servir à créer de nouvelles protections, mais elle peut encore être utilisée pour traiter des données déjà protégées, notamment pour déchiffrer ou déballer une clé. Cela ne satisfait pas l'objectif de rendre les anciennes positions illisibles.
+- **Destroy** : la matière de clé est supprimée ; les données chiffrées ne peuvent alors plus être utilisées. Si une Key Undo Policy est activée, cette destruction reste toutefois réversible pendant la période configurée.
+- **Delete** : supprime aussi les métadonnées de l'objet, selon le workflow et la politique appliqués.
+
+La Key Undo Policy documentée impose une fenêtre réversible minimale de 7 jours et maximale de 180 jours. Elle ne permet donc pas une destruction irréversible au même instant que J+30 si l'opération de destruction n'est déclenchée qu'à J+30. Le fournisseur documente par ailleurs des procédures de sauvegarde, de restauration et de réplication ; la suppression doit donc être testée contre les sauvegardes et réplicas réellement activés.
+
+Références du fournisseur :
+- Expiration d'un objet : https://support.fortanix.com/docs/is-there-an-option-to-expire-a-security-object-at-a-specific-date-or-after-a-certain-time-period
+- Key Undo Policy : https://support.fortanix.com/docs/fortanix-dsm-key-undo-policy
+- Sauvegarde et restauration : https://support.fortanix.com/docs/introduction-to-fortanix-dsm-backup-and-restore
+- Réplication de compte : https://support.fortanix.com/docs/fortanix-dsm-account-replication
+
+**Décision : Fortanix DSM n'est pas approuvé à ce stade.** La date d'expiration documentée n'est pas une destruction cryptographique, la fenêtre de réversibilité et les chemins de restauration exigent une analyse contractuelle et expérimentale. Une destruction manuelle/API sans période réversible pourrait être étudiée, mais elle ne prouve pas à elle seule une destruction automatique et ponctuelle à J+30.
+
+### 11.2 Azure Managed HSM — suppression réversible
+
+Azure Managed HSM impose le soft-delete : une clé supprimée reste récupérable pendant une période configurable de 7 à 90 jours. La purge de protection empêche la suppression définitive avant la fin de cette période. Cette protection est utile contre une suppression accidentelle ou malveillante, mais ne correspond pas à l'exigence SAC :
+- si la clé est supprimée au début de la période, elle devient indisponible trop tôt ;
+- si elle est supprimée à J+30, elle reste récupérable après J+30 pendant la période de rétention ;
+- la documentation ne permet donc pas de promettre à la fois accès jusqu'à J+30 et irréversibilité exacte à J+30.
+
+Références Microsoft :
+- https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/soft-delete-overview
+- https://learn.microsoft.com/en-us/azure/reliability/reliability-managed-hsm
+
+**Décision : Azure Managed HSM est écarté pour la promesse stricte J+30 avec les mécanismes de suppression documentés.**
+
+### 11.3 Synthèse actualisée des fournisseurs
+
+| Solution | Fonction utile | Motif de non-approbation |
+|---|---|---|
+| AWS KMS standard | Destruction définitive après attente | Attente 7–30 jours, jusqu'à 24 h supplémentaires ; copies et caches de data keys à contrôler |
+| AWS XKS/HYOK | Clé externe révocable, ciphertext potentiellement irrécupérable | Pas de destruction automatique J+30 fournie par XKS ; cache de data keys et disponibilité externe à traiter |
+| Google Cloud KMS | Destruction programmée | Restauration possible pendant l'attente ; suppression de toutes les copies annoncée jusqu'à 45 jours après l'échéance programmée |
+| Azure Managed HSM | Purge protégée | Récupération obligatoire 7–90 jours ; ne fournit pas l'accès 30 jours puis destruction immédiate |
+| Fortanix DSM | Expiration, destruction, politiques de réversibilité | Expiration autorise encore le déchiffrement ; destruction et sauvegardes/réplication à qualifier |
+| Android StrongBox | Horloge interne résistante à la manipulation AP, autorisations parfois matériellement imposées | ±10 % annoncé pour l'horloge ; support et enforcement variables selon appareil |
+| Apple Secure Enclave/Keychain | Clés liées au matériel | Pas de mécanisme public validé pour destruction automatique à date absolue J+30 |
+
+Aucun des fournisseurs examinés ne reçoit le statut « approuvé pour SAC ». La recherche doit privilégier un mécanisme de destruction automatique contrôlé par un HSM externe, dont la documentation contractuelle précise les délais, les réplicas, les sauvegardes, les restaurations et les caches. La preuve doit être faite par test de restauration, et pas seulement par une réponse API « clé supprimée ».
+
+## 12. Conséquence juridique et hébergement des données
+
+La loi 2022-59 publiée sur l'ancien site HAPDP définit les données de localisation dans son article premier. Elle contient aussi des dispositions sur les transferts vers des États tiers (articles 62 et 63), les droits de suppression (article 73), la sécurité (article 82) et la conservation limitée à la durée nécessaire (article 84). Ces références doivent être considérées comme le texte de base historiquement publié, pas comme une confirmation de leur rédaction actuelle après l'ordonnance 2026-30 non authentifiée.
+
+**Point de vigilance SAC :** l'hébergement de données personnelles ou de clés hors du Niger peut soulever une question de transfert transfrontalier. Le choix d'un fournisseur Cloudflare, AWS, Google, Azure ou Fortanix ne doit pas être arrêté sur le seul critère cryptographique. Il faudra faire vérifier par un juriste nigérien le texte consolidé applicable, les dispositions de transfert encore en vigueur, les obligations du responsable et du sous-traitant, et les autorités désormais compétentes.
+
+Référence au texte historique consulté : https://www.hapdp.ne/uploads/files/Loi-N%C2%B02022-59HAPDP.pdf
