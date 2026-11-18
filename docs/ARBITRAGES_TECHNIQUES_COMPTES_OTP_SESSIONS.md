@@ -307,3 +307,12 @@ Pour une alerte SOS déjà transmise alors que le compte initiateur est suspendu
 Les informations contradictoires ou insuffisantes, tout indice récent de danger persistant, ou l'impossibilité de vérifier la fin du danger imposent le maintien de l'alerte et des rappels aux seuls destinataires initiaux. Le silence d'un proche ou du titulaire ne constitue jamais une preuve de sécurité. Un proche peut signaler que la situation semble terminée et demander une clôture, mais ne peut pas l'exécuter. Seul un administrateur SAC habilité clôture ; un seul administrateur suffit, sans double validation obligatoire.
 
 Cette décision ne vaut pas spécification technique ni autorisation de créer une API, une permission, une session spéciale ou une migration D1.
+
+
+## Habilitation administrative de clôture — décision validée le 18 novembre 2026
+
+Pour le cas précis d'une alerte SOS déjà transmise pendant la suspension du compte initiateur et présentant un risque d'abus, le Super Admin peut clôturer après vérification. Un administrateur sécurité ne peut le faire que si le Super Admin lui a attribué explicitement la permission dédiée ; aucun droit n'est accordé par défaut. Le support, l'auditeur, les proches et le titulaire suspendu n'ont pas ce droit.
+
+La permission de clôture est indépendante des autres permissions. Seul le Super Admin peut l'attribuer, la modifier, la suspendre ou la retirer. Le délégataire ne peut ni déléguer ni transmettre son autorité. Une seule personne habilitée suffit, sans double validation.
+
+Chaque clôture conserve une trace d'audit : identité de l'administrateur, référence de l'alerte, date/heure, motif et éléments vérifiés. L'espace d'administration est réservé à l'ordinateur et à la tablette ; l'accès administratif sur téléphone n'est pas prévu. Cette décision ne met en œuvre aucun rôle ou contrôle d'accès et n'autorise aucune migration D1.
