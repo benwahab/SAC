@@ -125,6 +125,27 @@ L'attribution doit être une transition conditionnelle atomique :
 
 **Cas simultané :** deux demandes de retrait/reprise ne doivent jamais créer deux responsables ou perdre l'historique. La règle de priorité des volontaires déjà en attente doit être validée et testée.
 
+### 5.1 Continuité du responsable et transfert — règles proposées à valider
+
+Une absence de heartbeat, une session momentanément inaccessible, un appareil éteint ou une PWA suspendue ne constitue pas une commande de retrait. Le serveur ne doit jamais libérer automatiquement le rôle sur la seule base d'un délai ou d'une absence de réponse.
+
+Lors d'un retrait explicite du responsable courant, l'opération atomique doit :
+1. vérifier que l'alerte est encore active et que l'acteur est le responsable courant ;
+2. terminer exactement une période de responsabilité avec motif et horodatage serveur ;
+3. sélectionner le volontaire admissible le plus ancien selon l'ordre monotone serveur, avec identifiant stable comme départage déterministe ;
+4. attribuer le rôle à ce volontaire dans la même opération, si un candidat existe ;
+5. sinon laisser l'alerte active sans responsable principal ;
+6. écrire les événements d'audit correspondants sans donnée sensible ;
+7. garantir l'idempotence : le rejeu de la même commande ne termine pas une seconde période et ne promeut pas un second volontaire.
+
+Deux retraits, candidatures ou transferts concurrents doivent être sérialisés. Une seule responsabilité courante peut exister. Si le principal se retire et qu'un volontaire est promu, le rôle est effectif uniquement après le commit serveur. Si aucun volontaire n'existe, les rappels continuent vers l'instantané initial et l'escalade SMS est réévaluée selon l'état métier courant et le seuil validé ; aucun statut de transfert réussi ne doit être affiché avant confirmation.
+
+La reconnexion de l'ancien responsable ne restaure pas son rôle. Il ne peut redevenir responsable que par une nouvelle candidature suivie d'une attribution normale, si aucune autre personne n'est déjà responsable.
+
+**Tests D1 à prévoir :** perte réseau sans retrait explicite ; principal silencieux sans transfert automatique ; retrait avec un volontaire en attente ; retrait avec plusieurs volontaires ordonnés ; retrait sans volontaire ; deux retraits concurrents ; candidature simultanée au retrait ; rejeu après perte de réponse ; reconnexion de l'ancien principal ; clôture concurrente avec transfert ; course entre retrait et seuil SMS.
+
+**Statut :** règles techniques proposées, non encore validées par le propriétaire produit et non implémentées. Aucun SQL, endpoint, worker ou scheduler n'est créé par cette section.
+
 ## 6. Contrat — clôture de l'alerte par l'auteur
 
 **Acteur :** auteur de l'alerte uniquement.  
