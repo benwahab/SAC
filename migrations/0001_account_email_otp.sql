@@ -187,3 +187,44 @@ BEGIN
         AND i.verified_at = NEW.consumed_at
     );
 END;
+
+-- Une identité e-mail ne peut être vérifiée que par la consommation d'un
+-- défi OTP correspondant. Le téléphone reste non vérifié dans ce parcours.
+CREATE TRIGGER account_identity_verification_guard
+BEFORE UPDATE OF verified_at ON account_identities
+BEGIN
+  SELECT CASE WHEN NEW.channel = 'phone' AND NEW.verified_at IS NOT NULL
+    THEN RAISE(ABORT, 'phone_identity_verification_not_supported') END;
+
+  SELECT CASE WHEN OLD.verified_at IS NOT NULL AND NEW.verified_at IS NOT OLD.verified_at
+    THEN RAISE(ABORT, 'identity_verification_is_immutable') END;
+
+  SELECT CASE WHEN OLD.verified_at IS NULL AND NEW.verified_at IS NOT NULL AND NOT EXISTS (
+    SELECT 1
+    FROM email_otp_challenges c
+    WHERE c.account_id = NEW.account_id
+      AND c.identity_id = NEW.id
+      AND c.purpose = 'account_email_verification'
+      AND c.consumed_at = NEW.verified_at
+  ) THEN RAISE(ABORT, 'email_identity_requires_consumed_otp') END;
+END;
+
+-- Aucun code serveur ne peut activer un compte en contournant la preuve e-mail.
+CREATE TRIGGER account_activation_requires_verified_email
+BEFORE UPDATE OF status ON accounts
+WHEN OLD.status = 'pending_verification' AND NEW.status = 'active'
+BEGIN
+  SELECT CASE WHEN NOT EXISTS (
+    SELECT 1
+    FROM account_identities i
+    JOIN email_otp_challenges c
+      ON c.account_id = i.account_id
+     AND c.identity_id = i.id
+     AND c.consumed_at = i.verified_at
+    WHERE i.account_id = NEW.id
+      AND i.channel = 'email'
+      AND i.is_primary = 1
+      AND i.verified_at IS NOT NULL
+      AND c.purpose = 'account_email_verification'
+  ) THEN RAISE(ABORT, 'account_activation_requires_email_otp') END;
+END;
