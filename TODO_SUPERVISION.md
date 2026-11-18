@@ -528,3 +528,19 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Définir le parcours d'attribution et de retrait de la permission dédiée par le Super Admin.
 - [ ] Spécifier les événements d'audit, leur intégrité, leur conservation et leur consultation.
 - [ ] Ne créer aucun rôle, endpoint, permission opérationnelle ou migration D1 sans autorisation distincte.
+
+
+## Contact direct du titulaire avant clôture — 18 novembre 2026
+
+- [x] Définir une notification privée initiale via SAC, sans divulguer les détails sensibles à un tiers.
+- [x] Définir jusqu'à trois appels si un numéro vérifié est disponible : immédiatement, environ +5 min, puis +5 min supplémentaires.
+- [x] Prévoir un message écrit privé complémentaire par un canal de contact vérifié disponible.
+- [x] Journaliser chaque tentative : date/heure, canal, résultat objectif et identité de l'administrateur ; distinguer envoi, lecture et réponse.
+- [x] Préciser qu'un appel sans réponse, un message vocal ou un accusé technique ne constitue pas une réponse du titulaire.
+- [x] Préciser que l'absence de canal ou de réponse est consignée, mais ne prouve jamais la sécurité et ne déclenche aucune clôture automatique.
+- [x] Fixer la séquence d'appels à environ dix minutes entre la première et la troisième tentative, sans en faire un délai maximal de danger ou une échéance de clôture.
+- [x] Maintenir l'alerte et les rappels aux seuls destinataires initiaux tant que la fin du danger n'est pas suffisamment vérifiée.
+- [ ] Déterminer les canaux réellement collectés et vérifiés à l'inscription, sans présumer qu'un numéro de téléphone existe.
+- [ ] Définir les modèles de messages privés et leur minimisation des données.
+- [ ] Spécifier l'intégrité, la conservation et l'accès aux journaux de tentatives avant toute implémentation.
+- [ ] Ne créer aucun canal, endpoint, envoi automatique ou migration D1 sans autorisation distincte.
