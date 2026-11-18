@@ -315,3 +315,11 @@ Les anciennes options de conservation d'un historique GPS précis pendant 30 jou
 Le document docs/PROPOSITIONS_ARBITRAGE_GROUPES_PRIVES.md consolide les règles de cycle de vie et les options de conception pour les groupes : séparation stricte de l'adhésion et de la relation de confiance, invitation et acceptation, rôles, retrait, transfert, suppression, sécurité et tests.
 
 Les règles déjà établies ne changent pas : un groupe n'accorde aucun accès aux alertes ou au GPS ; il ne rend pas une relation de confiance réciproque ; les destinataires SOS sont toujours choisis explicitement. Les valeurs et règles nouvelles du document restent des propositions non approuvées, notamment les plafonds, le nombre de groupes, les rôles, les invitations et le transfert de propriété.
+
+## 18. Arbitrage proposé — SOS programmé et SOS discret — 18 novembre 2026
+
+Le document docs/PROPOSITIONS_ARBITRAGE_SOS_PROGRAMME_ET_DISCRET.md regroupe les règles déjà validées et les choix encore ouverts pour les deux mécanismes.
+
+Invariants : mécanismes distincts ; annulation d'un SOS programmé avant échéance empêche la création de l'alerte ; après déclenchement, cycle SOS ordinaire ; écran neutre du SOS discret déjà validé ; rappels push, escalade SMS, destinataires figés et clôture conservent leurs règles existantes.
+
+Restent à arbitrer : revalidation des destinataires à l'échéance, compte suspendu/suppression en attente, fuseau et changement d'heure, rappels préalables, catégorie/niveau du SOS discret, code et remplacement, anti-essais, appareils secondaires, comportement hors ligne et rétention des événements. Les recommandations du document ne sont pas des décisions approuvées.
