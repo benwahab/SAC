@@ -717,3 +717,37 @@ Tester explicitement que la session limitée :
 
 Le droit SOS est un cas distinct : tester l'usurpation, les alertes abusives et la possibilité de transmettre une alerte sans GPS depuis une session limitée, sans jamais bloquer le SOS d'une session déjà autorisée par un OTP e-mail.
 
+
+
+### Analyse de menace — SOS depuis session de récupération limitée
+
+**Statut : proposition à valider.**
+
+| Risque | Mesure candidate |
+|---|---|
+| Clé de récupération volée utilisée pour envoyer de faux SOS | Droit limité à une session de récupération achevée, délai de sécurité, session courte, destinataires préexistants, journal d'audit sans secrets |
+| Attaquant découvre les contacts du titulaire | Ne jamais exposer la liste ou les coordonnées au terminal limité ; résolution des destinataires côté serveur |
+| Attaquant ajoute ses propres destinataires | Interdire ajout/retrait et figer la configuration SOS antérieure |
+| Contacts croient que le nouvel appareil est déjà approuvé | Indicateur explicite dans la notification : appareil non approuvé, récupération limitée |
+| Fausse localisation ou localisation résiduelle | Aucun GPS, aucune adresse, aucune donnée de localisation jointe |
+| Envoi répété par rejeu ou double clic | Idempotence, sérialisation et identifiant de demande |
+| Réseau indisponible | Aucun faux accusé de succès ; statut non confirmé et reprise idempotente |
+| Abus par texte ou fichier | Aucun texte libre ni pièce jointe dans ce mode candidat |
+| Aucun contact disponible | Bloquer l'envoi et expliquer qu'aucun destinataire éligible n'est configuré |
+| SOS bloqué par OTP e-mail | Aucun OTP e-mail au moment du SOS ; la session doit être déjà valide |
+
+### Tests obligatoires
+- session de récupération en attente, expirée, révoquée ou terminée : aucun SOS ;
+- session limitée valide : seules les capacités SOS explicitement autorisées fonctionnent ;
+- appareil non approuvé : aucune opération racine ou GPS n'est possible ;
+- contacts ajoutés après récupération : non inclus dans le SOS de secours ;
+- contact révoqué ou relation inactive : exclu au moment de l'envoi ;
+- liste vide : aucun succès affiché ;
+- double déclenchement, rejeu et réponse réseau perdue : une seule alerte ;
+- notification reçue : mention non ambiguë du statut non approuvé et de l'absence de localisation ;
+- tentative d'ajout de destinataire, texte libre, pièce jointe ou GPS : refus côté serveur ;
+- vérification que l'OTP e-mail n'est jamais sollicité au moment du SOS ;
+- panne réseau : aucune promesse d'envoi hors ligne ni de SMS direct.
+
+**NO-GO :** aucun SOS de secours depuis session limitée avant validation du périmètre et réussite des tests adversariaux et de disponibilité.
+
