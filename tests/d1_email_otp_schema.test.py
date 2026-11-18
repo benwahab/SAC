@@ -189,5 +189,38 @@ class EmailOtpD1SchemaTests(unittest.TestCase):
             )
 
 
+    def test_challenge_expires_at_exact_deadline(self):
+        self.create_challenge("otp-expired", self.now)
+        result = self.submit_attempt("otp-expired", "a" * 64, self.now + 600_000)
+        self.assertIsNone(result)
+        state = self.db.execute(
+            "SELECT attempt_count, consumed_at FROM email_otp_challenges WHERE id='otp-expired'"
+        ).fetchone()
+        self.assertEqual(state["attempt_count"], 0)
+        self.assertIsNone(state["consumed_at"])
+
+    def test_account_and_identity_inserts_roll_back_together_on_duplicate_identity(self):
+        self.db.execute("BEGIN")
+        self.db.execute(
+            """INSERT INTO accounts
+               (id, status, preferred_language, password_hash, created_at, updated_at)
+               VALUES ('account-orphan-check', 'pending_verification', 'fr', 'hash', ?, ?)""",
+            (self.now + 1, self.now + 1),
+        )
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute(
+                """INSERT INTO account_identities
+                   (id, account_id, channel, normalized_value, is_primary, created_at)
+                   VALUES ('email-orphan-check', 'account-orphan-check', 'email',
+                           'person@example.ne', 1, ?)""",
+                (self.now + 1,),
+            )
+        self.db.rollback()
+        orphan = self.db.execute(
+            "SELECT 1 FROM accounts WHERE id='account-orphan-check'"
+        ).fetchone()
+        self.assertIsNone(orphan)
+
+
 if __name__ == "__main__":
     unittest.main()
