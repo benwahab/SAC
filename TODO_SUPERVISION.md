@@ -344,3 +344,16 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Pour chaque OS supporté, établir les réglages précis de sauvegarde système, exclusions applicatives et scénarios de transfert/restauration.
 - [ ] Obtenir des preuves contractuelles et techniques fournisseur couvrant toutes les copies de clés, réplicas, sauvegardes, caches, exports et procédures break-glass.
 - [ ] Garder historique GPS : NO-GO tant qu'un scénario critique reste FAIL ou NON TESTABLE.
+
+## Sauvegardes natives Android/iOS et restauration GPS — 18 novembre 2026
+
+- [x] Vérifier la documentation Android Auto Backup : inclusion par défaut des fichiers internes, bases et préférences ; règles distinctes Android 11 et Android 12+.
+- [x] Vérifier la nuance Android 12+ : allowBackup=false ne bloque pas nécessairement les transferts D2D sur certains OEM ; cloud-backup, device-transfer et cross-platform-transfer doivent être couverts.
+- [x] Vérifier la nuance iOS : ThisDeviceOnly bloque la migration vers un nouvel appareil mais peut être restauré sur le même appareil ; non-synchronisable iCloud Keychain requis.
+- [x] Vérifier que l'exclusion de sauvegarde iOS peut être remise à false après certaines opérations de fichiers ; la réappliquer à chaque écriture.
+- [x] Ajouter les scénarios GPS-27 à GPS-36 au plan de validation.
+- [ ] Définir, lors du développement natif, les règles Android manifest/XML pour toutes les versions et tous les modes de transfert.
+- [ ] Définir, lors du développement natif, les exclusions iOS pour chaque fichier GPS et tester les opérations qui réinitialisent le drapeau.
+- [ ] Exécuter les tests de sauvegarde/restauration sur appareils Android de plusieurs OEM et versions, et sur iPhone/iPad réels.
+- [ ] Inspecter les APK/IPA produits pour vérifier les règles embarquées et tester les restaurations réelles.
+- [ ] Maintenir le statut GPS historique : NO-GO tant que les scénarios de restauration ne sont pas tous validés.
