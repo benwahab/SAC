@@ -528,6 +528,9 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 
 ## Habilitation à la clôture administrative — 18 novembre 2026
 
+Contrat de référence détaillé : `docs/CONTRAT_CLOTURE_EXCEPTIONNELLE_ADMINISTRATIVE_SOS.md`. Cette exception ne doit jamais être élargie à un droit général de clôture.
+
+
 - [x] Valider que le Super Admin peut clôturer une alerte concernée après les vérifications prévues.
 - [x] Valider qu'un administrateur sécurité ne peut clôturer que si le Super Admin lui attribue explicitement la permission dédiée ; aucun droit par défaut.
 - [x] Exclure le support, l'auditeur, les proches et le titulaire suspendu de l'autorité de clôture dans ce scénario.
