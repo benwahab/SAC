@@ -358,3 +358,8 @@ Ces documents sont des spécifications et analyses. Ils ne signifient pas que la
 ## Modèle de données administratif — complément du 18 novembre 2026
 
 `docs/MODELE_DONNEES_ADMIN_ET_INTEGRATION_SAC.md` consolide les identités, rôles, missions, permissions, périmètres, sessions, dossiers de clôture administrative, consultations, exports et journaux. Il signale les contradictions à résoudre avant le schéma D1, notamment la différence entre clôture ordinaire par l'auteur et exception administrative dans le scénario spécifique du titulaire suspendu. Il reste conceptuel.
+
+
+## Modèle global des données — consolidation du 18 novembre 2026
+
+Le document `MODELE_GLOBAL_DONNEES_SAC.md` relie les domaines comptes, identités, appareils, proches, groupes, alertes, réponses, trajets, programmation SOS, notifications, abonnements/paiements et administration. Il fixe `accounts` comme identité canonique, documente les écarts entre le cahier des charges, la proposition D1 et le code, et maintient le statut NON PRÊT POUR MIGRATION. Les contrats spécialisés et les décisions produit restent les références détaillées.
