@@ -440,3 +440,26 @@ Ce validateur ne vérifie pas la propriété de l'adresse e-mail ou du télépho
 La validation des e-mails internationaux/IDN devra être complétée si SAC décide de les accepter ; le contrat actuel prend en charge les domaines ASCII (les domaines internationalisés doivent être présentés sous forme IDNA/Punycode). Le format E.164 est la représentation canonique persistée prévue.
 
 **Statut :** contrat d'entrée codé et testé ; persistance et parcours serveur non implémentés.
+
+
+## 18. Format et primitives cryptographiques du code OTP e-mail
+
+**Décision validée par l'utilisateur : code numérique de 6 chiffres.**
+
+Le contrat OTP retient désormais :
+- 6 chiffres décimaux, zéros initiaux autorisés ;
+- durée de validité de 10 minutes ;
+- 6 tentatives maximum par défi ;
+- renvoi après 60 secondes minimum ;
+- tout nouveau défi invalide immédiatement le précédent.
+
+Le module serveur `functions/lib/security/email-otp-code.ts` :
+- génère le code avec `crypto.getRandomValues` ;
+- utilise un échantillonnage par rejet pour éviter le biais de modulo ;
+- calcule une empreinte HMAC-SHA-256 liée à l'identifiant unique du défi et à son usage ;
+- refuse de calculer l'empreinte si le secret serveur n'est pas configuré ou trop court ;
+- ne persiste ni ne journalise le code brut.
+
+Le secret HMAC doit être un secret Cloudflare aléatoire d'au moins 32 caractères, distinct de D1. Il n'est pas créé ni configuré par le code du dépôt. La rotation et le versionnement du secret devront être conçus avant activation réelle.
+
+**Limite actuelle :** ces primitives ne créent pas encore de défi persistant, n'invalident pas un défi dans D1, n'incrémentent pas atomiquement les tentatives, n'envoient pas d'e-mail et n'activent aucun compte. Ces opérations exigent le prochain lot d'implémentation serveur et ses tests de concurrence D1.
