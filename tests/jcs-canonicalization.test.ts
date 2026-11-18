@@ -6,24 +6,24 @@ import canonicalize from "canonicalize";
 test("RFC 8785 JCS-01: numbers, strings and literals", () => {
   const input = {
     numbers: [333333333.33333329, 1e30, 4.5, 2e-3, 1e-27],
-    string: "€$\\u000f\\nA'B\"\\\\\\\"/",
+    string: "€$\u000f\nA'B\"\\\\\"/",
     literals: [null, true, false],
   };
-  const expected = String.raw`{"literals":[null,true,false],"numbers":[333333333.3333333,1e+30,4.5,0.002,1e-27],"string":"€$\\u000f\\nA'B\\\"\\\\\\\\\"/"}`;
+  const expected = String.raw`{"literals":[null,true,false],"numbers":[333333333.3333333,1e+30,4.5,0.002,1e-27],"string":"€$\\u000f\\nA'B\\"\\\\\\"/"}`;
   assert.equal(canonicalize(input), expected);
 });
 
 test("RFC 8785 JCS-02: property names are sorted by UTF-16 code units", () => {
   const input = {
     "€": "Euro Sign",
-    "\\r": "Carriage Return",
+    "\r": "Carriage Return",
     "דּ": "Hebrew Letter Dalet With Dagesh",
     "1": "One",
     "😀": "Emoji: Grinning Face",
-    "\\u0080": "Control",
+    "\u0080": "Control",
     "ö": "Latin Small Letter O With Diaeresis",
   };
-  const expected = String.raw`{"\\r":"Carriage Return","1":"One","\\u0080":"Control","ö":"Latin Small Letter O With Diaeresis","€":"Euro Sign","😀":"Emoji: Grinning Face","דּ":"Hebrew Letter Dalet With Dagesh"}`;
+  const expected = String.raw`{"\r":"Carriage Return","1":"One","\u0080":"Control","ö":"Latin Small Letter O With Diaeresis","€":"Euro Sign","😀":"Emoji: Grinning Face","דּ":"Hebrew Letter Dalet With Dagesh"}`;
   assert.equal(canonicalize(input), expected);
 });
 
@@ -41,7 +41,7 @@ test("JCS refuse les nombres non finis", () => {
 });
 
 test("JCS refuse les chaînes contenant un surrogate isolé", () => {
-  assert.throws(() => canonicalize({ value: "\\uD800" }), /Lone surrogate/);
+  assert.throws(() => canonicalize({ value: "\uD800" }), /Lone surrogate/);
 });
 
 test("JCS produit des octets UTF-8 stables pour le même objet logique", () => {
