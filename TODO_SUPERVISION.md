@@ -235,3 +235,23 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Obtenir les textes officiels de suppression/transfert des missions et identifier les services ministériels qui reçoivent effectivement les demandes.
 - [ ] Revalider les formalités, les délais de notification d'incident, les transferts internationaux et les droits des personnes sur la base des textes postérieurs à juin 2026.
 - [ ] Ne pas considérer la pré-analyse HAPDP antérieure comme une validation juridique actuelle.
+
+
+## Vérification juridique approfondie — 18 novembre 2026
+
+- [x] Confirmer que la loi 2023-31 a modifié les articles 6, 7, 14, 23, 24 et 111 de la loi 2022-59.
+- [x] Préciser dans `docs/MISE_A_JOUR_JURIDIQUE_NIGER_NOV_2026.md` ce qui est confirmé et ce qui demeure inconnu.
+- [x] Consigner que l'ordonnance 2026-30 est citée comme modifiant/abrogeant certaines dispositions, sans prétendre connaître les articles exacts.
+- [ ] Obtenir l'édition authentique du Journal officiel contenant l'ordonnance 2026-30 et vérifier ses articles.
+- [ ] Confirmer le numéro exact du décret du 8 juin 2026 sur le Journal officiel ; les copies secondaires présentent une incohérence de transcription (310/340), même si plusieurs sources citent 2026-310/PRN/PM.
+- [ ] Identifier les services réellement opérationnels dans les ministères de la Justice et de l'Intérieur, et leur répartition des compétences.
+
+## Faisabilité de la destruction GPS J+30 — 18 novembre 2026
+
+- [x] Créer `docs/PLAN_VALIDATION_DESTRUCTION_GPS_J30.md` avec 18 scénarios de test, critères GO/NO-GO et preuves attendues.
+- [x] Documenter la limite Android : les restrictions temporelles du Keystore sont généralement logiciellement appliquées faute d'horloge indépendante du matériel sécurisé.
+- [x] Distinguer la non-migration iOS `ThisDeviceOnly` de la destruction automatique à date fixe.
+- [x] Corriger `docs/SECURITE_GPS_DESTRUCTION_CRYPTO.md` : l'archive locale n'est plus considérée comme architecture approuvée avant preuve de l'expiration même téléphone éteint.
+- [ ] Prototyper le stockage local natif uniquement après définition d'un mécanisme d'expiration qui résiste à l'arrêt, au retour d'horloge et à la restauration.
+- [ ] Étudier un modèle de clé à deux parts avec destruction externe non restaurable, sans transmettre ni stocker les coordonnées GPS sur le service externe.
+- [ ] Ne pas activer de stockage historique GPS, de migration, de ressource cloud ni de flux GPS réel tant que le GO n'est pas démontré.
