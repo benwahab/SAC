@@ -540,7 +540,19 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Préciser que l'absence de canal ou de réponse est consignée, mais ne prouve jamais la sécurité et ne déclenche aucune clôture automatique.
 - [x] Fixer la séquence d'appels à environ dix minutes entre la première et la troisième tentative, sans en faire un délai maximal de danger ou une échéance de clôture.
 - [x] Maintenir l'alerte et les rappels aux seuls destinataires initiaux tant que la fin du danger n'est pas suffisamment vérifiée.
-- [ ] Déterminer les canaux réellement collectés et vérifiés à l'inscription, sans présumer qu'un numéro de téléphone existe.
+- [x] Confirmer que chaque utilisateur doit fournir un numéro à la création du compte ; préciser que collecte ne vaut pas vérification.
 - [ ] Définir les modèles de messages privés et leur minimisation des données.
 - [ ] Spécifier l'intégrité, la conservation et l'accès aux journaux de tentatives avant toute implémentation.
 - [ ] Ne créer aucun canal, endpoint, envoi automatique ou migration D1 sans autorisation distincte.
+
+
+## Numéro obligatoire à la création du compte — 18 novembre 2026
+
+- [x] Décider que chaque utilisateur doit obligatoirement renseigner un numéro de téléphone à la création du compte ; création impossible si le champ est absent.
+- [x] Prévoir l'enregistrement du numéro avec son indicatif international.
+- [x] Distinguer collecte obligatoire et vérification effective du numéro.
+- [x] Maintenir la décision antérieure : pas de SMS OTP pour l'authentification des comptes ; aucune vérification SMS n'est autorisée implicitement.
+- [ ] Définir et faire valider la méthode de vérification du numéro, sans présumer d'un SMS OTP.
+- [ ] Définir les règles de changement, de mise à jour et de nouvelle vérification du numéro.
+- [ ] Spécifier les protections d'accès et la conservation du numéro.
+- [ ] Ne créer aucun champ, validation opérationnelle, envoi SMS, service externe, endpoint ou migration D1 sans autorisation distincte.
