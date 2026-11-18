@@ -953,3 +953,32 @@ Cette décision autorise uniquement la visibilité minimale décrite. Elle n'act
 - Vérifier absence de contournement par support, contact, SMS ou formulaire manuel.
 
 **NO-GO :** aucun test n'est exécuté ; aucun lien de contestation, OTP, invalidation ou remplacement réel du kit n'est activé.
+
+
+## Audit — remplacement du kit perdu depuis un appareil approuvé (18 novembre 2026)
+
+| Scénario | Risque | Contrôle attendu |
+|---|---|---|
+| Kit oublié ou perdu, appareil sûr disponible | Blocage inutile de la récupération future | Remplacement sans ancien kit depuis appareil approuvé |
+| Kit volé, appareil sûr disponible | Ancien kit utilisé pendant la procédure | Invalidation atomique au commit ; demandes concurrentes refusées |
+| Appareil initiateur compromis | Voleur remplace le kit et exclut le titulaire | Preuve cryptographique fraîche ; ne pas se fier au code local ou à la session seule |
+| OTP e-mail seul | Remplacement par attaquant contrôlant une boîte | OTP ne suffit jamais |
+| Perte réseau avant commit | Ancien kit invalidé à tort | Ancien kit reste valide tant que commit non effectué |
+| Perte réseau après commit | Client croit à tort que l'ancien kit reste valide | État d'opération consultable sans réafficher le secret ; nouveau kit seul valide |
+| Double clic / demandes concurrentes | Plusieurs kits actifs ou invalidations incohérentes | Version attendue, idempotence et transaction atomique |
+| Capture écran / presse-papiers / télémétrie | Fuite du nouveau secret | Masquage autant que possible, aucune télémétrie, logs ou sauvegarde ; avertissement stockage sûr |
+| Fermeture avant sauvegarde | Kit perdu immédiatement après génération | Secret non récupérable ; nouveau remplacement depuis appareil de confiance |
+| Ancien kit réutilisé | Rejeu après remplacement | Vérificateur précédent invalidé et version incrémentée |
+
+### Tests obligatoires avant implémentation
+- Remplacer un kit sans saisir l'ancien depuis appareil approuvé valide.
+- Refuser depuis appareil révoqué, non approuvé, ou dont preuve cryptographique est périmée.
+- Vérifier qu'un OTP e-mail, mot de passe ou session en cache seul ne peut pas remplacer le kit.
+- Vérifier l'invalidation de l'ancien kit exactement au commit et l'absence de double version active.
+- Simuler panne réseau avant et après commit ; confirmer les états sans réafficher le secret.
+- Simuler deux remplacements concurrents et vérifier une seule réussite.
+- Vérifier que le secret brut ne figure dans aucun log, télémétrie, rapport d'erreur, sauvegarde ou requête réseau.
+- Vérifier qu'aucune session, racine, relation, alerte ou tâche SOS n'est modifiée.
+- Vérifier que la fermeture de l'écran ne permet pas de récupérer le secret depuis le serveur.
+
+**NO-GO :** aucun test n'est exécuté et aucun remplacement réel n'est activé.
