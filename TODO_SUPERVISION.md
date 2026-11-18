@@ -993,3 +993,18 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases
 - [ ] Obtenir une revue juridique et une revue indépendante sécurité/confidentialité avant lancement.
 
 **Statut :** documentation de cadrage uniquement ; aucune formalité administrative, collecte réelle, contractualisation ou activation fournisseur effectuée.
+
+
+## Audit transversal de cohérence — 18 novembre 2026
+
+- [x] Réaliser l'audit transversal du corpus et distinguer décisions, propositions, état réel et blocages.
+- [x] Corriger les anciennes règles GPS de rétention post-fin-de-partage dans l'architecture, le cahier des charges et la machine à états.
+- [x] Documenter l'écart entre les cinq états de compte approuvés et le contrat TypeScript actuel à trois états.
+- [x] Consolider les blocages P0 : authentification, SOS non-GPS, racine/appareils, notifications, droit nigérien et reprise/restauration.
+- [ ] Rechercher et marquer comme historiques/remplacées toutes les occurrences résiduelles de l'ancienne règle GPS dans le dépôt.
+- [ ] Réconcilier `src/domain/account-lifecycle.ts` et ses tests avec les cinq états approuvés avant toute migration D1 (code non modifié par l'audit).
+- [ ] Arbitrer les droits d'un contact révoqué pendant un SOS actif et les répercuter dans tous les contrats.
+- [ ] Spécifier sans ambiguïté la séquence push/SMS après seuil choisi et après prise en charge.
+- [ ] Fermer les arbitrages P0 et lever les blocages juridiques avant tout lancement.
+
+Référence : `docs/AUDIT_TRANSVERSAL_COHERENCE_ET_MATURITE_2026-11-18.md`. Audit documentaire uniquement ; aucun code, schéma D1, service ou déploiement modifié.
