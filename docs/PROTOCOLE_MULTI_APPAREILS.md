@@ -484,3 +484,134 @@ La révocation d'un appareil et toute opération protégée de cet appareil doiv
 **Tests obligatoires avant implémentation :** révocation d'un secondaire parmi plusieurs ; révocation concurrente à une requête protégée ; alerte active sans suppression de destinataires ; notification multi-appareils ; notification déjà acceptée ; révocation du root sans révocation implicite des secondaires ; tentative de promotion d'un secondaire ; récupération sans restauration de l'ancienne racine ; rejeu idempotent et courses avec approbation/outbox.
 
 **Statut :** proposition de portée fonctionnelle et sécurité à valider. Aucun endpoint, migration D1 ou flux de récupération n'est créé par cette spécification.
+
+
+## 23. Perte, vol et remplacement du téléphone racine — parcours proposé à valider
+
+**Statut : proposition de conception et de sécurité, non décision produit complète, non implémentée.**  
+Cette section distingue la récupération de l'accès au compte de la récupération de l'identité cryptographique. Elle ne choisit aucun fournisseur d'authentification, aucun mécanisme de support et aucun facteur de récupération qui n'a pas été validé.
+
+### 23.1 Quatre situations à distinguer
+
+| Situation | Interprétation | Traitement proposé |
+|---|---|---|
+| Perte temporaire, téléphone probablement récupérable | L'utilisateur ne sait pas où se trouve le téléphone ; aucune preuve de compromission | Ne pas déclarer l'appareil effacé ni le compte récupéré. L'utilisateur peut récupérer l'accès au compte, mais la racine reste indisponible tant que sa possession n'est pas démontrée. |
+| Vol confirmé ou suspicion crédible de compromission | Le téléphone peut être contrôlé par un tiers | Demander une révocation urgente de l'appareil racine après réauthentification renforcée. Le compte passe en récupération de racine ; les opérations dépendant de la racine sont bloquées. |
+| Panne, destruction ou réinitialisation | La clé privée peut être devenue inaccessible, même si le téléphone est retrouvé | Traiter comme perte de la capacité cryptographique. Ne pas supposer que la réparation ou la restauration du téléphone récupère la clé. |
+| Remplacement volontaire avec ancienne racine disponible | L'utilisateur possède encore le téléphone racine et peut signer | Utiliser la rotation normale signée par l'ancienne racine et par la nouvelle ; ce n'est pas une récupération après perte. |
+
+Un appareil simplement injoignable ou hors ligne n'est pas automatiquement considéré volé. L'utilisateur doit choisir la situation déclarée ; SAC ne prétend pas déterminer seul si le téléphone est perdu, volé ou détruit.
+
+### 23.2 Deux récupérations séparées
+
+**Récupération d'accès au compte :**
+- permet à la personne de retrouver l'accès aux fonctions de compte qui ne nécessitent pas la racine, selon une authentification forte qui reste à spécifier ;
+- ne prouve pas la possession de l'ancienne clé privée racine ;
+- ne réactive aucun certificat d'appareil révoqué ;
+- ne restaure aucune session, clé privée, clé GPS ou archive locale ;
+- ne suffit jamais à autoriser l'approbation d'un appareil ni le partage GPS.
+
+**Récupération de l'identité cryptographique racine :**
+- est une procédure distincte, déclenchée après authentification du compte et vérifications de sécurité définies ;
+- crée une nouvelle paire de clés racine sur le nouvel appareil ; la clé privée est générée localement et n'est jamais envoyée au serveur ;
+- attribue une nouvelle version/époque d'identité et révoque l'ancienne racine côté serveur selon une transition atomique ;
+- impose aux contacts concernés une vérification indépendante de la nouvelle empreinte avant tout nouveau partage GPS ;
+- ne rétablit ni les anciennes clés GPS, ni les archives supprimées, ni les données GPS arrivées à échéance J+30.
+
+Un mot de passe, un OTP, un lien e-mail, une session secondaire ou une intervention du support ne peut jamais être interprété comme une signature de l'ancienne racine.
+
+### 23.3 Cas où un appareil secondaire est encore actif
+
+Un appareil secondaire actif peut, après authentification du compte, **initier une demande de récupération** et afficher son état. Il ne peut pas :
+- s'auto-promouvoir en racine ;
+- signer à la place de l'ancienne racine ;
+- approuver seul un autre appareil ;
+- déclarer la nouvelle empreinte vérifiée pour les contacts ;
+- réactiver un partage GPS ;
+- récupérer les clés privées ou archives GPS de l'ancien téléphone.
+
+La demande lancée depuis un secondaire est une demande de procédure, pas une preuve de légitimité cryptographique. Elle doit être liée à la session et à l'identité propre de ce secondaire, soumise aux contrôles de récupération du compte, puis à la vérification indépendante des contacts. Les fonctions ordinaires du secondaire peuvent rester disponibles tant que son propre certificat et sa session restent actifs et que la politique du compte ne les bloque pas ; les opérations qui exigent l'autorité racine restent refusées.
+
+### 23.4 Déroulement proposé lorsque l'ancienne racine est inaccessible
+
+1. L'utilisateur récupère l'accès au compte via le mécanisme d'authentification renforcée qui sera défini séparément. Cette étape ne modifie pas la racine.
+2. L'utilisateur déclare la cause : perte temporaire, vol/suspicion de compromission, panne/destruction ou remplacement. La déclaration est enregistrée comme déclaration de l'utilisateur, pas comme fait vérifié par SAC.
+3. Pour un vol ou une suspicion de compromission, l'utilisateur demande la révocation de l'appareil racine. Le serveur vérifie l'autorisation de récupération, puis sérialise la révocation et le passage à root_recovery_required. L'appareil hors ligne ne reçoit pas d'effacement à distance ; ses requêtes futures sont rejetées dès qu'elles atteignent le serveur.
+4. Le nouvel appareil génère localement une nouvelle identité racine et une preuve de possession. Il ne reçoit aucune ancienne clé.
+5. Le serveur enregistre une demande de rétablissement en attente, liée au compte, à l'ancienne époque racine, à la nouvelle empreinte, au nouvel appareil et à un identifiant de cérémonie unique. Aucune approbation GPS n'est accordée à ce stade.
+6. Les contacts avec lesquels l'utilisateur souhaite reprendre le partage GPS sont informés par une notification sobre ne contenant ni empreinte complète, ni coordonnées, ni secret. Ils comparent la nouvelle empreinte par un canal indépendant de SAC et confirment explicitement.
+7. Chaque relation/contact conserve son propre état de vérification. Le partage GPS avec un contact reste bloqué tant que ce contact n'a pas terminé sa vérification indépendante.
+8. Une fois les contrôles de récupération et les confirmations exigées terminés, le serveur marque la nouvelle racine comme rétablie par une opération atomique. Les appareils secondaires existants ne sont pas automatiquement certifiés par la nouvelle racine : ils doivent suivre une nouvelle cérémonie ou rester limités aux fonctions non dépendantes de la racine.
+9. Les notifications de sécurité sont envoyées après commit. L'historique append-only conserve la demande, les vérifications, la révocation, les refus et l'établissement de la nouvelle racine.
+
+Les délais d'expiration, les facteurs d'authentification, les éventuels délais de sécurité et le seuil exact de contacts à vérifier restent à décider. Aucun délai arbitraire n'est fixé ici.
+
+### 23.5 États de récupération proposés
+
+| État | Sens | Effet de sécurité |
+|---|---|---|
+| recovery_requested | Demande reçue et enregistrée | Aucun droit racine nouveau ; demande soumise aux contrôles |
+| recovery_pending_review | Authentification du compte vérifiée selon la politique à définir ; nouvelle identité en attente des validations requises | Approbations d'appareils et partage GPS bloqués |
+| root_reestablished | Nouvelle racine créée, preuve de possession validée et transition enregistrée | La nouvelle racine peut exercer les fonctions autorisées ; le GPS reste bloqué contact par contact jusqu'à vérification indépendante |
+| recovery_refused | Demande refusée | Aucune nouvelle racine activée ; motif non sensible communiqué |
+| recovery_expired | Demande expirée selon une durée à définir | Aucun effet d'activation ; une nouvelle demande et une nouvelle cérémonie sont nécessaires |
+| recovery_cancelled | Demande annulée avant établissement | Aucune nouvelle racine activée ; les effets d'une révocation déjà commitée ne sont jamais annulés automatiquement |
+
+Un état de demande ne doit jamais être affiché comme « identité vérifiée » ou « téléphone sécurisé ». root_reestablished signifie que la nouvelle racine est établie côté compte ; il ne signifie pas que tous les contacts ont vérifié son empreinte ni que le GPS est disponible.
+
+### 23.6 Perte temporaire et ancien téléphone qui revient en ligne
+
+- Tant que l'utilisateur n'a pas demandé de révocation ou de récupération, SAC ne prétend pas avoir neutralisé un téléphone perdu qui reste hors ligne.
+- Dès que la révocation de l'ancienne racine est commitée, ses sessions, certificats et capacités d'approbation sont invalides ; son retour en ligne ne peut pas annuler la révocation.
+- Si une demande de récupération est ouverte, aucune opération de l'ancienne racine ne peut valider une nouvelle cérémonie concurrente sans résolution explicite de la demande.
+- Une récupération annulée ne réactive jamais automatiquement une racine déjà révoquée. Si l'utilisateur veut conserver une racine encore active, la demande doit être annulée avant la révocation, et le serveur doit vérifier l'état courant.
+- Les données locales de l'ancien téléphone peuvent encore exister. L'interface doit dire « accès serveur révoqué » et non « téléphone effacé ».
+
+### 23.7 Courses, idempotence et ordre serveur
+
+Toutes les opérations de récupération sont sérialisées par compte et par époque de racine. Chaque commande contient un identifiant d'idempotence et la version de racine attendue.
+
+- **Deux demandes simultanées :** une seule demande active est créée pour une même époque racine ; une répétition avec la même clé d'idempotence retourne le résultat existant ; une autre demande concurrente reçoit un conflit explicite et ne crée pas une seconde cérémonie.
+- **Ancienne racine reconnectée :** si sa révocation a commit, toute requête est refusée même avec un jeton non expiré. Si une récupération est en attente, aucune signature tardive ne peut la remplacer ou la terminer.
+- **Secondaire révoqué pendant la récupération :** toute action future de ce secondaire est refusée ; sa candidature ou demande antérieure reste dans l'audit mais ne peut pas être utilisée comme autorité.
+- **Révocation pendant une cérémonie :** la transaction finale revérifie l'état de l'appareil approbateur, l'état du nouvel appareil, l'époque racine attendue, l'expiration et l'absence de consommation du défi. Si l'un est révoqué ou périmé, l'activation échoue.
+- **Deux nouvelles racines concurrentes :** une contrainte d'unicité sur l'époque active et une comparaison atomique de l'époque attendue garantissent qu'une seule transition peut gagner.
+- **Timeout après commit :** le client relit l'état serveur avec l'identifiant de demande ; il ne relance pas une nouvelle génération de clés ni une nouvelle transition aveuglément.
+- **Notification :** elle est émise après commit et n'est jamais une preuve de livraison ni de vérification par un contact.
+
+Le journal est append-only, séquencé et horodaté côté serveur. Les événements ne contiennent ni clé privée, ni OTP, ni jeton, ni QR complet, ni transcript sensible, ni GPS.
+
+### 23.8 Fonctions explicitement bloquées et fonctions préservées
+
+Pendant root_recovery_required, sont bloqués :
+- approbation et enrôlement de nouveaux appareils ;
+- rotation ou remplacement normal qui nécessiterait l'ancienne racine ;
+- création, renouvellement ou reprise de partage GPS ;
+- toute opération qui prétend signer ou prouver la continuité de l'ancienne identité.
+
+Ne sont pas supprimés par la seule révocation de la racine :
+- le compte et son mécanisme de récupération d'accès ;
+- les relations de confiance, l'abonnement, les alertes et l'historique ;
+- les sessions secondaires qui restent individuellement actives ;
+- les fonctions ordinaires indépendantes de la racine, sous réserve de leur autorisation propre.
+
+Cette liste est une politique proposée. Les fonctions exactes accessibles sur un secondaire pendant la récupération restent à arbitrer avant implémentation.
+
+### 23.9 Tests adversariaux préalables à l'implémentation
+
+- récupération de mot de passe sans aucune modification de la racine ;
+- OTP ou session secondaire utilisés pour tenter une promotion racine ;
+- demande depuis un secondaire actif, puis révocation de ce secondaire avant commit ;
+- téléphone racine perdu qui revient en ligne après révocation ;
+- téléphone racine qui revient pendant une récupération non encore résolue ;
+- deux demandes de récupération, deux nouvelles racines ou deux appareils candidats concurrents ;
+- ancienne racine qui signe après ouverture de la récupération ;
+- révocation avant, pendant et après la cérémonie ;
+- timeout réseau avant et après commit, rejeu d'identifiant et idempotence ;
+- contact qui n'a reçu la nouvelle empreinte que via SAC : GPS doit rester bloqué ;
+- un contact vérifie la nouvelle empreinte, un autre refuse ou reste en attente : seuls les partages explicitement autorisés avec le premier peuvent reprendre ;
+- révocation de racine sans suppression du compte, des alertes ou des appareils secondaires actifs ;
+- aucune ancienne clé GPS ni archive J+30 ne réapparaît après récupération ou restauration ;
+- absence de secret, empreinte complète, coordonnées ou détail sensible dans les notifications et journaux.
+
+**Verrou :** aucune récupération racine ne doit être implémentée avant validation des facteurs de récupération du compte, de la politique de vérification des contacts, de l'UX anti-hameçonnage, de la spécification cryptographique et d'une revue indépendante. Aucune migration D1, route API ou ressource Cloudflare n'est créée par cette proposition.
