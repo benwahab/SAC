@@ -294,3 +294,42 @@ Les décisions produit restent à l'utilisateur ; aucune de ces questions n'est 
 - **État du code après cet audit :** inchangé. Aucune route, migration, table, clé, ressource Cloudflare ou intégration fournisseur n'est créée.
 
 Ce contrat doit être relu avec `CONTRAT_SECURITE_D1.md`, `CONTRATS_OPERATIONS_ATOMIQUES_D1.md`, `PROTOCOLE_MULTI_APPAREILS.md`, `RECUPERATION_COMPTE_ET_RACINE.md` et `ARBITRAGE_RECUPERATION_RACINE_ET_ATOMICITE_D1.md`. En cas de divergence, les décisions explicites plus récentes et les consignes de sécurité priment ; toute contradiction non résolue bloque l'implémentation.
+
+
+## 12. Notifications d'alerte : push prioritaire et SMS d'escalade
+
+Cette section intègre la décision produit validée le 18 novembre 2026. Elle ne signifie pas que les notifications sont déjà implémentées.
+
+### 12.1 Canal normal
+
+- La notification push dans l'application est le canal principal pour informer les contacts initiaux.
+- Les rappels push sont planifiés toutes les cinq minutes tant que l'alerte reste active, conformément au contrat de cycle d'alerte.
+- Le push peut être affiché par le système même lorsque SAC n'est pas ouvert, sous réserve des permissions, du réseau, des capacités du téléphone et du fournisseur.
+- Une tentative push, une acceptation fournisseur, une livraison système, une ouverture et un accusé de réception SAC sont des preuves distinctes. Ne jamais les confondre.
+
+### 12.2 Seuil SMS choisi par le lanceur
+
+- Lors de la préparation/déclenchement de chaque alerte, le lanceur choisit le nombre de rappels push à effectuer avant l'escalade SMS.
+- Ce seuil est propre à l'alerte et est persisté côté serveur avec la commande de création ; l'horloge et le compteur ne sont jamais contrôlés par le téléphone après déclenchement.
+- Le seuil porte sur les occurrences de rappels push planifiées après la notification initiale ; la notification initiale ne compte pas comme un rappel.
+- Après le nombre choisi de rappels, si aucun destinataire initial n'a pris la responsabilité principale, le serveur peut créer les tâches SMS de secours pour les destinataires de l'instantané initial.
+- Un accusé de réception, une ouverture de notification ou une candidature volontaire sans attribution de responsabilité ne suffit pas à empêcher l'escalade SMS.
+- Dès qu'un responsable principal est effectivement attribué, l'escalade SMS non encore engagée est annulée. Les SMS déjà acceptés par un fournisseur peuvent néanmoins arriver.
+- Le nombre de rappels doit être validé côté serveur dans une plage produit explicitement définie avant implémentation. Aucune plage numérique n'est approuvée par cette section.
+
+### 12.3 Destinataires et clôture
+
+- L'escalade SMS ne peut viser que les destinataires de l'instantané initial ; aucun contact supplémentaire n'est ajouté.
+- Les rappels push restent indépendants de l'accusé de réception et de la prise en charge, et suivent la règle existante jusqu'à clôture par l'auteur.
+- La clôture par l'auteur annule les rappels et tâches push/SMS non encore envoyés.
+- Une tâche déjà acceptée par un fournisseur peut encore être livrée après clôture ou prise en charge ; l'interface doit l'indiquer sans prétendre pouvoir la rappeler.
+
+### 12.4 État et preuves de livraison
+
+Le backend doit distinguer au minimum : occurrence push planifiée ; tentative push effectuée ; notification acceptée par le fournisseur ; livraison confirmée si le canal fournit une preuve fiable ; accusé de réception déclaré par le contact ; responsabilité principale effectivement attribuée ; seuil SMS atteint ; tâche SMS créée, acceptée, livrée si preuve disponible, échouée ou résultat ambigu.
+
+Aucun état « proche prévenu » ne peut être déduit d'une simple tentative ou acceptation fournisseur. Une absence de prise en charge n'est pas une preuve que le téléphone n'a pas reçu le push.
+
+### 12.5 Préconditions techniques
+
+Avant activation, il faut prouver : compteur durable et idempotent, concurrence entre scheduler et attribution du responsable, annulation conditionnelle des tâches SMS, déduplication/réconciliation fournisseur, limites de coût, rétention des tentatives et tests D1/Preview isolés. Aucun fournisseur, scheduler, worker, numéro SMS ou envoi réel n'est créé par ce contrat.
