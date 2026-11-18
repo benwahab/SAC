@@ -474,3 +474,35 @@ Si la révocation est rejouée avec la même clé d'idempotence, retourner le r�
 Ce contrat ne décide pas encore si le destinataire révoqué conserve un accès en lecture à une alerte active, ni si les rappels push déjà prévus continuent à lui être transmis. Ces règles doivent être décidées explicitement et harmonisées avec l'instantané initial, les exigences de confidentialité et l'outbox. Ne pas modifier silencieusement les rappels existants.
 
 **Tests D1 obligatoires :** révocation avant candidature ; révocation après candidature mais avant attribution ; révocation juste après attribution ; révocation concurrente à la promotion ; révocation du premier candidat avec deuxième volontaire disponible ; révocation sans volontaire de remplacement ; rejeu idempotent ; révocation concurrente à clôture auteur ; aucun double responsable ni période ouverte orpheline.
+
+
+### 18.5 Contrôle des lectures et outbox après révocation — proposition à valider
+
+**Lecture protégée**
+- Toute requête détail, liste, événement, réponse ou pièce jointe vérifie la relation active au moment de la lecture, en plus de l'appartenance à l'instantané.
+- Le contrôle est serveur, par ressource ; un identifiant d'alerte ou une notification locale ne vaut pas autorisation.
+- Une notification ouverte après révocation ne révèle que l'écran neutre indiquant que l'accès n'est plus disponible, sans contenu de l'alerte.
+
+**Tâches de notification**
+- Avant toute prise en charge par un worker, vérifier que la relation est toujours active et que la tâche appartient à l'instantané initial.
+- La révocation et le claim d'une tâche doivent être ordonnés transactionnellement : si la révocation commit d'abord, le worker ne peut pas réclamer la tâche pour ce contact ; si le claim/acceptation fournisseur a déjà gagné, l'envoi peut rester livrable et son état doit être conservé.
+- Une tâche supprimée pour révocation reçoit un état terminal explicite, distinct d'un échec réseau ou d'une livraison.
+- Le worker ne doit pas envoyer une tâche dont la relation est révoquée simplement parce qu'elle était présente dans l'instantané.
+- Une tâche déjà acceptée par le fournisseur ne doit pas être recréée ni réessayée aveuglément pour tenter de compenser une livraison incertaine.
+
+**Versionnement de relation**
+- Une nouvelle invitation après révocation crée une nouvelle relation logique/version. Elle ne restaure pas les autorisations sur une ancienne alerte et ne réactive pas les candidatures historiques.
+- Les commandes portent l'identifiant/version de relation attendue afin d'éviter qu'une ancienne session ou une requête retardée profite d'une nouvelle invitation.
+
+**Causes**
+- Enregistrer distinctement `revoked_by_owner` et `consent_withdrawn_by_contact` (noms conceptuels à confirmer). Les deux causes ont, dans cette proposition, le même effet sur les nouvelles autorisations ; l'auteur et la cause restent audités.
+
+**Tests D1 / outbox supplémentaires :**
+- révocation avant lecture, entre vérification et lecture, et pendant une pagination ;
+- révocation concurrente au claim d'un push : aucun claim après commit de révocation ;
+- notification déjà acceptée avant révocation : état conservé, aucune promesse de rappel ;
+- réinvitation après révocation : aucune lecture d'une ancienne alerte par simple réactivation de relation ;
+- ancienne commande/session avec version de relation obsolète : refus ;
+- retrait d'acceptation par le contact et révocation par le propriétaire : causes distinguées, mêmes contrôles futurs si cette politique est approuvée.
+
+**Statut : proposition de contrat à valider.** La politique d'accès post-révocation doit être validée avant de figer les clauses SQL et les états outbox.
