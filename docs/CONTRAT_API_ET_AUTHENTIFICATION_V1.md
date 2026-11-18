@@ -914,3 +914,18 @@ Aucun endpoint ni schéma n'est défini dans cette annexe.
 Dans les deux cas, la révocation d'un appareil ne supprime ni compte, ni contacts, ni abonnement, ni alertes, ni historique. Les instantanés de destinataires des alertes actives restent immuables. Les tâches SOS ne sont pas annulées du seul fait de la révocation d'un appareil du titulaire. Aucun effacement à distance d'un téléphone hors ligne n'est promis.
 
 Toute opération doit être idempotente, journalisée sans secrets/GPS, et revalider côté serveur les statuts d'appareil, de racine et de révocation au moment du commit. Aucun état client en cache ne peut autoriser une opération sensible. Aucun endpoint, migration D1 ou code n'est créé.
+
+
+## Conception — appareil racine potentiellement compromis (18 novembre 2026)
+
+Cette annexe ne définit aucune API, aucun état de base de données ni aucun code.
+
+Le statut « approuvé » n'est pas une preuve permanente que le propriétaire contrôle encore un appareil. Si le téléphone racine est volé et que son code de déverrouillage est connu, les opérations sensibles doivent être considérées comme potentiellement compromises. Une confirmation dans la même session/appareil n'est pas une preuve indépendante.
+
+Proposition : permettre à un appareil secondaire encore approuvé, non révoqué et ayant produit une preuve fraîche, de demander une suspension immédiate et irréversible de l'autorité racine suspectée. Ce pouvoir est strictement négatif : neutraliser une racine. Il ne permet pas d'approuver un appareil, de promouvoir le secondaire ou de restaurer une clé. L'ancienne racine ne redevient jamais approuvée ; une nouvelle racine est créée localement selon la procédure distincte et son empreinte doit être vérifiée indépendamment par les contacts concernés avant reprise GPS.
+
+La suspension invaliderait les sessions, jetons et abonnements push de la racine et refuserait ses opérations futures. Elle ne supprime ni compte, ni relations, ni abonnement, ni alertes, ni historique ; elle ne modifie pas l'instantané de destinataires et n'annule pas les tâches SOS actives. Les appareils secondaires conservent uniquement leurs droits existants. Aucun appareil n'est promu automatiquement.
+
+La clé privée racine ne doit jamais être exportée. Android Keystore et StrongBox peuvent être évalués, mais la disponibilité matérielle et les garanties de protection varient selon appareils. Le code de déverrouillage connu peut compromettre les mécanismes reposant sur le même facteur ; biométrie et code système ne doivent pas être présentés comme une protection absolue.
+
+Les décisions de suspension par secondaire, de gel des opérations, de contestation et de niveau matériel minimal restent à arbitrer. Aucun fournisseur, endpoint, champ, migration D1 ou flux n'est créé.
