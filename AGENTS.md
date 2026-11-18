@@ -126,3 +126,6 @@ Pour toute conception ou modification de consultation interne, classification de
 
 
 Avant toute conception ou évolution du déclenchement, de l'accès, des réponses, des notifications, de la chronologie ou de la clôture SOS, lire `docs/CONTRAT_SECURITE_CYCLE_SOS_ET_INTEGRITE_ALERTES.md` avec les contrats SOS spécialisés. Préserver les destinataires figés, la clôture par l'auteur uniquement, les rappels toutes les cinq minutes et la purge GPS à la clôture/J+30. Ne jamais transformer une proposition anti-abus ou d'idempotence en implémentation sans arbitrage et autorisation distincte. Le contrat ne prouve aucun contrôle opérationnel.
+
+
+Avant toute conception ou évolution des notifications push, e-mails, SMS, abonnements d'appareils, webhooks ou fournisseurs, lire `docs/CONTRAT_SECURITE_NOTIFICATIONS_ET_COMMUNICATIONS.md` avec les contrats SOS, invitations, sessions et confidentialité. Ne jamais traiter un numéro déclaré comme vérifié, une acceptation fournisseur comme une livraison ou une lecture, ni un lien de notification comme une autorisation. Aucun canal réel, secret, endpoint, fournisseur ou stockage ne peut être activé par ce document.
