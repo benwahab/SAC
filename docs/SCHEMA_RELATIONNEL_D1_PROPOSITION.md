@@ -352,3 +352,36 @@ Les événements restent append-only par les routes applicatives. Des triggers d
 
 Avant migration, chaque table doit disposer d'une matrice : états autorisés, transitions, acteur autorisé, durée de conservation, règle de suppression/anonymisation, dépendances et effets sur les alertes en cours. Les états proposés dans les sections précédentes sont indicatifs jusqu'à validation de cette matrice.
 
+
+
+## 8. Amendement conceptuel — droits d'un destinataire après révocation
+
+La relation `trusted_contacts` ne suffit pas à déterminer les droits sur une alerte déjà déclenchée. Le destinataire de l'instantané initial peut avoir une relation désormais révoquée ; cette révocation ne doit ni réécrire l'instantané ni supprimer mécaniquement les rappels déjà prévus.
+
+Avant migration, le modèle doit séparer :
+- **instantané de destinataire** : preuve que le compte était sélectionné au déclenchement ;
+- **éligibilité aux rappels initiaux** : dérivée de l'alerte active et de l'instantané, conformément à la règle produit déjà établie ;
+- **accès au détail de l'alerte** : politique distincte, encore à arbitrer ;
+- **autorisation de recevoir de nouvelles positions** : révocable immédiatement, indépendante des rappels ;
+- **autorisation de répondre / se porter volontaire / exercer la responsabilité** : politique distincte, encore à arbitrer.
+
+Une éventuelle table `alert_recipient_permissions` pourrait porter les autorisations par alerte et destinataire, avec une clé primaire composite `(alert_id, recipient_account_id)`, des clés étrangères composites et des dates de changement. Elle ne doit pas contenir de coordonnées ni de payload GPS.
+
+Ne pas ajouter de colonne `is_recipient` ou réutiliser `trusted_contacts.status` pour représenter tous ces droits. Ne pas figer les valeurs d'énumération tant que les arbitrages du document `ARBITRAGES_CONTACT_REVOQUE_ET_ALERTE_ORPHELINE.md` ne sont pas validés.
+
+Les rappels initiaux doivent rester indépendants de la révocation de la relation ; une tâche de rappel ne doit pas être annulée comme effet secondaire de la révocation. En revanche, chaque émission de position doit vérifier l'autorisation de partage au dernier point d'envoi.
+
+## 9. Amendement conceptuel — suppression de compte et alertes orphelines
+
+Le statut de compte doit représenter explicitement l'état terminal logique `deleted`, en plus de `active`, `suspended` et `deletion_pending`. Le schéma devra inclure les horodatages de demande et de finalisation, sans supposer une durée de grâce non validée.
+
+La finalisation ne peut pas se baser sur des compteurs envoyés par le client. Elle doit vérifier dans la transaction D1 finale qu'il ne reste aucune alerte ni aucun trajet actif, et que les opérations de révocation des sessions, appareils, abonnements push, invitations, outbox et accès fichiers sont cohérentes.
+
+Une alerte orpheline reste un objet métier distinct du compte qui l'a créée. Tant que la politique de secours n'est pas validée :
+- aucune clôture automatique ;
+- aucun pouvoir de clôture donné aux contacts ;
+- aucune suppression en cascade de l'alerte ou de ses événements ;
+- aucune prolongation arbitraire des données GPS ;
+- aucune confusion entre expiration du partage de position et clôture de l'alerte.
+
+La matrice finale devra prévoir la minimisation ou pseudonymisation des données d'auteur et de destinataires, sous réserve des obligations légales et des preuves strictement nécessaires.
