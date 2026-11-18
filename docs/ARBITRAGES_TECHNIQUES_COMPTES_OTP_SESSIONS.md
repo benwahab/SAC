@@ -487,7 +487,9 @@ Les triggers de la migration :
 4. rendent immuables l'identité, l'empreinte et les paramètres du défi ;
 5. n'autorisent qu'une transition de tentative à la fois, avec incrément exact de un ;
 6. épuisent le défi à la sixième tentative échouée ;
-7. lors d'une consommation correcte, vérifient l'adresse et activent le compte dans les triggers de la même instruction SQLite.
+7. empêchent la modification silencieuse des identités et toute vérification téléphonique dans ce parcours ;
+8. interdisent l'activation d'un compte ou la vérification d'une adresse sans défi OTP consommé ;
+9. lors d'une consommation correcte, vérifient l'adresse et activent le compte dans les triggers de la même instruction SQLite.
 
 Le endpoint de vérification réalise une seule instruction `UPDATE ... RETURNING` conditionnelle. Deux vérifications concurrentes du même défi ne peuvent donc pas le consommer deux fois. Les erreurs de code, d'expiration, de consommation et d'invalidation ne révèlent pas le code attendu.
 
