@@ -683,3 +683,16 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Faire relire les contrats par une personne indépendante en sécurité applicative.
 - [ ] Arbitrer conservation/scellement des audits, durée des exports et sessions administratives.
 - [ ] N'implémenter qu'après validation et autorisation explicite distincte.
+
+
+## Modèle de données administratif — 18 novembre 2026
+
+- [x] Cartographier les entités administratives et leurs relations logiques.
+- [x] Séparer compte, rôle, permission, mission et portée.
+- [x] Décrire dossiers de vérification, décisions de clôture, notifications, exports et audit.
+- [x] Identifier les contradictions entre architecture générale et décisions validées.
+- [x] Distinguer clôture ordinaire par l'auteur et exception administrative limitée.
+- [ ] Arbitrer les points ouverts du modèle logique.
+- [ ] Réconcilier les contrats historiques et les états TypeScript avant le schéma D1.
+- [ ] Faire relire le modèle par une personne indépendante en sécurité et données.
+- [ ] Autoriser séparément toute création de migration ou modification du code.
