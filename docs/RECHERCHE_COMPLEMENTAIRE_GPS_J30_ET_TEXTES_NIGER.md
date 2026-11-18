@@ -389,3 +389,30 @@ Références officielles :
 | HashiCorp Vault Transit | Trim irréversible des versions et API de sauvegarde/restauration | Pas de planification J+30 native ; sauvegarde exportée restaurable |
 
 Cette vague ne fait émerger aucun fournisseur approuvé. Elle confirme que la fonction « delete/destroy » isolée ne suffit jamais : le critère est l'impossibilité démontrée de restaurer la matière de clé après J+30, depuis chaque sauvegarde, réplica, export, cache, compte administrateur et procédure de reprise. Une promesse commerciale ou un état API terminal ne remplace pas les essais de restauration négatifs et les engagements contractuels.
+
+
+## 15. Précision supplémentaire sur Thales CipherTrust — Root of Trust et restauration HSM
+
+Une lecture complémentaire de la documentation Thales sur la Root of Trust (RoT) permet de préciser le risque identifié à la section 14.1.
+
+Thales documente la possibilité de supprimer une clé RoT par son identifiant. La documentation avertit que la suppression de la dernière clé RoT rend CipherTrust Manager inutilisable et rend irrécupérables les clés gérées par l'appliance. Elle précise également qu'une sauvegarde système créée avec l'option « tied-to-HSM » est chiffrée avec la clé RoT HSM active : si cette clé est supprimée, cette sauvegarde ne peut plus être déchiffrée ni restaurée.
+
+Cette propriété est intéressante comme mécanisme de destruction cryptographique d'une sauvegarde, mais elle ne valide pas l'architecture SAC :
+
+- la suppression de la dernière RoT est documentée comme une opération de décommissionnement, pas comme une suppression ciblée d'une clé GPS individuelle ;
+- la perte de la RoT peut rendre l'ensemble de l'appliance et de ses clés inutilisables, avec un impact disproportionné ;
+- il faut établir si une partition HSM, une autre appliance, un cluster, un export de clé ou une procédure de récupération conserve une copie ou une capacité équivalente ;
+- il n'existe pas dans les éléments examinés de preuve d'un déclenchement automatique, autonome et non annulable à J+30 pour une clé propre à une alerte ou à un utilisateur.
+
+La documentation des sauvegardes confirme par ailleurs qu'elles sont chiffrées avec une clé de sauvegarde, qu'elles peuvent être téléchargées puis restaurées sur la même appliance ou une autre, et que les clés de sauvegarde ne sont pas automatiquement copiées sur les autres nœuds. Ce dernier point ne signifie pas qu'une restauration est impossible : les copies et transferts de la clé de sauvegarde doivent être inventoriés explicitement.
+
+**Décision mise à jour :** Thales CipherTrust reste non approuvé pour SAC à ce stade. Une démonstration en environnement isolé pourrait être pertinente uniquement après confirmation écrite de Thales sur la destruction sélective, les sauvegardes « tied-to-HSM », la topologie HA/cluster, les copies de clés, les exports, la reprise après sinistre et l'absence de restauration après J+30. Aucun achat, compte, appliance ou test destructif n'est autorisé par cette analyse.
+
+Références officielles consultées :
+- Thales — Root of Trust Hardware Security Module (documentation v2.17) : https://thalesdocs.com/ctp/cm/2.17/admin/cm_admin/hardware-security-module/index.html
+- Thales — Backups (documentation v2.18) : https://www.thalesdocs.com/ctp/cm/2.18/admin/cm_admin/backups/index.html
+- NIST SP 800-88 Rev. 2, publiée en septembre 2025 : https://csrc.nist.gov/pubs/sp/800/88/r2/final
+
+### 15.1 Référence méthodologique NIST
+
+Le NIST SP 800-88 Rev. 2 est la version finale publiée en septembre 2025 et remplace la révision 1. Elle traite explicitement de l'effacement cryptographique parmi les méthodes de sanitisation des supports. Elle constitue une référence méthodologique utile pour cadrer les preuves et le programme de sanitisation, mais sa seule citation ne certifie ni un fournisseur ni le respect de l'échéance J+30 par SAC. Le plan de validation SAC doit donc rester fondé sur les scénarios concrets de restauration, de copies et de récupération.
