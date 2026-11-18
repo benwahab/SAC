@@ -957,3 +957,18 @@ L'e-mail peut éventuellement recevoir une notification neutre et présenter une
 OTP e-mail prouve uniquement le contrôle ponctuel de la boîte. Il ne prouve pas l'identité historique, la continuité du compte, la possession de la racine ou l'approbation d'un appareil. Si kit compromis et aucun appareil approuvé, le compte historique reste irrécupérable en l'absence d'un facteur indépendant préenregistré et validé.
 
 Aucune nouvelle adresse, donnée de contact, alerte, position ou secret ne doit être divulgué par notification. Aucun fournisseur, endpoint, champ, migration D1 ou flux n'est créé.
+
+
+## Remplacement du kit depuis un appareil approuvé — contrat conceptuel (18 novembre 2026)
+
+Cette annexe ne définit aucune API ni aucun schéma réel.
+
+Le remplacement du kit peut être initié depuis un appareil approuvé, sûr et non révoqué, avec preuve cryptographique fraîche liée à l'opération et à sa finalité. Le mot de passe, la session en cache ou un OTP e-mail seuls ne suffisent pas. Le serveur revalide l'appareil, sa révocation et l'époque racine au commit.
+
+Le nouveau secret est généré localement par CSPRNG, affiché une seule fois et jamais transmis au serveur. Le serveur ne conserve qu'un vérificateur protégé. Le commit atomique remplace la version précédente : un seul kit est valide. L'ancien kit n'est pas requis pour cette opération et devient inutilisable après commit.
+
+Avant commit, un échec laisse l'ancien kit valide. Après commit, le nouveau seul est valide, même si la réponse réseau au client est perdue ; aucun secret ne peut être récupéré depuis le serveur. Une opération concurrente ne peut pas consommer ou remplacer deux versions.
+
+Le remplacement ne modifie ni mot de passe, ni coordonnées, ni sessions non suspectes, ni appareils, ni racine, ni contacts, ni abonnement, ni alertes, ni instantanés SOS. Aucun appareil n'est approuvé ou promu. Si aucun appareil sûr n'est disponible, OTP e-mail, support ou contact ne permettent pas de remplacer le kit.
+
+Les choix sur appareil initiateur autorisé, notification et confirmation UX restent à arbitrer. Aucun code, endpoint, champ, fournisseur ou migration D1 n'est créé.
