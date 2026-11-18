@@ -311,3 +311,15 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Vérifier si une échéance J+30 peut être exécutée hors ligne, sans possibilité d'annulation administrative ou de réimportation.
 - [ ] Séparer dans les critères de preuve : (a) impossibilité cryptographique de déchiffrer après J+30 ; (b) sanitisation physique de la mémoire, selon les capacités certifiées du module.
 - [ ] Garder toutes les solutions HSM non approuvées jusqu'à démonstration et revue indépendante ; aucune clé réelle SAC ni aucun équipement ne doit être soumis à un test destructif.
+
+
+## Architecture à deux composants et accès hors ligne — 18 novembre 2026
+
+- [x] Documenter la séparation DEK/KEK et les limites des clés locales, des caches et des sauvegardes.
+- [x] Documenter le compromis entre consultation hors ligne et impossibilité de restauration après J+30.
+- [x] Documenter le risque D1 Time Travel : restauration d'un état antérieur et restauration annulable ; exclure GPS précis et secrets de déchiffrement de D1 et de ses exports.
+- [ ] Faire arbitrer explicitement l'option produit : accès hors ligne pendant 30 jours, priorité à l'irréversibilité avec déchiffrement en ligne, ou compromis sans historique GPS hors ligne.
+- [ ] Pour toute option locale, obtenir une matrice de compatibilité StrongBox/TEE par modèle, attestation hardwareEnforced, horloge, anti-rollback, état après extinction, réinitialisation, restauration et migration.
+- [ ] Pour toute option externe, prouver l'absence de cache de DEK, de clés de session persistantes, de réplica restaurable et de voie d'administration permettant une récupération après J+30.
+- [ ] Ajouter des essais D1 de restauration de bookmarks antérieurs pour confirmer que seules des métadonnées non sensibles réapparaissent ; ne pas créer de base ni effectuer de restauration réelle sans autorisation.
+- [ ] Maintenir le statut GPS historique : NO-GO jusqu'à arbitrage, démonstration et revue indépendante.
