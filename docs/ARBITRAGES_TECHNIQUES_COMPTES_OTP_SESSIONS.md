@@ -263,3 +263,16 @@ La suppression en attente bloque les nouvelles activités. La suppression défin
 Cette décision résout l'arbitrage produit sur les cinq états, mais ne modifie pas encore le contrat pur `src/domain/account-lifecycle.ts`, qui ne reconnaît actuellement que trois états. L'alignement du contrat et des tests doit faire l'objet d'une modification de code autorisée séparément. Le schéma D1, les routes d'authentification, les sessions actives et les ressources Cloudflare restent hors périmètre de cette mise à jour documentaire.
 
 **Mise à jour du registre :** l'ancien point « décider si les états d'inscription en attente et de suspension appartiennent au cycle du compte » est clos. Les paramètres OTP, le fournisseur e-mail, le changement d'adresse, la récupération cryptographique et le jumelage multi-appareils restent ouverts.
+
+
+## 13. Proposition en attente — alerte SOS déjà active pendant une suspension
+
+**Statut : proposition à arbitrer, non validée.**
+
+La suspension ne doit pas annuler ni interrompre une alerte déjà transmise. Les destinataires initiaux continueraient à recevoir les rappels toutes les 5 minutes jusqu'à clôture, sans ajout automatique de contacts. Les actions de réception et de prise en charge restent disponibles ; le premier contact qui choisit « Je prends la situation en charge » devient responsable principal, les autres pouvant intervenir.
+
+Pour le titulaire suspendu, proposition d'une capacité cryptographique d'urgence liée à une seule alerte et à l'appareil d'origine, distincte de toute session de compte. Elle pourrait uniquement permettre de consulter l'état minimal de l'alerte, transmettre une mise à jour de sécurité et demander/confirmer la clôture de cette alerte. Aucun accès au compte, aux proches, aux paramètres, aux autres alertes, à la création d'une nouvelle alerte ou à la modification des destinataires ne serait permis. Chaque action serait vérifiée côté serveur, limitée à cette alerte, journalisée et anti-rejeu.
+
+Points non décidés : maintien ou non de cette capacité en cas de suspension pour abus lié à l'alerte ; personne autorisée à clôturer si le titulaire a perdu son appareil ; conditions de clôture et notifications ; conservation des éléments de preuve en cas d'abus.
+
+Cette proposition n'autorise ni route API, ni permission, ni code, ni changement de session. La révocation générale des sessions reste immédiate. La continuité des alertes déjà transmises et des rappels aux destinataires initiaux doit être préservée.
