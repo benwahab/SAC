@@ -80,4 +80,5 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 - [Revue finale de cohérence du modèle relationnel](docs/REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md) — verdict, cardinalités, FK, suppressions, concurrence et blocages avant migration.
 
 
-- [Arbitrage P0 — cycle de vie du compte et preuve des proches](docs/ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md) — transitions des cinq états, écarts du contrat TypeScript et exigence d'un compte actif avec e-mail vérifié pour tout proche SAC.
+- [Arbitrage P0 — cycle de vie du compte et preuve des proches](docs/ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md) — états du compte, exigence d'e-mail vérifié et preuve d'acceptation.
+- [Contrat du cycle de vie des proches et invitations](docs/CONTRAT_CYCLE_VIE_PROCHES_ET_INVITATIONS.md) — création, acceptation, refus, expiration, retrait, révocation, réinvitation, sécurité et tests ; décisions ouvertes explicitement signalées.
