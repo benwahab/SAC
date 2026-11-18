@@ -166,4 +166,4 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Définir le scénario d'une alerte active dont l'auteur ne revient jamais pour la clôturer.
 - [ ] Faire vérifier la finalisation de suppression par tests D1 concurrents avant toute activation.
 - [ ] Définir la matrice finale d'effacement/anonymisation et les durées de conservation hors GPS avec validation juridique Niger.
-- [ ] Exécuter et vérifier la CI du commit intégrant le contrat de compte.
+- [x] Vérifier la CI du contrat de compte : run 44262859615, commit d39a1f75 ; typecheck, 12 tests de compte, tests existants, build et audits réussis.
