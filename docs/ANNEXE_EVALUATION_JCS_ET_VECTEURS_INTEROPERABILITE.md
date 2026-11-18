@@ -2,7 +2,7 @@
 
 **Date :** 19 novembre 2026  
 **Dépôt :** `benwahab/SAC`, branche `main`  
-**Statut :** évaluation technique préparatoire — non homologuée, non implémentée.  
+**Statut :** bibliothèque candidate intégrée et tests RFC ciblés exécutés — protocole non homologué, non activé.  
 **Objet :** évaluer RFC 8785 et préparer les vecteurs communs du futur protocole d’enrôlement multi-appareils.
 
 Cette annexe ne choisit pas définitivement l’encodage, les algorithmes de signature, les règles low-S, les formats de clés, le SAS ou la politique de cérémonie. Elle n’autorise aucune route d’approbation, activation de terminal, session, migration D1, ressource Cloudflare, déploiement ou usage GPS.
@@ -34,9 +34,9 @@ Paquet évalué : `canonicalize` (npm), version observée `5.1.0`.
 | Navigateur | JavaScript standard, mais bundle SAC non testé | Non vérifié |
 | Cloudflare Workers | JavaScript standard, mais import/build Worker non testé | Non vérifié |
 | Android/iOS Capacitor | Aucun test sur WebView ou adaptateur natif | Non vérifié |
-| Arbre verrouillé | Aucun `package-lock.json` présent à la racine lors de l’audit | Bloquant pour ajout maintenant |
+| Arbre verrouillé | `canonicalize@5.1.0` est fixé dans `package.json` et `package-lock.json` v3 | Verrouillé et vérifié par `npm ci` |
 
-**Décision de dépendance :** ne pas ajouter encore le paquet à `package.json`. Le dépôt n’a pas de lockfile et la CI utilise `npm install`. Il faut d’abord traiter la reproductibilité et l’avis de sécurité de la chaîne de développement déjà documentés dans `AUDIT_DEPENDANCES_ET_REPRODUCTIBILITE.md`. Après cela, intégrer une version exacte, verrouiller l’arbre, examiner le code source et exécuter les tests de conformité.
+**Décision de dépendance :** `canonicalize` est désormais ajouté comme dépendance directe exacte `5.1.0`. Le lockfile npm v3 contient l’archive `canonicalize-5.1.0.tgz`, son intégrité SHA-512 et sa licence Apache-2.0. Le code source de `lib/canonicalize.js` a été examiné : tri natif des clés selon l’ordre UTF-16, sérialisation des nombres via `JSON.stringify`, rejet des nombres non finis et des surrogates isolés. La bibliothèque est ESM et déclare Node `>=22`; son usage dans les WebView ciblées reste à vérifier. La CI utilise désormais `npm ci` avec Node `22.23.4` et npm `10.9.9`.
 
 La bibliothèque ne doit jamais recevoir directement un objet JSON non validé provenant du réseau. Le serveur et les clients doivent d’abord rejeter les doublons de propriétés, les chaînes Unicode invalides, les nombres non finis et les structures hors schéma. Il faut éviter le cycle parse/normalisation qui ferait vérifier une représentation différente de celle que l’émetteur a réellement signée.
 
@@ -151,7 +151,7 @@ Les signatures de la racine et du nouvel appareil devront porter sur le même ta
 
 | Environnement | Canonicaliser | Signer | Vérifier les signatures des autres | Statut |
 |---|---:|---:|---:|---|
-| Node.js 22 utilisé en CI | Oui | Oui | Oui | À exécuter |
+| Node.js 22 utilisé en CI | Oui | Tests JCS ciblés | Tests cryptographiques existants | Réussi sur GitHub Actions |
 | Chrome Android ciblé | Oui | Oui | Oui | À tester sur appareil |
 | Android WebView ciblé | Oui | Oui | Oui | À tester sur appareil |
 | Safari iOS ciblé | Oui | Oui | Oui | À tester sur appareil |
@@ -171,15 +171,25 @@ Pour chaque environnement :
 
 Une CI Node verte ne prouve pas les essais Android, iOS ou Worker. Aucun de ces essais ne doit être déclaré réussi sans résultat réellement observé.
 
-## 7. Séquence de réalisation autorisée par cette annexe
+## 7. État d’intégration et séquence suivante
 
-1. Traiter le lockfile et la reproductibilité du dépôt.
-2. Évaluer l’archive exacte de `canonicalize` et sa conformité avec les vecteurs RFC.
-3. Ajouter les fixtures RFC 8785 et les tests automatisés de la bibliothèque, sans transcript de production.
-4. Faire vérifier le schéma de transcript et les champs par la revue indépendante.
-5. Après arbitrage, publier un fixture de transcript SAC et ses octets exacts.
-6. Exécuter la matrice sur les environnements réellement disponibles.
-7. N’envisager l’implémentation de la cérémonie qu’après validation des formats, de la politique low-S, du SAS, des défis et de l’atomicité D1.
+Travaux effectivement réalisés dans le dépôt :
+- `canonicalize@5.1.0` ajouté en version exacte et verrouillé dans `package-lock.json` v3 ;
+- source de la bibliothèque examinée ;
+- script `npm run test:jcs` ajouté et branché à la CI ;
+- tests exécutés avec succès pour JCS-01 (nombres, chaînes, littéraux), JCS-02 (ordre UTF-16 des noms), tri récursif, préservation de l’ordre des tableaux, nombres non finis, surrogate isolé et stabilité des octets UTF-8 ;
+- `npm ci`, typecheck, tests cryptographiques existants, build et audit de production réussis dans le workflow de génération.
+
+Limites explicites : ces tests ciblés ne constituent pas encore la suite exhaustive de conformité RFC 8785. Ils ne valident pas la détection des noms dupliqués dans le JSON brut, le schéma métier du transcript, les signatures inter-plateformes, le SAS, low-S, ni l’atomicité D1.
+
+Séquence suivante :
+1. compléter les vecteurs de nombres de l’annexe B et les cas négatifs I-JSON ;
+2. ajouter une validation stricte des objets métier avant canonicalisation (objets JSON simples, profondeur/taille bornées, absence de `toJSON`, de valeurs non JSON et de cycles) ;
+3. concevoir et tester un parseur d’entrée qui rejette les noms de propriétés dupliqués avant `JSON.parse` ;
+4. faire vérifier le schéma de transcript et les champs par la revue indépendante ;
+5. après arbitrage, publier un fixture de transcript SAC et ses octets exacts ;
+6. exécuter la matrice sur les environnements réellement disponibles ;
+7. n’envisager l’implémentation de la cérémonie qu’après validation des formats, de la politique low-S, du SAS, des défis et de l’atomicité D1.
 
 ## 8. Sources
 
@@ -190,6 +200,6 @@ Une CI Node verte ne prouve pas les essais Android, iOS ou Worker. Aucun de ces 
 
 ## 9. Verdict
 
-**JCS + `canonicalize` 5.1.0 est le candidat de travail recommandé, pas une décision homologuée.** Aucun paquet n’a été ajouté, aucun code cryptographique opérationnel n’a été modifié et aucun test multiplateforme n’est déclaré exécuté.
+**JCS + `canonicalize` 5.1.0 est intégré comme candidat de canonicalisation et couvert par des tests ciblés réussis dans Node.js 22. Ce n’est pas une homologation du protocole d’enrôlement.** Aucun transcript de production, aucune cérémonie d’approbation, aucune activation d’appareil et aucune session n’ont été implémentés. Aucun test Chrome/Android, Safari/iOS, WebView ou Cloudflare Workers n’est déclaré exécuté.
 
 Le prochain verrou technique est la reproductibilité des dépendances, puis la production d’un fixture de transcript SAC complet uniquement après fermeture des champs et règles encore ouvertes.
