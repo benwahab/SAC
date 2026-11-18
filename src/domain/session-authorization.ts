@@ -25,6 +25,7 @@ export interface DeviceSessionRecord {
 export interface SessionAuthorizationContext {
   readonly expectedAccountId: string;
   readonly expectedDeviceId: string;
+  readonly accountStatus: "pending_verification" | "active" | "suspended" | "deletion_pending" | "deleted";
   readonly currentDeviceAuthVersion: number;
   readonly deviceStatus: "pending_verification" | "active" | "revoked";
   readonly now: string;
@@ -36,6 +37,7 @@ export type SessionAuthorizationError =
   | "session_revoked"
   | "session_expired"
   | "account_mismatch"
+  | "account_not_active"
   | "device_mismatch"
   | "device_not_active"
   | "session_version_mismatch";
@@ -84,6 +86,7 @@ export function authorizeDeviceSession(
   if (
     !context.expectedAccountId.trim() ||
     !context.expectedDeviceId.trim() ||
+    !["pending_verification", "active", "suspended", "deletion_pending", "deleted"].includes(context.accountStatus) ||
     !Number.isSafeInteger(context.currentDeviceAuthVersion) ||
     context.currentDeviceAuthVersion < 0 ||
     !isUtc(context.now)
@@ -107,6 +110,9 @@ export function authorizeDeviceSession(
   }
   if (session.accountId !== context.expectedAccountId) {
     return { ok: false, error: "account_mismatch" };
+  }
+  if (context.accountStatus !== "active") {
+    return { ok: false, error: "account_not_active" };
   }
   if (session.deviceId !== context.expectedDeviceId) {
     return { ok: false, error: "device_mismatch" };
