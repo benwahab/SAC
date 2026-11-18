@@ -924,3 +924,19 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases
 - [ ] Maintenir le NO-GO pour récupération cryptographique, remplacement de racine et parcours d'urgence non homologués.
 
 **Statut :** documentation uniquement ; aucune authentification, récupération, révocation réelle, route ou migration ajoutée.
+
+
+## Confidentialité familiale et isolation des données — 18 novembre 2026
+
+- [x] Auditer les contrats de confidentialité interne, proches/invitations, groupes, appareils, SOS, trajets, notifications et conservation.
+- [x] Formaliser la séparation entre compte personnel, relation de confiance, groupe privé et droits d'accès à une alerte dans `docs/CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md`.
+- [x] Documenter les risques des téléphones partagés, caches, aperçus de notifications, recherches, compteurs, pièces jointes et exports.
+- [ ] Arbitrer la matrice précise des champs accessibles à l'auteur, au destinataire et au responsable principal.
+- [ ] Définir le verrouillage après arrière-plan/inactivité et les réauthentifications sensibles.
+- [ ] Concevoir l'isolation des caches et fichiers temporaires par compte/appareil pour PWA et Android.
+- [ ] Définir les aperçus de notifications et les règles de téléchargement/export.
+- [ ] Finaliser les droits après révocation pendant une alerte active et la confidentialité des groupes.
+- [ ] Étudier séparément les parcours mineurs, tutelle et personnes dépendantes avant toute fonctionnalité.
+- [ ] Maintenir le NO-GO GPS et valider la matrice d'autorisation avant tout stockage ou migration.
+
+**Statut :** documentation uniquement ; aucun accès familial, contrôle parental, cache, verrouillage, notification ou stockage supplémentaire implémenté.
