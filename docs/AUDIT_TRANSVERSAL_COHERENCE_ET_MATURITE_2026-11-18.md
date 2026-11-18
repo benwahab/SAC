@@ -289,6 +289,8 @@ SAC ne peut être déclaré prêt que lorsque :
 - `ARCHITECTURE_ET_MODELE_DONNEES.md` : anciennes durées GPS corrigées pour distinguer alerte et trajet.
 - `CAHIER_DES_CHARGES_SAC.md` : ancienne conservation GPS après fin de partage remplacée par la règle normative.
 - `MACHINES_ETATS_ET_CONSERVATION.md` : matrice GPS réalignée sur la suppression à la clôture et distinction des trajets.
+- `CONSOLIDATION_GENERALE_SAC.md` : section GPS réécrite selon la règle normative actuelle.
+- `DECISIONS_ET_POINTS_A_VALIDER.md` : lignes historiques 1.5/1.6 explicitement marquées remplacées/corrigées, sans effacer l'historique.
 - Présent audit ajouté comme point de convergence transversal.
 
 Les modifications sont documentaires. Le code et les migrations restent intacts.
