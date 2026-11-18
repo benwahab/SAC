@@ -64,7 +64,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Ajouter un prototype expérimental d'échange ECDH P-256 par destinataire, dérivation HKDF-SHA-256 et signature ECDSA P-256 des clés publiques ; tests de base validés par CI run 44189717717 (commit 0c6dd008).
 - [x] Ajouter une empreinte SHA-256 lisible de la clé publique d'identité ; typecheck, tests existants et build validés par CI run 44189915423 (commit 7b3afdadd).
 - [x] Valider en CI les tests de stabilité, différence et validation d'empreinte : 18 tests réussis, 0 échec, typecheck et build réussis (run 44189940721, commit 0f83c114).
-- [ ] Vérifier la CI du dernier commit documentaire et de mise à jour du suivi.
+- [x] Vérifier la CI du commit f9093d20 : typecheck, tests crypto, cycle de vie appareils, certificats racine, autorisation des sessions, build et audits de dépendances réussis (run 44195249590).
 - [ ] Concevoir puis faire valider l'écran et la procédure de comparaison indépendante des empreintes entre proches ; ne jamais considérer une clé reçue du serveur comme authentifiée par défaut.
 - [ ] Spécifier et tester rotation, révocation, multi-appareils et récupération de compte sans rétablissement silencieux de la confiance.
 - [ ] Étendre les tests crypto à la rotation, à la révocation, au rejeu, à la liaison session/destinataire et à l'interopérabilité Android/iOS.
@@ -115,4 +115,5 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Intégrer obligatoirement la vérification du certificat et de son statut de révocation avant toute dérivation de clé ou autorisation d'échange.
 - [x] Durcir le contrat métier pur : seule l'identité d'appareil racine peut être l'acteur d'une approbation secondaire ; tests de refus ajoutés. Le contrôleur serveur doit encore charger le root actif depuis D1.
 - [x] Spécifier le contrat de session par appareil et la règle d'invalidation par auth_version dans docs/PROTOCOLE_MULTI_APPAREILS.md.
+- [x] Documenter les garanties et limites de D1 batch, les contrôles d'autorisation conditionnels, les risques de concurrence et les tests d'intégration requis dans docs/CONTRAT_SECURITE_D1.md. Aucune migration ni API D1 n'a été créée.
 - [ ] Implémenter et tester la transaction D1 de révocation et les contrôles d'accès conditionnels sur chaque lecture/écriture sensible.
