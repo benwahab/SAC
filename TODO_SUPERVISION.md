@@ -41,7 +41,8 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Préparer une proposition de schéma relationnel D1 sans migration ni stockage GPS dans docs/SCHEMA_RELATIONNEL_D1_PROPOSITION.md.
 - [x] Réaliser une revue critique de cette proposition et relever les contraintes composites, les garanties de prise en charge, les rappels/outbox, les abonnements push, l'immutabilité, la suppression et les risques de fuite GPS dans docs/REVUE_SCHEMA_RELATIONNEL_D1.md.
 - [x] Enrichir la proposition avec les corrections structurelles de la revue : liens composites, abonnements push, outbox récupérable, responsabilité principale, immutabilité et prévention des fuites GPS.
-- [ ] Formaliser les machines à états et la matrice de conservation/suppression avant toute migration.
+- [x] Formaliser les machines à états métier et la matrice de conservation/suppression (durées hors GPS explicitement laissées ouvertes) dans docs/MACHINES_ETATS_ET_CONSERVATION.md.
+- [ ] Faire valider les règles encore ouvertes : accès après révocation d'un contact, suppression de compte, durées de conservation hors GPS et détails des trois modes de Protection des trajets.
 - [ ] Valider le schéma relationnel détaillé, les rôles, les politiques d'accès, les états, les sauvegardes et les tests de sécurité avant toute migration D1.
 - [ ] Créer les migrations D1 et les tests d'accès après validation de ces prérequis.
 - [x] Installer les dépendances, exécuter typecheck et build dans GitHub Actions (run 44151374924, commit 6edbd77d).
