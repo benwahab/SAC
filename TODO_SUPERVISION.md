@@ -602,3 +602,24 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 
 **Correction de cohérence :** le numéro de téléphone est obligatoire mais déclaré, non vérifié. La procédure administrative peut utiliser ce numéro comme coordonnée ; une réponse ne prouve pas à elle seule l'identité. L'OTP e-mail reste l'unique vérification initiale du compte.
 
+
+## Modèle des rôles, permissions et missions — 18 novembre 2026
+
+- [x] Séparer les notions de rôle fonctionnel, permission précise et mission déléguée.
+- [x] Formaliser les rôles de référence : Super Admin, administrateur sécurité, support et auditeur.
+- [x] Confirmer que seul le Super Admin crée, attribue, modifie, suspend, reprend, révoque et termine les missions/délégations.
+- [x] Confirmer qu'un délégataire ne peut jamais déléguer, inviter un autre administrateur, attribuer des droits ou modifier son propre périmètre.
+- [x] Définir une mission personnelle, non transférable, avec objectif, permissions, périmètre, limites, dates et motif.
+- [x] Formaliser le refus par défaut, l'absence d'héritage automatique et la séparation des droits consulter/créer/modifier/suspendre/révoquer/clôturer/exporter.
+- [x] Confirmer que chaque action est vérifiée côté serveur à partir de la mission active et du périmètre réel de la ressource.
+- [x] Maintenir la permission de clôture d'alerte distincte, nominative et attribuée explicitement par le Super Admin à un administrateur sécurité ; aucun droit automatique pour Support ou Auditeur.
+- [ ] Établir le catalogue exhaustif des ressources et actions SAC.
+- [ ] Arbitrer les périmètres disponibles (global, service, région, dossier, alerte) et leurs combinaisons.
+- [ ] Définir précisément les données et opérations accessibles au Support.
+- [ ] Définir les vues et exports accessibles à l'Auditeur.
+- [ ] Définir les durées par défaut des missions, alertes d'expiration et règles de renouvellement.
+- [ ] Définir la suspension d'urgence d'une mission et ses effets sur les sessions ouvertes.
+- [ ] Définir les règles de conflit entre missions et le circuit de demande d'extension au Super Admin.
+- [ ] Transformer le modèle en matrice de permissions exhaustive et en tests positifs/négatifs avant toute implémentation.
+- [ ] Ne créer aucun rôle actif, compte administratif, permission, mission, écran, endpoint, middleware ou migration D1 sans autorisation distincte.
+
