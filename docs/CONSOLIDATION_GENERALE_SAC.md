@@ -438,3 +438,8 @@ Lire `docs/CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md` pour les r
 ## Résilience opérationnelle, continuité et reprise après incident — complément du 18 novembre 2026
 
 `docs/CONTRAT_RESILIENCE_CONTINUITE_ET_REPRISE_INCIDENT.md` consolide les règles réseau faible/hors ligne, perte de réponse, pannes API/D1 et fournisseurs, outbox/worker, sauvegardes, restauration et exercices de reprise. Il rappelle que `/api/health` vérifie uniquement un accès D1 élémentaire et que le service worker PWA ne garantit aucun SOS hors ligne. La remise en service après restauration est conditionnée à la réconciliation des révocations et suppressions, et à la preuve de non-résurrection. RTO/RPO, SLA, fournisseurs et procédures opérationnelles restent à arbitrer ; aucune infrastructure n'a été modifiée.
+
+
+## Gouvernance juridique et conformité — complément du 18 novembre 2026
+
+`docs/CONTRAT_GOUVERNANCE_JURIDIQUE_ET_CONFORMITE.md` complète la mise à jour juridique Niger et la pré-analyse de conformité. Il formalise la gouvernance de l'entité porteuse, la cartographie des traitements, les données sensibles, les mineurs, les droits des personnes, les responsabilités, les fournisseurs/transferts, les incidents et la conformité pays par pays. L'incertitude postérieure à la suppression de la HAPDP en juin 2026 demeure un blocage : ordonnance 2026-30 et circuits ministériels doivent être authentifiés. Aucun avis juridique définitif ni autorisation de lancement n'est prétendu.
