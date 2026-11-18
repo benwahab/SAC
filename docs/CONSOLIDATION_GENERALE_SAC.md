@@ -363,3 +363,8 @@ Ces documents sont des spécifications et analyses. Ils ne signifient pas que la
 ## Modèle global des données — consolidation du 18 novembre 2026
 
 Le document `MODELE_GLOBAL_DONNEES_SAC.md` relie les domaines comptes, identités, appareils, proches, groupes, alertes, réponses, trajets, programmation SOS, notifications, abonnements/paiements et administration. Il fixe `accounts` comme identité canonique, documente les écarts entre le cahier des charges, la proposition D1 et le code, et maintient le statut NON PRÊT POUR MIGRATION. Les contrats spécialisés et les décisions produit restent les références détaillées.
+
+
+## Revue finale de cohérence relationnelle — 18 novembre 2026
+
+`docs/REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md` examine les cardinalités, clés étrangères composites, suppressions, courses concurrentes, machines à états et domaines non spécifiés. Il classe les blocages P0/P1/P2 et confirme que le modèle n'est pas prêt pour migration D1.
