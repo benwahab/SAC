@@ -357,3 +357,10 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Exécuter les tests de sauvegarde/restauration sur appareils Android de plusieurs OEM et versions, et sur iPhone/iPad réels.
 - [ ] Inspecter les APK/IPA produits pour vérifier les règles embarquées et tester les restaurations réelles.
 - [ ] Maintenir le statut GPS historique : NO-GO tant que les scénarios de restauration ne sont pas tous validés.
+
+## Clarification du statut de l'architecture GPS — 18 novembre 2026
+
+- [x] Corriger l'intitulé de l'étude crypto : archive locale 30 jours = cible candidate, non approuvée ; pas une architecture retenue.
+- [x] Clarifier que les exclusions Android/iOS sont des contrôles de réduction du risque et non une preuve J+30.
+- [x] Journaliser les détails Android Auto Backup, transferts D2D/cross-platform, iOS ThisDeviceOnly, iCloud Keychain et exclusions de fichiers.
+- [ ] Maintenir l'architecture d'historique GPS en NO-GO ; aucune promesse d'accès hors ligne ni de suppression définitive avant validation indépendante.
