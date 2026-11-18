@@ -255,3 +255,8 @@ Aucun développement ou déploiement avant :
 7. autorisation explicite de l'utilisateur pour toute modification de code, test, migration, ressource Cloudflare, fournisseur ou déploiement.
 
 **Conclusion :** l'alerte doit rester une commande privée, authentifiée, atomique et traçable. Ni un identifiant connu, ni une notification acceptée, ni une candidature, ni un rôle administratif ne peuvent se substituer aux autorisations et aux faits confirmés par le serveur.
+
+
+## Référence complémentaire — prévention des abus et disponibilité
+
+Lire `CONTRAT_PREVENTION_ABUS_USURPATION_ET_SATURATION.md` pour le modèle de menaces étendu, les limites anti-automatisation, les plaintes, la saturation et la protection du chemin critique. Préserver l'interdiction de bloquer automatiquement un SOS uniquement en raison d'alertes répétées. Les seuils et mesures proposées ne sont pas approuvés et ne modifient pas le cycle SOS.
