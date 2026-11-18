@@ -245,3 +245,36 @@ Une suspension ne doit pas être interprétée comme une clôture ou une annulat
 - Le contrat pur `src/domain/account-lifecycle.ts` n'est pas encore aligné : il n'accepte actuellement que `active`, `deletion_pending` et `deleted`. Son évolution et ses tests restent à faire dans une étape de code autorisée distinctement.
 - La migration D1 doit attendre l'alignement des contrats, les règles de transition, les contraintes atomiques et la revue de sécurité.
 - Cette décision documentaire n'autorise ni modification du code, ni migration D1, ni activation d'une route d'authentification.
+
+
+## 10. Proposition en attente — continuité d'une alerte pendant la suspension
+
+**Statut : proposition de conception, non validée par l'utilisateur ; aucune règle de code ne doit en être déduite.**
+
+### Principe de continuité
+
+Une suspension administrative ne doit jamais annuler, masquer, mettre en pause ou interrompre automatiquement une alerte SOS déjà transmise. Le traitement de cette alerte devient indépendant de l'accès général au compte :
+
+- les destinataires initialement sélectionnés conservent l'alerte ;
+- les rappels continuent toutes les 5 minutes vers ces seuls destinataires jusqu'à la clôture ; aucun nouveau contact n'est ajouté automatiquement ;
+- « J'ai reçu l'alerte » confirme la réception ; « Je prends la situation en charge » permet au premier répondant de devenir responsable principal, les autres pouvant également intervenir ;
+- la suspension ne retire pas aux proches les informations et actions nécessaires au traitement de l'alerte déjà reçue.
+
+### Accès du titulaire suspendu — proposition
+
+Le titulaire ne récupère pas son compte et ne reçoit aucune session générale. Pour éviter qu'une suspension empêche de mettre fin à une fausse alerte ou de confirmer sa sécurité, il pourrait conserver sur l'appareil d'origine une capacité cryptographique strictement liée à cette alerte, créée au moment de son émission. Cette capacité ne permettrait que :
+
+1. consulter l'état minimal de cette alerte précise ;
+2. transmettre une mise à jour de sécurité ;
+3. demander ou confirmer la clôture de cette alerte précise.
+
+Elle ne permettrait jamais de se reconnecter, de consulter le profil ou les proches, de créer une alerte, de changer les destinataires, de modifier les paramètres du compte ou d'agir sur une autre alerte. Chaque action serait authentifiée côté serveur, limitée à l'identifiant de l'alerte, journalisée et protégée contre le rejeu. La révocation de session générale resterait immédiate.
+
+### Limites et questions à arbitrer
+
+- Confirmer si cette capacité d'urgence restreinte doit être conservée malgré la suspension, ou si le titulaire doit être entièrement exclu de l'alerte après suspension.
+- Définir qui peut clôturer l'alerte si le titulaire n'a plus accès à son appareil : responsable principal, autre contact intervenant, ou procédure distincte.
+- Définir les conditions de clôture et les notifications envoyées à tous les destinataires initiaux.
+- Définir la conduite à tenir si le compte est suspendu pour abus lié précisément à l'alerte en cours ; une capacité de clôture ne doit pas devenir un moyen de supprimer les preuves ou d'empêcher l'assistance.
+
+**Aucune capacité d'urgence séparée, permission de clôture ou route API n'est approuvée par cette proposition.** La continuité des rappels et l'absence d'annulation automatique sont les exigences de conception retenues pour préserver la sécurité ; les permissions exactes restent à valider.
