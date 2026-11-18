@@ -492,6 +492,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Valider le principe : une suspension ne clôture ni n'interrompt une alerte SOS déjà transmise ; les rappels restent adressés toutes les 5 minutes aux seuls contacts initiaux, sans ajout automatique.
 - [x] Valider le principe d'une capacité d'urgence cryptographique limitée à l'alerte existante et à l'appareil d'origine : état minimal, mise à jour de sécurité et demande/confirmation de clôture ; aucun accès général au compte ni aux autres alertes.
 - [x] Valider la distinction anti-abus : le titulaire suspendu peut signaler qu'il est en sécurité, mais cette mise à jour ne clôture pas l'alerte ; si la suspension est liée à un abus potentiel sur cette alerte, sa demande de clôture ne suffit pas à elle seule et des contrôles serveur supplémentaires sont requis ; aucune preuve ni trace ne peut être effacée.
-- [ ] Définir les critères du contrôle renforcé, l'autorité finale de clôture, les cas de perte de l'appareil et les notifications aux contacts.
+- [x] Valider que seule l'administration SAC peut clôturer une alerte dans ce contexte ; ni le titulaire suspendu ni les proches, même le responsable principal, ne peuvent la clôturer.
+- [ ] Définir la procédure de demande et de vérification de clôture administrative, les personnes habilitées, les critères de contrôle renforcé et les notifications aux contacts.
 - [ ] Spécifier et faire examiner indépendamment le protocole cryptographique et les contrôles serveur avant toute implémentation.
 - [ ] Ne créer aucune route API, permission opérationnelle, session spéciale ou migration D1 sans autorisation distincte.
