@@ -211,3 +211,8 @@ Avant tout code, endpoint, stockage, journal ou migration :
 8. obtenir une autorisation explicite distincte pour l'implémentation.
 
 **Conclusion :** aucun accès interne ne doit être fondé sur la confiance accordée au titre d'un acteur. La permission, la mission, la ressource, la finalité et les champs visibles doivent être contrôlés ensemble. Le Super Admin reste l'autorité de gouvernance, mais ses actions restent traçables et les preuves ne doivent pas dépendre uniquement de son propre contrôle.
+
+
+## Référence complémentaire — confidentialité entre proches et groupes
+
+Lire également `CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md` pour le cloisonnement des comptes familiaux, des groupes privés, des alertes, des téléphones partagés et des notifications. Les liens familiaux, l'appartenance à un groupe et le partage d'un appareil ne créent aucun droit d'accès. Les autorisations doivent rester explicites, minimales et vérifiées côté serveur.
