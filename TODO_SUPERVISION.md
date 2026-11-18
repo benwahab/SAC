@@ -552,7 +552,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Prévoir l'enregistrement du numéro avec son indicatif international.
 - [x] Distinguer collecte obligatoire et vérification effective du numéro.
 - [x] Maintenir la décision antérieure : pas de SMS OTP pour l'authentification des comptes ; aucune vérification SMS n'est autorisée implicitement.
-- [ ] Définir et faire valider la méthode de vérification du numéro, sans présumer d'un SMS OTP.
+- [x] Aucune vérification indépendante du numéro n'est prévue ; l'OTP e-mail suffit pour la vérification initiale du compte.
 - [ ] Définir les règles de changement, de mise à jour et de nouvelle vérification du numéro.
 - [ ] Spécifier les protections d'accès et la conservation du numéro.
 - [ ] Ne créer aucun champ, validation opérationnelle, envoi SMS, service externe, endpoint ou migration D1 sans autorisation distincte.
