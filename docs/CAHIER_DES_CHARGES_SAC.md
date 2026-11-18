@@ -138,8 +138,8 @@ Le niveau est choisi par l'auteur et ne peut pas être modifié par les destinat
 
 1. L'utilisateur choisit le type et le niveau d'alerte, ou utilise le bouton SOS selon le parcours prévu.
 2. L'application affiche clairement les destinataires sélectionnés.
-3. Elle recueille la position disponible si l'utilisateur a accordé la permission et si une position est obtenue.
-4. Le serveur enregistre l'alerte et fige la liste des destinataires.
+3. Elle recueille, si l'utilisateur l'autorise, une position disponible sur l'appareil ; une position indisponible n'empêche jamais le SOS.
+4. Le serveur enregistre l'alerte et fige la liste des destinataires. La position ne doit pas être enregistrée en clair ni persistée dans D1, R2, les journaux ou les files d'attente. L'architecture de travail privilégie le chiffrement sur l'appareil et un relais temporaire de paquets chiffrés ; ce relais n'est pas encore implémenté ni validé.
 5. Le système crée les tâches de notification et affiche l'état réel du traitement.
 6. L'utilisateur peut consulter l'état de son alerte et la clôturer.
 
@@ -158,7 +158,7 @@ Selon les permissions et la disponibilité des données :
 - destinataires sélectionnés ;
 - réponses et prises en charge.
 
-Une position indisponible ne doit pas empêcher une alerte d'être créée. L'interface doit signaler « position indisponible » plutôt que fabriquer une position.
+Une position indisponible ne doit pas empêcher une alerte d'être créée. L'interface doit signaler « position indisponible » plutôt que fabriquer une position. Tant que la preuve de destruction irréversible J+30 n'est pas acquise, aucune coordonnée GPS réelle ne doit être persistée par le backend SAC. Le serveur ne reçoit, au mieux, que des paquets chiffrés transitoires dans le cadre d'un relais qui devra être audité ; les journaux, traces, files et pièces jointes doivent être exclus de tout contenu GPS.
 
 ### 8.3 SOS discret et code de contrainte
 
