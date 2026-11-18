@@ -148,7 +148,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 
 - [x] Consulter le texte de base de la loi n° 2022-59 et les informations officielles HAPDP sur les modifications 2023/2024.
 - [x] Rédiger une pré-analyse des formalités, numéros de téléphone, données de santé, localisation, transferts internationaux, conservation, droits et sous-traitants dans `docs/CONFORMITE_DONNEES_NIGER.md`.
-- [ ] Obtenir et examiner la version consolidée intégrant les modifications 2023 et 2024.
+- [ ] Télécharger et examiner intégralement la version consolidée annoncée sur la page officielle HAPDP ; vérifier chaque article et sa numérotation.
 - [ ] Faire confirmer par la HAPDP les formalités précises applicables aux numéros de téléphone, urgences médicales, localisation et transferts transfrontaliers.
 - [ ] Cartographier les fournisseurs, pays, régions, sous-traitants et flux de données avant toute activation.
 - [ ] Déterminer les obligations de désignation du correspondant à la protection des données pour la personne morale porteuse de SAC.
