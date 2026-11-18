@@ -1,4 +1,4 @@
-import { evaluateSessionAge } from "./auth-policy";
+import { evaluateSessionAge } from "./auth-policy.ts";
 
 /**
  * Contrat pur d'autorisation des sessions liées à un appareil.
