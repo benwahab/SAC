@@ -338,3 +338,13 @@ L'état exact doit être vérifié à nouveau dans le code et la CI avant toute 
 Toute nouvelle décision validée doit être ajoutée au registre correspondant et répercutée ici si elle modifie l'architecture générale. Toute modification doit préciser sa date, son statut et les documents affectés.
 
 Ce document est un index de cohérence, pas un substitut aux contrats techniques détaillés.
+
+## Gouvernance et sécurité administrative — complément du 18 novembre 2026
+
+Les documents suivants détaillent le modèle cible de gouvernance et de sécurité :
+- `docs/CATALOGUE_RESSOURCES_MATRICE_PERMISSIONS.md` : ressources et permissions par rôle.
+- `docs/CLASSIFICATION_DONNEES_ET_ACCES_ADMIN.md` : sensibilité et minimisation des données.
+- `docs/GOUVERNANCE_MISSIONS_ADMIN_ET_CYCLE_DE_VIE.md` : missions, suspension et révocation.
+- `docs/MODELE_MENACES_ET_PLAN_SECURITE_ADMIN.md` : menaces, contrôles et critères de mise en production.
+
+Ces documents sont des spécifications et analyses. Ils ne signifient pas que la console administrative ou ses contrôles sont opérationnels.
