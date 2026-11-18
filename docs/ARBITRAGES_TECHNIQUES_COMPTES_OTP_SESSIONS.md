@@ -423,7 +423,7 @@ La validation doit utiliser l'heure serveur. L'épuisement, l'expiration, la con
 
 Le contrat pur `src/domain/email-otp-policy.ts` encode les durées, le nombre d'essais, les états consommé/invalide/expiré et le délai de renvoi. Les tests correspondants sont dans `tests/email-otp-policy.test.ts` et exécutés par la CI. Ce contrat pur ne constitue pas encore une persistance D1, un endpoint, un générateur de code, un mécanisme de hachage/HMAC, un envoi réel ni une activation de compte.
 
-**Statut : paramètres métier validés et contrat pur testé ; parcours OTP serveur complet encore à construire et à auditer.**
+**Statut :** paramètres métier validés ; contrat pur, schéma D1 versionné et premiers endpoints serveur implémentés. L'application distante et les tests sur le runtime D1 Cloudflare restent à faire.
 
 
 ## 17. Contrat de validation des données d'inscription
@@ -435,11 +435,11 @@ Le contrat pur `src/domain/registration-policy.ts` et ses tests définissent les
 - **Mot de passe :** application de la règle déjà validée (minimum 12 points de code Unicode). La valeur n'est jamais rognée ni normalisée : espaces et Unicode sont conservés exactement.
 - **Langue :** seules les valeurs `fr`, `en` et `ar` sont acceptées.
 
-Ce validateur ne vérifie pas la propriété de l'adresse e-mail ou du téléphone, ne crée aucun compte, ne hache aucun mot de passe et ne crée aucune session. Le téléphone reste déclaré/non vérifié ; seule la validation du défi e-mail autorise l'activation du compte.
+Ce validateur ne prouve pas la propriété de l'adresse e-mail ou du téléphone. Le parcours serveur crée le compte en attente et conserve le téléphone comme identité déclarée/non vérifiée ; seule la validation du défi e-mail autorise l'activation du compte. Le hachage du mot de passe est exécuté côté serveur avant persistance.
 
 La validation des e-mails internationaux/IDN devra être complétée si SAC décide de les accepter ; le contrat actuel prend en charge les domaines ASCII (les domaines internationalisés doivent être présentés sous forme IDNA/Punycode). Le format E.164 est la représentation canonique persistée prévue.
 
-**Statut :** contrat d'entrée codé et testé ; persistance et parcours serveur non implémentés.
+**Statut :** contrat d'entrée codé et testé ; utilisé par les routes serveur d'inscription, de renvoi et de vérification.
 
 
 ## 18. Format et primitives cryptographiques du code OTP e-mail
@@ -463,4 +463,54 @@ Le module serveur `functions/lib/security/email-otp-code.ts` :
 
 Le secret HMAC doit être un secret Cloudflare aléatoire d'au moins 32 caractères, distinct de D1. Il n'est pas créé ni configuré par le code du dépôt. La rotation et le versionnement du secret devront être conçus avant activation réelle.
 
-**Limite actuelle :** ces primitives ne créent pas encore de défi persistant, n'invalident pas un défi dans D1, n'incrémentent pas atomiquement les tentatives, n'envoient pas d'e-mail et n'activent aucun compte. Ces opérations exigent le prochain lot d'implémentation serveur et ses tests de concurrence D1.
+**Statut :** primitives utilisées par les routes serveur et le schéma D1 versionné. La configuration des secrets et du fournisseur reste absente ; aucune migration distante n'a été appliquée.
+
+
+## 19. Première tranche serveur : inscription et vérification e-mail
+
+### Schéma D1 versionné
+
+La migration `migrations/0001_account_email_otp.sql` crée :
+- `accounts` avec les cinq états déjà validés ;
+- `account_identities` pour les adresses e-mail et téléphones, avec unicité par canal et identité principale ;
+- `email_otp_challenges` avec empreinte HMAC, compteur, maximum, création, expiration, consommation et invalidation ;
+- des clés étrangères composites liant chaque défi à l'identité du même compte.
+
+Les horodatages de ces tables sont des millisecondes Unix UTC. Le téléphone est enregistré avec `verified_at = NULL` et n'est jamais utilisé pour activer le compte.
+
+### Garanties SQL
+
+Les triggers de la migration :
+1. refusent un défi si le compte n'est pas en attente ou si la cible n'est pas l'adresse e-mail principale non vérifiée ;
+2. refusent un nouveau défi avant 60 secondes ;
+3. invalident le défi précédent dans la même transaction que l'insertion du nouveau ;
+4. rendent immuables l'identité, l'empreinte et les paramètres du défi ;
+5. n'autorisent qu'une transition de tentative à la fois, avec incrément exact de un ;
+6. épuisent le défi à la sixième tentative échouée ;
+7. lors d'une consommation correcte, vérifient l'adresse et activent le compte dans les triggers de la même instruction SQLite.
+
+Le endpoint de vérification réalise une seule instruction `UPDATE ... RETURNING` conditionnelle. Deux vérifications concurrentes du même défi ne peuvent donc pas le consommer deux fois. Les erreurs de code, d'expiration, de consommation et d'invalidation ne révèlent pas le code attendu.
+
+### Routes créées
+
+- `POST /api/auth/register` : valide les entrées, hache le mot de passe, crée le compte `pending_verification`, les identités et le premier défi, puis demande l'envoi par Resend.
+- `POST /api/auth/resend-email` : crée un nouveau défi seulement pour un compte en attente ; le trigger D1 applique le délai de 60 secondes et invalide l'ancien défi.
+- `POST /api/auth/verify-email` : vérifie et consomme le défi, puis active le compte par trigger D1.
+
+Aucune route ne crée de session. L'activation du compte ne vaut ni approbation d'un appareil secondaire ni restauration d'une racine cryptographique.
+
+### Mot de passe
+
+`functions/lib/security/password-hash.ts` utilise PBKDF2-HMAC-SHA-256 avec 600 000 itérations et un sel aléatoire unique de 16 octets. La clé dérivée sert à produire un vérificateur HMAC de contexte ; ni mot de passe ni clé dérivée ne sont persistés. Le format stocké contient l'algorithme, le coût, le sel et le vérificateur.
+
+Ce choix utilise WebCrypto natif des Workers et doit encore faire l'objet d'une mesure de latence sur le runtime Cloudflare ainsi que d'une revue sécurité indépendante. OWASP recommande Argon2id en premier choix et indique PBKDF2-HMAC-SHA-256 à 600 000 itérations dans les contextes où PBKDF2/FIPS est requis : https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html.
+
+### Tests et limites
+
+- `tests/d1_email_otp_schema.test.py` exécute la migration réelle avec SQLite et teste le cooldown, l'invalidation, l'épuisement, l'activation atomique et les contraintes d'identité.
+- Les tests unitaires du générateur OTP, du HMAC, du hachage et des politiques sont ajoutés à la CI.
+- Ces tests SQLite ne remplacent pas encore les tests d'intégration sur le runtime D1 Cloudflare ni les tests de concurrence Preview isolés.
+- Les limites globales anti-abus par IP, compte et appareil ne sont pas définies ; aucune valeur supplémentaire n'a été inventée.
+- Le secret `EMAIL_OTP_HMAC_SECRET`, `RESEND_API_KEY` et `RESEND_FROM_EMAIL` ne sont pas configurés. Sans eux, les routes échouent fermées et aucun e-mail n'est prétendu envoyé.
+- La migration est versionnée mais n'a pas été appliquée à la base distante `sac-db`.
+- Aucun login, cookie de session, appareil racine ou accès privé n'est encore créé par ce lot.
