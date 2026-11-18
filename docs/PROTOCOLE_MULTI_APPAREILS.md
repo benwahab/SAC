@@ -440,3 +440,47 @@ Le serveur devra consommer le défi et faire passer l'enrôlement à son état t
 **Statut :** constat d'audit documentaire et prototype ; aucune API ni migration n'est créée. Le format final du transcript doit être conçu et revu avant modification du code du certificat.
 
 La proposition de format et de séquence est maintenant détaillée dans [TRANSCRIPT_CEREMONIE_MULTI_APPAREILS.md](TRANSCRIPT_CEREMONIE_MULTI_APPAREILS.md). Elle reste candidate : elle ne doit pas être traitée comme un contrat approuvé ou une implémentation.
+
+## 22. Portée métier de la révocation d'un appareil — proposition à valider
+
+La révocation d'un appareil est une révocation de capacité et de sessions de cet appareil, pas une révocation du compte utilisateur ni de ses relations de confiance.
+
+### 22.1 Révocation d'un appareil secondaire
+
+Après commit de révocation d'un secondaire :
+- toutes les sessions et tous les jetons de cet appareil sont invalides ; son auth_version est incrémenté ;
+- ses abonnements push sont désactivés ; les autres appareils actifs du même compte conservent leurs propres sessions et abonnements ;
+- l'appareil ne peut plus lire, déclencher, répondre, modifier ou clôturer une alerte avec ses anciens jetons ;
+- les contacts de confiance, l'abonnement commercial, les alertes et l'historique du compte ne sont pas supprimés ni modifiés ;
+- l'instantané des destinataires d'une alerte déjà déclenchée n'est pas réécrit ;
+- les notifications destinées au compte peuvent continuer vers ses autres appareils actifs et autorisés ;
+- une notification déjà confiée au fournisseur pour l'appareil révoqué peut encore arriver. À son ouverture, tout accès au contenu doit être revalidé côté serveur ;
+- les données et clés locales du téléphone révoqué ne sont pas réputées effacées. Si le téléphone est hors ligne, aucune suppression à distance n'est garantie.
+
+La réinscription de ce même matériel doit produire une nouvelle cérémonie et de nouvelles sessions. L'ancien certificat, les anciens jetons et les anciennes clés d'appareil ne sont pas réactivés.
+
+### 22.2 Révocation de l'appareil racine
+
+L'appareil racine a une autorité spéciale d'approbation, mais n'est pas le compte lui-même. Sa révocation :
+- invalide ses sessions, jetons et abonnements comme pour tout appareil ;
+- fait passer l'état de confiance du compte à root_recovery_required ;
+- bloque toute nouvelle approbation d'appareil et toute opération cryptographique qui exige la racine, notamment les nouveaux partages GPS ;
+- n'autorise aucun appareil secondaire à devenir racine ou à approuver un autre appareil par simple promotion ;
+- ne supprime pas le compte, ses contacts, son abonnement, ses alertes ou son historique ;
+- ne doit pas automatiquement révoquer les sessions des appareils secondaires : ceux-ci peuvent conserver les fonctions ordinaires du compte qui ne dépendent pas de la racine, sous réserve de leur propre statut actif ;
+- ne permet pas aux appareils secondaires d'accéder aux clés privées de la racine ni de reconstruire son identité.
+
+Le retour à un état avec racine exige une procédure explicite de récupération cryptographique : nouvelle identité racine, nouvelle cérémonie d'approbation et revérification indépendante des empreintes par les contacts concernés avant reprise du partage GPS. La récupération du mot de passe ou une session secondaire ne suffit pas.
+
+### 22.3 Courses et opérations simultanées
+
+La révocation d'un appareil et toute opération protégée de cet appareil doivent être sérialisées côté serveur :
+- si la révocation commit en premier, toute requête ultérieure de l'appareil est refusée, même si son jeton signé n'a pas expiré ;
+- si une mutation valide commit avant la révocation, son événement est conservé ; la révocation bloque les mutations suivantes ;
+- les claims de notifications et les opérations de jumelage revérifient le statut de l'appareil dans leur transaction/condition atomique finale ;
+- une révocation répétée est idempotente ;
+- une révocation de secondaire ne doit jamais incrémenter auth_version des autres appareils ni invalider leurs sessions.
+
+**Tests obligatoires avant implémentation :** révocation d'un secondaire parmi plusieurs ; révocation concurrente à une requête protégée ; alerte active sans suppression de destinataires ; notification multi-appareils ; notification déjà acceptée ; révocation du root sans révocation implicite des secondaires ; tentative de promotion d'un secondaire ; récupération sans restauration de l'ancienne racine ; rejeu idempotent et courses avec approbation/outbox.
+
+**Statut :** proposition de portée fonctionnelle et sécurité à valider. Aucun endpoint, migration D1 ou flux de récupération n'est créé par cette spécification.
