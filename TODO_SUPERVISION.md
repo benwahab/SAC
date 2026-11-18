@@ -404,3 +404,14 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Définir le transcript canonique complet et la confirmation de clé, puis faire examiner le protocole par un spécialiste indépendant.
 - [ ] Vérifier l'orchestration serveur : certificat validé avant dérivation, révocation vérifiée avant chaque partage, et protection contre les courses entre révocation et envoi.
 - [ ] Ne pas brancher ces prototypes à des positions réelles avant validation indépendante et preuve J+30.
+
+## Transcript de cérémonie multi-appareils — audit complémentaire — 18 novembre 2026
+
+- [x] Comparer le certificat secondaire expérimental à la cérémonie documentée.
+- [x] Relever que le certificat signé ne lie pas encore ceremonyId, défi serveur, nonce client, version complète du protocole et expiration.
+- [x] Consigner l'interdiction d'intégrer ce certificat au futur endpoint d'approbation avant correction du transcript.
+- [ ] Définir un format canonique versionné unique du transcript signé par la racine.
+- [ ] Définir émission, durée de vie, consommation atomique et idempotence du défi serveur.
+- [ ] Définir le traitement des pertes réseau avant/après commit sans permettre le rejeu d'un défi.
+- [ ] Ajouter les tests de rejeu, expiration, altération de chaque champ, concurrence et révocation pendant approbation.
+- [ ] Faire relire le transcript et le protocole par un spécialiste indépendant avant implémentation serveur.
