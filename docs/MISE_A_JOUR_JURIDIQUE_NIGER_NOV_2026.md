@@ -113,3 +113,8 @@ Sources institutionnelles :
 Cette recherche ne permet pas de conclure que le numéro spécial de juin 2026 n'existe pas ou n'est pas publié ; elle établit seulement qu'il n'a pas été retrouvé dans les sources numériques institutionnelles consultées. La prochaine démarche fiable est une demande documentaire au service du Journal officiel / Ministère de la Justice, ou la consultation d'un exemplaire papier authentifié conservé dans une juridiction ou une administration.
 
 **Conséquence SAC :** conserver le blocage juridique. Ne pas déduire le contenu exact de l'ordonnance à partir d'un OCR ou d'une reproduction secondaire ; obtenir l'exemplaire officiel avant d'actualiser les articles et les formalités.
+
+
+## Contrat transversal de gouvernance juridique — 18 novembre 2026
+
+Lire également `CONTRAT_GOUVERNANCE_JURIDIQUE_ET_CONFORMITE.md`, qui regroupe les conséquences produit, l'identité du responsable du traitement, les mineurs, les données sensibles, les fournisseurs/transferts, les droits et les conditions d'utilisation. Il ne lève pas le blocage de l'ordonnance 2026-30 : le texte authentique et les circuits ministériels doivent toujours être confirmés.
