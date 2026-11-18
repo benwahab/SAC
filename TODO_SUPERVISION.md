@@ -364,3 +364,10 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Clarifier que les exclusions Android/iOS sont des contrôles de réduction du risque et non une preuve J+30.
 - [x] Journaliser les détails Android Auto Backup, transferts D2D/cross-platform, iOS ThisDeviceOnly, iCloud Keychain et exclusions de fichiers.
 - [ ] Maintenir l'architecture d'historique GPS en NO-GO ; aucune promesse d'accès hors ligne ni de suppression définitive avant validation indépendante.
+
+## Arbitrage produit sur l'historique GPS — 18 novembre 2026
+
+- [x] Formaliser les trois orientations : priorité destruction stricte, priorité accès hors ligne (non conforme à ce stade), ou compromis sans historique après la session.
+- [x] Consigner que la décision produit n'est pas validée et que l'historique GPS reste NO-GO.
+- [ ] Obtenir l'arbitrage explicite du propriétaire produit avant de concevoir une fonctionnalité d'historique GPS.
+- [ ] Après arbitrage, mettre à jour les machines à états, contrats de données, matrice de conservation et parcours UI sans créer de stockage réel avant validation sécurité.
