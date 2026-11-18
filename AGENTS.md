@@ -24,6 +24,7 @@ Avant toute tâche, lis :
 18. `docs/PLAN_DIRECTEUR_REALISATION_SAC.md`
 19. `docs/ANNEXE_MODELE_DONNEES_SERVICES_PROFESSIONNELS.md`
 20. `docs/AUDIT_ETAT_REEL_CODE_2026-11-18.md`
+21. `docs/PLAN_SOCLE_COMPTE_SESSIONS_APPAREILS.md`
 
 Avant toute intervention, lis aussi les cinq documents de consolidation ajoutés à la liste obligatoire, dont l'audit de l'état réel du code. Pour les sujets qu'il couvre, `docs/DECISIONS_COMPLEMENTAIRES_2026-11-18.md` remplace les anciennes formulations relatives à l'identité visuelle, aux langues de lancement, à la console mobile, à la gouvernance des délégations et au kit de récupération. En cas de conflit non couvert ou ambigu, ne tranche pas seul : demande validation.
 
