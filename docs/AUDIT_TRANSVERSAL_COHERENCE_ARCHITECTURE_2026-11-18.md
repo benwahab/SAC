@@ -44,16 +44,16 @@ Les éléments explicitement marqués « proposition », « à arbitrer » ou «
 - à J+30 après clôture, l'entrée d'alerte et sa catégorie sont supprimées définitivement ;
 - aucune sauvegarde, restauration, export, réplication ou Time Travel ne doit ressusciter les données supprimées.
 
-**Écart documentaire :** `TODO_SUPERVISION.md` indique une direction d'architecture comprenant une « archive locale chiffrée sur le téléphone de l'auteur pendant 30 jours ». Des formulations historiques de la consolidation décrivent aussi une destruction GPS 30 jours après la fin du partage. Ces formulations peuvent être interprétées comme autorisant une conservation locale des positions d'une alerte après clôture, ce qui contredirait la règle produit validée.
+**Précision issue du recoupement :** la ligne du suivi a depuis été qualifiée de cible candidate non approuvée, et non d'architecture effectivement retenue. La section 11 de `DECISIONS_PRODUIT_RESTANTES.md` décrit également une ancienne proposition d'historique GPS local hors ligne. Ces éléments doivent rester visibles comme historique, mais ne peuvent être lus comme une autorisation de conservation. Les anciennes formulations « 30 jours après la fin du partage » sont hors périmètre des alertes clôturées.
 
 **Action requise :**
-- marquer explicitement les formulations historiques comme supersédées ;
-- préciser que l'archive locale de 30 jours ne peut en aucun cas contenir les positions GPS d'une alerte après sa clôture ;
+- marquer explicitement les formulations historiques comme supersédées ou candidates non approuvées ;
+- confirmer qu'aucune archive GPS locale post-clôture n'est autorisée pour les alertes ;
 - ne pas appliquer cette durée aux trajets sans décision distincte : leur conservation reste à arbitrer ;
 - définir le moment exact de purge des caches, buffers, paquets en transit, copies locales et clés ;
 - maintenir GPS NO-GO jusqu'à preuve de non-résurrection et revue indépendante.
 
-Aucune interprétation technique ne doit modifier la règle produit de suppression immédiate du GPS d'une alerte à sa clôture.
+Aucune interprétation technique ne doit modifier la règle produit de suppression immédiate du GPS d'une alerte à sa clôture. Le recoupement documentaire a permis de qualifier l'ancienne archive locale de candidate non approuvée ; il ne s'agit donc pas d'une décision à implémenter. Le présent P0 documentaire est traité par la rectification des références, sans lever le NO-GO technique.
 
 ### P0-03 — Autorité de clôture SOS et exception administrative
 
