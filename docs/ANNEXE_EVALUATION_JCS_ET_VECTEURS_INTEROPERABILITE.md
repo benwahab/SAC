@@ -178,9 +178,10 @@ Travaux effectivement réalisés dans le dépôt :
 - source de la bibliothèque examinée ;
 - script `npm run test:jcs` ajouté et branché à la CI ;
 - tests exécutés avec succès pour JCS-01 (nombres, chaînes, littéraux), JCS-02 (ordre UTF-16 des noms), tri récursif, préservation de l’ordre des tableaux, nombres non finis, surrogate isolé et stabilité des octets UTF-8 ;
+- les 24 valeurs IEEE-754 finies de l’Appendix B sont comparées à leur représentation attendue, et les vecteurs NaN/Infinity sont rejetés ;
 - `npm ci`, typecheck, tests cryptographiques existants, build et audit de production réussis dans le workflow de génération.
 
-Limites explicites : ces tests ciblés ne constituent pas encore la suite exhaustive de conformité RFC 8785. Ils ne valident pas la détection des noms dupliqués dans le JSON brut, le schéma métier du transcript, les signatures inter-plateformes, le SAS, low-S, ni l’atomicité D1.
+Limites explicites : ces tests ciblés, y compris tous les exemples numériques de l’Appendix B, ne constituent pas encore la suite exhaustive de conformité RFC 8785. Ils ne valident pas la détection des noms dupliqués dans le JSON brut, le schéma métier du transcript, les signatures inter-plateformes, le SAS, low-S, ni l’atomicité D1.
 
 Séquence suivante :
 1. compléter les vecteurs de nombres de l’annexe B et les cas négatifs I-JSON ;
