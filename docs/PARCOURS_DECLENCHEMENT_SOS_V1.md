@@ -187,8 +187,8 @@ Le raccourci critique immédiat suppose une configuration préalable valide (cat
 
 ### Points restant à arbitrer
 
-1. **Aucun contact éligible :** faut-il bloquer la création de l'alerte, permettre une alerte locale non transmise ou proposer une autre solution ? Aucun comportement n'est choisi ; ne jamais afficher une fausse confirmation d'envoi.
-2. **Seuil SMS sans fournisseur opérationnel :** le choix 1–5 reste enregistré dans la commande, mais l'interface doit expliquer que le canal SMS n'est pas disponible. Le comportement de lancement avant sélection du fournisseur reste à valider.
+1. **Aucun contact éligible :** point toujours ouvert. La proposition de travail est de ne créer aucune alerte serveur ni tâche de notification avec une liste vide, de guider vers la configuration des contacts et de rappeler le recours direct aux services d'urgence locaux ou à une personne à proximité. Le propriétaire produit doit encore valider ce comportement.
+2. **Seuil SMS sans fournisseur opérationnel :** point toujours ouvert. La proposition de travail est de maintenir les push, d'enregistrer l'impossibilité d'escalade au seuil et de ne pas envoyer de SMS rétroactif si un fournisseur devient disponible plus tard. Le propriétaire produit doit encore valider cette règle.
 
 ## 8. Limites d'implémentation actuelles
 
