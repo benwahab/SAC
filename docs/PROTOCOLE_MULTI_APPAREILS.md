@@ -676,3 +676,7 @@ La politique OTP validée utilise l'e-mail comme canal standard pour les codes d
 **À arbitrer :** méthode indépendante acceptable (présence physique, appel vocal initié par un canal déjà connu, comparaison d'empreinte sur deux canaux réellement indépendants), traitement des contacts injoignables et éventuelle confirmation humaine complémentaire sans pouvoir d'accès.
 
 **Verrou :** ne pas transformer les contacts de confiance en mécanisme de récupération sociale du compte ni en autorité racine collective.
+
+## Référence de consolidation — 18 novembre 2026
+
+La lecture transversale des pertes d'appareils, sessions et récupération est centralisée dans `CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md`. Le présent protocole reste une proposition technique non homologuée. Les divergences avec le transcript canonique, les limites du prototype, les facteurs de récupération non décidés et l'interdiction de remplacer la racine en V1 doivent être respectés avant toute implémentation.
