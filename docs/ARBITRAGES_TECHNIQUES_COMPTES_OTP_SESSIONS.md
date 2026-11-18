@@ -424,3 +424,19 @@ La validation doit utiliser l'heure serveur. L'épuisement, l'expiration, la con
 Le contrat pur `src/domain/email-otp-policy.ts` encode les durées, le nombre d'essais, les états consommé/invalide/expiré et le délai de renvoi. Les tests correspondants sont dans `tests/email-otp-policy.test.ts` et exécutés par la CI. Ce contrat pur ne constitue pas encore une persistance D1, un endpoint, un générateur de code, un mécanisme de hachage/HMAC, un envoi réel ni une activation de compte.
 
 **Statut : paramètres métier validés et contrat pur testé ; parcours OTP serveur complet encore à construire et à auditer.**
+
+
+## 17. Contrat de validation des données d'inscription
+
+Le contrat pur `src/domain/registration-policy.ts` et ses tests définissent les contrôles d'entrée suivants, avant toute écriture D1 :
+
+- **E-mail :** suppression des espaces périphériques, normalisation en minuscules, contrôle de longueur et de structure. Aucune transformation spécifique à un fournisseur (suppression des points ou des suffixes `+`) n'est effectuée.
+- **Téléphone :** indicatif international obligatoire sous forme `+` suivie de 8 à 15 chiffres au format E.164. Les espaces, parenthèses, points et tirets de présentation sont retirés. Un numéro local sans indicatif est refusé.
+- **Mot de passe :** application de la règle déjà validée (minimum 12 points de code Unicode). La valeur n'est jamais rognée ni normalisée : espaces et Unicode sont conservés exactement.
+- **Langue :** seules les valeurs `fr`, `en` et `ar` sont acceptées.
+
+Ce validateur ne vérifie pas la propriété de l'adresse e-mail ou du téléphone, ne crée aucun compte, ne hache aucun mot de passe et ne crée aucune session. Le téléphone reste déclaré/non vérifié ; seule la validation du défi e-mail autorise l'activation du compte.
+
+La validation des e-mails internationaux/IDN devra être complétée si SAC décide de les accepter ; le contrat actuel prend en charge les domaines ASCII (les domaines internationalisés doivent être présentés sous forme IDNA/Punycode). Le format E.164 est la représentation canonique persistée prévue.
+
+**Statut :** contrat d'entrée codé et testé ; persistance et parcours serveur non implémentés.
