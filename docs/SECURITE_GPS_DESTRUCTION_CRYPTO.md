@@ -5,7 +5,7 @@
 
 ## 1. Cible de conception candidate — non approuvée
 
-**Orientation de conception à évaluer, pas décision d'architecture approuvée : aucune conservation GPS précise durable côté serveur.** Une position partagée en direct pourrait être chiffrée sur le téléphone puis relayée éphémèrement aux contacts autorisés. L'éventuel historique de 30 jours serait local à l'appareil de l'auteur uniquement, mais cette option reste NO-GO tant que la destruction J+30 hors ligne, appareil éteint et après restauration n'est pas prouvée. À l'échéance, la clé dédiée devrait devenir irrécupérable et l'archive chiffrée devrait être supprimée.
+**Orientation de conception à évaluer, pas décision d'architecture approuvée : aucune conservation GPS précise durable côté serveur.** Une position partagée en direct pourrait être chiffrée sur le téléphone puis relayée éphémèrement aux contacts autorisés. L'ancienne hypothèse d'un historique local de 30 jours est non approuvée et ne s'applique jamais aux positions d'une alerte après clôture. Toute conservation locale éventuelle pour un trajet nécessiterait un arbitrage produit distinct ; elle reste NO-GO.
 
 **Important : l'archive locale + Android Keystore/iOS Keychain n'est pas encore une architecture approuvée pour garantir J+30.** La documentation Android indique que les contraintes temporelles sont généralement appliquées par le logiciel, faute d'horloge indépendante dans le matériel sécurisé. iOS documente la non-migration de certaines clés, pas leur destruction automatique à une date donnée. Si le téléphone est éteint à l'échéance, l'application ne peut pas exécuter sa purge. La faisabilité de l'exigence stricte est donc un bloqueur. Voir obligatoirement `docs/PLAN_VALIDATION_DESTRUCTION_GPS_J30.md`.
 
