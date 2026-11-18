@@ -371,3 +371,47 @@ Aucune décision ici ne permet d'effacer les données locales à distance, de co
 7. Quelle procédure s'applique si tous les contacts concernés sont injoignables ou refusent la nouvelle empreinte ? Aucun contournement par support ou OTP n'est proposé.
 
 **Verrou non négociable :** mot de passe, OTP, e-mail, session secondaire ou support ne peuvent pas se substituer à une signature de l'ancienne racine ni valider seuls la nouvelle identité. Aucune route API, migration D1, ressource Cloudflare ou intégration GPS/SMS n'est autorisée par cette section.
+
+
+### 3.12 Protection contre la récupération frauduleuse du compte — proposition à arbitrer
+
+**Règle ferme :** récupérer le mot de passe, recevoir un OTP SMS ou contrôler la boîte e-mail ne donne jamais l'autorité cryptographique racine. Aucun de ces facteurs ne peut réactiver une racine révoquée, approuver un appareil ou reprendre le partage GPS.
+
+**Menaces couvertes dans la proposition :**
+- échange frauduleux de SIM ou portage du numéro ;
+- boîte e-mail compromise et détournement de lien de récupération ;
+- vol, rejeu, devinette ou renvoi massif d'OTP ;
+- vol de session ou rejeu d'un jeton de renouvellement ;
+- hameçonnage et usurpation du support ;
+- changement frauduleux du numéro de récupération ;
+- énumération de comptes ;
+- déni de service par épuisement de limites OTP ;
+- tentative de récupération pendant une alerte active.
+
+**Protections recommandées, non implémentées :**
+1. Défis OTP/liens liés au compte, à la finalité et à une demande ; usage unique et consommation atomique.
+2. Expiration et limites de tentatives/renvois à fixer après analyse, sans seuil arbitraire.
+3. Stockage des vérificateurs non réutilisables ; protection serveur spécifique pour les OTP de faible entropie.
+4. Réponses uniformes pour compte existant/inexistant afin d'éviter l'énumération.
+5. Jetons de renouvellement rotatifs, détection du rejeu et sessions liées à un appareil.
+6. Changement de numéro traité séparément, avec notification à l'ancien canal sûr et délai de protection à décider.
+7. Le support ne reçoit jamais de secrets et ne peut jamais changer la racine, réactiver un certificat ou valider l'empreinte d'un contact.
+8. Limites OTP distinctes du chemin SOS : IP partagée ou changement de réseau ne doit pas bloquer arbitrairement une vraie urgence depuis une session valide.
+9. Journaux minimisés, sans OTP, liens complets, jetons, clés, QR complet ou GPS.
+
+**Limite explicite :** SAC ne peut pas prétendre détecter un SIM swap sans signal fiable d'un opérateur ou d'un fournisseur effectivement intégré. Un OTP SMS prouve uniquement la réception du message à cet instant ; il ne prouve pas l'identité de la personne ni la possession de l'ancienne racine.
+
+**Arbitrages nécessaires :**
+1. Quels facteurs de récupération d'accès au compte sont acceptables et lesquels sont disponibles au Niger dans les conditions réelles d'usage ?
+2. L'accès au compte récupéré révoque-t-il toutes les sessions, seulement la session suspecte ou aucune session tant qu'une revue n'a pas eu lieu ?
+3. Quel délai de protection appliquer après changement de numéro, d'e-mail ou de mot de passe ?
+4. Quels canaux de notification de sécurité sont considérés comme encore sûrs si l'e-mail ou le numéro est compromis ?
+5. Quelle voie de recours proposer après épuisement des tentatives sans permettre au support de contourner la racine ?
+6. Quels seuils OTP, renvois et limites par compte/destination/appareil fixer après essais réels et analyse anti-abus ?
+7. Quelle durée de conservation et quels rôles d'accès appliquer aux événements anti-fraude ?
+
+**Verrous :**
+- Aucun SMS seul, e-mail seul, mot de passe seul ou support seul ne récupère la racine.
+- Aucun signal de risque non confirmé ne doit bloquer silencieusement le SOS valide.
+- Aucune détection SIM swap n'est annoncée sans intégration et preuve réelles.
+- Aucun fournisseur, endpoint, quota chiffré, mécanisme de verrouillage, migration D1 ou intégration n'est autorisé par cette proposition.
