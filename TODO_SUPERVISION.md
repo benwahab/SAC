@@ -1022,3 +1022,10 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases
 - [ ] Fermer les arbitrages P0 et lever les blocages juridiques avant tout lancement.
 
 Référence : `docs/AUDIT_TRANSVERSAL_COHERENCE_ET_MATURITE_2026-11-18.md`. Audit documentaire uniquement ; aucun code, schéma D1, service ou déploiement modifié.
+
+
+## Arbitrage final du cycle de suppression — 18 novembre 2026
+
+- [x] Consolider les recommandations pour les comptes non vérifiés, actifs, suspendus, en suppression et supprimés, les activités orphelines, les SOS programmés, les relations et les courses concurrentes dans `docs/RECOMMANDATIONS_ARBITRAGE_FINAL_SUPPRESSION_COMPTES.md`.
+- [ ] Faire valider explicitement les recommandations par le propriétaire ; aucune ne devient une décision produit par simple présence dans le dépôt.
+- [ ] Maintenir le P0 ouvert et ne pas modifier le code TypeScript ou D1 avant validation et autorisation distincte.
