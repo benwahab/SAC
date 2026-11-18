@@ -123,3 +123,8 @@ SAC devra donc tenir un registre des fournisseurs, contrats de sous-traitance, a
 - Aucune durée de conservation hors GPS n'est validée ici.
 
 **Conclusion :** le chantier de conservation hors GPS ne doit plus être traité comme une simple décision de produit. Il dépend d'une cartographie de traitement, de l'authentification des textes postérieurs à juin 2026 et des formalités à confirmer auprès des services ministériels officiellement désignés. L'ancienne HAPDP ne doit plus être présentée comme interlocuteur opérationnel actuel.
+
+
+## Référence transversale actualisée — 18 novembre 2026
+
+Lire `CONTRAT_GOUVERNANCE_JURIDIQUE_ET_CONFORMITE.md` pour la gouvernance du responsable de traitement, la qualification des données sensibles, les mineurs, les transferts, les fournisseurs, les droits et les conditions d'utilisation. Cette pré-analyse ne vaut pas avis juridique ; ses références historiques à la HAPDP et à ses formalités ne doivent pas être utilisées comme procédure opérationnelle actuelle après juin 2026.
