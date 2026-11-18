@@ -371,3 +371,12 @@ Le numéro de téléphone reste obligatoire à la création du compte, mais SAC 
 Le numéro fourni peut être utilisé comme coordonnée de contact déclarée, notamment pour les tentatives d'appel administratif. Toutefois, une réponse provenant de ce numéro ne prouve pas à elle seule l'identité de l'interlocuteur : l'administrateur doit apprécier les éléments de réponse et les recouper avec le contexte de l'alerte. Les tentatives sans réponse ne prouvent jamais que le titulaire est en sécurité.
 
 Cette décision remplace toute formulation antérieure qui laissait entendre qu'une vérification du numéro de téléphone serait nécessaire avant son utilisation comme coordonnée de contact. Elle ne modifie pas la vérification OTP par e-mail et n'autorise aucun SMS OTP.
+
+
+## Notification des proches après clôture administrative — règle de conception
+
+Lorsque l'administrateur SAC habilité clôture cette alerte, chacun des destinataires initiaux doit être informé individuellement de la clôture par les canaux de notification SAC disponibles et activés pour son compte. La notification indique uniquement que l'alerte concernée a été clôturée par l'administration, avec la date et l'heure. Elle ne révèle ni les échanges privés avec le titulaire, ni les éléments d'enquête, ni les notes internes, ni les coordonnées d'autres personnes.
+
+La clôture administrative met fin aux rappels de cette alerte pour tous les destinataires initiaux. Les accusés de réception, prises en charge, mises à jour et événements antérieurs restent conservés et consultables selon les droits applicables ; ils ne sont ni supprimés ni réécrits. L'échec d'une notification est journalisé et ne réouvre pas automatiquement l'alerte. L'administration doit pouvoir constater quels destinataires ont été notifiés et lesquels n'ont pas pu être joints par les canaux SAC.
+
+Cette notification informe de la décision ; elle ne donne aucun pouvoir de clôture aux proches. La règle décrit le comportement attendu et n'implémente aucun service push, e-mail, SMS, endpoint ou migration D1.
