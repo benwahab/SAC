@@ -550,3 +550,25 @@ La reconnaissance humaine peut éventuellement être étudiée comme signal comp
 **Tests adversariaux à prévoir :** contacts complices, contact sous contrainte, compte contact compromis, relation ajoutée pendant la récupération, réponses contradictoires, silence, usurpation vocale et tentative d'obtenir les nouvelles coordonnées du titulaire.
 
 **NO-GO :** aucun mécanisme de récupération sociale du compte ou de quorum racine n'est autorisé par cette annexe.
+
+
+## Annexe — Menaces du kit de récupération hors ligne (18 novembre 2026)
+
+**Statut :** analyse préliminaire d'une option non validée ; aucun facteur de récupération n'est activé.
+
+| Scénario | Risque | Contrôle à concevoir |
+|---|---|---|
+| Kit photographié ou copié | Un tiers obtient le facteur complet | Affichage unique, conseil de stockage privé, révocation/régénération authentifiée |
+| Papier perdu ou détruit | Titulaire incapable de prouver le facteur | Expliquer la perte irréversible ; ne pas créer de contournement par OTP ou contacts |
+| Téléphone compromis lors de la création | Secret exfiltré avant impression | Génération locale, appareil sûr, avertissement de ne pas créer le kit sur un appareil suspect |
+| Secret deviné ou testé en masse | Prise de contrôle ou déni de service | Forte entropie, limitation distribuée, détection d'abus, réponses uniformes |
+| Rejeu après usage | Récupérations répétées | Consommation atomique à usage unique et versionnement du compte |
+| Deux demandes simultanées | Double récupération ou état incohérent | Une transition gagnante par transaction ; invalider le facteur à la première consommation réussie |
+| Base de données divulguée | Attaque hors ligne sur les vérificateurs | Aucun secret brut ; vérificateur et paramètres validés, secret serveur séparé, revue cryptographique |
+| Contact ou support manipulé | Contournement du facteur | Aucun pouvoir de récupération délégué ; notification seulement informative |
+| Kit utilisé pour récupérer la racine | Restauration d'une confiance cryptographique perdue | Séparation stricte compte/racine ; nouvelle identité et vérification indépendante par relation |
+| Kit conservé dans la même boîte e-mail perdue | Facteur indisponible avec le canal principal | Stockage hors ligne et copie indépendante facultative, jamais e-mail comme seule sauvegarde |
+
+**Tests adversariaux requis :** copie/photo du kit, saisies erronées, tentatives distribuées, rejeu, concurrence, perte du kit, régénération, révocation d'appareil pendant récupération, récupération sans accès e-mail, absence de restauration racine/GPS, et fuite du vérificateur serveur.
+
+**NO-GO :** ne pas implémenter avant choix explicite du format et de la politique, analyse cryptographique, tests sur appareils mobiles réels et revue indépendante.
