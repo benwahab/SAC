@@ -188,3 +188,39 @@ Une absence de confirmation après l'heure estimée et le délai configuré prod
 **Limites :** ce module ne déclenche aucun rappel, n'envoie aucune notification, ne lit ni n'enregistre de coordonnées GPS et ne constitue pas une API ou une migration D1. La fréquence de position, le délai de grâce par défaut, les rappels à l'auteur et aux contacts, la pause/reprise, la fraîcheur des positions et le comportement hors ligne restent à valider.
 
 Les règles techniques ne remplacent donc pas les arbitrages produit de la section 6.
+
+
+## 8. Contrat technique de suppression de compte — 18 novembre 2026
+
+Le prototype `src/domain/account-lifecycle.ts` formalise les états `active`, `deletion_pending` et `deleted` :
+
+- la demande authentifiée du propriétaire passe le compte à `deletion_pending` ;
+- pendant cette phase, les nouvelles alertes, invitations, trajets et nouveaux partages doivent être bloqués ;
+- l'auteur doit pouvoir terminer ou clôturer les alertes et trajets déjà actifs ;
+- la finalisation logique est refusée tant qu'une alerte ou un trajet reste actif ;
+- le propriétaire peut annuler la demande avant finalisation ;
+- `deleted` est terminal dans ce contrat.
+
+**Limites et conditions impératives :**
+- les compteurs d'activités fournis au module ne sont pas une preuve d'absence d'activité : le backend devra relire les alertes et trajets actifs dans D1 et vérifier la condition dans l'écriture transactionnelle finale ;
+- ce contrat ne supprime, n'anonymise ni ne conserve effectivement aucune donnée ;
+- il ne définit aucune période de grâce, aucun délai de finalisation et aucun accès support exceptionnel ;
+- si l'auteur ne revient jamais clôturer une alerte, aucune clôture automatique n'est inventée : le cas reste ouvert à arbitrage produit ;
+- les durées hors GPS et les éventuelles conservations légales doivent être validées avant d'implémenter l'effacement physique.
+
+Le contrat est un prototype de domaine, pas une fonctionnalité de suppression disponible dans l'application.
+
+## 9. Révocation d'un contact pendant une alerte — séparation à préserver
+
+La règle ferme existante reste : l'instantané initial ne change pas et les rappels SOS continuent toutes les cinq minutes jusqu'à la clôture par l'auteur.
+
+La proposition de séparation des autorisations reste à valider :
+- rappel SOS vers le destinataire initial : maintenu jusqu'à clôture ;
+- nouvelles transmissions GPS : arrêt immédiat à la révocation ;
+- accès au détail pendant l'alerte : proposition de maintien jusqu'à clôture, à valider ;
+- accès après clôture : proposition de retrait pour le contact révoqué, à valider ;
+- accusé de réception, candidature volontaire et retrait de responsabilité après révocation : règle à définir explicitement.
+
+Le backend devra distinguer au minimum l'éligibilité au rappel, l'accès au détail, l'autorisation de recevoir de nouvelles positions et l'autorisation de répondre/agir. Une seule colonne `is_recipient` ne suffit pas.
+
+**Aucune révocation ne doit effacer rétroactivement les paquets GPS déjà reçus par un contact.** La révocation doit toutefois empêcher toute nouvelle transmission autorisée par SAC. La gestion des paquets en transit et l'ordre atomique entre révocation et émission restent à spécifier.
