@@ -139,7 +139,11 @@ BEGIN
       AND OLD.attempt_count < OLD.max_attempts
       AND (
         NEW.consumed_at IS NULL
-        OR (NEW.invalidated_at IS NULL AND NEW.consumed_at >= OLD.created_at)
+        OR (
+          NEW.invalidated_at IS NULL
+          AND NEW.consumed_at >= OLD.created_at
+          AND NEW.consumed_at < OLD.expires_at
+        )
       )
       AND (
         NEW.invalidated_at IS NULL
