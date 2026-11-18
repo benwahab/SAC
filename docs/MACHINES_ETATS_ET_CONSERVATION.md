@@ -519,3 +519,33 @@ Ne pas confondre trois éléments : l'instantané historique, l'autorisation d'a
 **Causes de fin de relation :** distinguer au minimum la révocation par le propriétaire et le retrait d'acceptation par le contact. La proposition est que les deux invalident immédiatement les autorisations futures, tout en conservant leur cause distincte dans le journal. Une réinvitation ultérieure crée une nouvelle relation/version ; elle ne réactive pas rétroactivement l'ancienne relation ni ne donne accès à une ancienne alerte.
 
 **Statut : proposition de confidentialité et de livraison à valider.** Les règles de transport déjà acceptées et les limites techniques du fournisseur doivent être documentées ; aucune promesse de suppression d'une notification déjà distribuée.
+
+### 4.3 Révocation d'appareil — effets distincts de la révocation de compte (proposition à valider)
+
+Modéliser au minimum le statut de chaque appareil séparément du statut du compte : appareil pending/active/revoked ; confiance racine du compte root_active/root_recovery_required (états conceptuels à confirmer).
+
+**Révocation d'un secondaire**
+- termine les sessions et désactive les abonnements push de cet appareil uniquement ;
+- n'invalide pas les sessions des autres appareils du même compte ;
+- n'altère ni relations de confiance, ni abonnements, ni alertes, ni instantanés de destinataires ;
+- exclut cet appareil des futurs claims de notifications et opérations protégées ;
+- ne prouve pas la suppression des clés/données locales.
+
+**Révocation du root**
+- révoque ses propres sessions et abonnements ;
+- place la confiance racine du compte en récupération requise ;
+- bloque approbations et partage GPS dépendant de la racine ;
+- ne promeut aucun secondaire en root et ne révoque pas implicitement les sessions secondaires ;
+- laisse les fonctions ordinaires sans dépendance racine accessibles aux appareils secondaires encore actifs, si leurs autorisations propres le permettent.
+
+**Séparation notification logique / abonnement appareil**
+Une alerte produit une intention de notification vers un destinataire. Le service de livraison peut avoir plusieurs abonnements appareils pour ce compte. Révoquer un appareil supprime uniquement l'éligibilité de son abonnement ; ne pas marquer la notification du destinataire comme globalement annulée si d'autres appareils actifs doivent encore la recevoir. Dédupliquer les envois par couple événement/abonnement.
+
+**Transitions concurrentes**
+- Une action d'appareil et sa révocation sont arbitrées par statut et auth_version dans la même transaction ou condition D1 atomique.
+- Révocation gagnante : aucune nouvelle mutation ni aucun claim par cet appareil.
+- Action gagnante : l'événement reste valide dans l'historique ; la révocation bloque les suivantes.
+- La révocation du root et l'approbation secondaire sont sérialisées ; aucune approbation ne peut commit après le passage à root_recovery_required.
+- Une réinscription utilise une nouvelle identité de session et une cérémonie neuve ; un ancien appareil révoqué ne redevient pas actif par rejeu.
+
+**Statut : proposition à valider.** La disponibilité exacte des fonctions non GPS pendant root_recovery_required doit être cartographiée avant de figer les contrôles d'accès.
