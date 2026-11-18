@@ -394,3 +394,12 @@ Le contrat `CONTRAT_SECURITE_COMPTES_ET_APPAREILS_EN_URGENCE.md` consolide les c
 Les invariants confirmés restent : e-mail obligatoire vérifié par OTP avant activation ; téléphone déclaré/non vérifié ; aucun SMS OTP de compte ; sessions 30 jours d'inactivité et 90 jours absolus ; appareil secondaire non promouvable racine ; récupération de compte distincte de la racine ; aucune racine perdue ou compromise remplaçable en V1.
 
 Restent à arbitrer : récupération de compte sans appareil fiable, facteurs renforcés, sécurisation d'urgence, autorité de révocation d'une racine volée, changement d'e-mail compromis, capacité du secondaire en mode dégradé et clôture d'une alerte si l'auteur perd tous ses appareils. Aucun mécanisme nouveau n'est approuvé ou implémenté.
+
+
+## 28. Confidentialité familiale et isolation des données — 18 novembre 2026
+
+Le contrat `CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md` formalise le principe selon lequel la famille, la confiance, l'adhésion à un groupe et le partage d'un appareil ne donnent aucun accès général aux données d'une autre personne.
+
+Les invariants restent : comptes distincts ; relation directionnelle et consentie ; groupe sans droit SOS/GPS ; destinataires d'alerte explicitement figés ; autorisations séparées par ressource/action ; contrôle côté serveur ; GPS NO-GO et règles de purge déjà validées.
+
+Restent à arbitrer : matrice des champs visibles par acteur d'une alerte, verrouillage local, isolation des caches, aperçus de notifications, téléchargements/exports, droits après révocation, détails de confidentialité des groupes et cas de mineurs/tutelle. Aucun accès familial ou nouveau rôle n'est approuvé par ce contrat.
