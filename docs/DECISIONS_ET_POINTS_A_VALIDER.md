@@ -580,3 +580,16 @@ Contrôles proposés : secret à forte entropie, affichage unique, vérificateur
 7. Faire examiner le format, l'entropie, le stockage du vérificateur et les scénarios de vol/copie par une revue sécurité indépendante.
 
 **NO-GO :** aucun facteur n'est encore adopté ; aucune récupération complète ne doit être activée sur cette proposition seule. Sans appareil approuvé, e-mail accessible ou facteur indépendant validé, SAC doit refuser la récupération plutôt que promettre une solution non vérifiable. La récupération du compte ne rétablit jamais la racine cryptographique.
+
+
+### Décision utilisateur — format du kit (18 novembre 2026)
+
+**Option A validée : une seule clé personnelle de récupération hors ligne.** L'utilisateur a explicitement choisi une clé unique plutôt qu'une série de codes à usage unique.
+
+- Le kit contiendra une seule clé aléatoire de forte entropie, générée localement et affichée une seule fois.
+- Cette clé sera à usage unique : après une récupération réussie, elle sera invalidée et devra être remplacée depuis une session redevenue authentifiée.
+- Le serveur ne conservera jamais la clé en clair ; il ne conservera qu'un vérificateur protégé selon une méthode cryptographique à valider.
+- La clé sera conservée hors ligne par le titulaire ; une copie imprimée est envisageable. Le format lisible, la longueur, l'encodage et le checksum restent à définir par tests.
+- Cette décision choisit le format à clé unique ; elle ne valide pas encore l'algorithme, l'entropie exacte, la durée d'attente, la politique de sessions, ni l'activation du parcours.
+
+**Rappel de portée :** la clé ne récupère que l'accès au compte selon une procédure restant à spécifier. Elle ne restaure jamais l'ancienne racine, n'approuve aucun appareil, ne réactive aucune révocation et ne déverrouille pas le GPS.
