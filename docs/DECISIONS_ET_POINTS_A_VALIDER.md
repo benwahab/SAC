@@ -502,3 +502,34 @@ Aucune décision ici ne permet d'effacer les données locales à distance, de co
 6. Que faire si tous les facteurs et appareils sont perdus et qu'aucune preuve indépendante n'est disponible ?
 
 **NO-GO :** aucune récupération complète sur la seule base d'un nouvel e-mail, d'un OTP, d'un SMS, d'un mot de passe ou du support ; aucune récupération racine via ce parcours.
+
+
+## 3.11 Rôle des contacts de confiance dans une récupération (18 novembre 2026)
+
+**Recommandation de sécurité proposée :** les contacts de confiance ne doivent pas pouvoir récupérer directement le compte, remplacer l'adresse e-mail, réinitialiser le mot de passe, approuver un appareil ou restaurer la racine cryptographique à la place du titulaire.
+
+Leur rôle est limité à une fonction distincte déjà prévue : vérifier indépendamment la nouvelle empreinte d'une identité cryptographique racine créée après perte de l'ancienne. Cette vérification s'applique relation par relation et ne donne pas au contact un pouvoir général sur le compte.
+
+### Frontière proposée
+
+- Un contact ne peut ni ouvrir une session au nom du titulaire, ni recevoir un code de récupération, ni choisir une nouvelle adresse e-mail, ni modifier les coordonnées du titulaire.
+- Une déclaration « je reconnais cette personne » peut éventuellement être étudiée comme signal humain complémentaire, mais ne constitue jamais seule une preuve suffisante de continuité du compte.
+- Les contacts ne doivent pas recevoir de secret, code OTP, clé privée, code de récupération ou accès temporaire au compte.
+- Un contact ne peut pas approuver une nouvelle racine à la place d'un autre contact : chaque relation effectue sa propre vérification indépendante de l'empreinte avant reprise du partage GPS avec elle.
+- La confirmation d'un contact ne réactive aucun appareil, ne retire aucune révocation et ne permet pas d'accéder aux alertes, historiques ou données privées du titulaire.
+- Les contacts retenus doivent être ceux dont la relation était active avant l'ouverture de la récupération ; aucune relation ajoutée pendant la récupération ne peut renforcer la preuve.
+- Les refus, silences, indisponibilités ou désaccords des contacts ne doivent pas être interprétés comme une preuve automatique de fraude ou comme une autorisation de contourner les contrôles.
+- SAC ne doit pas révéler aux contacts les nouvelles coordonnées privées, les facteurs de récupération ou les réponses des autres contacts.
+
+### Pourquoi cette séparation
+
+Les proches peuvent reconnaître une personne, mais une relation sociale n'est pas une preuve technique de propriété du compte. Des contacts peuvent être injoignables, compromis, contraints, victimes d'ingénierie sociale ou agir de concert. Leur donner le pouvoir de récupérer le compte créerait un chemin de prise de contrôle par collusion ou coercition. Leur rôle le plus sûr reste la vérification indépendante de la nouvelle identité cryptographique, sans pouvoir de connexion ou de gestion du compte.
+
+### Arbitrages restant ouverts
+
+1. Faut-il autoriser une confirmation humaine facultative des contacts comme signal secondaire, sans effet autonome sur l'accès ?
+2. Combien de contacts doivent vérifier la nouvelle empreinte pour chaque relation GPS, et quelle méthode indépendante est acceptable ?
+3. Comment gérer les contacts injoignables, les refus, les conflits d'identité, les changements de numéro et les risques de coercition ?
+4. Une procédure de récupération d'accès sans aucun appareil approuvé doit-elle reposer sur un facteur de récupération préenregistré ou une autre méthode indépendante, à définir et tester ?
+
+**NO-GO :** aucune récupération de compte, changement de coordonnées, approbation d'appareil ou restauration racine ne peut être autorisée par un vote, un quorum ou une simple déclaration des contacts. Aucun quorum chiffré n'est adopté à ce stade.
