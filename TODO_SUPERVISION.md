@@ -225,6 +225,17 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Exécuter les tests D1 localement puis sur Preview isolé, avec vérification des identifiants de base.
 
 
+## Audit transversal de cohérence — 18 novembre 2026
+
+- [x] Réaliser une lecture croisée des références architecture, décisions, contrats spécialisés, modèle global, revue relationnelle, état réel du code et suivi.
+- [x] Documenter les écarts P0/P1, les règles cohérentes à préserver et l'ordre de résolution dans `docs/AUDIT_TRANSVERSAL_COHERENCE_ARCHITECTURE_2026-11-18.md`.
+- [ ] Clarifier dans toutes les références la portée de l'archive GPS locale de 30 jours : elle ne doit jamais conserver les positions d'une alerte après sa clôture ; la conservation des trajets reste à arbitrer.
+- [ ] Aligner le contrat TypeScript de compte sur les cinq états validés, après arbitrage des transitions suspension/suppression.
+- [ ] Unifier le périmètre de l'exception administrative de clôture SOS et son audit, sans créer de droit général.
+- [ ] Harmoniser les contrats d'invitation et le modèle relationnel sur la preuve de destination e-mail vérifiée.
+- [ ] Authentifier les textes nigériens postérieurs à juin 2026 et faire valider les formalités par un conseil local.
+- [ ] Maintenir le modèle NON PRÊT POUR MIGRATION, le SOS réel désactivé et le GPS NO-GO jusqu'à satisfaction des critères documentés.
+
 ## Alignement de l'architecture GPS — 18 novembre 2026
 
 - [x] Auditer la cohérence entre l'étude KMS, le contrat D1, les machines à états et la matrice de schéma.
