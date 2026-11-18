@@ -86,7 +86,7 @@ Les noms sont indicatifs. Une entité marquée « à ajouter à la proposition �
 | `device_sessions` | Sessions par appareil, hash du jeton, expiration et révocation | compte + appareil | proposée |
 
 Règles validées :
-- inscription par e-mail et mot de passe ; OTP par e-mail pour vérifier l'adresse initiale et sécuriser les opérations sensibles/réinitialisations ; pas d'OTP SMS de compte ;
+- adresse e-mail obligatoire dès l'inscription ; aucun compte sans e-mail ni inscription par téléphone seul ; activation uniquement après vérification de cette adresse par OTP e-mail valide (condition sine qua non) ; OTP e-mail également utilisé pour les opérations sensibles/réinitialisations ; aucun OTP SMS de compte ;
 - mot de passe minimum 12 caractères ; les passphrases, espaces et Unicode sont admis ; ne pas tronquer les valeurs longues ;
 - téléphone obligatoire à l'inscription avec indicatif international, mais déclaré et non vérifié indépendamment ;
 - 30 jours consécutifs d'inactivité entraînent une déconnexion ; réauthentification obligatoire au plus tard à 90 jours même en cas d'activité ;
@@ -94,7 +94,7 @@ Règles validées :
 - un seul appareil racine approuve les appareils secondaires en V1 ; les appareils secondaires ne délèguent pas leur approbation ;
 - une suspension bloque les nouvelles activités et révoque les sessions selon la politique, sans effacer les alertes déjà transmises.
 
-Le cycle de vie compte validé comprend cinq états : `pending_verification`, `active`, `suspended`, `deletion_pending`, `deleted`. La vérification e-mail est un fait séparé de l'état. La suspension administrative est réservée à l'autorité habilitée ; elle est distincte d'un verrouillage technique temporaire.
+Le cycle de vie compte validé comprend cinq états : `pending_verification`, `active`, `suspended`, `deletion_pending`, `deleted`. Toute inscription exige une adresse e-mail ; la vérification de cette adresse par OTP est une condition sine qua non du passage à `active`. Sans e-mail vérifié, le compte reste `pending_verification`, sans session ni accès privé. Le téléphone obligatoire ne remplace jamais cette exigence. La vérification e-mail est un fait séparé de l'état. La suspension administrative est réservée à l'autorité habilitée ; elle est distincte d'un verrouillage technique temporaire.
 
 ### 4.2 Proches, invitations, préférences et groupes
 
