@@ -400,3 +400,63 @@ Les opérations dépendant de la racine sont refusées : approbation d'appareils
 - revue cryptographique indépendante réalisée.
 
 Tant que ces conditions ne sont pas remplies, les contrats restent documentaires. Aucune route Pages Functions, migration D1, file d'attente ou notification réelle ne doit être ajoutée.
+
+
+## 14. Contrôles conceptuels anti-fraude pour l'authentification — non routes implémentées
+
+**Statut :** exigences proposées, à arbitrer et tester avant conception des routes. Aucun fournisseur SMS/e-mail, système anti-fraude ou mécanisme de détection SIM swap n'est intégré.
+
+### 14.1 Contrat des défis OTP et liens de récupération
+
+Tout défi d'authentification ou de récupération devra être :
+- lié côté serveur à un compte, une finalité, une demande et un canal ;
+- à usage unique, consommé atomiquement ;
+- limité dans le temps, avec durée décidée avant implémentation ;
+- protégé par des limites atomiques de tentatives, de renvois et de création ;
+- stocké sous forme de vérificateur non réutilisable ; les OTP de faible entropie nécessitent un secret serveur de protection contre les attaques hors ligne ;
+- invalidé après succès ou selon la règle de remplacement définie ;
+- exclu des logs, analytics, traces, notifications et tickets support sous forme de code ou lien complet.
+
+Les réponses externes ne doivent pas révéler si un compte, un numéro ou un e-mail existe. Le texte et le comportement des erreurs doivent être cohérents entre compte existant et inexistant.
+
+### 14.2 Changement de numéro et SIM swap
+
+Un OTP SMS ne prouve que la réception momentanée d'un message par le demandeur. Il ne prouve ni l'identité de la personne, ni la possession de l'ancienne racine, ni l'intégrité du téléphone. SAC ne peut prétendre détecter un SIM swap sans signal opérateur ou fournisseur réellement disponible et validé.
+
+Le changement du numéro de récupération est une opération sensible séparée. Le nouveau numéro ne doit pas devenir immédiatement un facteur suffisant pour changer la racine ou reprendre le GPS. La notification à l'ancien canal et un délai de protection sont proposés, mais leurs modalités restent à décider.
+
+### 14.3 Sessions et jetons
+
+- Les sessions sont liées à un appareil et contrôlées côté serveur.
+- Les jetons de renouvellement doivent être rotatifs et leur rejeu détectable.
+- Un jeton d'un appareil révoqué est refusé même s'il n'a pas expiré.
+- La récupération de mot de passe ne réactive jamais un appareil révoqué.
+- Une simple révocation d'appareil ne révoque pas les autres appareils.
+- L'effet d'une récupération de mot de passe sur les sessions existantes doit être défini explicitement ; aucun comportement implicite ne doit être codé.
+
+### 14.4 Limites et disponibilité
+
+Les limites doivent être atomiques et adaptées à chaque opération (OTP, renvoi, invitation, récupération, changement de numéro). Elles peuvent combiner compte, destination, appareil et signaux réseau ; une adresse IP seule ne doit pas être une base suffisante pour bloquer tous les utilisateurs d'un réseau partagé.
+
+Les limites de récupération ne doivent pas devenir un verrouillage générique du SOS. Un SOS provenant d'une session valide ne doit pas être bloqué silencieusement par une limite OTP, un changement d'IP ou un signal de risque non confirmé. Une session réellement révoquée doit toutefois être refusée honnêtement.
+
+### 14.5 Support et journalisation
+
+Le support ne reçoit jamais de mot de passe, OTP, clé privée, jeton ou QR complet. Il ne peut pas modifier la racine, réactiver un certificat révoqué ni marquer une empreinte comme vérifiée. Toute action support sensible devra être autorisée, limitée, justifiée, séparée des rôles techniques et auditée.
+
+Les événements de sécurité sont minimisés et append-only ; ils ne contiennent aucun secret, code, lien complet, clé privée, donnée GPS ni contenu d'alerte non nécessaire. Les durées de conservation et les rôles habilités restent à valider.
+
+### 14.6 Invariants à tester
+
+- OTP ou lien expiré, consommé, rejoué, détourné vers une autre finalité ou présenté en concurrence : refus.
+- SIM swap ou contrôle du numéro seul : aucune récupération racine.
+- Réinitialisation de mot de passe : aucune mutation de racine ou de clé GPS.
+- Jeton de renouvellement rejoué : détection et réaction définie sur la famille concernée.
+- Session appareil révoqué : refus côté serveur.
+- Réponses de récupération : aucune énumération de compte.
+- Support : aucune opération de substitution de racine.
+- IP partagée ou réseau mobile changeant : pas de blocage global arbitraire.
+- Limite OTP : pas de blocage silencieux d'un SOS valide.
+- Changement de numéro : aucune autorité racine implicite.
+
+Ces contrats restent documentaires jusqu'à validation des facteurs, seuils, durées, recours, fournisseur et modèle de menace. Aucun endpoint ni migration D1 n'est créé.
