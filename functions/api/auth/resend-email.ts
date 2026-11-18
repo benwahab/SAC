@@ -12,7 +12,7 @@ interface Env {
 const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" };
 const ACCEPTED = {
   accepted: true,
-  message: "Si un compte en attente correspond à cette adresse, un nouveau code sera envoyé.",
+  message: "Si un compte en attente correspond à cette adresse, la demande sera traitée.",
   retryAfterSeconds: 60,
 };
 
