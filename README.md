@@ -104,3 +104,5 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 - [Contrat de sécurité des notifications et communications](docs/CONTRAT_SECURITE_NOTIFICATIONS_ET_COMMUNICATIONS.md) — confidentialité des push/e-mails/SMS, abonnements, fournisseurs, webhooks, révocation, pannes et prévention des fuites ; arbitrages requis, non implémenté.
 
 - [Contrat de sécurité des trajets et de la localisation](docs/CONTRAT_SECURITE_TRAJETS_ET_LOCALISATION.md) — consentement, trois modes de protection, accès des proches, révocation, fraîcheur, réseau faible, conservation et verrou GPS ; paramètres à arbitrer, GPS réel non activé.
+
+- [Contrat de sécurité des comptes et appareils en situation d'urgence](docs/CONTRAT_SECURITE_COMPTES_ET_APPAREILS_EN_URGENCE.md) — téléphone perdu/volé, compte compromis, changement d'appareil, révocation, récupération et séparation entre accès au compte et racine cryptographique ; mécanismes à arbitrer, non implémentés.
