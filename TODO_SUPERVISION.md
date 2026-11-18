@@ -419,3 +419,16 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 
 - [x] Rédiger une proposition candidate de transcript canonique : `docs/TRANSCRIPT_CEREMONIE_MULTI_APPAREILS.md`.
 - [ ] Faire arbitrer et relire indépendamment le format, les signatures doubles, les défis, la consommation atomique et l'idempotence avant toute implémentation.
+
+
+## Parcours SOS — arbitrage des deux accès — 18 novembre 2026
+
+- [x] Valider la coexistence du SOS principal guidé (choix catégorie + niveau avant envoi) et d'un accès SOS critique immédiat distinct.
+- [x] Exiger une catégorie et des destinataires éligibles préconfigurés pour le raccourci critique immédiat.
+- [x] Interdire une seconde confirmation générique qui ralentirait le SOS critique immédiat.
+- [x] Exiger que les deux parcours affichent uniquement un résultat de transmission confirmé par le serveur.
+- [ ] Arbitrer la modification ponctuelle des destinataires pour une alerte, sans changer les préférences permanentes.
+- [ ] Arbitrer le comportement lorsqu'aucun contact éligible n'est configuré.
+- [ ] Arbitrer le comportement du seuil SMS tant qu'aucun fournisseur opérationnel n'est sélectionné.
+- [ ] Concevoir les écrans détaillés des deux parcours après clôture des points ouverts.
+- [ ] Ne pas activer le SOS, créer d'API ou de migration D1, ni collecter de GPS réel dans le cadre de cette mise à jour documentaire.
