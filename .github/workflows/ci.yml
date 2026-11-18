@@ -40,6 +40,8 @@ jobs:
         run: npm run test:otp-policy
       - name: Test secure email OTP generation and digest
         run: npm run test:otp-code
+      - name: Test account password hashing
+        run: npm run test:password-hash
       - name: Test registration input policy
         run: npm run test:registration-policy
       - run: npm run build
