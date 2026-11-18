@@ -1029,3 +1029,13 @@ Référence : `docs/AUDIT_TRANSVERSAL_COHERENCE_ET_MATURITE_2026-11-18.md`. Audi
 - [x] Consolider les recommandations pour les comptes non vérifiés, actifs, suspendus, en suppression et supprimés, les activités orphelines, les SOS programmés, les relations et les courses concurrentes dans `docs/RECOMMANDATIONS_ARBITRAGE_FINAL_SUPPRESSION_COMPTES.md`.
 - [ ] Faire valider explicitement les recommandations par le propriétaire ; aucune ne devient une décision produit par simple présence dans le dépôt.
 - [ ] Maintenir le P0 ouvert et ne pas modifier le code TypeScript ou D1 avant validation et autorisation distincte.
+
+
+## Complément d'analyse juridique Niger — 18 novembre 2026
+
+- [x] Examiner les dispositions accessibles du texte de base 2022-59 sur les formalités (art. 29-31), les principes (art. 38-42), les transferts (art. 62-63), le registre et l'analyse d'impact (art. 64-67), les droits (art. 68-76), les obligations du responsable/sous-traitant (art. 77-86) et les sanctions.
+- [x] Relever dans le formulaire historique officiel que les numéros de téléphone et les transferts vers des pays tiers figuraient parmi les catégories soumises à demande d'autorisation.
+- [x] Créer `docs/ANALYSE_JURIDIQUE_NIGER_SAC_2026-11-18_COMPLEMENT.md` avec une qualification des données SAC et les réserves temporelles.
+- [ ] Authentifier et analyser l'ordonnance n° 2026-30, le décret de suppression de la HAPDP et les textes d'organisation des missions transférées.
+- [ ] Obtenir une confirmation écrite du service ministériel actuel sur les formalités, numéros de téléphone, données de santé, transferts, correspondant et notifications de violation.
+- [ ] Faire valider l'analyse par un juriste nigérien avant tout traitement réel.
