@@ -972,3 +972,14 @@ Avant commit, un échec laisse l'ancien kit valide. Après commit, le nouveau se
 Le remplacement ne modifie ni mot de passe, ni coordonnées, ni sessions non suspectes, ni appareils, ni racine, ni contacts, ni abonnement, ni alertes, ni instantanés SOS. Aucun appareil n'est approuvé ou promu. Si aucun appareil sûr n'est disponible, OTP e-mail, support ou contact ne permettent pas de remplacer le kit.
 
 Les choix sur appareil initiateur autorisé, notification et confirmation UX restent à arbitrer. Aucun code, endpoint, champ, fournisseur ou migration D1 n'est créé.
+
+
+## Exigences de confidentialité à l'affichage du kit de récupération (18 novembre 2026)
+
+Le kit est généré localement et ne transite jamais en clair vers le serveur. Le secret brut reste en mémoire volatile le temps de son affichage ; il ne doit être écrit dans aucun stockage web persistant, cache, service worker, cookie, URL, journal, télémétrie, rapport de crash, notification ou sauvegarde. Aucun secret ni fragment n'est inclus dans les événements analytiques.
+
+L'affichage exige une action explicite et un écran dédié. Pas de copie automatique, partage, export, téléchargement ou réaffichage depuis le serveur. L'état applicatif est effacé à la fermeture, à l'expiration de l'affichage et lors du passage en arrière-plan lorsque détectable. Si le kit n'a pas été conservé, un nouveau remplacement depuis un appareil sûr est nécessaire.
+
+La protection contre les captures et l'aperçu multitâche doit être étudiée pour Android natif. Une PWA ne peut pas garantir le blocage des captures d'écran, enregistrements, extensions ou outils système. Toute protection est une réduction de risque, jamais une garantie contre appareil compromis ou logiciel espion.
+
+Aucun bouton de copie par défaut. Toute future fonction de copie nécessitera un arbitrage séparé ; l'effacement du presse-papiers ne peut être garanti. Aucun kit n'est envoyé par e-mail ou SMS. Ces exigences sont conceptuelles et ne créent aucun endpoint, champ ou mécanisme technique dans le dépôt.
