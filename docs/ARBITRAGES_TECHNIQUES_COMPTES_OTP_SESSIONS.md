@@ -229,3 +229,37 @@ Conditions :
 - essai Android PWA réel et réseau faible.
 
 Aucun parcours n'est opérationnel avant vérification des tests automatisés, des tests D1 et des essais sur appareils.
+
+
+## 12. Cycle de vie du compte — décision validée le 18 novembre 2026
+
+Les cinq états fonctionnels suivants sont validés :
+
+1. **En attente de vérification** (`pending_verification`) : inscription créée, adresse e-mail principale non vérifiée ; aucune fonction privée ni session utilisateur.
+2. **Actif** (`active`) : adresse principale vérifiée ; accès selon les permissions, la session et l'état de l'appareil.
+3. **Suspendu** (`suspended`) : connexion et nouvelles activités bloquées ; sessions révoquées ; données conservées.
+4. **Suppression en attente** (`deletion_pending`) : aucune nouvelle activité ; les alertes/trajets déjà engagés doivent être traités avant suppression définitive.
+5. **Supprimé** (`deleted`) : état terminal, sans connexion, restauration ni réactivation de l'ancien compte.
+
+L'état de vérification de l'adresse e-mail est distinct de l'état du compte. Il ne constitue pas un sixième état. Le compte devient actif seulement après confirmation serveur de la vérification requise.
+
+### Règles de suspension validées
+
+- Seul le Super Admin peut imposer une suspension administrative.
+- Un blocage automatique de sécurité visant une tentative ou une session à risque reste un mécanisme distinct et ne change pas, à lui seul, l'état administratif du compte.
+- La suspension administrative conserve une trace de l'auteur, du motif, de la date, de l'éventuelle échéance et de la décision de réactivation.
+- Elle révoque les sessions existantes, interdit les nouvelles connexions et les nouvelles activités, mais ne supprime pas les données.
+
+### Point non arbitré : alerte déjà active
+
+La suspension ne clôture ni n'annule automatiquement une alerte SOS déjà transmise. La manière dont le titulaire suspendu peut consulter, compléter ou clôturer une alerte en cours reste à décider. Les contacts et le système doivent pouvoir poursuivre le traitement déjà engagé selon le contrat SOS. Aucun accès général de contournement ne sera créé sans décision explicite.
+
+### Suppression
+
+La suppression en attente bloque les nouvelles activités. La suppression définitive attend la clôture des alertes/trajets déjà engagés et le respect des obligations de conservation applicables. L'état supprimé est terminal ; une nouvelle inscription éventuelle crée un nouveau compte.
+
+### Écart technique et portée
+
+Cette décision résout l'arbitrage produit sur les cinq états, mais ne modifie pas encore le contrat pur `src/domain/account-lifecycle.ts`, qui ne reconnaît actuellement que trois états. L'alignement du contrat et des tests doit faire l'objet d'une modification de code autorisée séparément. Le schéma D1, les routes d'authentification, les sessions actives et les ressources Cloudflare restent hors périmètre de cette mise à jour documentaire.
+
+**Mise à jour du registre :** l'ancien point « décider si les états d'inscription en attente et de suspension appartiennent au cycle du compte » est clos. Les paramètres OTP, le fournisseur e-mail, le changement d'adresse, la récupération cryptographique et le jumelage multi-appareils restent ouverts.
