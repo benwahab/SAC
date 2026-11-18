@@ -483,3 +483,8 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Appliquer le système i18n et RTL à chaque nouvel écran avant son ouverture aux utilisateurs.
 - [ ] Valider les contrastes, le rendu mobile et les langues sur appareils Android réels.
 - [ ] Confirmer ultérieurement les valeurs hexadécimales définitives de la charte visuelle.
+
+
+## Cycle de vie du compte — point SOS en attente
+
+- [ ] Arbitrer le comportement du titulaire et des contacts lorsqu'une alerte SOS est déjà active au moment d'une suspension ; proposition documentée dans `docs/PLAN_SOCLE_COMPTE_SESSIONS_APPAREILS.md` et `docs/ARBITRAGES_TECHNIQUES_COMPTES_OTP_SESSIONS.md`.
