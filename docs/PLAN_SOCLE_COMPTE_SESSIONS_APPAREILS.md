@@ -349,3 +349,14 @@ Le délai indicatif de cette séquence d'appels est d'environ dix minutes entre 
 Une réponse du titulaire est un élément à examiner, pas une autorisation de clôture. La clôture reste une décision de l'administrateur SAC habilité selon la procédure déjà validée. Aucun proche ni le titulaire suspendu ne peut clôturer cette alerte.
 
 Cette séquence est une règle produit documentaire. Elle ne suppose pas qu'un numéro de téléphone soit déjà collecté ou vérifié, ne crée aucun nouveau canal, n'envoie actuellement aucun message et n'autorise aucune implémentation technique ou migration D1.
+
+
+## Numéro de téléphone obligatoire à la création du compte — décision validée le 18 novembre 2026
+
+Chaque utilisateur SAC doit obligatoirement renseigner un numéro de téléphone lors de la création de son compte. Ce champ est requis : la création du compte ne peut pas être finalisée sans numéro. Le numéro doit être enregistré avec son indicatif international afin de permettre son identification et son utilisation correcte, notamment si l'utilisateur change de pays.
+
+Cette obligation de collecte ne signifie pas à elle seule que le numéro est vérifié. La méthode de vérification du numéro, les règles de changement et de mise à jour restent à spécifier. La décision antérieure de ne pas utiliser de SMS OTP pour l'authentification des comptes reste inchangée : aucune vérification par SMS ni aucun SMS OTP n'est implicitement autorisé par cette décision.
+
+Pour la procédure administrative de vérification d'une alerte suspendue, le numéro obligatoire pourra servir de moyen de contact uniquement lorsque son caractère vérifié et son accessibilité auront été établis. Si le numéro n'est pas vérifié ou ne permet pas de joindre le titulaire, cette limite est consignée ; l'absence de réponse ne prouve jamais la sécurité et ne permet pas de clôture automatique.
+
+Cette décision est documentaire et n'implémente aucun champ, validation, SMS, service externe, endpoint ou migration D1.
