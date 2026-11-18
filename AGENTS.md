@@ -53,3 +53,5 @@ Claude, Qwen et les autres assistants autorisés travaillent sur les mêmes réf
 - Les changements documentaires n'autorisent pas une modification de code, une migration D1, une ressource Cloudflare, une intégration fournisseur ou un déploiement.
 
 - **Bundles ECDH :** avant d'accepter un bundle signé, vérifier la structure JWK, importer effectivement la clé publique ECDH P-256 avec WebCrypto pour faire valider le point de courbe, puis vérifier la signature sous une identité déjà ancrée indépendamment. Le test du point (0,0) doit rester dans la suite adversariale. Une signature auto-incluse ne prouve jamais l'identité du propriétaire.
+
+- **Cérémonie multi-appareils :** le certificat secondaire expérimental actuel ne lie pas encore le défi serveur, le nonce du nouvel appareil, l'identifiant de cérémonie et l'expiration. Ne pas l'intégrer à une API d'approbation. Exiger un transcript canonique versionné signé par la racine et une consommation atomique du défi avant toute implémentation serveur.
