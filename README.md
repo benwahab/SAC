@@ -9,6 +9,7 @@ SAC est une application de sécurité personnelle et familiale. Elle permet à u
 - [Console professionnelle et services](docs/CONSOLE_PROFESSIONNELLE_ET_SERVICES.md)
 - [Plan directeur de réalisation](docs/PLAN_DIRECTEUR_REALISATION_SAC.md)
 - [Annexe du modèle de données des services professionnels](docs/ANNEXE_MODELE_DONNEES_SERVICES_PROFESSIONNELS.md)
+- [Audit de l'état réel du code — 18 novembre 2026](docs/AUDIT_ETAT_REEL_CODE_2026-11-18.md)
 - [Architecture de référence](ARCHITECTURE.md)
 - [Suivi et supervision](TODO_SUPERVISION.md)
 - [Cahier des charges complet](docs/CAHIER_DES_CHARGES_SAC.md)
