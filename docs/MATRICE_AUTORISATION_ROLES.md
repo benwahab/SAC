@@ -214,3 +214,30 @@ La révocation d'un appareil doit être évaluée au niveau de l'appareil, jamai
 Le contrôle est toujours réalisé sur la session et l'appareil exacts côté serveur. Un identifiant d'appareil ou rôle fourni par le client ne suffit pas à établir l'autorisation.
 
 **Statut : proposition à valider ;** les détails de récupération de racine et de réinscription d'un appareil révoqué restent à spécifier.
+
+
+### 4.6 Récupération de la racine après perte, vol ou remplacement — proposition à valider
+
+La récupération de l'accès au compte et la récupération de l'identité cryptographique sont deux autorisations différentes.
+
+| Acteur / état | Autorisé | Interdit |
+|---|---|---|
+| Propriétaire après récupération d'accès au compte | Accéder aux fonctions de compte indépendantes de la racine selon sa session et les contrôles retenus ; initier une demande de récupération | Réactiver l'ancienne racine, signer avec une ancienne clé absente, déclarer le GPS vérifié |
+| Appareil secondaire actif | Initier et consulter une demande liée au compte ; continuer les fonctions indépendantes de la racine si sa session reste active | Se promouvoir racine, approuver un appareil, signer une rotation, restaurer des clés GPS |
+| Appareil racine révoqué | Aucun nouvel accès serveur ni approbation ; ses événements antérieurs restent dans l'audit | Toute nouvelle mutation, approbation, session ou partage GPS |
+| Nouvel appareil en récupération | Détenir localement une nouvelle paire de clés et soumettre les preuves prévues | Accéder aux fonctions racine avant validation atomique ; se déclarer actif par le client |
+| Contact de confiance | Recevoir une demande de changement d'identité et vérifier indépendamment l'empreinte par son propre canal | Approuver à la place de l'utilisateur la racine, réinitialiser son compte ou accéder à des secrets privés |
+| Support SAC | Appliquer uniquement les procédures de support explicitement autorisées et auditées, si elles sont définies ultérieurement | Substituer une clé racine, contourner les vérifications indépendantes ou déclarer une empreinte vérifiée |
+
+**Règles proposées :**
+- Le mot de passe, un OTP, un lien e-mail ou une session secondaire ne valent jamais preuve de possession de l'ancienne clé racine.
+- La révocation de la racine invalide ses sessions et son autorité sans supprimer le compte ni révoquer automatiquement les secondaires.
+- Le nouvel appareil génère ses clés privées localement. Aucune clé privée ancienne ou nouvelle ne transite par le serveur.
+- Chaque opération sensible vérifie l'état courant du compte, l'époque racine, l'appareil et la demande de récupération dans la transaction finale.
+- Une demande de récupération en attente ne donne aucun droit d'approbation et ne réactive aucun partage GPS.
+- Les contacts vérifient séparément la nouvelle empreinte avant la reprise d'un partage GPS avec chacun d'eux.
+- Les permissions de lecture et d'écriture des secondaires restent indépendantes de la racine ; la liste fonctionnelle définitive pendant root_recovery_required est encore à arbitrer.
+
+**Tests d'autorisation obligatoires :** récupération d'accès seule ; tentative de promotion secondaire ; ancien root révoqué reconnecté ; secondaire révoqué pendant récupération ; deux demandes concurrentes ; nouvelle racine non vérifiée ; contact non vérifié ; rétablissement partiel des relations ; refus de tout accès GPS avant vérification indépendante.
+
+Aucun rôle de « récupérateur », « gardien » ou « administrateur de racine » n'est créé par cette proposition.
