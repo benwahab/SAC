@@ -28,7 +28,7 @@ export type RegistrationValidation =
         | "invalid_language";
     };
 
-function normalizeEmail(value: unknown): string | null {
+export function normalizeRegistrationEmail(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const email = value.trim().toLowerCase();
   if (email.length === 0 || email.length > 254) return null;
@@ -67,7 +67,7 @@ function normalizeEmail(value: unknown): string | null {
  * Le numéro doit déjà être international (+ indicatif pays).
  * Les séparateurs visuels courants sont retirés, jamais l'indicatif.
  */
-function normalizePhone(value: unknown): string | null {
+export function normalizeRegistrationPhone(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const phone = value.trim().replace(/[\s().-]/g, "");
   return /^\+[1-9]\d{7,14}$/.test(phone) ? phone : null;
@@ -75,10 +75,10 @@ function normalizePhone(value: unknown): string | null {
 
 /** Valide les données de formulaire sans créer de compte ni prouver une identité. */
 export function validateRegistrationInput(input: RegistrationInput): RegistrationValidation {
-  const email = normalizeEmail(input.email);
+  const email = normalizeRegistrationEmail(input.email);
   if (!email) return { ok: false, error: "invalid_email" };
 
-  const phone = normalizePhone(input.phone);
+  const phone = normalizeRegistrationPhone(input.phone);
   if (!phone) return { ok: false, error: "invalid_phone" };
 
   const password = validateAccountPassword(input.password);
