@@ -221,6 +221,24 @@ Après attribution, tous les destinataires autorisés voient clairement qui est 
 - L'accusé de réception, la candidature, le refus d'aider ou la notification reçue ne stoppent pas les rappels push et ne bloquent pas à eux seuls l'escalade SMS.
 - Seule l'attribution effective du responsable principal bloque l'escalade SMS non encore engagée. Les règles déjà validées sur les SMS acceptés par le fournisseur restent applicables.
 
+#### Perte de connexion, silence et transfert du responsable principal
+
+**Principe de sécurité : une absence de signal réseau n'est pas une preuve d'abandon.** Une PWA peut être suspendue, le téléphone éteint, le réseau coupé ou les notifications retardées. SAC ne doit donc jamais retirer automatiquement la responsabilité sur la seule base d'un délai sans activité, d'une absence de réponse ou d'un statut « hors ligne ».
+
+Comportements proposés :
+
+1. **Perte de connexion du responsable :** conserver l'attribution actuelle. Afficher « Dernière activité connue » avec l'heure du dernier événement confirmé par le serveur, et préciser que la disponibilité actuelle n'est pas connue. Ne jamais afficher « hors ligne » comme un fait certain si le serveur ne peut pas le vérifier.
+2. **Silence ou absence d'action :** ne pas transférer automatiquement la responsabilité. Les autres contacts continuent à voir l'alerte et peuvent proposer leur aide ; le responsable principal reste celui enregistré jusqu'à son retrait, la clôture par l'auteur ou une règle de remplacement explicitement validée.
+3. **Retrait volontaire du responsable :** le responsable demande à se retirer. Dans la même opération atomique, le serveur termine sa période de responsabilité et attribue le rôle au volontaire admissible le plus ancien selon l'ordre serveur déterministe. Si aucun volontaire admissible n'existe, l'alerte reste active et repasse à « Aucun responsable principal » ; les rappels continuent vers l'instantané initial.
+4. **Volontaire qui se propose pendant le retrait :** les demandes concurrentes sont sérialisées. Une seule personne reçoit le rôle. La candidature la plus ancienne déjà acceptée côté serveur est prioritaire ; les horodatages fournis par les téléphones ne départagent jamais les demandes.
+5. **Reconnexion du responsable précédent :** il retrouve l'historique et voit le responsable actuellement attribué. Il ne récupère pas automatiquement le rôle. Il peut proposer à nouveau son aide uniquement si les règles de candidature l'autorisent et si aucun responsable n'est déjà attribué.
+6. **Transfert sans volontaire disponible :** ne pas inventer un responsable de remplacement. L'alerte reste active sans responsable principal ; l'auteur peut contacter directement ses proches par un autre moyen ou clôturer l'alerte lorsqu'il le juge approprié.
+7. **Rappels et escalade :** la perte de connexion ou le silence du responsable ne modifient pas le seuil SMS à eux seuls. Seule une attribution effective bloque l'escalade non encore engagée ; un retrait qui laisse l'alerte sans responsable permet à nouveau l'escalade selon le seuil et l'état serveur courant. Les rappels push continuent jusqu'à clôture par l'auteur.
+
+L'interface doit distinguer « responsable principal attribué », « dernière activité connue à… », « retrait demandé », « transfert en cours » et « aucun responsable principal ». Ne pas afficher de compteur de présence ou de disponibilité en temps réel dans la V1.
+
+**Statut : proposition UX et métier à valider.** Elle précise la continuité sans modifier les décisions déjà actées : seul l'auteur clôture, la prise en charge ne stoppe pas les rappels, et un volontaire ne devient responsable qu'après attribution serveur effective.
+
 #### Clôture et notion de résolution
 
 La clôture est une action de l'auteur, distincte de la prise en charge par un proche. Au moment de clôturer, proposer des motifs simples : **Situation résolue**, **Aide devenue inutile**, **Fausse alerte** ou **Autre raison** (commentaire facultatif). Le choix du motif est une déclaration de l'auteur, pas une preuve indépendante qu'une intervention a eu lieu.
