@@ -12,13 +12,13 @@ Ce document distingue :
 - **Recommandation :** valeur proposée pour avancer vers une conception cohérente ; elle nécessite confirmation avant migration ou code.
 - **Bloquant :** aucun choix technique ne doit être fait silencieusement.
 
-Le canal OTP du compte est l'e-mail. Aucun SMS OTP ni mécanisme de secours SMS n'est autorisé. L'OTP ne prouve que le contrôle temporaire de l'adresse e-mail : il ne valide jamais une identité cryptographique racine et n'approuve jamais un appareil secondaire.
+L'adresse e-mail est obligatoire pour toute inscription SAC et constitue une condition sine qua non de l'activation du compte. Le compte ne peut pas être créé/activé par téléphone seul ni par une voie de contournement. L'activation exige la saisie correcte d'un OTP envoyé à cette adresse. Le téléphone reste obligatoire comme coordonnée déclarée, mais ne remplace jamais l'e-mail. Aucun SMS OTP ni mécanisme de secours SMS n'est autorisé pour l'inscription ou l'activation du compte. L'OTP e-mail ne prouve que le contrôle temporaire de l'adresse : il ne valide jamais une identité cryptographique racine et n'approuve jamais un appareil secondaire.
 
 ## 2. Registre d'arbitrage
 
 | Sujet | État | Recommandation / règle |
 |---|---|---|
-| Canal de vérification | Déjà validé | E-mail uniquement ; SMS réservé à l'escalade SOS. |
+| Canal de vérification initiale | Décision confirmée le 18-11-2026 | Adresse e-mail obligatoire ; activation uniquement après OTP e-mail valide. Aucun compte sans e-mail, aucune activation par téléphone seul et aucun SMS OTP de compte. SMS réservé aux usages SOS déjà prévus. |
 | Révélation d'un compte existant | Recommandation | Réponse publique identique pour inscription et connexion, sans confirmer l'existence d'une adresse. |
 | Durée OTP | Recommandation | 10 minutes maximum, calculées par l'heure serveur. |
 | Essais OTP | Recommandation | 6 essais maximum par défi ; consommation atomique au premier succès ; aucun rejeu. |
@@ -42,12 +42,12 @@ Le canal OTP du compte est l'e-mail. Aucun SMS OTP ni mécanisme de secours SMS 
 
 ### 3.1 Inscription
 
-1. Le client soumet l'adresse e-mail et les informations strictement nécessaires.
+1. L'adresse e-mail est obligatoire : le client soumet une adresse e-mail et les informations strictement nécessaires. Une inscription sans adresse e-mail n'est pas proposée et ne peut pas être finalisée.
 2. Le serveur normalise l'adresse selon une règle unique, versionnée et testée.
 3. Le serveur répond avec un message générique identique, que l'adresse soit nouvelle ou déjà associée à un compte.
 4. Pour une nouvelle identité, le serveur crée un défi OTP et demande l'envoi au fournisseur.
-5. Le compte reste non actif tant que la vérification n'est pas confirmée côté serveur.
-6. À validation, l'identité e-mail est marquée vérifiée et le compte devient actif selon la transition atomique retenue.
+5. Le compte reste `pending_verification` tant que la vérification OTP e-mail n'est pas confirmée côté serveur ; aucun accès privé ni session utilisateur n'est possible.
+6. À validation, l'identité e-mail est marquée vérifiée et le compte peut passer à `active` selon la transition atomique retenue. Cette vérification est une condition obligatoire, non une option.
 7. Aucun appareil secondaire, aucune racine cryptographique et aucune permission GPS ne sont créés implicitement par la vérification e-mail.
 
 ### 3.2 Connexion
@@ -342,11 +342,11 @@ Décision documentaire uniquement : aucun champ, validation, envoi SMS, service 
 
 ## Vérification du compte par OTP e-mail uniquement — clarification validée le 18 novembre 2026
 
-La vérification initiale du compte est effectuée par OTP envoyé à l'adresse e-mail. La saisie correcte de cet OTP valide l'adresse e-mail et suffit pour la vérification initiale du compte.
+L'adresse e-mail est obligatoire dès l'inscription et constitue une condition sine qua non de l'activation. Aucun compte SAC ne peut être créé ou activé sans adresse e-mail ; le téléphone seul ne constitue jamais une voie d'inscription ou de remplacement. La vérification initiale est effectuée par OTP envoyé à cette adresse. La saisie correcte de cet OTP valide l'adresse e-mail et est indispensable pour que le compte puisse passer de `pending_verification` à `active`.
 
-Le numéro de téléphone demeure obligatoire à l'inscription, mais ne fait l'objet d'aucune vérification indépendante : aucun SMS OTP, appel automatisé de validation ou autre procédure de preuve de propriété. Le numéro déclaré peut être utilisé comme coordonnée de contact, y compris pour les tentatives d'appel de l'administration. Une réponse reçue depuis ce numéro ne prouve cependant pas à elle seule l'identité de l'interlocuteur et doit être appréciée et recoupée dans le contexte de l'alerte. Le silence ne constitue jamais une preuve de sécurité.
+Le numéro de téléphone demeure obligatoire à l'inscription, mais ne fait l'objet d'aucune vérification indépendante : aucun SMS OTP, appel automatisé de validation ou autre procédure de preuve de propriété. Cette règle ne dispense jamais de fournir et vérifier l'adresse e-mail obligatoire. Le numéro déclaré peut être utilisé comme coordonnée de contact, y compris pour les tentatives d'appel de l'administration. Une réponse reçue depuis ce numéro ne prouve cependant pas à elle seule l'identité de l'interlocuteur et doit être appréciée et recoupée dans le contexte de l'alerte. Le silence ne constitue jamais une preuve de sécurité.
 
-Cette clarification remplace toute exigence antérieure de vérification du numéro avant son utilisation comme coordonnée de contact. Aucun SMS OTP n'est autorisé.
+Cette clarification remplace toute exigence antérieure de vérification du numéro avant son utilisation comme coordonnée de contact. Aucun SMS OTP n'est autorisé pour l'inscription, la vérification ou l'activation d'un compte SAC.
 
 
 ## Notification des destinataires après clôture administrative
