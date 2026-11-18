@@ -54,12 +54,27 @@ test(
     assert.ok(response, "Worker did not become ready: " + String(lastError) + "\n" + output);
     assert.equal(response.status, 200, output);
 
-    const result = await response.json() as { canonical: string; sha256: string };
+    const result = await response.json() as {
+      canonical: string;
+      sha256: string;
+      ecdsa: {
+        rfcSignatureBytes: number;
+        rfcHighSVerified: boolean;
+        rfcLowSVerified: boolean;
+        generatedSignatureBytes: number;
+        generatedSignatureVerified: boolean;
+      };
+    };
     const expected = String.raw`{"literals":[null,true,false],"numbers":[333333333.3333333,1e+30,4.5,0.002,1e-27],"string":"€$\u000f\nA'B\"\\\\\"/"}`;
     assert.equal(result.canonical, expected);
     assert.equal(
       result.sha256,
       "2d5e01a318d0f0879ab568c4be289c8b1f64ef8921a53c6277d5e069978baacb",
     );
+    assert.equal(result.ecdsa.rfcSignatureBytes, 64);
+    assert.equal(result.ecdsa.rfcHighSVerified, true);
+    assert.equal(result.ecdsa.rfcLowSVerified, true);
+    assert.equal(result.ecdsa.generatedSignatureBytes, 64);
+    assert.equal(result.ecdsa.generatedSignatureVerified, true);
   },
 );
