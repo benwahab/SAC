@@ -893,3 +893,18 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases
 - [ ] Autorisation distincte obligatoire avant code, endpoint, secrets, stockage, D1, fournisseur, Cloudflare ou déploiement.
 
 **Statut :** documentation uniquement ; aucun canal ni fournisseur réel activé.
+
+
+## Sécurité des trajets et de la localisation — 18 novembre 2026
+
+- [x] Auditer les propositions trajets, la purge GPS J+30, les contrats SOS, communications, invitations, confidentialité et conservation.
+- [x] Formaliser le contrat de sécurité des trajets et de la localisation dans `docs/CONTRAT_SECURITE_TRAJETS_ET_LOCALISATION.md`.
+- [x] Préserver la distinction entre vérification d'arrivée, accompagnement et protection complète ; aucun retard/perte réseau ne déclenche automatiquement un SOS.
+- [ ] Arbitrer les délais d'arrivée, durées d'accompagnement, plafond, seuils de fraîcheur et règles hors ligne.
+- [ ] Définir une politique explicite de conservation des positions de trajet, distincte du contrat GPS des alertes.
+- [ ] Prouver la destruction GPS J+30 et la non-résurrection sur toutes plateformes, sauvegardes, snapshots et restaurations.
+- [ ] Faire revoir indépendamment les consentements, révocations atomiques, anti-rejeu et protections contre le suivi abusif.
+- [ ] Réaliser les tests de sécurité et de réseau faible avant toute décision GO.
+- [ ] Maintenir le GPS réel NO-GO ; aucune permission terminal, collecte, API, stockage ou ressource Cloudflare ne doit être activé par la seule documentation.
+
+**Statut :** documentation uniquement ; aucune collecte GPS ni partage réel activé.
