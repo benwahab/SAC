@@ -228,3 +228,18 @@ BEGIN
       AND c.purpose = 'account_email_verification'
   ) THEN RAISE(ABORT, 'account_activation_requires_email_otp') END;
 END;
+
+-- Les coordonnées déclarées ne peuvent pas être réécrites silencieusement.
+-- Un changement d'adresse/numéro devra passer par un futur flux dédié.
+CREATE TRIGGER account_identity_immutable_fields
+BEFORE UPDATE ON account_identities
+BEGIN
+  SELECT CASE WHEN
+    NEW.id <> OLD.id
+    OR NEW.account_id <> OLD.account_id
+    OR NEW.channel <> OLD.channel
+    OR NEW.normalized_value <> OLD.normalized_value
+    OR NEW.is_primary <> OLD.is_primary
+    OR NEW.created_at <> OLD.created_at
+  THEN RAISE(ABORT, 'account_identity_immutable_fields') END;
+END;
