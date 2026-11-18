@@ -178,6 +178,72 @@ Une action reçue deux fois par répétition réseau n'apparaît qu'une fois dan
 
 **Statut : proposition UX de travail à valider.** Elle ne crée aucune interface, API, table D1, notification réelle, intégration SMS ou logique métier.
 
+### Proposition UX détaillée — suivi après déclenchement (à valider)
+
+Le suivi est une chronologie horodatée, lisible sur téléphone. Il ne doit pas réduire l'ensemble de l'alerte à un seul badge « envoyé » ou « reçu » : les états sont propres à chaque destinataire et à chaque canal.
+
+#### Vue de l'auteur de l'alerte
+
+En haut de l'écran, afficher :
+- catégorie, niveau d'urgence et heure de création confirmée par le serveur ;
+- état général de l'alerte : **active**, **clôturée par vous** ou **échec de création** ;
+- responsable principal, s'il existe, et heure de son attribution ;
+- action « Clôturer l'alerte », disponible uniquement tant que l'alerte est active.
+
+Puis afficher une ligne par contact de l'instantané initial, sans mélanger les événements :
+- **En attente** : aucune action humaine confirmée ;
+- **Notification en cours** : tâche de notification créée ou en traitement, sans preuve de livraison ;
+- **Notification acceptée par le service** : le fournisseur a accepté la demande, cela ne prouve ni livraison sur le téléphone ni lecture ;
+- **A accusé réception** : le contact a explicitement confirmé avoir vu l'alerte ;
+- **Propose son aide** : candidature volontaire enregistrée, sans responsabilité principale tant que l'attribution n'est pas confirmée ;
+- **Responsable principal** : attribution unique confirmée par le serveur ;
+- **Échec / résultat inconnu** : distinguer un échec confirmé d'une réponse technique ambiguë.
+
+Pour chaque canal, montrer l'heure du dernier événement vérifiable. Une notification push et un SMS ont des lignes d'état distinctes. Le statut d'un contact ne doit pas être déduit de celui d'un autre contact.
+
+#### Vue d'un contact destinataire
+
+Le contact voit la catégorie, le niveau, l'heure de déclenchement et les informations que l'auteur a effectivement partagées et autorisées. Il dispose d'actions distinctes :
+- « J'ai vu l'alerte » pour l'accusé de réception ;
+- « Je peux aider » pour proposer sa disponibilité ;
+- « Prendre la responsabilité » pour demander à devenir responsable principal, sous réserve de confirmation atomique du serveur ;
+- « Je ne peux pas aider » pour signaler son indisponibilité sans clôturer l'alerte.
+
+Après attribution, tous les destinataires autorisés voient clairement qui est responsable principal. Une candidature ou un accusé de réception ne doit jamais être présenté comme une prise en charge. Les contacts ne disposent d'aucune action de clôture.
+
+**Confidentialité proposée :** chaque destinataire voit son propre état de notification et les informations nécessaires à la coordination. L'écran peut afficher le prénom/nom choisi des autres destinataires et le statut de coordination, mais jamais leurs numéros, adresses e-mail ou coordonnées privées. Cette visibilité de groupe reste à valider ; par défaut, ne pas révéler de données de contact entre proches.
+
+#### Prise en charge et coordination
+
+- Une seule personne peut être responsable principale à un instant donné.
+- Deux demandes simultanées sont arbitrées côté serveur ; une seule attribution réussit. L'autre personne reçoit un message clair indiquant qu'un responsable est déjà désigné.
+- Le responsable principal peut indiquer qu'il se retire. Le rôle n'est transféré qu'après acceptation effective d'un autre volontaire par le serveur ; sinon l'alerte reste active sans responsable principal.
+- L'accusé de réception, la candidature, le refus d'aider ou la notification reçue ne stoppent pas les rappels push et ne bloquent pas à eux seuls l'escalade SMS.
+- Seule l'attribution effective du responsable principal bloque l'escalade SMS non encore engagée. Les règles déjà validées sur les SMS acceptés par le fournisseur restent applicables.
+
+#### Clôture et notion de résolution
+
+La clôture est une action de l'auteur, distincte de la prise en charge par un proche. Au moment de clôturer, proposer des motifs simples : **Situation résolue**, **Aide devenue inutile**, **Fausse alerte** ou **Autre raison** (commentaire facultatif). Le choix du motif est une déclaration de l'auteur, pas une preuve indépendante qu'une intervention a eu lieu.
+
+Après clôture :
+- l'alerte passe à l'état clôturé avec auteur, motif et horodatage serveur ;
+- les nouveaux rappels et tâches non envoyées sont annulés selon les règles du serveur ;
+- les notifications déjà acceptées par un fournisseur peuvent encore arriver ;
+- les destinataires voient que l'auteur a clôturé l'alerte et le motif partagé ;
+- aucune personne ne peut rouvrir cette alerte clôturée. Si un nouveau danger survient, l'auteur crée une nouvelle alerte.
+
+Ne jamais afficher « secours intervenus », « personne secourue » ou « danger éliminé » sur la seule base d'une prise en charge ou du motif de clôture. SAC ne vérifie pas matériellement l'intervention.
+
+#### États vides et incidents
+
+- Aucun accusé de réception : afficher « Aucun proche n'a encore confirmé avoir vu l'alerte », sans conclure que personne ne l'a reçue.
+- Notifications en attente : afficher « Transmission en cours de vérification », jamais « envoyé ».
+- Responsable absent : afficher « Aucun responsable principal pour le moment ».
+- Perte de connexion : afficher la dernière synchronisation connue avec son heure et signaler que les informations peuvent être anciennes ; les actions non confirmées restent en attente de confirmation serveur.
+- Alerte clôturée : afficher l'historique en lecture seule et la personne qui l'a clôturée.
+
+**Statut : proposition UX à valider.** Cette spécification ne crée aucun écran, endpoint, statut SQL, notification ou mécanisme réel. Les noms définitifs des états métier devront rester cohérents avec les machines à états et les contrats API avant toute implémentation.
+
 ## 5. Règles de rapidité et d'accessibilité
 
 - Grandes zones tactiles, textes courts, contraste élevé et boutons éloignés les uns des autres.
