@@ -470,3 +470,14 @@ Sources officielles :
 - [Apple — earliestBeginDate](https://developer.apple.com/documentation/backgroundtasks/bgtaskrequest/earliestbegindate)
 
 **Conclusion :** la primitive AES-GCM peut être testée indépendamment ; elle ne valide pas la politique de rétention. La destruction locale après échéance doit rester bloquée comme garantie stricte tant que le cycle de vie des clés natives et les scénarios d'appareil éteint/restauré ne sont pas prouvés.
+
+## Complément — sauvegardes natives et restauration mobile (18 novembre 2026)
+
+La revue officielle Android/iOS montre que les exclusions de sauvegarde sont une couche de réduction du risque, pas une preuve autonome de destruction J+30.
+
+- Android Auto Backup inclut par défaut la plupart des préférences, fichiers internes, bases et fichiers externes de l'application. Les règles doivent couvrir séparément le cloud et les transferts appareil-à-appareil ; les versions Android 11 et antérieures nécessitent aussi leurs règles legacy. Sur certains appareils Android 12+, allowBackup=false ne bloque pas nécessairement le transfert direct entre appareils.
+- Sur iOS, isExcludedFromBackup doit être réappliqué après les opérations de fichiers susceptibles de remettre le drapeau à false.
+- Keychain ThisDeviceOnly empêche la migration vers un nouvel appareil, mais Apple indique qu'un élément peut être restauré sur le même appareil depuis une sauvegarde. Les secrets GPS doivent aussi être non synchronisables via iCloud Keychain.
+- Ni une exclusion de sauvegarde, ni ThisDeviceOnly, ni un répertoire Android noBackupFilesDir ne prouvent l'expiration cryptographique à une date fixe. Ils doivent être testés avec les sauvegardes et transferts réels des OS et OEM supportés.
+
+Référence opérationnelle : voir les scénarios GPS-27 à GPS-36 dans docs/PLAN_VALIDATION_DESTRUCTION_GPS_J30.md. Aucun de ces scénarios n'est exécuté à ce stade ; aucune app native n'est encore implémentée.
