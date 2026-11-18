@@ -319,3 +319,24 @@ La révocation par le propriétaire et le retrait d'acceptation par le contact d
 4. Confirmer la promotion automatique du volontaire admissible suivant lorsque le responsable principal est révoqué ; cette promotion ne doit jamais être effectuée si la relation du candidat n'est plus active au commit.
 
 Aucune de ces propositions ne modifie l'instantané historique, les règles SMS déjà acceptées par le fournisseur ou le droit exclusif de l'auteur à clôturer.
+
+### 3.10 Révocation d'un appareil — distinction avec le compte et les alertes (proposition à valider)
+
+**Règle recommandée :** révoquer un téléphone révoque ce téléphone, pas la personne ni son compte.
+
+- Révoquer un appareil secondaire invalide ses sessions, jetons et abonnements push uniquement. Les autres appareils actifs restent utilisables.
+- Les contacts de confiance, l'abonnement, les alertes et les historiques du compte ne sont pas supprimés.
+- L'instantané initial des destinataires d'une alerte active n'est jamais réécrit par une révocation d'appareil.
+- Les notifications destinées au compte peuvent continuer sur les autres appareils actifs ; l'abonnement de l'appareil révoqué est exclu.
+- Une notification déjà acceptée par le fournisseur peut encore arriver sur le téléphone révoqué ; l'accès au contenu est alors refusé par le contrôle serveur.
+- Aucun effacement à distance des données/clés locales n'est garanti, surtout si l'appareil est hors ligne.
+
+**Cas du premier appareil racine :** sa révocation bloque les nouvelles approbations et le partage GPS qui dépend de cette racine. Elle ne supprime pas le compte et ne révoque pas automatiquement les sessions des secondaires. Aucun secondaire ne devient racine automatiquement. Une nouvelle identité racine et une revérification indépendante des contacts sont nécessaires avant de rétablir la confiance GPS.
+
+**Arbitrages à valider :**
+1. Confirmer que les fonctions ordinaires non liées au GPS restent disponibles sur les secondaires actifs pendant la récupération de la racine.
+2. Confirmer qu'une notification de compte reste distribuable aux autres appareils actifs après révocation d'un seul abonnement.
+3. Confirmer que la réinscription du même téléphone exige toujours une nouvelle cérémonie et de nouvelles clés, sans réactivation de l'ancien certificat.
+4. Définir les fonctions exactes bloquées pendant root_recovery_required, au-delà des approbations et du partage GPS.
+
+Aucune décision ici ne permet d'effacer les données locales à distance, de contourner la racine ou de restaurer les anciennes clés GPS par une simple récupération de mot de passe.
