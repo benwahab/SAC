@@ -644,3 +644,18 @@ La politique OTP validée utilise l'e-mail comme canal standard pour les codes d
 - Les appareils secondaires conservent leurs capacités strictement autorisées ; la réception d'un OTP e-mail ne leur confère aucun privilège supplémentaire.
 
 **Verrou :** aucune transition de racine ou approbation d'appareil ne doit être implémentée sur la seule base d'un OTP, qu'il soit reçu par e-mail ou SMS.
+
+
+## Annexe — Perte de l'e-mail et continuité des appareils (18 novembre 2026)
+
+**Statut :** règles de conception proposées, sous réserve des facteurs de récupération restant à arbitrer.
+
+- Si un appareil approuvé et sûr subsiste, le changement de l'adresse e-mail doit être initié depuis cet appareil et lié à une preuve cryptographique fraîche. La nouvelle adresse est vérifiée par OTP e-mail, mais cet OTP ne constitue pas la preuve d'autorité de l'appareil.
+- Une session secondaire ne peut pas devenir racine en raison de la perte de l'e-mail. Ses capacités restent celles de son certificat et de ses autorisations actuelles.
+- Si aucun appareil approuvé ne subsiste, un nouvel e-mail vérifié permet uniquement de prouver le contrôle de la nouvelle boîte. Il ne permet pas à lui seul de reprendre le compte, approuver un appareil ou remplacer l'ancienne racine.
+- Une récupération d'accès en attente ne change pas l'époque racine, ne certifie aucun appareil et n'autorise aucun partage GPS.
+- Si la racine est perdue, une nouvelle paire est générée localement et l'ancienne racine reste non restaurable ; la vérification indépendante des nouvelles empreintes par les contacts concernés reste exigée avant reprise du GPS.
+- Aucun OTP SMS de secours automatique n'est ajouté. Les SMS d'escalade SOS restent indépendants.
+- La portée de révocation des sessions et les fonctions accessibles pendant une récupération restent à définir explicitement ; aucune révocation globale arbitraire n'est présumée.
+
+**Verrou :** aucun nouvel appareil ne peut être approuvé sur la seule base d'un nouvel e-mail, d'un OTP, d'un mot de passe ou d'une intervention du support.
