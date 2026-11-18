@@ -399,3 +399,10 @@ Restent à spécifier avant implémentation : catalogue exhaustif des ressources
 
 Aucune implémentation n'est créée par ce document : aucun rôle actif, compte, droit, mission, écran, endpoint, middleware ou schéma/migration D1. Une matrice exhaustive testable, une revue sécurité et une autorisation explicite sont nécessaires avant le code.
 
+
+
+## Gouvernance opérationnelle des missions administratives
+
+Le cycle de vie, les transitions autorisées, la suspension d'urgence, la révocation immédiate côté serveur, les conflits de missions, les contrôles d'export et les tests de sécurité sont spécifiés dans [GOUVERNANCE_MISSIONS_ADMIN_ET_CYCLE_DE_VIE.md](GOUVERNANCE_MISSIONS_ADMIN_ET_CYCLE_DE_VIE.md).
+
+Les durées maximales proposées (30 jours standard, 7 jours sensible), la revue mensuelle, les alertes d'échéance et l'OTP e-mail récent pour opérations critiques restent explicitement à valider. La règle de session générale 30 jours d'inactivité / 90 jours maximum reste inchangée. Aucun code ou schéma n'est créé.
