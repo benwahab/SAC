@@ -353,3 +353,8 @@ Ces documents sont des spécifications et analyses. Ils ne signifient pas que la
 ## Contrats transactionnels administratifs — complément du 18 novembre 2026
 
 `docs/CONTRATS_OPERATIONS_ADMIN_ATOMIQUES.md` formalise les commandes sensibles : missions, permissions, suspension de compte, clôture administrative dans le scénario spécifique validé, consultations sensibles, exports et journal d'audit. Il décrit aussi les courses concurrentes, l'idempotence et les tests d'intégration. Il reste une conception non implémentée.
+
+
+## Modèle de données administratif — complément du 18 novembre 2026
+
+`docs/MODELE_DONNEES_ADMIN_ET_INTEGRATION_SAC.md` consolide les identités, rôles, missions, permissions, périmètres, sessions, dossiers de clôture administrative, consultations, exports et journaux. Il signale les contradictions à résoudre avant le schéma D1, notamment la différence entre clôture ordinaire par l'auteur et exception administrative dans le scénario spécifique du titulaire suspendu. Il reste conceptuel.
