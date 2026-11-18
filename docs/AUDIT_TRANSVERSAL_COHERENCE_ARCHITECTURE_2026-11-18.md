@@ -54,7 +54,7 @@ Les éléments explicitement marqués « proposition », « à arbitrer » ou «
 
 **Invariants :** seul l'auteur clôt normalement son alerte. Une exception administrative étroite est documentée pour un scénario spécifique de titulaire suspendu et de suspicion d'abus/perte de téléphone, sous autorité nominative et permission dédiée.
 
-**Écart :** certains contrats de sécurité résument la règle comme « seul l'auteur clôture », tandis que la revue relationnelle et le contrat de suppression décrivent l'exception administrative. Le contrat TypeScript actuel `src/domain/alert-lifecycle.ts` ne représente que `closed_by_author`.
+**État après recoupement :** l'exception produit est déjà validée et ses conditions sont désormais rassemblées dans `CONTRAT_CLOTURE_EXCEPTIONNELLE_ADMINISTRATIVE_SOS.md`. Le contrat de sécurité SOS a été aligné sur cette exception. Le contrat TypeScript actuel `src/domain/alert-lifecycle.ts` ne représente encore que `closed_by_author` ; il reste donc un écart de code, pas une décision produit à rouvrir.
 
 **Risque :** une implémentation pourrait soit supprimer l'exception déjà décidée, soit l'élargir à une capacité générale de clôture administrative.
 
