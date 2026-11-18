@@ -150,3 +150,18 @@ Sources :
 - NIST SP 800-56A Rev. 3 : https://csrc.nist.gov/pubs/sp/800/56/a/r3/final
 
 **Statut inchangé :** prototype expérimental seulement. Aucun raccordement GPS, aucune migration D1, aucun stockage local durable de clés GPS et aucune décision GO J+30 ne sont autorisés par cette revue.
+
+## 13. Validation effective du point ECDH dans un bundle — 18 novembre 2026
+
+Le prototype a été renforcé dans `src/services/location/key-exchange.ts` :
+
+- Après validation structurelle du JWK, `verifyLocationKeyBundle` tente désormais l'import de la clé publique comme clé ECDH P-256 via WebCrypto.
+- L'import cryptographique permet au fournisseur WebCrypto de rejeter un point hors courbe ou invalide ; le simple contrôle de longueur/encodage des coordonnées n'est plus considéré suffisant.
+- La vérification de la signature d'identité reste nécessaire, et l'import de la clé ECDH ne remplace pas l'ancrage indépendant de l'identité racine.
+- Un test adversarial construit un bundle dont le point ECDH est invalide mais dont le transcript est correctement signé par une clé d'identité P-256. Le vérificateur doit le rejeter.
+
+Fichiers concernés :
+- `src/services/location/key-exchange.ts`
+- `tests/location-crypto.test.ts`
+
+**État :** code et test enregistrés sur `main`. Le succès CI de ce changement doit être confirmé avant de considérer le contrôle comme validé. Même après CI verte, ce résultat ne constitue ni une certification cryptographique ni une revue indépendante ; le prototype demeure non connecté aux données GPS.
