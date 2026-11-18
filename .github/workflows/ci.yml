@@ -42,6 +42,8 @@ jobs:
         run: npm run test:otp-code
       - name: Test account password hashing
         run: npm run test:password-hash
+      - name: Apply D1 migrations to an isolated local database
+        run: npx wrangler d1 migrations apply sac-db --local
       - name: Test D1 email OTP schema and atomic triggers
         run: python3 tests/d1_email_otp_schema.test.py
       - name: Test registration input policy
