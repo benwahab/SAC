@@ -106,3 +106,5 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 - [Contrat de sécurité des trajets et de la localisation](docs/CONTRAT_SECURITE_TRAJETS_ET_LOCALISATION.md) — consentement, trois modes de protection, accès des proches, révocation, fraîcheur, réseau faible, conservation et verrou GPS ; paramètres à arbitrer, GPS réel non activé.
 
 - [Contrat de sécurité des comptes et appareils en situation d'urgence](docs/CONTRAT_SECURITE_COMPTES_ET_APPAREILS_EN_URGENCE.md) — téléphone perdu/volé, compte compromis, changement d'appareil, révocation, récupération et séparation entre accès au compte et racine cryptographique ; mécanismes à arbitrer, non implémentés.
+
+- [Contrat de confidentialité familiale et d'isolation des données](docs/CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md) — séparation des comptes familiaux, droits limités des proches/groupes, téléphones partagés, notifications discrètes, accès aux alertes et copies locales.
