@@ -560,3 +560,8 @@ Les durées de 30 jours pour une mission standard et 7 jours pour une mission se
 ## Référence de consolidation — 18 novembre 2026
 
 Avant toute fermeture du socle, lire également [CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md](CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md). Ce document rassemble les scénarios de perte/changement d'appareil, les durées de session validées, la séparation des trois couches de récupération, les contradictions du transcript multi-appareils et les blocages V1. Il ne lève aucune condition de revue cryptographique et n'autorise aucune migration, API ou modification Cloudflare.
+
+
+## Référence complémentaire — incidents et récupération en urgence
+
+Lire `CONTRAT_SECURITE_COMPTES_ET_APPAREILS_EN_URGENCE.md` avant toute évolution des parcours de perte/vol, compromission, récupération de compte, révocation urgente, changement d'e-mail ou remplacement d'appareil. Ce contrat ne lève aucun blocage du présent plan et n'autorise aucune migration, route, notification réelle ou cérémonie cryptographique.
