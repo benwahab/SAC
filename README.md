@@ -96,4 +96,4 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 
 - [Consolidation appareils, sessions et récupération](docs/CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md) — matrice des pertes/changements d'appareil, sessions 30/90 jours, séparation récupération du compte/racine et blocages V1.
 
-- [Proposition de sécurité des connexions et sessions](docs/PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md) — anti-brute-force, vol/rejeu de session, multi-appareils, révocation et notifications ; propositions à arbitrer, non implémentées.
+- [Proposition de sécurité des connexions et sessions](docs/PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md) — anti-brute-force, vol/rejeu de session, multi-appareils, révocation et notifications ; propositions à arbitrer, non implémentées.\n- [Contrat de protection des données, accès internes et audit](docs/CONTRAT_PROTECTION_DONNEES_ACCES_INTERNES_ET_AUDIT.md) — minimisation C0-C4, consultation C3, exports, intégrité des journaux et contrôle des accès Super Admin/délégataires ; compléments à arbitrer, non implémentés.
