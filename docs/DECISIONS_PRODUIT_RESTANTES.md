@@ -367,3 +367,12 @@ Le contrat `CONTRAT_SECURITE_CYCLE_SOS_ET_INTEGRITE_ALERTES.md` consolide les in
 Les décisions validées restent inchangées : instantané des destinataires figé à la création, absence de GPS non bloquante, rappels toutes les cinq minutes jusqu'à clôture par l'auteur, seul l'auteur clôture, GPS supprimé immédiatement à la clôture, catégorie seule conservée 30 jours et suppression de l'entrée à J+30 sans résurrection.
 
 Restent à arbitrer : preuve de commande, clés d'idempotence, contenu des notifications, accès après révocation, seuils anti-abus, comportement lors d'une compromission et durée des métadonnées de transport. Aucun seuil, fournisseur, mécanisme cryptographique ou droit nouveau n'est approuvé par ce contrat. Aucune implémentation n'est autorisée.
+
+
+## 25. Sécurité des notifications et communications — 18 novembre 2026
+
+Le contrat `CONTRAT_SECURITE_NOTIFICATIONS_ET_COMMUNICATIONS.md` consolide les exigences de confidentialité des push, e-mails et SMS de secours, la protection des abonnements, les webhooks, les fournisseurs, les révocations et la gestion des pannes.
+
+Les invariants restent inchangés : e-mail vérifié par OTP obligatoire avant activation du compte ; téléphone obligatoire mais déclaré/non vérifié ; aucun SMS OTP de compte ; destinataires SOS figés ; rappels push toutes les cinq minutes ; SMS de secours distinct et non opérationnel sans intégration vérifiée.
+
+Points à arbitrer : preuve de contrôle du numéro avant SMS, fournisseurs et régions, contenus des messages, nombre d'appareils, rotation des abonnements, retry, webhooks et conservation des métadonnées. Aucune technologie, durée, fournisseur ou nouvelle permission n'est approuvée. Aucune implémentation n'est autorisée.
