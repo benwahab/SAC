@@ -129,3 +129,6 @@ Avant toute conception ou évolution du déclenchement, de l'accès, des répons
 
 
 Avant toute conception ou évolution des notifications push, e-mails, SMS, abonnements d'appareils, webhooks ou fournisseurs, lire `docs/CONTRAT_SECURITE_NOTIFICATIONS_ET_COMMUNICATIONS.md` avec les contrats SOS, invitations, sessions et confidentialité. Ne jamais traiter un numéro déclaré comme vérifié, une acceptation fournisseur comme une livraison ou une lecture, ni un lien de notification comme une autorisation. Aucun canal réel, secret, endpoint, fournisseur ou stockage ne peut être activé par ce document.
+
+
+Avant toute conception ou évolution des trajets, de la vérification d'arrivée, de l'accompagnement, du partage de position ou des permissions GPS, lire `docs/CONTRAT_SECURITE_TRAJETS_ET_LOCALISATION.md` avec les contrats de conservation GPS J+30, SOS, communications et confidentialité. Ne jamais activer une collecte GPS réelle tant que le NO-GO J+30 et la non-résurrection après restauration ne sont pas levés par preuves et autorisation explicite. Les durées proposées ne sont pas des décisions validées.
