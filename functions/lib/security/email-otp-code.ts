@@ -54,3 +54,39 @@ export async function digestEmailOtp(
     byte.toString(16).padStart(2, "0"),
   ).join("");
 }
+
+/**
+ * Vérifie le code avec WebCrypto, qui effectue la comparaison HMAC sans
+ * comparaison de chaînes applicative. Un digest mal formé échoue fermé.
+ */
+export async function verifyEmailOtpDigest(
+  cryptoProvider: Pick<Crypto, "subtle">,
+  secret: string,
+  challengeId: string,
+  purpose: "account_email_verification",
+  code: string,
+  expectedDigest: string,
+): Promise<boolean> {
+  if (!secret || secret.length < 32) throw new Error("otp_secret_not_configured");
+  if (!challengeId || challengeId.length > 128) throw new Error("invalid_challenge_id");
+  if (!new RegExp(`^\\d{${EMAIL_OTP_CODE_LENGTH}}$`).test(code)) {
+    throw new Error("invalid_otp_code");
+  }
+  if (!/^[a-f0-9]{64}$/.test(expectedDigest)) return false;
+
+  const key = await cryptoProvider.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"],
+  );
+  const message = new TextEncoder().encode(
+    `SAC:email-otp:v1:${purpose}:${challengeId}:${code}`,
+  );
+  const signature = Uint8Array.from(
+    expectedDigest.match(/.{2}/g) ?? [],
+    (byte) => Number.parseInt(byte, 16),
+  );
+  return cryptoProvider.subtle.verify("HMAC", key, signature, message);
+}
