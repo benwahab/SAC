@@ -406,8 +406,8 @@ Le prototype est un évaluateur pur : il ne génère pas les jetons, ne vérifie
 
 ## 22. Validation cryptographique du point ECDH des bundles
 
-Le vérificateur expérimental `verifyLocationKeyBundle` ne se limite plus à vérifier la forme des champs JWK de la clé ECDH. Il tente aussi d'importer cette clé comme clé publique ECDH P-256 avec WebCrypto. Un point hors courbe ou invalide doit ainsi faire échouer la vérification, même si les coordonnées ont une longueur et un encodage syntaxiquement plausibles.
+Le contrôle partagé `validateLocationExchangePublicKey` vérifie la forme JWK, importe la clé publique ECDH P-256, puis tente un accord ECDH éphémère local. Cette troisième étape évite de dépendre uniquement de l'import : un problème d'interopérabilité Deno documenté en octobre 2026 montre qu'un moteur peut accepter un point hors courbe à l'import et ne le rejeter qu'au moment de l'accord.
 
-Un test adversarial construit un transcript de bundle correctement signé par une clé d'identité P-256, mais contenant le point (0,0) encodé dans des coordonnées de 32 octets. Le vérificateur doit le refuser.
+Le contrôle est appelé par le vérificateur de bundle signé et par le vérificateur de certificat secondaire. Un test adversarial construit un transcript correctement signé par une clé d'identité P-256 et un autre certificat correctement signé par la racine, chacun contenant le point (0,0) encodé dans des coordonnées de 32 octets. Les deux vérificateurs doivent refuser ces objets.
 
-**Limites inchangées :** cela ne valide pas l'identité du propriétaire, n'ancre pas la clé racine, ne constitue pas une cérémonie d'enrôlement, ne gère pas la révocation et ne prouve pas la destruction GPS J+30. Le code reste expérimental et non raccordé aux positions réelles. Le résultat CI doit être contrôlé avant de déclarer ce test réussi.
+**Limites inchangées :** cela ne valide pas l'identité du propriétaire, n'ancre pas la clé racine, ne constitue pas une cérémonie d'enrôlement, ne gère pas la révocation et ne prouve pas la destruction GPS J+30. Le code reste expérimental et non raccordé aux positions réelles. Le résultat CI doit être contrôlé avant de déclarer ces tests réussis ; des essais WebCrypto sur navigateurs Android/iOS et Cloudflare Workers restent requis.
