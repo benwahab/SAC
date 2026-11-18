@@ -549,3 +549,10 @@ Ce modèle est une spécification documentaire, pas un système actif. Il ne cr�
 ## Catalogue des ressources et matrice de permissions
 
 La matrice de référence et le catalogue des ressources sont détaillés dans [docs/CATALOGUE_RESSOURCES_MATRICE_PERMISSIONS.md](CATALOGUE_RESSOURCES_MATRICE_PERMISSIONS.md). Ce document complète les principes de rôles, missions, moindre privilège et contrôle côté serveur. Il reste documentaire et n'autorise aucune implémentation.
+
+
+## Gouvernance et cycle de vie des missions administratives
+
+Le cycle complet des missions (brouillon, activation, suspension, reprise, expiration, révocation et terminaison), les effets immédiats d'une suspension, les conflits, les durées proposées, les contrôles d'export, les sessions administratives et les tests d'acceptation sont détaillés dans [docs/GOUVERNANCE_MISSIONS_ADMIN_ET_CYCLE_DE_VIE.md](GOUVERNANCE_MISSIONS_ADMIN_ET_CYCLE_DE_VIE.md).
+
+Les durées de 30 jours pour une mission standard et 7 jours pour une mission sensible, les règles de réauthentification renforcée et les revues périodiques sont des propositions à valider, non des décisions déjà approuvées. Aucune implémentation n'est autorisée par ce lien documentaire.
