@@ -449,3 +449,98 @@ Lorsque l'administrateur SAC habilité clôture cette alerte, chacun des destina
 La clôture administrative met fin aux rappels de cette alerte pour tous les destinataires initiaux. Les accusés de réception, prises en charge, mises à jour et événements antérieurs restent conservés et consultables selon les droits applicables ; ils ne sont ni supprimés ni réécrits. L'échec d'une notification est journalisé et ne réouvre pas automatiquement l'alerte. L'administration doit pouvoir constater quels destinataires ont été notifiés et lesquels n'ont pas pu être joints par les canaux SAC.
 
 Cette notification informe de la décision ; elle ne donne aucun pouvoir de clôture aux proches. La règle décrit le comportement attendu et n'implémente aucun service push, e-mail, SMS, endpoint ou migration D1.
+
+## Modèle de rôles, permissions et missions — cadre de conception du 18 novembre 2026
+
+### 1. Trois notions distinctes
+
+- **Rôle :** catégorie fonctionnelle d'un compte administratif (Super Admin, administrateur sécurité, support, auditeur). Un rôle décrit une fonction générale ; il ne suffit jamais à autoriser une opération sensible.
+- **Permission :** droit précis sur une action déterminée (par exemple consulter un dossier, examiner un événement, gérer une session ou clôturer une alerte dans le scénario expressément prévu). Une permission doit être accordée explicitement et ne se déduit pas d'un intitulé de rôle.
+- **Mission :** délégation encadrée accordée par le Super Admin à une personne, pour un objectif, un périmètre, des actions, des limites et une période définis. La mission est le cadre d'exercice des permissions déléguées ; elle ne crée aucun pouvoir de délégation.
+
+Un compte ne reçoit aucun droit par défaut du simple fait qu'il existe, qu'il appartient à une équipe ou qu'il connaît une URL administrative. Le principe est le refus par défaut.
+
+### 2. Rôles fonctionnels et droits de base
+
+| Rôle | Fonction | Droits de base et limites |
+|---|---|---|
+| Super Admin | Autorité suprême et gouvernance de SAC | Accès complet aux fonctions administratives prévues, gestion exclusive des délégations/missions, attribution et retrait des permissions, arbitrage des opérations réservées. Ses actions restent journalisées. |
+| Administrateur sécurité | Traitement des incidents et contrôles de sécurité | Aucun pouvoir de délégation. Reçoit uniquement les permissions explicitement accordées par le Super Admin. La clôture administrative d'une alerte du scénario spécial n'est possible que si cette permission distincte lui a été attribuée. |
+| Support | Assistance et traitement des demandes autorisées | Accès limité aux informations strictement nécessaires à l'assistance. Aucun droit de délégation, d'attribution de permissions, de clôture administrative d'alerte ou d'effacement de traces. |
+| Auditeur | Contrôle et vérification | Lecture seule des éléments expressément inclus dans son périmètre. Aucun droit de modification, de suspension, de délégation, de clôture ou de suppression. Ses consultations et exports autorisés sont tracés. |
+
+Les rôles Support et Auditeur ne donnent pas accès automatiquement à toutes les données des utilisateurs. Le Super Admin doit encore définir le périmètre utile et les données visibles. Les droits précis non expressément accordés restent refusés.
+
+### 3. Familles de permissions séparées
+
+Le catalogue doit distinguer au minimum les familles suivantes, sans les fusionner dans un droit général « administrateur » :
+
+1. **Consultation :** voir une ressource ou un dossier déterminé, dans un périmètre défini.
+2. **Assistance :** réaliser les seules opérations de support explicitement listées ; aucune modification sensible implicite.
+3. **Sécurité :** examiner des événements, traiter un incident ou révoquer une session uniquement si le droit correspondant est attribué.
+4. **Gestion des comptes :** consulter ou traiter un état de compte selon des permissions distinctes ; suspension administrative réservée au Super Admin, sauf arbitrage ultérieur explicite.
+5. **Gestion des délégations :** créer, attribuer, modifier, suspendre et retirer une délégation ou mission ; ces actions sont réservées au Super Admin.
+6. **Clôture administrative d'alerte :** permission isolée, accordée par le Super Admin à un administrateur sécurité nommé. Elle n'est pas incluse automatiquement dans le rôle Administrateur sécurité et ne peut pas être transmise.
+7. **Audit et export :** consultation et export sont deux permissions différentes. Un droit de lecture n'autorise pas un export massif.
+8. **Configuration :** chaque domaine de configuration doit avoir ses propres permissions ; aucune permission générale de configuration ne doit être implicite.
+
+Une permission précise doit comporter une action, une ressource/type de ressource, un périmètre et, si nécessaire, des conditions. Les verbes « consulter », « créer », « modifier », « suspendre », « révoquer », « clôturer » et « exporter » ne sont jamais interchangeables.
+
+### 4. Définition obligatoire d'une mission
+
+Toute mission attribuée par le Super Admin doit préciser :
+
+- l'identité unique du délégataire et le rôle fonctionnel sous lequel il agit ;
+- l'objectif et la description compréhensible de la mission ;
+- les permissions exactes accordées, action par action ;
+- le périmètre des ressources : service, équipe, région, dossier ou alerte, selon le besoin ;
+- les limites explicites et opérations interdites ;
+- la date de début, la date de fin ou le caractère sans échéance, qui doit être exceptionnel et réexaminé ;
+- les conditions de suspension, de révocation et de fin de mission ;
+- le motif de l'attribution et la référence de décision du Super Admin.
+
+Une mission est personnelle, non transférable et non sous-délégable. Le délégataire ne peut pas ajouter un bénéficiaire, inviter un autre administrateur, attribuer une tâche avec des droits administratifs ou modifier le périmètre. Il peut signaler un besoin au Super Admin, qui décide lui-même d'une éventuelle nouvelle délégation.
+
+Aucune permission ne doit être plus large que la mission qui la porte. Si plusieurs missions existent, leurs périmètres ne fusionnent pas en un accès global : chaque action doit correspondre à une mission active et à une permission explicite. Une mission expirée, suspendue ou révoquée n'autorise plus aucune action.
+
+### 5. Règles de calcul des droits et contrôles
+
+Pour chaque requête, le serveur doit vérifier simultanément :
+
+1. le compte et la session de l'acteur sont actifs ;
+2. la mission concernée existe, est active et appartient à cet acteur ;
+3. la permission précise autorise l'action demandée ;
+4. la ressource appartient au périmètre de la mission ;
+5. aucune suspension, révocation, expiration ou règle de sécurité ne bloque l'action ;
+6. les conditions spécifiques à l'action sont satisfaites.
+
+Si une condition manque, le serveur refuse l'action. L'interface peut masquer les fonctions non autorisées pour la clarté, mais ce masquage n'est jamais le contrôle de sécurité.
+
+Les permissions ne sont pas héritées automatiquement entre rôles, équipes, missions ou utilisateurs. Aucun droit implicite par cumul de plusieurs rôles. En cas de conflit, la règle la plus restrictive prévaut et le refus est journalisé. Le Super Admin reste l'unique autorité d'attribution ; les délégataires ne peuvent modifier ni leur rôle effectif ni les permissions stockées.
+
+### 6. Cycle de vie d'une mission et traçabilité
+
+États de conception : brouillon non actif, active, suspendue, expirée, révoquée et terminée. Seul le Super Admin peut activer, modifier, suspendre, reprendre, révoquer ou terminer une délégation. Toute transition doit être auditée avec acteur, date/heure serveur, motif, ancienne et nouvelle portée, permissions concernées et résultat.
+
+Une modification de mission ne doit jamais élargir rétroactivement les droits déjà utilisés. Les événements passés conservent le contexte et les permissions effectives au moment de l'action. La révocation doit être prise en compte côté serveur sans dépendre d'un rafraîchissement de l'interface.
+
+### 7. Cas spécial : clôture administrative d'une alerte
+
+La permission de clôture demeure séparée et réservée au Super Admin ou à l'administrateur sécurité expressément habilité par lui. Le droit est nominatif, non transférable, limité au scénario de clôture déjà documenté et contrôlé à chaque action. Le support, l'auditeur, les proches et le titulaire suspendu ne peuvent pas clôturer cette alerte. Une seule personne habilitée suffit ; aucune double validation n'est exigée. Les vérifications, le motif et la décision sont consignés dans le journal d'audit.
+
+### 8. Éléments restant à spécifier avant implémentation
+
+- le catalogue exhaustif des ressources SAC et des actions métier ;
+- les périmètres disponibles (global, service, région, dossier, alerte) et leurs règles de combinaison ;
+- les opérations exactes autorisées au Support et les champs visibles par ce rôle ;
+- les vues et exports précis accessibles à l'Auditeur ;
+- les durées par défaut des missions, alertes d'expiration et éventuel renouvellement par le Super Admin ;
+- les conditions de suspension d'urgence d'une mission et les effets sur les sessions déjà ouvertes ;
+- les éventuels conflits entre missions, ainsi que la procédure de demande d'extension au Super Admin.
+
+Ces points ne doivent pas être résolus par des permissions trop larges. En attendant leur arbitrage, aucun droit supplémentaire n'est accordé par défaut.
+
+### 9. Portée
+
+Ce modèle est une spécification documentaire, pas un système actif. Il ne crée ni rôle opérationnel, ni compte administrateur, ni permission, ni mission, ni écran, ni endpoint, ni middleware, ni table ou migration D1. Le modèle doit être transformé en matrice testable, relu en sécurité et explicitement autorisé avant toute implémentation.
+
