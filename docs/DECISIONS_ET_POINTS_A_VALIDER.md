@@ -294,3 +294,28 @@ Les règles suivantes complètent les décisions déjà actées (un seul respons
 4. Les règles sont-elles identiques lorsque la relation est révoquée par son propriétaire et lorsqu'un contact retire lui-même son acceptation ?
 
 **Statut :** proposition de sécurité et de coordination, non décision produit acquise. L'instantané initial n'est jamais réécrit et seul l'auteur conserve le droit de clôture.
+
+
+### 7.4 Accès et notifications après révocation — recommandation à arbitrer
+
+Le choix le plus protecteur proposé est une coupure immédiate des nouvelles autorisations du contact révoqué, y compris pour une alerte déjà active, sans effacer l'instantané historique.
+
+**Comportement recommandé (non validé) :**
+- aucune nouvelle lecture des détails de l'alerte après commit de révocation ;
+- aucune nouvelle action de coordination ;
+- aucune nouvelle tâche push/rappel réclamée par un worker après la révocation ;
+- une notification déjà acceptée par le fournisseur peut encore arriver ; son ouverture refait obligatoirement un contrôle d'accès ;
+- l'auteur conserve l'historique complet ; le contact révoqué ne reçoit pas les événements de coordination postérieurs ;
+- une réinvitation crée une nouvelle relation et ne rouvre pas l'accès aux anciennes alertes.
+
+La révocation par le propriétaire et le retrait d'acceptation par le contact doivent être tracés comme deux causes distinctes, mais il est proposé qu'ils aient le même effet immédiat sur les autorisations futures.
+
+**Pourquoi cette proposition :** elle évite qu'un ancien proche conserve un accès actif simplement parce que son identifiant figure dans l'instantané initial, tout en préservant la chronologie et les preuves d'envoi déjà confiées au fournisseur.
+
+**Décisions explicites encore nécessaires :**
+1. Approuver ou refuser la coupure immédiate de lecture sur les alertes déjà actives.
+2. Approuver ou refuser l'arrêt des futurs rappels push à ce contact après révocation.
+3. Confirmer que retrait d'acceptation par le contact et révocation par le propriétaire ont le même effet d'accès, malgré des causes d'audit différentes.
+4. Confirmer la promotion automatique du volontaire admissible suivant lorsque le responsable principal est révoqué ; cette promotion ne doit jamais être effectuée si la relation du candidat n'est plus active au commit.
+
+Aucune de ces propositions ne modifie l'instantané historique, les règles SMS déjà acceptées par le fournisseur ou le droit exclusif de l'auteur à clôturer.
