@@ -87,6 +87,8 @@ Les changements TypeScript et les tests ne sont pas exécutés dans cette interv
 
 ## 4. Vérification des proches : séparation entre coordonnées et consentement
 
+Le parcours complet est désormais rassemblé dans `CONTRAT_CYCLE_VIE_PROCHES_ET_INVITATIONS.md`. Ce document détaille les états d'invitation, l'acceptation atomique, le refus, l'expiration, le retrait, la révocation et la réinvitation. Il distingue les invariants validés des propositions encore à arbitrer.
+
 ### 4.1 Faits établis
 
 - Le téléphone du titulaire SAC est obligatoire mais non vérifié.
@@ -115,7 +117,7 @@ Un simple envoi de notification ou une réponse depuis un numéro déclaré n'es
 
 **Condition obligatoire :** l'acceptation d'un proche doit être liée à un compte SAC actif dont l'adresse e-mail a été vérifiée par OTP. Ce n'est plus une simple recommandation, car tout compte SAC exige désormais cette vérification.
 
-Les détails de remise de l'invitation, de correspondance entre destination invitée et e-mail vérifié, de jeton et de consentement restent à spécifier et tester avant implémentation.
+Les détails opérationnels et critères de sécurité sont consolidés dans `CONTRAT_CYCLE_VIE_PROCHES_ET_INVITATIONS.md`. Les valeurs non arbitrées (durée, relances, révocation symétrique, droits après révocation en alerte) restent ouvertes et ne doivent pas être inventées.
 
 1. L'invitant saisit l'adresse e-mail du proche ; l'adresse est normalisée côté serveur.
 2. SAC crée une invitation à durée limitée, à jeton aléatoire à usage unique ; seul le hash du jeton est stocké.
