@@ -481,3 +481,25 @@ Les événements suivants sont distincts et ne doivent pas être fusionnés dans
 - Les notifications aux destinataires sont produites après commit via outbox idempotente. Elles annoncent uniquement un responsable confirmé ou un événement informatif confirmé ; aucune donnée privée d'un autre contact n'est incluse.
 
 **Statut : proposition de machine d'états et de persistance à valider.** Aucun schéma D1, endpoint ou code métier n'est créé par cette spécification.
+
+
+### 4.2.1 Révocation concurrente à une candidature ou une responsabilité — proposition à valider
+
+La révocation prend effet à l'instant de son commit serveur. Une lecture préalable du statut de relation ne suffit jamais à autoriser une mutation ultérieure.
+
+**Règle d'éligibilité proposée**
+- Une relation doit être active au moment exact où la candidature est acceptée et au moment exact où une responsabilité est attribuée ou transférée.
+- Si la révocation commit avant la candidature, celle-ci est refusée ; aucun événement de candidature admissible ni aucune notification de candidature n'est créé.
+- Si la candidature commit avant la révocation, l'événement historique est conservé, mais la candidature devient inadmissible à toute attribution postérieure à la révocation.
+- Si l'attribution principale commit avant la révocation, l'attribution a existé valablement dans l'ordre serveur. La révocation suivante doit toutefois mettre fin à cette responsabilité dans une opération atomique et déclencher la recherche du prochain volontaire encore admissible. Il ne doit exister aucun intervalle où le contact révoqué reste responsable après le commit de révocation.
+- Si révocation et attribution arrivent simultanément, les transactions sont sérialisées : révocation gagnante = aucune attribution au contact révoqué ; attribution gagnante = attribution enregistrée puis responsabilité terminée par la révocation dans l'ordre serveur. Le résultat final est identique : le contact révoqué n'est plus responsable.
+- Un volontaire révoqué est ignoré lors d'une promotion, même s'il est le plus ancien dans l'ordre des candidatures.
+- Si aucun volontaire actif et admissible ne reste, l'alerte reste active sans responsable principal ; les rappels continuent selon les règles existantes.
+
+**Historique et droits**
+- Ne pas supprimer ni réécrire les événements valablement acceptés avant la révocation. Ajouter un événement de révocation et, si nécessaire, un événement de fin de responsabilité avec cause `relationship_revoked`.
+- Après le commit de révocation, refuser toute nouvelle candidature, arrivée déclarée, déclaration de résolution, accusé ou retrait initié par le contact révoqué.
+- Le droit de lecture du détail d'une alerte déjà active et le traitement des rappels destinés à ce contact restent soumis à la politique d'accès post-révocation à valider ; la révocation ne réécrit pas l'instantané initial.
+- Une révocation ne doit pas effacer les preuves de notifications déjà acceptées par un fournisseur.
+
+**Statut : proposition de sécurité à valider.** Elle ne tranche pas à elle seule le maintien de l'accès en lecture ni la livraison des rappels à un destinataire révoqué.
