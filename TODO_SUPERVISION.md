@@ -323,3 +323,13 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Pour toute option externe, prouver l'absence de cache de DEK, de clés de session persistantes, de réplica restaurable et de voie d'administration permettant une récupération après J+30.
 - [ ] Ajouter des essais D1 de restauration de bookmarks antérieurs pour confirmer que seules des métadonnées non sensibles réapparaissent ; ne pas créer de base ni effectuer de restauration réelle sans autorisation.
 - [ ] Maintenir le statut GPS historique : NO-GO jusqu'à arbitrage, démonstration et revue indépendante.
+
+
+## Position ponctuelle, flux actif et historique GPS — 18 novembre 2026
+
+- [x] Vérifier la documentation D1 à jour : Time Travel toujours actif, bookmarks jusqu'à 30 jours Workers Paid / 7 jours Workers Free ; restauration antérieure et possibilité d'annulation.
+- [x] Documenter la séparation entre position ponctuelle actuelle, flux temporaire explicitement partagé et historique GPS consultable après coup.
+- [x] Recommander provisoirement de ne pas promettre la consultation hors ligne de l'historique GPS ; ne jamais afficher une position périmée comme actuelle.
+- [ ] Aligner la matrice de conservation et les contrats de données sur cette distinction, sans ajouter de stockage GPS réel avant autorisation.
+- [ ] Valider les règles de rétention exactes du flux actif (mémoire, stockage temporaire, notifications, files, journaux, sauvegardes) et démontrer qu'aucune coordonnée ne fuit dans les textes libres.
+- [ ] Maintenir historique GPS précis : désactivé / NO-GO jusqu'à preuve de destruction J+30 et revue indépendante.
