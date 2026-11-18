@@ -59,3 +59,19 @@ Ne pas remplacer la commande CI par `npm ci` avant que le lockfile existe et soi
 - [ ] Garder l'audit complet visible ; ne pas le considérer comme résolu tant que le risque n'a pas été traité ou explicitement accepté avec justification.
 
 **Conclusion :** le runtime de production est propre selon l'audit npm observé, mais la chaîne de développement présente un avis élevé non résolu et le dépôt ne verrouille pas encore l'arbre transitif. Aucun correctif forcé n'a été appliqué.
+
+## 6. Suivi amont du correctif picomatch — vérification du 18 novembre 2026
+
+La veille du dépôt amont micromatch/picomatch a identifié plusieurs propositions, mais aucune n'est encore une version publiée et validée que SAC peut installer :
+
+- **PR #238 — branche master / picomatch 4.x :** ouverte, non fusionnée au 18 novembre 2026. Elle cible précisément CVE-2026-112366 en traitant certains extglobs à branche unique commençant par un quantificateur nu. L'auteur rapporte 2 000 tests réussis, mais documente une limite connue : certains extglobs imbriqués non réductibles suivis de contenu ne sont pas couverts. Le PR ne fournit pas de release npm.
+- **PR #246 — branche v2 :** ouverte, non fusionnée. Elle cible la branche 2.x ; elle ne constitue pas un correctif installable pour la dépendance picomatch 4.x potentiellement résolue par la chaîne Vite de SAC. Le PR indique aussi qu'aucune version n'est publiée.
+- **PR #194 :** ouverte, non fusionnée et sans lien de résolution de CVE-2026-112366. Son auteur précise explicitement que ce n'est pas un correctif de sécurité et que le cas +(*a) reste exponentiel sur sa branche. Ne pas confondre cette PR avec le correctif de sécurité.
+
+Sources amont vérifiées :
+- Advisory GHSA-fc5q-39xc-vjpf : https://github.com/advisories/GHSA-fc5q-39xc-vjpf
+- PR #238, proposition de correctif pour master : https://github.com/micromatch/picomatch/pull/238
+- PR #246, adaptation de la branche v2 : https://github.com/micromatch/picomatch/pull/246
+- PR #194, changement de parsing non correctif de sécurité : https://github.com/micromatch/picomatch/pull/194
+
+**Décision maintenue :** ne pas ajouter d'override vers un commit Git non publié, ne pas appliquer un patch artisanal, ne pas ignorer l'avis npm et ne pas forcer une rétrogradation. Surveiller la fusion, les suites complètes des dépendants, la publication npm et l'avis GHSA mis à jour. Après publication, vérifier l'arbre réel et exécuter toute la CI avant d'accepter le correctif.
