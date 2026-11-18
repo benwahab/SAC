@@ -45,6 +45,7 @@ export type AlertResponderError =
   | "author_cannot_respond_as_contact"
   | "invalid_event_timestamp"
   | "event_before_alert_creation"
+  | "event_before_volunteer"
   | "already_withdrawn"
   | "not_volunteered"
   | "invalid_server_sequence"
@@ -69,11 +70,19 @@ function isValidState(state: AlertResponderState): boolean {
   for (const responder of state.responders) {
     if (!responder.contactAccountId.trim() || !recipients.has(responder.contactAccountId) || responderIds.has(responder.contactAccountId)) return false;
     responderIds.add(responder.contactAccountId);
-    if (responder.acknowledgedAt !== null && !isUtc(responder.acknowledgedAt)) return false;
+    if (responder.acknowledgedAt !== null && (
+      !isUtc(responder.acknowledgedAt) ||
+      Date.parse(responder.acknowledgedAt) < Date.parse(state.alert.createdAt)
+    )) return false;
     if (responder.volunteeredAt === null) {
       if (responder.volunteeredSequence !== null || responder.withdrawnAt !== null) return false;
     } else {
-      if (!isUtc(responder.volunteeredAt) || !Number.isSafeInteger(responder.volunteeredSequence) || (responder.volunteeredSequence ?? 0) <= 0) return false;
+      if (
+        !isUtc(responder.volunteeredAt) ||
+        Date.parse(responder.volunteeredAt) < Date.parse(state.alert.createdAt) ||
+        !Number.isSafeInteger(responder.volunteeredSequence) ||
+        (responder.volunteeredSequence ?? 0) <= 0
+      ) return false;
       if (sequences.has(responder.volunteeredSequence!)) return false;
       sequences.add(responder.volunteeredSequence!);
       if (responder.withdrawnAt !== null && (!isUtc(responder.withdrawnAt) || Date.parse(responder.withdrawnAt) < Date.parse(responder.volunteeredAt))) return false;
@@ -94,6 +103,13 @@ function isValidState(state: AlertResponderState): boolean {
     if (period.endedAt === null) {
       openPeriods += 1;
       if (period.endReason !== null) return false;
+      const currentResponder = state.responders.find((item) => item.contactAccountId === period.contactAccountId);
+      if (
+        !currentResponder ||
+        currentResponder.volunteeredAt === null ||
+        currentResponder.withdrawnAt !== null ||
+        Date.parse(period.startedAt) < Date.parse(currentResponder.volunteeredAt)
+      ) return false;
     } else if (
       !isUtc(period.endedAt) ||
       Date.parse(period.endedAt) < Date.parse(period.startedAt) ||
@@ -181,6 +197,9 @@ export function transitionAlertResponder(
 
   if (current.volunteeredAt === null || current.withdrawnAt !== null) {
     return { ok: false, error: "not_volunteered" };
+  }
+  if (Date.parse(event.at) < Date.parse(current.volunteeredAt)) {
+    return { ok: false, error: "event_before_volunteer" };
   }
 
   const responders = existing
