@@ -901,3 +901,16 @@ Une clé matérielle FIDO2 séparée pourrait offrir une preuve de possession di
 Aucun OTP SMS/e-mail, contact, support, administrateur ou mot de passe seul ne peut remplacer la preuve de récupération historique. Aucun facteur alternatif ne peut restaurer la clé privée racine, approuver un appareil ou déverrouiller le GPS.
 
 Recommandation de conception : ne pas multiplier les secrets ni ajouter de facteur tant que le bénéfice réel et le cycle de vie ne sont pas établis. Si aucun appareil approuvé ni kit valide ne subsiste, le compte historique demeure irrécupérable selon la politique actuelle. Aucun fournisseur, endpoint, schéma, migration ou flux d'authentification n'est créé.
+
+
+## Procédure de conception — remplacement d'un appareil perdu (18 novembre 2026)
+
+Aucun endpoint ni schéma n'est défini dans cette annexe.
+
+**Cas A — la racine approuvée existe encore :** la racine peut initier la révocation explicite de l'appareil perdu. Le serveur revalide le statut de la racine et de l'appareil cible dans une transaction atomique, révoque la cible et invalide ses sessions, jetons et abonnements push. La racine peut ensuite approuver le nouvel appareil après génération locale de ses clés et vérification de son empreinte. L'ancien appareil ne peut pas annuler la révocation en revenant en ligne.
+
+**Cas B — la racine est perdue, seul un secondaire subsiste :** le secondaire peut initier une demande, mais ne peut pas s'auto-promouvoir, approuver le remplaçant ou restaurer l'ancienne racine. La récupération racine est distincte ; nouvelle paire de clés générée localement et vérification indépendante de la nouvelle empreinte par les contacts concernés avant partage GPS.
+
+Dans les deux cas, la révocation d'un appareil ne supprime ni compte, ni contacts, ni abonnement, ni alertes, ni historique. Les instantanés de destinataires des alertes actives restent immuables. Les tâches SOS ne sont pas annulées du seul fait de la révocation d'un appareil du titulaire. Aucun effacement à distance d'un téléphone hors ligne n'est promis.
+
+Toute opération doit être idempotente, journalisée sans secrets/GPS, et revalider côté serveur les statuts d'appareil, de racine et de révocation au moment du commit. Aucun état client en cache ne peut autoriser une opération sensible. Aucun endpoint, migration D1 ou code n'est créé.
