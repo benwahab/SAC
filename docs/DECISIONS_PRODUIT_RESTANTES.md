@@ -275,3 +275,13 @@ Le référentiel `MODELE_GLOBAL_DONNEES_SAC.md` rassemble les domaines et signal
 ## 14. Cycle de compte et preuve des proches — clarification du 18 novembre 2026
 
 Le document `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` sépare les règles déjà validées des transitions encore ouvertes. Il propose l'acceptation d'un proche par compte SAC avec e-mail vérifié, sans SMS OTP ; cette orientation reste à valider. Le téléphone déclaré ne prouve ni la propriété du numéro ni le consentement du proche.
+
+## Décision confirmée — adresse e-mail obligatoire pour activer un compte SAC — 18 novembre 2026
+
+- Toute personne doit fournir une adresse e-mail dès l'inscription.
+- La vérification de cette adresse par OTP e-mail est une condition sine qua non de l'activation du compte.
+- Sans adresse e-mail, aucune inscription SAC ne peut être finalisée ; aucun compte ne peut être créé ou activé par téléphone seul.
+- Tant que l'OTP e-mail n'a pas été validé côté serveur, le compte reste `pending_verification`, sans accès privé ni session.
+- Le numéro de téléphone reste obligatoire comme coordonnée déclarée, mais ne remplace jamais l'adresse e-mail et ne peut pas servir de voie de contournement.
+- Aucun SMS OTP de compte n'est autorisé. Cette décision ne modifie pas les usages SMS propres au cycle SOS.
+- Cette règle est une décision produit validée ; elle ne signifie pas que l'authentification ou l'envoi OTP sont déjà implémentés.
