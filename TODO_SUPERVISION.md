@@ -533,8 +533,8 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 ## Contact direct du titulaire avant clôture — 18 novembre 2026
 
 - [x] Définir une notification privée initiale via SAC, sans divulguer les détails sensibles à un tiers.
-- [x] Définir jusqu'à trois appels si un numéro vérifié est disponible : immédiatement, environ +5 min, puis +5 min supplémentaires.
-- [x] Prévoir un message écrit privé complémentaire par un canal de contact vérifié disponible.
+- [x] Définir jusqu'à trois appels si le numéro déclaré est disponible : immédiatement, environ +5 min, puis +5 min supplémentaires.
+- [x] Prévoir un message écrit privé complémentaire par un canal de contact disponible.
 - [x] Journaliser chaque tentative : date/heure, canal, résultat objectif et identité de l'administrateur ; distinguer envoi, lecture et réponse.
 - [x] Préciser qu'un appel sans réponse, un message vocal ou un accusé technique ne constitue pas une réponse du titulaire.
 - [x] Préciser que l'absence de canal ou de réponse est consignée, mais ne prouve jamais la sécurité et ne déclenche aucune clôture automatique.
@@ -581,3 +581,24 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Préciser que la notification ne donne aucun droit de clôture aux proches.
 - [ ] Définir les événements et statuts techniques de livraison des notifications avant implémentation.
 - [ ] Ne créer aucun service push, e-mail, SMS, endpoint ou migration D1 sans autorisation distincte.
+
+## Sécurité de l'administration et traçabilité — cadre documentaire — 18 novembre 2026
+
+- [x] Formaliser le principe d'autorité : seul le Super Admin crée, attribue, modifie, suspend et retire les délégations et missions.
+- [x] Confirmer qu'un délégataire ne peut ni déléguer, ni attribuer des tâches, ni modifier ses propres droits, ni étendre son périmètre.
+- [x] Formaliser le refus par défaut et la séparation des permissions : lecture, modification, suspension, délégation, export et clôture.
+- [x] Exiger une autorisation côté serveur à chaque action, indépendante de l'affichage de l'interface, avec identité, rôle, permission et périmètre issus des données serveur.
+- [x] Exiger que les accès refusés, tentatives d'élévation, changements de délégation, opérations sensibles et décisions soient auditables.
+- [x] Définir le journal append-only : aucune modification/suppression d'un événement ; toute correction devient un nouvel événement lié.
+- [x] Définir les champs minimaux d'audit et interdire l'enregistrement de mots de passe, OTP, jetons bruts, clés privées, secrets de récupération, messages privés complets et GPS précis.
+- [x] Prévoir un accès au journal en lecture seule, limité aux personnes autorisées ; consultation et export également audités.
+- [x] Réserver l'espace d'administration à l'ordinateur et à la tablette, pas au téléphone.
+- [ ] Arbitrer le mécanisme concret de preuve d'intégrité et de détection d'altération, après étude des capacités D1 et stockage.
+- [ ] Définir la durée de conservation, la base légale, la purge et les règles de conservation des traces après suppression d'un compte.
+- [ ] Arbitrer la réauthentification/OTP récent pour les opérations critiques ; recommandation non approuvée à ce stade.
+- [ ] Définir une politique spécifique de sessions administratives, plus stricte si nécessaire que la règle générale 30 jours d'inactivité / 90 jours maximum.
+- [ ] Faire relire le modèle de permissions, le journal, l'intégrité et la conservation par une revue de sécurité indépendante avant tout code.
+- [ ] Ne créer aucun rôle opérationnel, endpoint, middleware, table, migration D1, journal actif, ressource Cloudflare ou écran administratif sans autorisation distincte.
+
+**Correction de cohérence :** le numéro de téléphone est obligatoire mais déclaré, non vérifié. La procédure administrative peut utiliser ce numéro comme coordonnée ; une réponse ne prouve pas à elle seule l'identité. L'OTP e-mail reste l'unique vérification initiale du compte.
+
