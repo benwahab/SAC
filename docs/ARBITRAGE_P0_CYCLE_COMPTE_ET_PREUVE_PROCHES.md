@@ -233,3 +233,8 @@ Cette intervention est documentaire. Aucun code TypeScript, test, API, schéma S
 ## Complément — contrat détaillé de suppression et cas particuliers
 
 Lire [CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md](CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md) pour la matrice détaillée des cinq états, le traitement des alertes/trajets actifs, les courses concurrentes et les propositions concernant les comptes non vérifiés ou suspendus. Les décisions nouvelles y sont explicitement non approuvées. Le P0 reste ouvert jusqu'à arbitrage.
+
+
+## Recommandations finales pour arbitrage
+
+Le document `RECOMMANDATIONS_ARBITRAGE_FINAL_SUPPRESSION_COMPTES.md` regroupe les choix proposés concernant l'expiration des inscriptions provisoires, l'effacement avant activation, les comptes suspendus, la suspension concomitante, les SOS programmés, les activités orphelines et la finalisation. Il ne valide aucune de ces propositions. Le P0 reste ouvert jusqu'à arbitrage explicite.
