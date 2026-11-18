@@ -260,3 +260,8 @@ Aucun développement ou déploiement avant :
 ## Référence complémentaire — prévention des abus et disponibilité
 
 Lire `CONTRAT_PREVENTION_ABUS_USURPATION_ET_SATURATION.md` pour le modèle de menaces étendu, les limites anti-automatisation, les plaintes, la saturation et la protection du chemin critique. Préserver l'interdiction de bloquer automatiquement un SOS uniquement en raison d'alertes répétées. Les seuils et mesures proposées ne sont pas approuvés et ne modifient pas le cycle SOS.
+
+
+## Référence complémentaire — continuité et reprise
+
+Lire `CONTRAT_RESILIENCE_CONTINUITE_ET_REPRISE_INCIDENT.md` pour les états réseau, la reprise outbox, les pannes fournisseurs, la restauration et les tests de continuité. La création SOS n'est confirmée qu'après commit serveur ; une perte de réponse est résolue par idempotence ; une panne de notification n'annule pas l'alerte. Les RTO/RPO et procédures d'exploitation restent à arbitrer.
