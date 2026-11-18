@@ -1,1 +1,12 @@
-{"id":"/","name":"SAC — Sécurité, Alerte, Citoyenne","short_name":"SAC","description":"Prévenir ses proches de confiance et sécuriser ses déplacements.","lang":"fr","start_url":"/","scope":"/","display":"standalone","background_color":"#F5F7FA","theme_color":"#142B45"}
+{
+  "id": "/",
+  "name": "SAC — Sécurité, Alerte, Citoyenne",
+  "short_name": "SAC",
+  "description": "Prévenir ses proches de confiance et sécuriser ses déplacements.",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F1F8F2",
+  "theme_color": "#F1F8F2"
+}
