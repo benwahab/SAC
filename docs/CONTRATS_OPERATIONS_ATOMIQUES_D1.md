@@ -58,20 +58,25 @@ Le format, la portée et la durée de conservation de ces clés restent à défi
 - appareil actif et autorisé ;
 - catégorie et urgence autorisées ;
 - nombre de destinataires conforme à l'offre ;
-- relations et préférences des contacts actives au moment du déclenchement ;
+- sélection finale explicitement confirmée par l'auteur ; chaque relation sélectionnée est active, invitation acceptée et moyen de contact vérifié au moment du déclenchement ;
+- sélection initiale issue des préférences de catégorie ; dans le parcours guidé, toute dérogation ponctuelle est explicite et limitée à cette alerte ; dans le raccourci critique immédiat, la sélection correspond exactement à la liste préconfigurée ;
+- nombre de destinataires conforme à l'offre ;
 - aucune coordonnée GPS précise ne doit être écrite dans D1.
 
 **Effets qui doivent être cohérents :**
 1. créer une alerte active ;
-2. figer la liste des destinataires éligibles ;
-3. créer l'événement initial ;
-4. créer les tâches initiales de notification, une par destinataire/canal selon la politique retenue ;
-5. enregistrer le résultat d'idempotence.
+2. vérifier chaque destinataire de la sélection finale fournie par l'auteur, sans ajout automatique ; 
+3. figer cette liste finale des destinataires ;
+4. créer l'événement initial ;
+5. créer les tâches initiales de notification, une par destinataire/canal selon la politique retenue ;
+6. enregistrer le résultat d'idempotence.
 
 **Concurrence :**
 - deux requêtes avec la même clé d'idempotence ne créent qu'une alerte ;
 - une relation révoquée avant la transition finale ne peut pas être utilisée pour une nouvelle alerte ;
-- une modification concurrente des préférences doit avoir une règle d'ordre déterministe : l'instantané reflète un état cohérent au moment de la création.
+- une modification concurrente des préférences doit avoir une règle d'ordre déterministe : la sélection initiale est calculée à partir d'un état cohérent, puis l'ajustement ponctuel explicite de l'auteur est validé et figé au moment de la création ;
+- une relation révoquée ou devenue non vérifiée avant la transition finale est refusée, même si elle figurait dans la sélection envoyée par le client ;
+- les destinataires absents de la sélection finale ne reçoivent aucune tâche ; le serveur n'ajoute aucun contact automatiquement.
 
 **Cas sans destinataire :** la règle produit doit être définie. Ne jamais annoncer « alerte envoyée » si aucun destinataire n'a été sélectionné. Le comportement de création locale d'une alerte sans destinataire doit être explicitement approuvé avant API.
 
