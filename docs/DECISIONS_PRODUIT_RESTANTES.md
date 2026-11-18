@@ -265,3 +265,8 @@ Références de travail : docs/PLAN_VALIDATION_DESTRUCTION_GPS_J30.md, docs/SECU
 **Décision déjà validée :** le lanceur choisit pour chaque alerte le nombre de rappels push avant SMS. Le push initial ne compte pas ; les rappels sont espacés de cinq minutes ; l'escalade est bloquée dès qu'un responsable principal est attribué. Un accusé de réception seul ne bloque pas l'escalade. Voir `docs/DECISION_NOTIFICATIONS_PUSH_ET_ESCALADE_SMS.md`.
 
 **Décision UX validée le 18 novembre 2026 :** choix explicite de 1 à 5 rappels push (soit 5, 10, 15, 20 ou 25 minutes avant l'escalade), avec **2 rappels / 10 minutes présélectionnés**. Utiliser cinq boutons de choix accessibles plutôt qu'un curseur et afficher systématiquement le délai correspondant. Le seuil est choisi pour chaque alerte. Cette décision fixe la plage et la valeur par défaut attendues, mais ne signifie pas que l'interface, le schéma ou la validation serveur sont déjà implémentés.
+
+
+## 13. Lacunes du modèle global — 18 novembre 2026
+
+Le référentiel `MODELE_GLOBAL_DONNEES_SAC.md` rassemble les domaines et signale les décisions qui restent ouvertes. Il ne transforme pas ces propositions en décisions validées. Les sujets à arbitrer comprennent notamment : preuve du moyen de contact d'un proche, droits après révocation, alerte orpheline hors exception administrative, règles des groupes, programmation SOS, anti-abus du SOS discret, cycle financier Premium et conservation hors GPS. Les incohérences entre états produit et contrats TypeScript doivent être corrigées avant SQL.
