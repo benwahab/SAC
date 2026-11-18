@@ -54,3 +54,12 @@ Vérifier `TODO_SUPERVISION.md`, le code, les ressources Cloudflare et les résu
 - Langues disponibles sur la page actuelle : français, anglais et arabe ; la sélection est conservée localement et l'arabe active le sens RTL.
 - Les codes couleur actuels sont des tokens initiaux d'implémentation, pas une charte graphique hexadécimale définitivement validée.
 - Cette mise à jour concerne la page d'accueil et les métadonnées PWA ; elle ne signifie pas que tous les futurs écrans sont déjà traduits.
+
+
+## Gouvernance administrative et sécurité
+
+- [Catalogue des ressources et matrice des permissions](docs/CATALOGUE_RESSOURCES_MATRICE_PERMISSIONS.md)
+- [Classification des données et limites d'accès administratif](docs/CLASSIFICATION_DONNEES_ET_ACCES_ADMIN.md)
+- [Gouvernance des missions et cycle de vie administratif](docs/GOUVERNANCE_MISSIONS_ADMIN_ET_CYCLE_DE_VIE.md)
+
+Ces documents décrivent l'architecture cible et les points restant à valider. Ils ne signifient pas que les mécanismes sont déjà implémentés.
