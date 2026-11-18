@@ -809,3 +809,28 @@ Cette décision autorise uniquement la visibilité minimale décrite. Elle n'act
 - preuve qu'aucune voie de récupération de compte ne restaure la racine ou les données GPS expirées.
 
 **NO-GO :** aucune récupération sans appareil approuvé ni facteur indépendant préenregistré tant qu'une méthode n'a pas été explicitement choisie, documentée, testée et revue. Si aucune preuve suffisante n'existe, le refus est le comportement sûr attendu.
+
+
+## Audit comparatif — facteurs alternatifs de récupération (18 novembre 2026)
+
+**Conclusion de sécurité :** ne pas assimiler une méthode de connexion pratique à une preuve indépendante de récupération du compte historique.
+
+| Menace | Exemple | Mesure / limite |
+|---|---|---|
+| Compromission du compte fournisseur | Passkey synchronisée récupérée après compromission de l'e-mail fournisseur | Ne pas lui accorder seule le droit de récupération historique |
+| Perte simultanée des appareils | Téléphone principal et secondaire perdus | Passkey liée aux appareils indisponible ; le kit hors ligne reste nécessaire |
+| Perte d'une clé matérielle | Clé FIDO2 unique perdue ou cassée | Procédure de remplacement à définir avant activation ; ne pas prévoir de contournement support |
+| Vol d'un deuxième secret | Plusieurs codes stockés ensemble | Éviter la multiplication des secrets ; un seul kit personnel reste la décision actuelle |
+| SIM swap / numéro recyclé | Attaquant contrôle le numéro | SMS ne prouve pas l'identité historique |
+| Ingénierie sociale | Faux titulaire auprès d'un contact ou du support | Aucun contact/support ne peut récupérer le compte ou approuver une racine |
+| Confusion de privilèges | Passkey de connexion utilisée pour approuver un appareil | Séparer authentification de session, récupération du compte et cérémonie cryptographique |
+
+### Tests avant toute évolution
+- indépendance réelle des facteurs et dépendances communes (e-mail, fournisseur, appareil) ;
+- perte, vol, remplacement, révocation et restauration de chaque facteur ;
+- résistance au phishing, rejeu, clonage et récupération abusive du compte fournisseur ;
+- absence d'élévation de privilège vers racine, approbation appareil ou GPS ;
+- parcours Android réel, accessibilité et récupération après changement de téléphone ;
+- support et contacts incapables de contourner les preuves.
+
+**NO-GO :** aucun facteur alternatif ou fournisseur tiers ne peut être activé sur la seule base de cette comparaison. La politique actuelle reste : kit unique ou appareil approuvé encore disponible ; sinon refus de récupération historique.
