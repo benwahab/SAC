@@ -44,7 +44,7 @@ Le contrat pur existant dans `src/domain/session-authorization.ts` est un évalu
 - le hash du jeton présenté ;
 - l'état actif de la session ;
 - sa date d'expiration, comparée à l'heure serveur ;
-- le compte attendu ;
+- le compte attendu et son état courant strictement `active` ;
 - l'appareil lié à cette session ;
 - l'état actif actuel de cet appareil ;
 - l'égalité entre `session.auth_version` et `user_devices.auth_version`.
