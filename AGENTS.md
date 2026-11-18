@@ -101,3 +101,8 @@ Avant toute conception ou modification d'opérations administratives, lire égal
 
 
 Avant toute évolution du schéma, des comptes administratifs, missions, permissions, sessions, audits, clôtures ou exports, lire `docs/MODELE_DONNEES_ADMIN_ET_INTEGRATION_SAC.md`. Vérifier les incohérences identifiées et ne pas figer les points « à arbitrer ». Ce document ne vaut pas autorisation de migration.
+
+
+## Référentiel global des données
+
+Avant toute évolution du modèle relationnel, lire `docs/MODELE_GLOBAL_DONNEES_SAC.md`, puis les contrats spécialisés qu'il référence. Le nom conceptuel canonique de l'identité est `accounts` ; ne pas créer une seconde table d'identité `users` pour l'administration. Les tables mentionnées comme « à ajouter » ou « conditionnelles » ne sont pas approuvées pour SQL. Le modèle reste NON PRÊT POUR MIGRATION.
