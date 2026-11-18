@@ -194,7 +194,7 @@ Le document `AUDIT_TRANSVERSAL_COHERENCE_ARCHITECTURE_2026-11-18.md` est la synt
 
 ## 9. GPS et confidentialité — blocage absolu avant activation
 
-L'exigence produit est ferme : les positions GPS précises doivent devenir irrécupérables au plus tard 30 jours après la fin du partage ; pour une position ponctuelle, le délai part de la collecte.
+**Règle normative actuelle (contrat du 18 novembre 2026) :** GPS associé à une alerte SOS supprimé dès la clôture ; seule la catégorie de l'alerte conservée 30 jours après clôture ; entrée et catégorie supprimées à J+30 sans résurrection. Ces 30 jours ne sont pas une durée de conservation GPS. Pour les trajets indépendants d'une alerte, la durée de conservation GPS n'est pas arbitrée et aucune collecte persistante n'est autorisée avant décision et GO technique.
 
 Après l'échéance, aucune restauration de sauvegarde, D1 Time Travel, snapshot, export, réplication, cache ou accès administratif ne doit rendre la position lisible.
 
