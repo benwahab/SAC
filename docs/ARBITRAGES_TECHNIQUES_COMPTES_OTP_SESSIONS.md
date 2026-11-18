@@ -163,10 +163,10 @@ Aucun SQL, code d'authentification, secret, fournisseur, ressource Cloudflare ou
 
 ## 11. Politique de mot de passe — proposition technique
 
-**Statut : recommandation à valider, pas encore une règle produit activée.**
+**Statut : minimum de 12 caractères validé par l'utilisateur le 18 novembre 2026 ; les autres règles ci-dessous restent des recommandations techniques à valider.**
 
 Pour le mode de connexion e-mail + mot de passe validé :
-- Longueur minimale recommandée : **15 caractères** ; longueur maximale acceptée : au moins **128 caractères**, sans troncature silencieuse.
+- **Longueur minimale validée par l'utilisateur le 18 novembre 2026 : 12 caractères.** Longueur maximale acceptée : au moins **128 caractères**, sans troncature silencieuse.
 - Autoriser phrases de passe, espaces et Unicode ; ne pas imposer de règles artificielles de composition.
 - Refuser les mots de passe manifestement communs ou compromis ; ne pas transmettre le mot de passe en clair à un service tiers.
 - Ne pas imposer de changement périodique sans indice de compromission.
