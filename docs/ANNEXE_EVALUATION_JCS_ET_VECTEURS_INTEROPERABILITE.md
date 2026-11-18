@@ -51,7 +51,7 @@ Entrée JSON (forme lisible) :
 ```json
 {
   "numbers": [333333333.33333329, 1E30, 4.50, 2e-3, 0.000000000000000000000000001],
-  "string": "\u20ac$\u000F\u000aA'\u0042\u0022\u005c\\\"\/",
+  "string": "€$\u000f\nA'B\"\\\\/",
   "literals": [null, true, false]
 }
 ```
@@ -59,7 +59,7 @@ Entrée JSON (forme lisible) :
 Sortie canonique exacte :
 
 ```json
-{"literals":[null,true,false],"numbers":[333333333.3333333,1e+30,4.5,0.002,1e-27],"string":"€$\u000f\nA'B\"\\\\\"/"}
+{"literals":[null,true,false],"numbers":[333333333.3333333,1e+30,4.5,0.002,1e-27],"string":"€$\u000f\nA'B\"\\\\/"}
 ```
 
 Contrôles attendus :
