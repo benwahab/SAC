@@ -705,7 +705,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Identifier les entités absentes de la première proposition D1 : groupes, alertes programmées, SOS discret, abonnements/paiements.
 - [x] Comparer les états compte/alerte/trajet entre décisions, contrats, code et proposition relationnelle.
 - [x] Préserver le NO-GO GPS J+30 et l'absence de coordonnées précises en D1/R2.
-- [ ] Arbitrer la preuve d'identité d'un proche invité (téléphone déclaré non vérifié vs vérification du moyen de contact).
+- [x] Fixer le prérequis d'activation : tout proche SAC actif doit avoir un compte actif avec e-mail vérifié par OTP ; téléphone déclaré seul et SMS insuffisants.
 - [ ] Finaliser les droits d'un contact révoqué pendant une alerte active.
 - [ ] Définir le traitement d'une alerte orpheline hors scénario administratif déjà validé.
 - [ ] Spécifier groupes privés, alertes programmées et SOS discret.
@@ -752,8 +752,10 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Définir les tests de transitions, OTP, invitation, rejeu, concurrence et révocation.
 - [ ] Arbitrer la durée et l'expiration d'une inscription non vérifiée.
 - [ ] Arbitrer les transitions suppression/suspension concomitantes.
-- [ ] Valider ou remplacer le parcours d'acceptation des proches par e-mail vérifié.
-- [ ] Définir un parcours alternatif si un proche n'a pas d'adresse e-mail ou de compte SAC.
+- [x] Confirmer que tout proche devenant contact SAC actif doit disposer d'un compte SAC actif avec adresse e-mail vérifiée par OTP.
+- [x] Exclure l'activation d'un contact SAC par téléphone seul ou SMS OTP.
+- [ ] Spécifier les détails de remise de l'invitation, la correspondance entre destination invitée et e-mail vérifié, et l'enregistrement du consentement.
+- [ ] Décider séparément si une fonctionnalité de destinataire externe sans compte SAC est souhaitée ; elle n'est pas définie et ne doit pas contourner l'obligation d'activation e-mail.
 - [ ] Autoriser distinctement la mise à jour du contrat TypeScript et des tests.
 - [ ] Refaire la revue de préparation D1 après alignement code/produit.
 
