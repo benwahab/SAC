@@ -25,6 +25,8 @@ jobs:
         run: npm run test:jcs-worker
       - name: Test P-256 ECDSA RFC 6979 signature interoperability
         run: npm run test:ecdsa
+      - name: Test strict ECDSA DER and P1363 format adapters
+        run: npm run test:ecdsa-der
       - run: npm run typecheck
       - name: Test experimental location encryption primitive
         run: npm run test:crypto
