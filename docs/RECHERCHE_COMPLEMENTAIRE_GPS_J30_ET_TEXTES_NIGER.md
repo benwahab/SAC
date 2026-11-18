@@ -479,3 +479,32 @@ Références officielles :
 - Android Keystore — StrongBox, secure timer et limites d'application des autorisations temporelles : https://developer.android.com/privacy-and-security/keystore
 - Cloudflare D1 — Time Travel and backups, rétention des bookmarks, restauration et annulation : https://developers.cloudflare.com/d1/reference/time-travel/
 - NIST SP 800-57 Part 1 Rev. 5 — gestion des clés, sauvegarde, récupération et cycle de vie : https://csrc.nist.gov/pubs/sp/800/57/pt1/r5/final
+
+
+## 18. Précision documentaire D1 et séparation « position en direct » / « historique GPS »
+
+### 18.1 Rétention D1 à retenir
+
+La documentation Cloudflare D1 consultée le 18 novembre 2026 précise que Time Travel est toujours activé et que les bookmarks permettent une restauration jusqu'à 30 jours sur Workers Paid et 7 jours sur Workers Free. La page décrit aussi la conservation des bookmarks antérieurs après une restauration et la possibilité d'annuler une restauration en revenant au bookmark précédent.
+
+Conséquence : ne jamais déduire que la limite de rétention de Time Travel constitue une politique de suppression des données applicatives. La suppression des coordonnées GPS doit être indépendante de D1 et résistante à la restauration de tous les états de base accessibles. Toute copie/export D1 vers R2 ou autre support doit être analysée comme une sauvegarde distincte, avec sa propre politique de conservation ; aucune exportation D1 n'est autorisée par cette note.
+
+### 18.2 Distinguer trois objets de données
+
+Pour éviter qu'un choix sur l'historique bloque les alertes elles-mêmes, le modèle doit distinguer :
+1. **Position ponctuelle actuelle** : position fournie volontairement pour une alerte active, avec horodatage et statut de fraîcheur. Elle ne doit jamais être affichée comme « en direct » si elle est ancienne ou si le partage a cessé.
+2. **Flux temporaire pendant une alerte ou un trajet** : positions nécessaires au partage explicitement activé, avec destinataires et durée autorisés, et sans conservation plus longue que la finalité approuvée.
+3. **Historique GPS précis** : trace consultable après coup. C'est cet historique qui est soumis à l'exigence de destruction irréversible au plus tard à J+30 et au NO-GO actuel.
+
+Cette distinction est une proposition d'architecture à confirmer avec la matrice de conservation existante ; elle ne crée pas une autorisation de conserver une position côté serveur, dans les journaux, dans une file de notifications ou dans des sauvegardes. Les messages et notifications ne doivent pas recopier de coordonnées précises.
+
+### 18.3 Conséquence sur le choix technique
+
+La voie la plus prudente pour la première version est de ne pas promettre la consultation hors ligne de l'historique GPS. Une alerte peut continuer à transmettre une nouvelle position ponctuelle lorsque l'appareil et le réseau le permettent ; si la connexion manque, l'interface doit signaler explicitement l'absence de mise à jour et ne pas transformer une ancienne coordonnée en position actuelle. Le repli SMS, s'il est implémenté plus tard, doit être conçu et validé séparément.
+
+L'historique GPS précis reste désactivé tant que l'équipe n'a pas démontré : destruction de toutes les clés/copies de récupération, absence de copie plaintext, résistance aux restaurations, comportement appareil hors ligne/éteint, et vérification indépendante. Ce choix provisoire protège l'exigence de sécurité sans prétendre que l'alerte SOS ou la localisation ponctuelle sont déjà implémentées.
+
+Références officielles vérifiées le 18 novembre 2026 :
+- Cloudflare D1 — Time Travel and backups : https://developers.cloudflare.com/d1/reference/time-travel/
+- Android Keystore — temporal validity intervals et enforcement matériel : https://developer.android.com/privacy-and-security/keystore
+- Android Open Source Project — distinction hardwareEnforced / softwareEnforced : https://source.android.com/docs/security/features/keystore/features
