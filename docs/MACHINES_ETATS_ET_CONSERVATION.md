@@ -21,24 +21,40 @@
 
 ### 2.1 Compte
 
-États conceptuels :
-- `active`
-- `suspended`
-- `deletion_pending`
-- `deleted` (état terminal logique, si la politique de suppression le retient)
+**Référence canonique mise à jour le 18 novembre 2026 : cinq états exactement.** Cette définition remplace les listes historiques à quatre états et le parcours ancien « visiteur vérifié → active ».
 
-Transitions proposées :
+États :
+- `pending_verification` : inscription créée, adresse e-mail principale non vérifiée ; aucun accès privé, aucune session utilisateur et aucune alerte.
+- `active` : adresse e-mail vérifiée ; accès aux fonctions autorisées.
+- `suspended` : suspension administrative décidée par le Super Admin ; accès général bloqué, sessions générales révoquées, nouvelles activités interdites, données conservées.
+- `deletion_pending` : demande de suppression enregistrée ; création de nouvelles activités interdite ; finalisation différée jusqu'au traitement des alertes et trajets actifs.
+- `deleted` : état terminal après finalisation selon la politique de conservation ; aucune réactivation ni restauration de l'ancien compte.
 
+La vérification de l'e-mail est un fait distinct de l'état : elle ne constitue pas un sixième état. Le téléphone est obligatoire à l'inscription, avec indicatif international, mais demeure déclaré et non vérifié. Aucun SMS OTP, appel automatique ou contrôle téléphonique indépendant n'est prévu.
+
+Transitions définies :
 | État courant | Commande / acteur | État suivant | Conditions |
 |---|---|---|---|
-| absent | créer compte / visiteur vérifié | active | identité vérifiée, anti-abus et création atomique |
-| active | suspendre / système autorisé | suspended | motif interne, audit |
-| suspended | réactiver / support habilité ou procédure définie | active | identité et contrôle de sécurité vérifiés |
-| active | demander suppression / propriétaire | deletion_pending | authentification forte, alerte active traitée selon politique |
-| deletion_pending | finaliser / système | deleted | délais et conservation légale/métier validés |
-| deletion_pending | annuler / propriétaire | active | seulement avant finalisation et après réauthentification |
+| absent | inscription | pending_verification | création atomique ; aucun accès privé |
+| pending_verification | OTP e-mail valide | active | défi non expiré, non consommé, lié au compte et à la finalité |
+| active | suspendre | suspended | Super Admin uniquement ; motif et audit |
+| suspended | réactiver | active | procédure administrative autorisée ; anciennes sessions non restaurées |
+| active | demander suppression | deletion_pending | titulaire authentifié ; nouvelles activités bloquées |
+| deletion_pending | annuler demande | active | titulaire authentifié avant finalisation ; cas de suspension concomitante à arbitrer |
+| deletion_pending | finaliser | deleted | aucune alerte ni aucun trajet actif ; préconditions et conservation vérifiées |
 
-La suppression d'un compte ne doit pas supprimer en cascade les alertes en cours ou l'historique nécessaire à la sécurité. Les données conservées doivent être minimisées ou pseudonymisées selon une matrice validée. La durée de conservation hors GPS reste à décider.
+Transitions encore ouvertes et interdites tant qu'elles ne sont pas arbitrées :
+- expiration ou purge d'une inscription non vérifiée ;
+- demande de suppression depuis `pending_verification` ;
+- demande de suppression depuis `suspended` ;
+- suspension pendant `deletion_pending` ;
+- réactivation d'un compte suspendu qui est simultanément en suppression.
+
+Aucune transition non listée n'est implicite. Une tentative non autorisée est refusée et auditée sans divulguer d'information sensible.
+
+**Écart d'implémentation connu :** `src/domain/account-lifecycle.ts` accepte encore seulement `active`, `deletion_pending` et `deleted`. Le contrat TypeScript et ses tests doivent être alignés sur les cinq états avant toute migration D1 ; cette correction documentaire ne constitue pas une autorisation de modifier le code.
+
+La suppression ne doit jamais effacer en cascade les alertes, les destinataires, les prises en charge ou les événements nécessaires à la sécurité. Les données conservées doivent être minimisées ou pseudonymisées selon une matrice validée. La durée de conservation hors GPS reste à décider.
 
 ### 2.2 Identité (téléphone ou e-mail)
 
