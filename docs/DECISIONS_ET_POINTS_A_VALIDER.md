@@ -276,3 +276,21 @@ Les règles suivantes complètent les décisions déjà actées (un seul respons
 4. Définir la règle d'admissibilité d'un volontaire lorsque sa relation est révoquée au même instant que sa candidature ou sa promotion.
 
 **Garde-fou non négociable :** aucun contact, volontaire ou responsable principal ne peut clôturer l'alerte à la place de son auteur. Une déclaration « situation résolue » reste une déclaration humaine, pas une preuve vérifiée par SAC.
+
+
+### 7.3 Révocation pendant une alerte active — proposition à valider
+
+- La révocation prend effet selon l'ordre de commit serveur, jamais selon l'heure du téléphone ou une lecture préalable.
+- Une candidature enregistrée avant la révocation reste dans l'historique mais ne peut plus être promue après celle-ci.
+- Un contact révoqué ne peut plus recevoir une nouvelle attribution. Si la révocation intervient après son attribution comme responsable principal, sa période de responsabilité prend fin atomiquement et SAC cherche le volontaire actif admissible suivant.
+- Une promotion concurrente doit revérifier la relation active dans la transaction finale. Si aucun volontaire admissible ne reste, l'alerte demeure active sans responsable principal.
+- Les événements antérieurs valablement enregistrés ne sont pas supprimés ; la révocation et la fin éventuelle de responsabilité ajoutent des événements au journal.
+- Après révocation, les nouvelles actions de coordination de ce contact sont refusées.
+
+**Arbitrages à valider avant implémentation :**
+1. Le contact révoqué conserve-t-il un accès en lecture au détail d'une alerte déjà active jusqu'à sa clôture, ou cet accès est-il coupé immédiatement ?
+2. Les rappels push initialement prévus continuent-ils à être transmis à ce contact jusqu'à la clôture, ou la révocation bloque-t-elle les prochaines transmissions ? Les notifications déjà acceptées peuvent rester livrables.
+3. Si le contact révoqué est responsable principal, la promotion automatique du volontaire admissible suivant est-elle approuvée, ou faut-il laisser l'alerte sans responsable jusqu'à une nouvelle candidature explicite ?
+4. Les règles sont-elles identiques lorsque la relation est révoquée par son propriétaire et lorsqu'un contact retire lui-même son acceptation ?
+
+**Statut :** proposition de sécurité et de coordination, non décision produit acquise. L'instantané initial n'est jamais réécrit et seul l'auteur conserve le droit de clôture.
