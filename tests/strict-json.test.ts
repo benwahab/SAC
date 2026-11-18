@@ -29,8 +29,8 @@ test("les mêmes noms sont permis dans des objets distincts", () => {
 
 test("la clé __proto__ reste une propriété de données sans modifier le prototype", () => {
   const value = parseStrictJson('{"__proto__":{"polluted":true}}', limits);
-  assert.equal(Object.getPrototypeOf(value), null);
-  assert.equal(Object.hasOwn(value, "__proto__"), true);
+  assert.equal(Object.getPrototypeOf(value as object), null);
+  assert.equal(Object.hasOwn(value as object, "__proto__"), true);
   assert.equal((value as Record<string, unknown>)["__proto__"] !== undefined, true);
 });
 
@@ -62,6 +62,7 @@ test("la limite de profondeur est explicite et appliquée", () => {
 test("les limites manquantes ou incohérentes sont refusées", () => {
   assert.throws(() => parseStrictJson("null", { maxBytes: 0, maxDepth: 1 }), /limits/);
   assert.throws(() => parseStrictJson("null", { maxBytes: 10, maxDepth: -1 }), /limits/);
+  assert.throws(() => parseStrictJson("null", { maxBytes: 10, maxDepth: 129 }), /limits/);
 });
 
 test("la canonicalisation stricte rejette un JSON dupliqué avant JCS", () => {
