@@ -798,3 +798,29 @@ Le nouvel appareil reste « récupération limitée / non approuvé » jusqu'à 
 
 **NO-GO maintenu :** délai, contestation, droits de session, SOS en session limitée et portée de révocation doivent être explicitement validés et testés avant tout contrat exécutable.
 
+
+
+### Matrice candidate des privilèges de la session limitée
+
+**Statut : proposition non exécutable.**
+
+La session limitée est liée au compte, à la demande de récupération achevée, au nouvel appareil et à une échéance courte à définir. Elle ne doit pas hériter des privilèges d'un appareil approuvé.
+
+Autorisations candidates :
+- consulter uniquement l'état de récupération et les consignes de sécurité ;
+- fermer sa session ;
+- définir un nouveau mot de passe après la récupération, avec preuve fraîche ;
+- demander l'ouverture d'une cérémonie distincte de création de nouvelle racine.
+
+Interdictions :
+- lecture d'alertes privées, historique sensible et données personnelles des contacts ;
+- accès aux positions GPS, clés GPS ou partages de localisation ;
+- gestion des contacts et groupes ;
+- approbation d'appareils, opérations racine ou restauration de secrets cryptographiques ;
+- modification des coordonnées de compte à nouveau sans procédure renforcée ;
+- modification d'abonnement, paiement ou paramètres sensibles.
+
+La génération d'une nouvelle clé de récupération attend la fin de la cérémonie de confiance requise. La session limitée ne doit pas pouvoir émettre des jetons ou sessions de privilège supérieur.
+
+Le déclenchement SOS depuis cette session est un droit séparé à arbitrer. Il ne doit pas être déduit automatiquement de l'autorisation de récupérer l'accès au compte. En revanche, aucun OTP e-mail ne doit être ajouté au déclenchement d'un SOS depuis une session déjà autorisée.
+
