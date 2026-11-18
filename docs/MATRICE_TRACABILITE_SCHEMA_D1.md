@@ -114,3 +114,8 @@ Aucun de ces tests D1 n'est déclaré présent tant qu'un vrai fichier de test d
 ## 7. Référentiel global — complément du 18 novembre 2026
 
 Lire `MODELE_GLOBAL_DONNEES_SAC.md` pour les domaines absents de la première matrice : groupes privés, alertes programmées, SOS discret, sous-modèle abonnements/paiements et intégration à l'identité canonique des comptes administratifs. Ces objets sont des lacunes à spécifier, pas des tables validées. La matrice initiale ne couvre donc pas encore l'ensemble du produit SAC.
+
+
+## 8. Revue finale de cohérence — 18 novembre 2026
+
+La revue `REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md` consolide les cardinalités, contraintes référentielles, règles de suppression, courses concurrentes et blocages P0/P1/P2. Cette matrice ne constitue pas encore une couverture exhaustive des domaines ajoutés au modèle global. Toute conversion SQL doit attendre la fermeture des blocages P0 et la spécification des sous-domaines P1 concernés.
