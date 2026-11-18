@@ -116,26 +116,39 @@ BEGIN
     OR NEW.expires_at <> OLD.expires_at
   THEN RAISE(ABORT, 'otp_challenge_immutable_fields') END;
 
-  SELECT CASE WHEN
-    OLD.consumed_at IS NOT NULL
-    OR OLD.invalidated_at IS NOT NULL
-    OR OLD.attempt_count >= OLD.max_attempts
-  THEN RAISE(ABORT, 'otp_challenge_terminal') END;
+  -- Seule exception sans tentative : invalidation provoquée par l'insertion
+  -- d'un nouveau défi pour la même identité.
+  SELECT CASE WHEN NOT (
+    (
+      NEW.attempt_count = OLD.attempt_count
+      AND NEW.consumed_at IS OLD.consumed_at
+      AND OLD.invalidated_at IS NULL
+      AND NEW.invalidated_at IS NOT NULL
+      AND EXISTS (
+        SELECT 1 FROM email_otp_challenges newer
+        WHERE newer.id <> OLD.id
+          AND newer.identity_id = OLD.identity_id
+          AND newer.created_at = NEW.invalidated_at
+      )
+    )
+    OR
+    (
+      NEW.attempt_count = OLD.attempt_count + 1
+      AND OLD.consumed_at IS NULL
+      AND OLD.invalidated_at IS NULL
+      AND OLD.attempt_count < OLD.max_attempts
+      AND (
+        NEW.consumed_at IS NULL
+        OR (NEW.invalidated_at IS NULL AND NEW.consumed_at >= OLD.created_at)
+      )
+      AND (
+        NEW.invalidated_at IS NULL
+        OR (NEW.consumed_at IS NULL AND NEW.attempt_count = OLD.max_attempts)
+      )
+    )
+  ) THEN RAISE(ABORT, 'otp_invalid_challenge_transition') END;
 
-  SELECT CASE WHEN NEW.attempt_count <> OLD.attempt_count + 1
-    THEN RAISE(ABORT, 'otp_attempt_must_increment_once') END;
-
-  SELECT CASE WHEN NEW.consumed_at IS NOT NULL AND (
-    NEW.invalidated_at IS NOT NULL
-    OR NEW.consumed_at < OLD.created_at
-  ) THEN RAISE(ABORT, 'otp_invalid_consumption') END;
-
-  SELECT CASE WHEN NEW.consumed_at IS NULL AND
-    NEW.invalidated_at IS NOT NULL AND
-    NEW.attempt_count <> OLD.max_attempts
-  THEN RAISE(ABORT, 'otp_invalid_exhaustion') END;
-
-  SELECT CASE WHEN NEW.consumed_at IS NOT NULL AND NOT EXISTS (
+  SELECT CASE WHEN NEW.consumed_at IS NOT NULL AND OLD.consumed_at IS NULL AND NOT EXISTS (
     SELECT 1
     FROM accounts a
     JOIN account_identities i ON i.account_id = a.id
