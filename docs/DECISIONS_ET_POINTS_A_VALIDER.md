@@ -828,3 +828,55 @@ Une passkey synchronisée peut éventuellement servir à l'authentification ordi
 - Une passkey synchronisée doit-elle rester un simple moyen de connexion, sans privilège de récupération ?
 
 **NO-GO :** aucune intégration passkey, FIDO2, fournisseur tiers ou facteur alternatif n'est autorisée par cette étude.
+
+
+## Procédure — téléphone perdu ou volé avec un autre appareil approuvé disponible (18 novembre 2026)
+
+**Statut : procédure de conception proposée, cohérente avec les règles déjà validées.** Elle ne crée aucun mécanisme d'approbation supplémentaire.
+
+### Distinguer les deux situations
+1. **L'appareil perdu n'est pas la racine** et l'appareil racine approuvé est encore disponible : le titulaire peut utiliser la racine encore approuvée pour demander la révocation de l'appareil perdu, puis lancer une nouvelle cérémonie d'approbation du téléphone de remplacement.
+2. **L'appareil perdu est la racine** et seul un appareil secondaire reste disponible : le secondaire peut ouvrir une demande de récupération et signaler la perte, mais ne peut ni s'auto-promouvoir racine, ni approuver le téléphone de remplacement, ni restaurer l'ancienne identité cryptographique. La procédure de récupération racine distincte s'applique ; nouvelle racine locale et vérification indépendante de son empreinte par les contacts concernés restent requises avant reprise du partage GPS.
+
+### Parcours lorsque la racine est encore disponible
+1. Depuis l'appareil racine, le titulaire ouvre la gestion des appareils et choisit explicitement « téléphone perdu ou volé ».
+2. L'application affiche clairement l'appareil visé (nom convivial, type, dernière activité connue et date), sans exposer d'information sensible inutile.
+3. Le titulaire confirme la révocation de cet appareil précis. Une demande ambiguë ou une sélection multiple ne doit pas être exécutée.
+4. Le serveur vérifie dans une opération atomique que la racine initiatrice est toujours approuvée, non révoquée et autorisée, puis révoque l'appareil cible et invalide ses sessions, jetons et abonnements push.
+5. La révocation est définitive pour cette identité d'appareil. Le téléphone perdu qui revient en ligne ne peut pas annuler la révocation ni retrouver ses droits par simple reconnexion.
+6. Le titulaire prépare le téléphone de remplacement ; celui-ci génère localement ses propres clés et présente une demande d'approbation.
+7. Seule la racine encore approuvée peut approuver cette demande après vérification indépendante de l'empreinte et confirmation explicite du titulaire.
+8. L'approbation du nouvel appareil n'annule pas la révocation de l'ancien et ne restaure aucune clé privée de l'ancien téléphone.
+
+### Parcours lorsque seule une racine perdue est remplacée par un secondaire survivant
+- Le secondaire peut signaler la perte, initier une demande et consulter uniquement l'état de cette demande selon les droits qui lui restent.
+- Il ne peut pas approuver le téléphone de remplacement, modifier l'autorité racine ou restaurer les anciennes clés.
+- Une nouvelle identité racine doit être générée localement selon la procédure de récupération racine.
+- Les contacts concernés vérifient indépendamment la nouvelle empreinte avant toute reprise du partage GPS avec chacun.
+- Le fait qu'un secondaire soit encore connecté ne suffit pas à prouver que l'ancienne racine est récupérable.
+- La révocation de l'ancienne racine doit être enregistrée côté serveur ; son retour ultérieur en ligne ne rétablit aucun droit.
+
+### Protection des données et des alertes pendant l'opération
+- Les alertes actives, leur instantané initial de destinataires, leur niveau, leur historique et leur état de prise en charge ne sont ni supprimés ni réécrits par la révocation d'un appareil.
+- Les contacts de confiance, leurs relations et l'abonnement du titulaire ne sont pas supprimés.
+- Les tâches de notification d'une alerte ne sont pas annulées uniquement parce qu'un appareil du titulaire est révoqué.
+- Les sessions et jetons de l'appareil révoqué sont invalidés ; les autres appareils restent soumis à leur propre statut.
+- Les droits GPS restent bloqués si la racine a été perdue ou remplacée, jusqu'à la vérification indépendante requise relation par relation.
+- La révocation d'un appareil ne doit pas être présentée comme un effacement à distance des données déjà présentes sur un téléphone hors ligne.
+- Une notification de sécurité peut être envoyée aux canaux encore sûrs, sans inclure de position, de contenu d'alerte ou de nouvelles coordonnées.
+
+### Concurrence, abus et audit
+- Une révocation gagne contre toute tentative ultérieure de l'appareil cible de renouveler une session, un jeton push ou une approbation.
+- Vérifier le statut de la racine et de la cible dans la même transaction que la révocation ou l'approbation ; aucune confiance basée uniquement sur un état client en cache.
+- Opérations idempotentes ; journal d'audit append-only sans secret, clé privée, OTP, contenu sensible ou GPS précis.
+- Une demande concurrente d'approbation initiée par un secondaire ne peut pas être convertie en approbation racine.
+- Si la racine est suspectée compromise, ne pas utiliser cette racine comme preuve fiable : déclencher la procédure de récupération racine et suspendre les opérations sensibles dépendantes.
+- Les appareils non concernés ne sont pas révoqués automatiquement sans règle explicite et information claire.
+
+### Points restant à arbitrer
+- Délai et contenu exacts des notifications de sécurité après révocation.
+- Possibilité de suspendre temporairement certaines opérations sensibles dès déclaration de vol, avant révocation effective, et effets sur les SOS.
+- Durée de conservation des métadonnées d'audit d'appareil, sans GPS ni secrets.
+- Parcours exact de preuve renforcée si l'appareil racine survivant est disponible mais potentiellement compromis.
+
+**NO-GO :** aucune API, migration D1, notification réelle, commande de révocation ou cérémonie d'approbation n'est implémentée par cette annexe.
