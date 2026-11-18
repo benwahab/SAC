@@ -316,3 +316,19 @@ Dans le scénario précis d'un compte suspendu avec une alerte SOS déjà transm
 La déclaration du titulaire indiquant qu'il est en sécurité est une information à examiner, pas une clôture automatique. Ni le titulaire suspendu ni un proche, y compris le responsable principal, ne clôture cette alerte. Un proche peut signaler la fin supposée de la situation et demander une clôture administrative.
 
 Cette procédure est une règle produit/documentaire. Elle n'implémente aucune route, permission, notification, session spéciale ou migration D1.
+
+
+## Habilitation à la clôture administrative d'une alerte suspendue — décision validée le 18 novembre 2026
+
+Dans le scénario d'une alerte SOS déjà transmise pendant la suspension du compte initiateur, avec risque d'abus associé, les profils autorisés sont définis ainsi :
+
+- Le Super Admin SAC peut clôturer après les vérifications prévues.
+- Un administrateur sécurité ne peut clôturer que si le Super Admin lui a attribué explicitement et individuellement cette permission.
+- Aucun droit de clôture n'est accordé par défaut à un administrateur délégué.
+- Le support, l'auditeur, les proches et le titulaire suspendu ne peuvent pas clôturer cette alerte.
+
+La permission de clôture est distincte des autres permissions administratives. Seul le Super Admin peut attribuer, modifier, suspendre ou retirer cette délégation. Le délégataire ne peut ni transmettre ce droit ni le déléguer à son tour. Une seule personne habilitée suffit pour décider et exécuter la clôture ; aucune double validation n'est exigée.
+
+Chaque décision de clôture doit conserver une trace d'audit comprenant au minimum l'identité de l'administrateur, la référence de l'alerte, la date et l'heure, le motif et les éléments de vérification consultés. L'espace d'administration SAC est réservé à un usage sur ordinateur ou tablette ; son accès administratif depuis un téléphone n'est pas prévu.
+
+Ces règles sont documentaires. Elles n'implémentent aucun rôle, permission, endpoint ou contrôle d'accès opérationnel et n'autorisent aucune migration D1.
