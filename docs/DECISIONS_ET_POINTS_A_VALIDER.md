@@ -1,6 +1,6 @@
 # SAC — Décisions actées et points à valider
 
-Ce document évite de confondre une décision de l'utilisateur avec une proposition technique. Il doit être mis à jour à chaque validation.\n\nLa spécification de travail des transitions métier et de la conservation est centralisée dans [docs/MACHINES_ETATS_ET_CONSERVATION.md](MACHINES_ETATS_ET_CONSERVATION.md). Les points marqués ouverts dans ce document ne sont pas des décisions acquises.
+Ce document évite de confondre une décision de l'utilisateur avec une proposition technique. Il doit être mis à jour à chaque validation.\n\nLa spécification de travail des transitions métier et de la conservation est centralisée dans [docs/MACHINES_ETATS_ET_CONSERVATION.md](MACHINES_ETATS_ET_CONSERVATION.md). Les contrats des opérations transactionnelles sont détaillés dans [docs/CONTRATS_OPERATIONS_ATOMIQUES_D1.md](CONTRATS_OPERATIONS_ATOMIQUES_D1.md). Les points marqués ouverts dans ces documents ne sont pas des décisions acquises.
 
 ## 1. Décisions actées
 
