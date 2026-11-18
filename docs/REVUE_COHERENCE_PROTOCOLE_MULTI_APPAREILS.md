@@ -66,3 +66,18 @@ Aucune modification de code, API, migration, ressource Cloudflare ou donnée GPS
 ## Référence de décision transversale
 
 Consulter également `CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md` pour la matrice des scénarios et les blocages V1. Les divergences du format canonique, des signatures, nonces et SAS recensées ici restent ouvertes ; ce lien ne choisit aucun protocole.
+
+## 7. Clarification de l'autorité d'approbation — 19 novembre 2026
+
+La lecture croisée du dépôt confirme qu'une décision produit existe déjà : le 17 novembre 2026, l'utilisateur a validé pour la V1 le modèle d'un appareil racine unique, seul autorisé à approuver l'ajout d'appareils secondaires. Un appareil secondaire ne peut ni approuver un autre appareil ni se promouvoir racine.
+
+Cette règle est une décision produit validée ; elle ne doit pas être redemandée comme si elle était encore ouverte. Elle ne valide toutefois pas les détails cryptographiques de la cérémonie.
+
+La portée exacte à préserver est la suivante :
+
+- **Autorité d'approbation :** appareil racine unique, actuellement actif et non révoqué.
+- **Appareils secondaires :** aucun pouvoir d'approbation, de promotion ou de remplacement de la racine.
+- **Perte ou compromission de la racine :** aucun transfert automatique vers un secondaire ; le remplacement de racine demeure interdit en V1 conformément à `ARBITRAGE_RECUPERATION_RACINE_ET_ATOMICITE_D1.md`.
+- **Enrôlement secondaire :** reste bloqué tant que le transcript, l'encodage canonique, les preuves de possession, le défi anti-rejeu, la comparaison indépendante et les contrôles atomiques n'ont pas été unifiés, testés et revus indépendamment.
+
+La décision d'autorité est donc **fermée**. Les choix cryptographiques et le parcours de récupération restent **ouverts/bloquants**. Aucun endpoint, migration D1 ou activation d'appareil n'est autorisé par cette clarification.
