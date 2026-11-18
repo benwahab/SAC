@@ -25,7 +25,7 @@ Ce document évite de confondre une décision de l'utilisateur avec une proposit
 | Clôture | Seul l'auteur de l'alerte peut clôturer |
 | Expiration des rappels | Ne clôture pas l'alerte |
 | Répondant principal | Premier contact qui accepte la prise en charge ; promotion du volontaire suivant si retrait |
-| Contacts | Invitation par téléphone ou e-mail, acceptation et vérification obligatoires ; invitation en attente sans accès ; révocation pour les nouvelles alertes |
+| Contacts | Un contact SAC actif doit avoir un compte SAC actif, donc une adresse e-mail vérifiée par OTP ; acceptation explicite obligatoire ; téléphone déclaré seul et SMS ne suffisent jamais ; invitation en attente sans accès ; révocation pour les nouvelles alertes |
 | Destinataires | Instantané figé au déclenchement |
 | Localisation | Partage soumis à autorisation ; fenêtres prévues : position ponctuelle, 15 minutes, 30 minutes, 1 heure ou jusqu'à clôture selon le parcours ; une position ancienne doit être datée et identifiée ; positions GPS précises conservées 30 jours après la fin du partage sous le contrôle de SAC ; les destinataires sont des proches de confiance et SAC ne cherche pas à effacer leurs copies locales |
 | Backend / API | API REST séparée via Cloudflare Pages Functions (`functions/api/`), en TypeScript |
