@@ -12,6 +12,12 @@ Avant toute tâche, lis :
 6. `docs/CONSIGNES_DE_TRAVAIL.md`
 7. `docs/DECISIONS_ET_POINTS_A_VALIDER.md`
 8. `docs/CLOUDFLARE_GITHUB_DEPLOYMENT.md`
+9. `docs/DECISIONS_PRODUIT_RESTANTES.md`
+10. `docs/PLAN_VALIDATION_DESTRUCTION_GPS_J30.md`
+11. `docs/SECURITE_GPS_DESTRUCTION_CRYPTO.md`
+12. `docs/MISE_A_JOUR_JURIDIQUE_NIGER_NOV_2026.md`
+13. `docs/CONFORMITE_DONNEES_NIGER.md`
+14. `docs/AUDIT_DEPENDANCES_ET_REPRODUCTIBILITE.md`
 
 ## Stack verrouillée
 - React
@@ -37,3 +43,11 @@ Claude, Qwen et les autres assistants autorisés travaillent sur les mêmes réf
 - Respect absolu des règles de sécurité et de confidentialité du cahier des charges.
 - Tests et CI seulement déclarés réussis après vérification réelle.
 - En cas de contradiction entre le code et les décisions, ne tranche pas seul : documente et demande validation.
+
+## Points de vigilance obligatoires au 18 novembre 2026
+
+- **GPS J+30 :** l'historique GPS précis est NO-GO. Aucune conservation durable, archive, API, migration, synchronisation ou connexion à un flux GPS réel ne doit être implémentée avant preuve des scénarios critiques et arbitrage produit explicite. Les primitives cryptographiques présentes sont expérimentales, non branchées à l'application et ne prouvent pas la destruction J+30.
+- **Sauvegardes mobiles :** les exclusions Android/iOS sont des mesures de réduction du risque, pas une preuve d'effacement irréversible. Respecter le plan GPS-01 à GPS-36 ; aucun test natif ne doit être déclaré exécuté sans appareils et preuves réelles.
+- **Droit nigérien :** l'ancienne HAPDP a été supprimée selon les informations publiées par l'ANP le 12 juin 2026. Ne pas la présenter comme autorité opérationnelle ni envoyer de formalité à son ancien contact. L'ordonnance 2026-30 et le décret de suppression doivent encore être authentifiés sur le Journal officiel ; ne pas extrapoler les obligations actuelles à partir des seuls textes historiques.
+- **Picomatch :** GHSA-fc5q-39xc-vjpf / CVE-2026-112366 est toujours sans version corrigée publiée vérifiée. Les PR amont examinées sont ouvertes ; ne pas ajouter de commit non publié, override artisanal, ignorer l'audit ou forcer une rétrogradation.
+- Les changements documentaires n'autorisent pas une modification de code, une migration D1, une ressource Cloudflare, une intégration fournisseur ou un déploiement.
