@@ -181,14 +181,17 @@ Travaux effectivement réalisés dans le dépôt :
 - les 24 valeurs IEEE-754 finies de l’Appendix B sont comparées à leur représentation attendue, et les vecteurs NaN/Infinity sont rejetés ;
 - parseur strict ajouté dans `src/services/crypto/strict-json.ts` : rejet des noms de propriétés dupliqués après décodage, des Unicode invalides, des nombres non finis et des entrées dépassant les limites explicites de taille/profondeur ;
 - `npm run test:jcs-input` couvre les doublons simples/échappés, `__proto__`, les chaînes et surrogates invalides, la grammaire JSON, les limites UTF-8/profondeur, le vecteur RFC complet et l’absence de normalisation Unicode ;
-- CI complète réussie sur le commit `5c8270e` (workflow `44424446988`) : `npm ci`, les deux suites JCS, typecheck, tests existants, migration D1 locale isolée, build et audits.
+- la limite de taille rejette d’abord les chaînes dont la longueur UTF-16 dépasse le budget, puis vérifie leur taille UTF-8 réelle avant le parsing, afin d’éviter une allocation inutile sur une entrée manifestement trop grande ;
+- fixture Worker isolée `tests/fixtures/jcs-worker.ts` et configuration Wrangler de test : exécution locale de `canonicalizeStrictJson` et `crypto.subtle.digest(SHA-256)` sur le vecteur RFC ; le résultat doit correspondre à l’empreinte `2d5e01a318d0f0879ab568c4be289c8b1f64ef8921a53c6277d5e069978baacb` ;
+- `npm run test:jcs-worker` lance cette vérification avec `wrangler dev --local` ; aucun déploiement ni aucune ressource Cloudflare distante ne sont utilisés ;
+- CI complète réussie sur le commit `441770a` (workflow `44424781507`) : `npm ci`, les trois suites JCS, test Worker local, typecheck, tests existants, migration D1 locale isolée, build et audits.
 
-Limites explicites : cette couverture ciblée ne constitue pas une homologation complète de RFC 8785 ni du protocole SAC. Le parseur strict est une frontière d’entrée générique, pas encore une validation du schéma métier du transcript et il n’est pas encore appelé par une cérémonie d’enrôlement (qui n’est pas implémentée). Aucun test d’exécution dans Chrome/Android, Safari/iOS, WebView ou Cloudflare Workers n’est déclaré. Les signatures inter-plateformes, le format de signature, low-S, le SAS, l’anti-rejeu du transcript et l’atomicité D1 restent à démontrer.
+Limites explicites : cette couverture ciblée ne constitue pas une homologation complète de RFC 8785 ni du protocole SAC. Le parseur strict est une frontière d’entrée générique, pas encore une validation du schéma métier du transcript et il n’est pas encore appelé par une cérémonie d’enrôlement (qui n’est pas implémentée). Le test Worker utilise le runtime local Wrangler/Miniflare ; il ne remplace pas une vérification sur un Worker Cloudflare déployé. Aucun test réel sur Chrome/Android, Safari/iOS ou WebView n’est déclaré. Les signatures inter-plateformes, le format de signature, low-S, le SAS, l’anti-rejeu du transcript et l’atomicité D1 restent à démontrer.
 
 Séquence suivante :
 1. compléter la revue des cas négatifs I-JSON et définir les limites de taille/profondeur propres au transcript SAC ;
 2. définir un schéma métier strict et versionné pour le transcript, avec validation de chaque champ avant canonicalisation ;
-3. vérifier l’import et l’exécution du paquet et du parseur dans Cloudflare Workers, navigateurs Android/iOS et WebView ;
+3. confirmer le comportement sur un Worker Cloudflare déployé de test, puis sur navigateurs Android/iOS et WebView ;
 4. faire vérifier le schéma de transcript et les champs par une revue indépendante ;
 5. après arbitrage, publier un fixture de transcript SAC et ses octets UTF-8 exacts ;
 6. décider et tester les algorithmes, encodages de clés/signatures, représentation ECDSA et politique low-S ;
