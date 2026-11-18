@@ -386,6 +386,8 @@ Les fichiers restent privés, protégés par permissions, liens temporaires et c
 
 Les tables conceptuelles déjà listées dans les documents du modèle de données doivent être harmonisées avant toute migration D1 ; ne pas créer des doublons pour chaque service.
 
+Le catalogue conceptuel des tables proposées pour la logistique, la comptabilité, les RH et le pilotage est conservé dans [ANNEXE_MODELE_DONNEES_SERVICES_PROFESSIONNELS.md](ANNEXE_MODELE_DONNEES_SERVICES_PROFESSIONNELS.md). Il doit être harmonisé avec le modèle D1 citoyen avant toute migration.
+
 ## 17. État et limites
 
 Tout ce document décrit la conception cible. Il ne prouve pas que la console, les modules RH, finances, logistique, secrétariat, juridique, DSI ou pilotage sont développés.
