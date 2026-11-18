@@ -1041,3 +1041,51 @@ Points à arbitrer :
 - Choix futur d'un facteur indépendant préenregistré, si l'utilisateur souhaite éviter l'irrécupérabilité de ce scénario.
 
 **NO-GO :** aucune fonction de contestation e-mail, invalidation de kit, nouveau facteur, endpoint, fournisseur, migration ou notification réelle n'est implémentée.
+
+
+## Remplacement du kit perdu avec un appareil approuvé encore disponible (18 novembre 2026)
+
+**Statut : parcours recommandé cohérent avec la décision d'un kit unique ; détails opérationnels à valider.**
+
+### Principe
+Le titulaire qui possède encore un appareil approuvé, sûr et non révoqué peut remplacer son kit sans présenter l'ancien kit. La preuve repose sur l'appareil et une preuve cryptographique fraîche, pas sur le seul mot de passe, une session ancienne en cache ou un OTP e-mail.
+
+### Parcours recommandé
+1. Depuis un appareil approuvé, le titulaire ouvre « Sécurité du compte » puis « Remplacer mon kit de récupération ».
+2. L'application explique que l'ancien kit deviendra immédiatement inutilisable et que le nouveau sera affiché une seule fois.
+3. Le serveur revalide au moment de l'opération que l'appareil est toujours approuvé, non révoqué, autorisé et rattaché à l'époque racine active.
+4. L'appareil effectue une preuve cryptographique fraîche liée à cette demande et à la finalité « remplacement du kit ». Un simple déverrouillage local ou OTP e-mail ne suffit pas.
+5. Le nouveau secret est généré localement avec un CSPRNG adapté ; le secret brut ne transite jamais vers le serveur et n'est jamais écrit dans les logs, analytics, rapports d'erreur, notifications ou sauvegardes applicatives.
+6. L'application affiche le kit une seule fois. Le titulaire doit confirmer qu'il l'a enregistré dans un endroit hors ligne sûr. La confirmation atteste l'étape UX, pas la qualité réelle du stockage.
+7. Le serveur enregistre uniquement le vérificateur protégé et la nouvelle version du kit, puis invalide atomiquement l'ancien vérificateur. Une seule version peut être valide.
+8. En cas d'échec avant commit, l'ancien kit reste valide. En cas de succès confirmé, l'ancien kit est définitivement invalide et ne peut pas être restauré.
+9. L'utilisateur peut demander un nouveau remplacement ultérieur depuis un appareil de confiance ; chaque remplacement invalide le précédent.
+
+### Si le kit est oublié, perdu ou potentiellement volé
+- **Oublié mais peut-être retrouvé :** le titulaire peut le remplacer immédiatement ; il n'a pas besoin de le ressaisir.
+- **Perdu :** même procédure ; l'ancien vérificateur est invalidé au commit.
+- **Volé ou soupçonné divulgué :** traiter comme compromis et remplacer sans délai depuis l'appareil sûr. Les demandes de récupération utilisant l'ancien kit sont refusées après commit.
+- **Aucun appareil sûr disponible :** cette procédure n'est pas disponible. Le remplacement ne peut pas être effectué par OTP e-mail, support, contact ou mot de passe seul.
+
+### Effets sur le compte
+- Aucun changement de mot de passe, d'adresse e-mail ou de numéro n'est imposé par le remplacement du kit.
+- Aucune session n'est révoquée du seul fait du remplacement si l'appareil initiateur reste sain ; toute suspicion de compromission appareil déclenche la procédure distincte.
+- Aucun appareil n'est ajouté, approuvé, promu racine ou révoqué.
+- La racine cryptographique et son époque ne changent pas.
+- Contacts, relations, abonnement, alertes actives, instantanés de destinataires, tâches SOS et historique restent inchangés.
+- Aucun accès GPS supplémentaire n'est accordé ; aucune archive GPS expirée ne peut être restaurée.
+
+### Concurrence et résilience
+- Une seule opération de remplacement active par compte et version de kit.
+- L'opération compare la version attendue et revalide l'appareil initiateur dans la transaction de commit.
+- Les demandes concurrentes : une seule réussit ; les autres sont rejetées sans invalider le nouveau kit.
+- Si le réseau tombe avant commit, l'ancien kit reste valide ; après commit, le nouveau seul est valide même si l'accusé client est perdu. L'interface doit permettre de retrouver l'état de l'opération sans réafficher le secret.
+- Le secret ne peut pas être récupéré depuis le serveur après fermeture de l'écran. Si le titulaire n'a pas sauvegardé le kit affiché, il doit en générer un autre depuis une session de confiance.
+
+### Points restant à arbitrer
+- Exiger la racine active uniquement, ou permettre à un autre appareil approuvé d'effectuer le remplacement avec preuve fraîche et contrôle renforcé.
+- Confirmation supplémentaire de l'adresse e-mail actuelle : utile comme notification, mais pas comme preuve principale ni veto automatique.
+- UX de confirmation du stockage hors ligne et procédure de remplacement immédiat si le titulaire indique avoir perdu l'affichage.
+- Politique de notification de sécurité après remplacement, sans révéler le kit.
+
+**NO-GO :** aucun générateur, vérificateur, endpoint, migration, écran, notification ou remplacement réel n'est implémenté.
