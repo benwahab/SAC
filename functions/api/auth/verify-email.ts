@@ -54,22 +54,19 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
               i.id AS identity_id,
               a.status AS account_status,
               i.verified_at,
-              (
-                SELECT c.id
-                FROM email_otp_challenges c
-                WHERE c.account_id = a.id AND c.identity_id = i.id
-                ORDER BY c.created_at DESC
-                LIMIT 1
-              ) AS challenge_id,
-              (
-                SELECT c.digest
-                FROM email_otp_challenges c
-                WHERE c.account_id = a.id AND c.identity_id = i.id
-                ORDER BY c.created_at DESC
-                LIMIT 1
-              ) AS challenge_digest
+              c.id AS challenge_id,
+              c.digest AS challenge_digest
        FROM account_identities i
        JOIN accounts a ON a.id = i.account_id
+       LEFT JOIN email_otp_challenges c
+         ON c.id = (
+           SELECT latest.id
+           FROM email_otp_challenges latest
+           WHERE latest.account_id = a.id
+             AND latest.identity_id = i.id
+           ORDER BY latest.created_at DESC, latest.id DESC
+           LIMIT 1
+         )
        WHERE i.channel = 'email' AND i.normalized_value = ?
        LIMIT 1`,
     ).bind(email).first<LatestChallenge>();
