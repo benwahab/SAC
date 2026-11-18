@@ -38,6 +38,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Ajouter les types TypeScript partagés pour les six catégories d'alerte, les niveaux, les états, les durées de partage et les limites d'offre.
 - [x] Ajouter une route de santé API vérifiant réellement l'accès D1.
 - [x] Ajouter un workflow CI de typecheck et build.
+- [x] Préparer une proposition de schéma relationnel D1 sans migration ni stockage GPS dans docs/SCHEMA_RELATIONNEL_D1_PROPOSITION.md.
 - [ ] Valider le schéma relationnel détaillé, les rôles, les politiques d'accès, les états, les sauvegardes et les tests de sécurité avant toute migration D1.
 - [ ] Créer les migrations D1 et les tests d'accès après validation de ces prérequis.
 - [x] Installer les dépendances, exécuter typecheck et build dans GitHub Actions (run 44151374924, commit 6edbd77d).
