@@ -83,3 +83,5 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 - [Arbitrage P0 — cycle de vie du compte et preuve des proches](docs/ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md) — états du compte, exigence d'e-mail vérifié et preuve d'acceptation.
 - [Contrat du cycle de vie des proches et invitations](docs/CONTRAT_CYCLE_VIE_PROCHES_ET_INVITATIONS.md) — création, acceptation, refus, expiration, retrait, révocation, réinvitation, sécurité et tests.
 - [Propositions d'arbitrage — invitations et révocation](docs/PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md) — valeurs par défaut recommandées et comportements pendant une alerte active, à confirmer explicitement.
+
+- [Contrat de conservation et de suppression des alertes](docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md) — GPS supprimé à la clôture, catégorie seule conservée 30 jours, puis suppression définitive et interdiction de résurrection après restauration.
