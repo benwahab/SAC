@@ -773,3 +773,29 @@ Aucune réponse libre, conversation, identité ou coordonnées des contacts, con
 Les états visibles doivent être agrégés et limités à l'alerte concernée. Les horodatages affichés ne doivent pas révéler inutilement l'activité individuelle des contacts. Aucun accès aux données privées des contacts n'est accordé.
 
 Cette validation ne rend pas à elle seule le SOS de secours exécutable : les autres préconditions, permissions, délais et tests de sécurité documentés restent applicables. Aucun code ou endpoint n'est autorisé.
+
+
+## Annexe — perte simultanée du téléphone, de l'ancien e-mail et de la clé hors ligne (18 novembre 2026)
+
+**Statut :** politique de sécurité proposée ; aucun parcours supplémentaire n'est activé par cette annexe.
+
+### Scénario A — un autre appareil approuvé reste disponible
+Le titulaire peut engager la procédure normale depuis cet appareil, sous réserve d'une session valide, d'une preuve cryptographique fraîche et de la vérification de l'état de révocation. La perte de la clé hors ligne ne doit pas bloquer une authentification forte déjà possible depuis un appareil approuvé. Après validation du changement d'adresse e-mail selon la procédure dédiée, un nouveau kit peut être généré depuis une session et un appareil autorisés. L'ancien kit doit être déclaré perdu et invalidé atomiquement ; il ne peut pas être réémis.
+
+### Scénario B — aucun appareil approuvé, mais un facteur indépendant préenregistré existe
+Une voie de récupération ne peut être étudiée que si un facteur indépendant a été configuré et vérifié avant l'incident, avec une procédure documentée, résistante au rejeu et distincte de l'e-mail nouvellement fourni. Aucun facteur de ce type n'est actuellement choisi ni approuvé. L'OTP de la nouvelle adresse ne constitue qu'une preuve de contrôle de boîte. L'existence d'un facteur ne vaut pas autorisation automatique : sa robustesse, sa révocation, ses limites et les conséquences sur les sessions doivent être arbitrées et testées.
+
+### Scénario C — aucun appareil approuvé et aucun facteur indépendant disponible
+La récupération du compte historique doit être refusée. Le support, un contact de confiance, un nouvel OTP e-mail/SMS, une pièce d'identité envoyée par formulaire ou la connaissance d'informations personnelles ne doivent pas devenir un contournement improvisé. La personne peut créer un nouveau compte distinct si les règles produit le permettent, mais SAC ne doit pas rattacher automatiquement l'ancien historique, les anciennes relations, les alertes, les abonnements ou les droits. Aucun accès à l'ancien compte, à ses données ou à sa racine ne doit être accordé.
+
+### Invariants
+- Perdre le kit ne permet jamais de reconstituer la clé privée racine, d'approuver un appareil ou de déverrouiller le GPS.
+- Aucun contact ne vote, ne confirme l'identité historique ou ne récupère le compte.
+- Aucun administrateur/support ne peut remplacer les preuves cryptographiques par une décision manuelle.
+- Aucun OTP envoyé à une nouvelle adresse ou à un nouveau numéro ne prouve la continuité du compte.
+- La clé perdue est invalidée dès que le titulaire peut authentifier le compte par une voie déjà autorisée ; elle n'est jamais affichée à nouveau.
+- Les demandes échouées, expirées ou refusées ne doivent pas révéler si un compte, une clé ou un facteur existe.
+- Une impossibilité de récupération doit être expliquée honnêtement, sans promesse de récupération ultérieure non conçue.
+
+### Arbitrages encore ouverts
+Nature d'un éventuel facteur indépendant préenregistré ; preuve de récupération en son absence ; délais et contestation ; politique de sessions ; conditions de création d'un nouveau compte sans rattachement à l'ancien. NO-GO maintenu pour tout développement de récupération additionnelle.
