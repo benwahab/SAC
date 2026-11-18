@@ -203,3 +203,11 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Compléter les durées de conservation hors GPS après revue juridique consolidée.
 - [ ] Faire une revue croisée de la matrice avec les contrats d'opérations atomiques.
 - [ ] Garder la décision « non prêt pour migration » tant que tous les critères de passage ne sont pas satisfaits.
+
+
+## Traçabilité des tests déjà présents vs preuves D1 futures
+
+- [x] Cartographier les suites TypeScript/cryptographiques déjà présentes et leurs limites dans `docs/MATRICE_TRACABILITE_SCHEMA_D1.md`.
+- [x] Éviter de présenter les tests unitaires purs comme des preuves d'intégrité D1 ou de concurrence SQL.
+- [ ] Créer les tests d'intégration D1 seulement après arbitrages produit et validation du schéma.
+- [ ] Exécuter les tests D1 localement puis sur Preview isolé, avec vérification des identifiants de base.
