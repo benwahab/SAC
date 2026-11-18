@@ -4,6 +4,7 @@ import { webcrypto } from "node:crypto";
 import {
   digestEmailOtp,
   generateEmailOtpCode,
+  verifyEmailOtpDigest,
 } from "../functions/lib/security/email-otp-code.ts";
 
 const cryptoProvider = webcrypto as unknown as Crypto;
@@ -61,4 +62,23 @@ test("refuse un secret trop court, un défi invalide et un code mal formé", asy
     digestEmailOtp(cryptoProvider, secret, "challenge-a", "account_email_verification", "4219"),
     /invalid_otp_code/,
   );
+});
+
+test("vérifie le code par HMAC et rejette un code incorrect", async () => {
+  const digest = await digestEmailOtp(
+    cryptoProvider,
+    secret,
+    "challenge-verify",
+    "account_email_verification",
+    "830014",
+  );
+  assert.equal(await verifyEmailOtpDigest(
+    cryptoProvider, secret, "challenge-verify", "account_email_verification", "830014", digest,
+  ), true);
+  assert.equal(await verifyEmailOtpDigest(
+    cryptoProvider, secret, "challenge-verify", "account_email_verification", "830015", digest,
+  ), false);
+  assert.equal(await verifyEmailOtpDigest(
+    cryptoProvider, secret, "challenge-verify", "account_email_verification", "830014", "invalid",
+  ), false);
 });
