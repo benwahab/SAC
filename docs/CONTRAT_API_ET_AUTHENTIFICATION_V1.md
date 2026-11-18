@@ -886,3 +886,18 @@ Le contrôle d'accès doit vérifier côté serveur que l'utilisateur est l'aute
 Les réponses externes doivent rester uniformes et ne pas permettre l'énumération. Les états internes doivent distinguer demande reçue, preuve insuffisante, expirée, refusée et terminée sans divulguer les facteurs présents. Aucun secret brut ne doit être retourné, journalisé ou transmis au support.
 
 La perte du kit n'autorise jamais la restauration de la racine cryptographique, l'approbation d'un nouvel appareil, l'accès GPS ni la lecture des données privées de l'ancien compte. Aucune API, migration D1 ou intégration n'est créée par cette annexe.
+
+
+## Étude de conception — facteurs alternatifs et limites de récupération (18 novembre 2026)
+
+Cette annexe ne définit aucune API ni aucun facteur activé.
+
+Le kit hors ligne unique reste le seul secret personnel de récupération validé. Une passkey peut être envisagée ultérieurement pour l'authentification courante, mais sa présence sur un compte fournisseur synchronisé ne constitue pas automatiquement une preuve indépendante : la récupération du compte fournisseur peut partager le même canal e-mail ou les mêmes facteurs que le compte SAC.
+
+Une passkey liée à un appareil secondaire déjà approuvé est utile tant que cet appareil demeure accessible et non révoqué. Elle ne résout pas la perte de tous les appareils et ne doit pas contourner la cérémonie d'approbation ni rétablir une racine perdue.
+
+Une clé matérielle FIDO2 séparée pourrait offrir une preuve de possession distincte, mais nécessite une décision produit, une analyse de compatibilité, un parcours de perte/remplacement et une revue de sécurité. Elle n'est pas autorisée à ce stade.
+
+Aucun OTP SMS/e-mail, contact, support, administrateur ou mot de passe seul ne peut remplacer la preuve de récupération historique. Aucun facteur alternatif ne peut restaurer la clé privée racine, approuver un appareil ou déverrouiller le GPS.
+
+Recommandation de conception : ne pas multiplier les secrets ni ajouter de facteur tant que le bénéfice réel et le cycle de vie ne sont pas établis. Si aucun appareil approuvé ni kit valide ne subsiste, le compte historique demeure irrécupérable selon la politique actuelle. Aucun fournisseur, endpoint, schéma, migration ou flux d'authentification n'est créé.
