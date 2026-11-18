@@ -13,7 +13,7 @@ interface Env {
 const NO_STORE = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" };
 const GENERIC_ACCEPTED = {
   accepted: true,
-  message: "Si cette adresse peut être utilisée, un code de vérification vient d'être envoyé.",
+  message: "Si cette adresse est éligible, vous recevrez les instructions de vérification.",
 };
 
 function json(body: unknown, status = 200): Response {
