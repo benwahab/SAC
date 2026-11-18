@@ -386,3 +386,7 @@ Le contrat de référence est docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md et p
 - sauvegardes et restaurations ne peuvent jamais faire réapparaître les positions ou alertes supprimées.
 
 Les 30 jours ne sont pas une durée de conservation GPS. Le GPS réel reste NO-GO jusqu'à preuve technique indépendante de la suppression immédiate, de la purge J+30 et de la non-résurrection après restauration.
+
+## Politique générale de conservation — proposition du 18 novembre 2026
+
+Le document [PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md](PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md) propose une matrice non GPS couvrant les comptes, identités, appareils, sessions, invitations, relations, groupes, notifications, journaux, support, exports et données administratives/financières. Toutes les durées nouvelles restent à arbitrer et à faire examiner juridiquement. Le contrat spécialisé des alertes/GPS conserve sa priorité et ses règles validées ne sont pas modifiées.
