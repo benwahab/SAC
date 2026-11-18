@@ -442,3 +442,8 @@ Avant de concevoir les contraintes de suppression, cascades, anonymisation ou re
 ## Accès internes, classification et audit — complément du 18 novembre 2026
 
 Lire `CONTRAT_PROTECTION_DONNEES_ACCES_INTERNES_ET_AUDIT.md` avec les documents administratifs spécialisés avant toute évolution des lectures C2/C3, recherches, exports ou journaux. Le contrat ne crée aucune table ni durée de conservation. Les événements d'audit doivent rester minimisés et ne jamais devenir une copie parallèle des alertes/profils. Le modèle global demeure NON PRÊT POUR MIGRATION.
+
+
+## Communications et abonnements — complément du 18 novembre 2026
+
+Lire `CONTRAT_SECURITE_NOTIFICATIONS_ET_COMMUNICATIONS.md` avant toute évolution des abonnements push, files de notification, e-mails, SMS ou webhooks. Les abonnements et secrets fournisseurs sont des données sensibles ; les statuts de transport sont distincts des états métier. Aucun schéma, champ, fournisseur ou durée n'est approuvé par ce complément. Le modèle global reste non prêt pour migration.
