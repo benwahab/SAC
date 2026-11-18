@@ -24,7 +24,7 @@ Ces actions exigent une validation distincte après revue des contrats et tests.
 ## 2. Décisions à respecter
 
 1. La vérification du compte et la confiance cryptographique sont deux autorités différentes.
-2. Le canal OTP de compte retenu est l'e-mail. Aucun SMS OTP ni fallback SMS ne doit être ajouté. Le SMS est réservé à l'escalade d'urgence selon le contrat SOS.
+2. L'adresse e-mail est obligatoire à l'inscription et sa vérification par OTP est une condition sine qua non de l'activation. Aucun compte sans e-mail, aucune inscription par téléphone seul et aucun contournement. Aucun SMS OTP ni fallback SMS pour les comptes ; le SMS reste réservé aux usages SOS déjà prévus.
 3. Un OTP valide prouve uniquement le contrôle temporaire du canal e-mail. Il ne remplace jamais une racine, n'approuve jamais un appareil et ne restaure aucune clé privée.
 4. Le kit de récupération personnel est généré localement, affiché une seule fois, à usage unique ; son secret brut ne transite pas et n'est jamais stocké en clair côté serveur. Son protocole de preuve doit être spécifié avant implémentation.
 5. Le premier appareil approuvé établit l'autorité racine selon le protocole qui sera finalement homologué. Un appareil secondaire ne peut pas s'auto-approuver ni se promouvoir racine.
@@ -433,13 +433,13 @@ Cette décision est documentaire et n'implémente aucun champ, validation, SMS, 
 
 ## Vérification du compte par OTP e-mail uniquement — clarification validée le 18 novembre 2026
 
-La vérification du compte SAC se fait par OTP envoyé à l'adresse e-mail. Lorsque l'utilisateur saisit correctement l'OTP e-mail, son adresse e-mail est considérée comme vérifiée et le processus de création du compte peut être validé selon le parcours d'inscription.
+L'adresse e-mail est obligatoire dès l'inscription et constitue une condition sine qua non de l'activation du compte SAC. Aucun compte ne peut être créé ou activé sans adresse e-mail ; un numéro de téléphone seul ne permet ni inscription ni activation. La vérification du compte se fait par OTP envoyé à cette adresse. Lorsque l'utilisateur saisit correctement l'OTP e-mail, l'adresse est considérée comme vérifiée et le compte peut passer de `pending_verification` à `active`. Sans OTP e-mail valide, le compte reste en attente, sans accès privé ni session.
 
-Le numéro de téléphone reste obligatoire à la création du compte, mais SAC ne demande aucune vérification indépendante de ce numéro : pas de SMS OTP, pas d'appel automatisé de validation, pas de procédure supplémentaire destinée à prouver que l'utilisateur en est propriétaire. La vérification de l'e-mail suffit pour la vérification initiale du compte.
+Le numéro de téléphone reste obligatoire à la création du compte, mais SAC ne demande aucune vérification indépendante de ce numéro : pas de SMS OTP, pas d'appel automatisé de validation, pas de procédure supplémentaire destinée à prouver que l'utilisateur en est propriétaire. La vérification de l'e-mail est obligatoire et constitue la condition d'activation ; elle ne peut être remplacée par le téléphone.
 
 Le numéro fourni peut être utilisé comme coordonnée de contact déclarée, notamment pour les tentatives d'appel administratif. Toutefois, une réponse provenant de ce numéro ne prouve pas à elle seule l'identité de l'interlocuteur : l'administrateur doit apprécier les éléments de réponse et les recouper avec le contexte de l'alerte. Les tentatives sans réponse ne prouvent jamais que le titulaire est en sécurité.
 
-Cette décision remplace toute formulation antérieure qui laissait entendre qu'une vérification du numéro de téléphone serait nécessaire avant son utilisation comme coordonnée de contact. Elle ne modifie pas la vérification OTP par e-mail et n'autorise aucun SMS OTP.
+Cette décision remplace toute formulation antérieure qui laissait entendre qu'une vérification du numéro de téléphone serait nécessaire avant son utilisation comme coordonnée de contact. Elle ne modifie pas l'obligation d'une adresse e-mail vérifiée par OTP avant activation et n'autorise aucun SMS OTP pour les comptes.
 
 
 ## Notification des proches après clôture administrative — règle de conception
