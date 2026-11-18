@@ -88,7 +88,7 @@ Aucune conservation résiduelle ne doit être décidée uniquement pour des rais
 
 ### 2.7 Sécurité, sous-traitants et incidents
 
-Les articles 81 et 82 imposent confidentialité et mesures de sécurité adaptées au risque. L'article 83 prévoit une notification des violations à la HAPDP sans délai après leur connaissance, et une communication aux personnes concernées lorsqu'un risque élevé existe. L'article 86 impose des garanties suffisantes pour les sous-traitants et prévoit notamment une notification au responsable dans les meilleurs délais et au plus tard sous 72 heures après connaissance d'une violation.
+Les articles 81 et 82 imposent confidentialité et mesures de sécurité adaptées au risque. Le texte de base de l'article 83 prévoyait une notification des violations à la HAPDP sans délai après leur connaissance, et une communication aux personnes concernées lorsqu'un risque élevé existe. Depuis l'ordonnance 2026-30 et le transfert institutionnel du 8 juin 2026, le destinataire, la procédure et le délai opérationnels actuels ne sont pas authentifiés : ne pas adresser automatiquement une notification à l'ancienne HAPDP. L'article 86 impose des garanties suffisantes pour les sous-traitants et prévoit notamment une notification au responsable dans les meilleurs délais et au plus tard sous 72 heures après connaissance d'une violation.
 
 SAC devra donc tenir un registre des fournisseurs, contrats de sous-traitance, accès, flux, incidents, délais de notification et mesures de sécurité.
 
@@ -100,9 +100,9 @@ SAC devra donc tenir un registre des fournisseurs, contrats de sous-traitance, a
 4. Préparer une matrice de conservation par catégorie, sans durée arbitraire.
 5. Préparer la documentation de sécurité, la procédure de violation de données et les contrats de sous-traitance.
 6. Vérifier les obligations de désignation d'un correspondant à la protection des données pour la structure juridique qui portera SAC, au regard de l'article 79 et des textes modificatifs.
-7. Demander un avis écrit à la HAPDP sur les traitements de SAC, en particulier numéros de téléphone, données liées aux urgences médicales, localisation, hébergement hors Niger et transferts transfrontaliers.
+7. Après authentification des textes de 2026, demander un avis écrit au service compétent désigné par le Ministère de la Justice et/ou le Ministère de l'Intérieur sur les traitements de SAC, notamment numéros de téléphone, données liées aux urgences médicales, localisation, hébergement hors Niger et transferts transfrontaliers. Ne pas présumer quel ministère traite chaque formalité.
 
-## 4. Questions à adresser à la HAPDP
+## 4. Questions à adresser aux services compétents après confirmation officielle
 
 - Quel régime de formalité s'applique à l'application SAC et à chacune de ses finalités ?
 - Le traitement des numéros de téléphone pour invitations et contacts de confiance requiert-il une autorisation préalable dans le cas précis de SAC ?
@@ -112,14 +112,14 @@ SAC devra donc tenir un registre des fournisseurs, contrats de sous-traitance, a
 - Quelles exigences s'appliquent à la désignation du correspondant à la protection des données pour la personne morale porteuse du service ?
 - Quelles durées ou règles sectorielles spécifiques doivent être prises en compte pour les journaux de sécurité et les historiques d'alertes ?
 
-Contact officiel publié par la HAPDP : contact@hapdp.ne — +227 20 33 12 03.
+**Ne pas utiliser l'ancien contact HAPDP comme destinataire légal actuel confirmé.** Les missions ont été transférées au Ministère de la Justice et au Ministère de l'Intérieur selon le communiqué rapporté par l'ANP ; les services, coordonnées, compétences détaillées et procédures actuelles restent à identifier auprès des canaux officiels.
 
 ## 5. Limites de cette pré-analyse
 
 - Le PDF de base n'est pas présenté comme une version consolidée à jour.
 - Les ordonnances 2024-16 et 2024-29 doivent être lues intégralement avant de conclure.
 - Les faits précis de l'organisation porteuse de SAC, des fournisseurs et des régions d'hébergement ne sont pas encore arrêtés.
-- Ce document ne remplace pas un avis juridique nigérien ni une réponse écrite de la HAPDP.
+- Ce document ne remplace pas un avis juridique nigérien ni une réponse écrite des services ministériels désormais compétents, une fois ceux-ci officiellement identifiés.
 - Aucune durée de conservation hors GPS n'est validée ici.
 
 **Conclusion :** le chantier de conservation hors GPS ne doit plus être traité comme une simple décision de produit. Il dépend d'une cartographie de traitement, de la version consolidée du droit nigérien et des formalités à confirmer auprès de la HAPDP.
