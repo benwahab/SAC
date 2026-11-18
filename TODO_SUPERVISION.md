@@ -300,3 +300,14 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Demander à Thales une confirmation écrite sur l'isolation d'une clé par dossier, les partitions HSM, clusters/HA, copies RoT, sauvegardes liées au HSM, exports et procédures de reprise.
 - [ ] N'envisager une démonstration qu'en environnement isolé, après autorisation explicite et protocole de test approuvé ; aucune destruction de clé réelle SAC.
 - [ ] Vérifier que toute preuve de sanitisation s'aligne sur NIST SP 800-88 Rev. 2 sans présenter cette référence comme une certification automatique de l'architecture.
+
+
+## Luna HSM — destruction d'objet et zeroization — 18 novembre 2026
+
+- [x] Examiner la différence entre PKCS #11 `C_DestroyObject` (invalidation puis purge possible lors de la réallocation) et les opérations de zeroization plus larges.
+- [x] Consigner les limites de restauration HSM/Backup HSM/HA/DR et les questions fabricant dans la section 16 de `docs/RECHERCHE_COMPLEMENTAIRE_GPS_J30_ET_TEXTES_NIGER.md`.
+- [ ] Obtenir du fabricant, pour un modèle et firmware précis, la preuve du comportement de destruction ciblée et de l'état de la matière de clé après l'opération.
+- [ ] Vérifier les copies sur HSM de sauvegarde hors ligne, partitions HA, exports, sauvegardes applicatives et procédures DR.
+- [ ] Vérifier si une échéance J+30 peut être exécutée hors ligne, sans possibilité d'annulation administrative ou de réimportation.
+- [ ] Séparer dans les critères de preuve : (a) impossibilité cryptographique de déchiffrer après J+30 ; (b) sanitisation physique de la mémoire, selon les capacités certifiées du module.
+- [ ] Garder toutes les solutions HSM non approuvées jusqu'à démonstration et revue indépendante ; aucune clé réelle SAC ni aucun équipement ne doit être soumis à un test destructif.
