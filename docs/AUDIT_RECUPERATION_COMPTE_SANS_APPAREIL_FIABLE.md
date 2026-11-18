@@ -119,3 +119,7 @@ Les tests d'authentification et de concurrence devront ensuite être exécutés 
 Aucun endpoint, migration D1, fournisseur SMS/e-mail, nouveau facteur de récupération, appareil approuvé ou racine de remplacement n'est créé par cet audit. Aucun GPS réel ou historique GPS n'est activé. Le verrou de destruction irréversible J+30 reste inchangé.
 
 **Conclusion :** SAC doit pouvoir distinguer clairement « compte récupéré » de « identité cryptographique de confiance ». En V1, la première opération ne doit jamais accorder silencieusement les pouvoirs des deux autres. Le SOS sans GPS reste un objectif à concevoir, pas une exception qui autorise à affaiblir la sécurité.
+
+## Consolidation transversale
+
+La matrice consolidée des scénarios et la frontière entre récupération du compte, enrôlement d'appareil et récupération de racine sont désormais centralisées dans `CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md`. Le SOS sans GPS pendant récupération demeure un objectif non démontré, et non une garantie disponible. La récupération de racine reste interdite en V1.
