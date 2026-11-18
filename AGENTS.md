@@ -17,11 +17,11 @@ Avant toute tâche, lis :
 11. `docs/SECURITE_GPS_DESTRUCTION_CRYPTO.md`
 12. `docs/MISE_A_JOUR_JURIDIQUE_NIGER_NOV_2026.md`
 13. `docs/ANALYSE_JURIDIQUE_NIGER_SAC_2026-11-18_COMPLEMENT.md`
-13. `docs/CONFORMITE_DONNEES_NIGER.md`
-14. `docs/AUDIT_DEPENDANCES_ET_REPRODUCTIBILITE.md`
-15. `docs/CONSOLIDATION_GENERALE_SAC.md`
-16. `docs/DECISIONS_COMPLEMENTAIRES_2026-11-18.md`
-17. `docs/CONSOLE_PROFESSIONNELLE_ET_SERVICES.md`
+14. `docs/CONFORMITE_DONNEES_NIGER.md`
+15. `docs/AUDIT_DEPENDANCES_ET_REPRODUCTIBILITE.md`
+16. `docs/CONSOLIDATION_GENERALE_SAC.md`
+17. `docs/DECISIONS_COMPLEMENTAIRES_2026-11-18.md`
+18. `docs/CONSOLE_PROFESSIONNELLE_ET_SERVICES.md`
 18. `docs/PLAN_DIRECTEUR_REALISATION_SAC.md`
 19. `docs/ANNEXE_MODELE_DONNEES_SERVICES_PROFESSIONNELS.md`
 20. `docs/AUDIT_ETAT_REEL_CODE_2026-11-18.md`
@@ -148,7 +148,7 @@ Avant toute conception ou évolution des limites de débit, anti-bot, invitation
 Avant toute conception ou modification de la disponibilité, du réseau faible/hors ligne, des workers/outbox, sauvegardes, restauration, reprise après incident, health checks ou objectifs de service, lire `docs/CONTRAT_RESILIENCE_CONTINUITE_ET_REPRISE_INCIDENT.md` avec les contrats SOS, notifications, D1, conservation et anti-abus. Ne jamais présenter `/api/health` comme preuve que le SOS fonctionne. Aucune file locale ne peut annoncer un SOS transmis sans confirmation serveur. Toute restauration doit réconcilier les révocations et suppressions et prouver la non-résurrection GPS/alertes avant remise en service. Aucun code, D1, ressource Cloudflare, fournisseur ou déploiement sans autorisation distincte.
 
 
-Avant toute conception ou activation de traitement personnel réel, lire `docs/CONTRAT_GOUVERNANCE_JURIDIQUE_ET_CONFORMITE.md`, `docs/MISE_A_JOUR_JURIDIQUE_NIGER_NOV_2026.md` et `docs/CONFORMITE_DONNEES_NIGER.md`. Ne pas présenter l'ancienne HAPDP comme autorité actuelle : sa suppression et le transfert de ses missions ont été rapportés en juin 2026, mais les textes authentiques de l'ordonnance 2026-30 et les circuits ministériels doivent être vérifiés. Aucune formalité, durée hors GPS, base juridique, règle mineur, région d'hébergement ou transfert international ne doit être supposé conforme. Aucune collecte réelle, formalité, contractualisation fournisseur ou mise en production sans validation juridique et autorisation distincte.
+Avant toute conception ou activation de traitement personnel réel, lire `docs/CONTRAT_GOUVERNANCE_JURIDIQUE_ET_CONFORMITE.md`, `docs/MISE_A_JOUR_JURIDIQUE_NIGER_NOV_2026.md`, `docs/ANALYSE_JURIDIQUE_NIGER_SAC_2026-11-18_COMPLEMENT.md` et `docs/CONFORMITE_DONNEES_NIGER.md`. Ne pas présenter l'ancienne HAPDP comme autorité actuelle : sa suppression et le transfert de ses missions ont été rapportés en juin 2026, mais les textes authentiques de l'ordonnance 2026-30 et les circuits ministériels doivent être vérifiés. Aucune formalité, durée hors GPS, base juridique, règle mineur, région d'hébergement ou transfert international ne doit être supposé conforme. Aucune collecte réelle, formalité, contractualisation fournisseur ou mise en production sans validation juridique et autorisation distincte.
 
 
 Avant toute modification du projet, lire `docs/AUDIT_TRANSVERSAL_COHERENCE_ET_MATURITE_2026-11-18.md` comme synthèse des blocages et contradictions documentaires. Respecter les sources de vérité spécialisées. Ne pas réintroduire la règle GPS obsolète « 30 jours après fin du partage » : pour les alertes SOS, GPS supprimé dès clôture, catégorie seule 30 jours, alerte/catégorie purgées à J+30 ; GPS de trajet séparé et durée non décidée. Le cycle compte cible a cinq états, mais le contrat TypeScript existant n'en supporte encore que trois : ne pas migrer D1 avant réconciliation. Le SOS réel, l'authentification complète, les fournisseurs et le GPS ne sont pas opérationnels simplement parce qu'ils sont documentés.
