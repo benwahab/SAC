@@ -27,7 +27,7 @@ jobs:
       - name: Pin npm version
         run: npm install --global npm@10.9.9
       - name: Generate lockfile from exact JCS dependency
-        # Regenerate after the RFC fixture correction.
+        # Regenerate after the RFC fixture correction and rerun all JCS checks.
         run: |
           node --version
           npm --version
