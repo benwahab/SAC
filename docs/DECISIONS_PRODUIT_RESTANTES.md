@@ -358,3 +358,12 @@ Le document [CONTRAT_PROTECTION_DONNEES_ACCES_INTERNES_ET_AUDIT.md](CONTRAT_PROT
 Les invariants de gouvernance restent inchangés : seul le Super Admin gère les missions ; aucun délégataire ne peut déléguer ou s'auto-augmenter ; aucune trace ne peut être réécrite par un rôle administratif ; le GPS précis reste NO-GO.
 
 Restent à arbitrer : motif et référence de dossier pour chaque lecture C3, éventuel mécanisme break-glass, seuils de consultation atypique, authentification renforcée, architecture de scellement externe, contrôle indépendant des actions du Super Admin, champs d'export et durées de conservation. Aucune nouvelle permission, durée, technologie ou procédure n'est approuvée par ce contrat.
+
+
+## 24. Sécurité du cycle SOS et intégrité des alertes — 18 novembre 2026
+
+Le contrat `CONTRAT_SECURITE_CYCLE_SOS_ET_INTEGRITE_ALERTES.md` consolide les invariants existants et les exigences à arbitrer pour l'authenticité du déclenchement, l'idempotence, le rejeu, la confidentialité des destinataires, les réponses humaines, les rappels, les fausses alertes, la chronologie et les restaurations.
+
+Les décisions validées restent inchangées : instantané des destinataires figé à la création, absence de GPS non bloquante, rappels toutes les cinq minutes jusqu'à clôture par l'auteur, seul l'auteur clôture, GPS supprimé immédiatement à la clôture, catégorie seule conservée 30 jours et suppression de l'entrée à J+30 sans résurrection.
+
+Restent à arbitrer : preuve de commande, clés d'idempotence, contenu des notifications, accès après révocation, seuils anti-abus, comportement lors d'une compromission et durée des métadonnées de transport. Aucun seuil, fournisseur, mécanisme cryptographique ou droit nouveau n'est approuvé par ce contrat. Aucune implémentation n'est autorisée.
