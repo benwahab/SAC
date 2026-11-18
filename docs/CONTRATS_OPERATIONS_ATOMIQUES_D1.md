@@ -270,3 +270,51 @@ L'événement « arrivée non confirmée » ne crée jamais une alerte SOS et ne
 **Avant implémentation D1 :** définir le planificateur idempotent des échéances, le traitement des changements d'heure estimée, la concurrence entre confirmation et échéance, les notifications, la pause/reprise et les règles de suppression. Les paramètres de délai doivent provenir d'une politique explicitement validée ; aucune valeur par défaut n'est implicite.
 
 Aucune coordonnée GPS précise ne doit être persistée dans D1. Le prototype de domaine n'est pas une implémentation serveur.
+
+
+## 15. Contrat — demande et finalisation de suppression de compte
+
+### Demande
+- authentifier fortement le propriétaire depuis la session, jamais depuis un identifiant du corps ;
+- créer une demande idempotente et passer le compte de `active` à `deletion_pending` ;
+- empêcher atomiquement toute nouvelle alerte, invitation, relation, protection de trajet ou nouvelle autorisation de partage ;
+- conserver les capacités minimales permettant à l'auteur de clôturer les alertes et trajets déjà actifs ;
+- révoquer les sessions des autres appareils selon le contrat de session et ne laisser qu'un parcours restreint de finalisation.
+
+### Finalisation
+- vérifier depuis D1 qu'aucune alerte et aucun trajet ne sont actifs ;
+- inclure cette condition dans la transition SQL finale pour fermer la course entre clôture et nouvelle activité ;
+- appliquer la matrice de suppression/anonymisation validée, table par table ;
+- invalider les sessions, abonnements push, invitations, jetons, accès aux fichiers et tâches en attente ;
+- ne pas effacer les preuves minimales légalement nécessaires sans fondement, mais ne rien conserver par simple commodité ;
+- enregistrer un reçu de finalisation non sensible et idempotent.
+
+**Important :** le prototype TypeScript accepte des compteurs d'activités comme entrée de test ; le backend ne doit jamais faire confiance à des compteurs client ou à un résultat de lecture ancien. La condition doit être vérifiée à nouveau dans l'opération atomique D1.
+
+Aucun délai de grâce, aucune durée hors GPS et aucune règle de clôture automatique ne sont fixés ici. Si un auteur abandonne une alerte active, le système ne peut pas contourner la règle « seul l'auteur clôture » sans décision produit et fondement approprié.
+
+## 16. Contrat — révocation d'un contact pendant une alerte active
+
+La révocation de la relation de confiance et l'instantané des destinataires de l'alerte sont deux objets distincts.
+
+Invariants déjà établis :
+- l'instantané initial de l'alerte n'est jamais réécrit ;
+- les rappels planifiés vers les destinataires initiaux continuent jusqu'à clôture de l'alerte ;
+- aucun nouveau contact n'est ajouté à une alerte existante.
+
+Décisions de sécurité proposées, à valider :
+- arrêter les nouvelles transmissions GPS vers le contact révoqué dès la transition effective ;
+- maintenir le droit de recevoir les rappels initiaux jusqu'à clôture ;
+- décider explicitement si le contact garde le détail de l'alerte active ;
+- retirer, si validé, l'accès au détail et à l'historique après clôture ;
+- définir si le contact révoqué peut encore accuser réception, se porter volontaire ou se retirer de sa responsabilité.
+
+L'opération D1 de révocation devra ordonner atomiquement la relation de confiance, les autorisations de partage et les autorisations de réponse. Le worker de notifications devra distinguer une tâche de rappel SOS déjà due d'une tâche de partage GPS. La révocation ne doit jamais supprimer un rappel initial par simple effet de bord.
+
+Tests d'intégration obligatoires :
+- révocation avant la création d'une nouvelle alerte ;
+- révocation concurrente avec une émission GPS ;
+- révocation juste avant l'échéance d'un rappel ;
+- révocation pendant une prise en charge ou un transfert ;
+- clôture puis tentative de lecture par le contact révoqué ;
+- réessai idempotent de la révocation et panne partielle.
