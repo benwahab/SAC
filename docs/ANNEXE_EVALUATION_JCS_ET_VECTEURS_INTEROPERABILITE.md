@@ -177,20 +177,23 @@ Travaux effectivement réalisés dans le dépôt :
 - `canonicalize@5.1.0` ajouté en version exacte et verrouillé dans `package-lock.json` v3 ;
 - source de la bibliothèque examinée ;
 - script `npm run test:jcs` ajouté et branché à la CI ;
-- tests exécutés avec succès pour JCS-01 (nombres, chaînes, littéraux), JCS-02 (ordre UTF-16 des noms), tri récursif, préservation de l’ordre des tableaux, nombres non finis, surrogate isolé et stabilité des octets UTF-8 ;
+- tests exécutés avec succès pour le vecteur JCS-01 reproduit exactement depuis le JSON brut de la RFC, JCS-02 (ordre UTF-16 des noms), tri récursif, préservation de l’ordre des tableaux, nombres non finis, surrogate isolé et stabilité des octets UTF-8 ;
 - les 24 valeurs IEEE-754 finies de l’Appendix B sont comparées à leur représentation attendue, et les vecteurs NaN/Infinity sont rejetés ;
-- `npm ci`, typecheck, tests cryptographiques existants, build et audit de production réussis dans le workflow de génération.
+- parseur strict ajouté dans `src/services/crypto/strict-json.ts` : rejet des noms de propriétés dupliqués après décodage, des Unicode invalides, des nombres non finis et des entrées dépassant les limites explicites de taille/profondeur ;
+- `npm run test:jcs-input` couvre les doublons simples/échappés, `__proto__`, les chaînes et surrogates invalides, la grammaire JSON, les limites UTF-8/profondeur, le vecteur RFC complet et l’absence de normalisation Unicode ;
+- CI complète réussie sur le commit `5c8270e` (workflow `44424446988`) : `npm ci`, les deux suites JCS, typecheck, tests existants, migration D1 locale isolée, build et audits.
 
-Limites explicites : ces tests ciblés, y compris tous les exemples numériques de l’Appendix B, ne constituent pas encore la suite exhaustive de conformité RFC 8785. Ils ne valident pas la détection des noms dupliqués dans le JSON brut, le schéma métier du transcript, les signatures inter-plateformes, le SAS, low-S, ni l’atomicité D1.
+Limites explicites : cette couverture ciblée ne constitue pas une homologation complète de RFC 8785 ni du protocole SAC. Le parseur strict est une frontière d’entrée générique, pas encore une validation du schéma métier du transcript et il n’est pas encore appelé par une cérémonie d’enrôlement (qui n’est pas implémentée). Aucun test d’exécution dans Chrome/Android, Safari/iOS, WebView ou Cloudflare Workers n’est déclaré. Les signatures inter-plateformes, le format de signature, low-S, le SAS, l’anti-rejeu du transcript et l’atomicité D1 restent à démontrer.
 
 Séquence suivante :
-1. compléter les vecteurs de nombres de l’annexe B et les cas négatifs I-JSON ;
-2. ajouter une validation stricte des objets métier avant canonicalisation (objets JSON simples, profondeur/taille bornées, absence de `toJSON`, de valeurs non JSON et de cycles) ;
-3. concevoir et tester un parseur d’entrée qui rejette les noms de propriétés dupliqués avant `JSON.parse` ;
-4. faire vérifier le schéma de transcript et les champs par la revue indépendante ;
-5. après arbitrage, publier un fixture de transcript SAC et ses octets exacts ;
-6. exécuter la matrice sur les environnements réellement disponibles ;
-7. n’envisager l’implémentation de la cérémonie qu’après validation des formats, de la politique low-S, du SAS, des défis et de l’atomicité D1.
+1. compléter la revue des cas négatifs I-JSON et définir les limites de taille/profondeur propres au transcript SAC ;
+2. définir un schéma métier strict et versionné pour le transcript, avec validation de chaque champ avant canonicalisation ;
+3. vérifier l’import et l’exécution du paquet et du parseur dans Cloudflare Workers, navigateurs Android/iOS et WebView ;
+4. faire vérifier le schéma de transcript et les champs par une revue indépendante ;
+5. après arbitrage, publier un fixture de transcript SAC et ses octets UTF-8 exacts ;
+6. décider et tester les algorithmes, encodages de clés/signatures, représentation ECDSA et politique low-S ;
+7. finaliser le SAS, l’anti-rejeu, l’expiration/consommation atomique du défi et les garanties transactionnelles D1 ;
+8. n’envisager l’implémentation de la cérémonie qu’après validation de l’ensemble de ces éléments.
 
 ## 8. Sources
 
