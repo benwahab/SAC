@@ -6,7 +6,7 @@ import canonicalize from "canonicalize";
 test("RFC 8785 JCS-01: numbers, strings and literals", () => {
   const input = {
     numbers: [333333333.33333329, 1e30, 4.5, 2e-3, 1e-27],
-    string: "€$\u000f\nA'B\"\\\"/",
+    string: "€$\u000f\nA'B\"\\\\\"/",
     literals: [null, true, false],
   };
   const expected = String.raw`{"literals":[null,true,false],"numbers":[333333333.3333333,1e+30,4.5,0.002,1e-27],"string":"€$\u000f\nA'B\"\\\\\"/"}`;
