@@ -982,3 +982,32 @@ Cette décision autorise uniquement la visibilité minimale décrite. Elle n'act
 - Vérifier que la fermeture de l'écran ne permet pas de récupérer le secret depuis le serveur.
 
 **NO-GO :** aucun test n'est exécuté et aucun remplacement réel n'est activé.
+
+
+## Audit — fuite du kit pendant génération et affichage (18 novembre 2026)
+
+| Vecteur | Risque | Exigence / limite |
+|---|---|---|
+| Capture d'écran ou enregistrement | Copie du kit par une personne ou application | Protection Android native à tester ; PWA ne peut pas garantir le blocage |
+| Aperçu multitâche | Secret visible dans les applications récentes | Masquage à l'arrière-plan et protection native si disponible |
+| Presse-papiers | Autre application ou historique récupère le secret | Aucune copie par défaut ; effacement universel non garanti |
+| Sauvegarde Android / cloud | Secret réapparaît après restauration | Ne jamais écrire le kit dans les données persistantes ou sauvegardables |
+| localStorage / IndexedDB / Cache API | Secret récupéré après fermeture ou par script | Interdiction de persistance |
+| Service worker | Secret mis en cache | Ne jamais mettre en cache écran ou réponse contenant le secret |
+| Logs / analytics / crash reports | Fuite vers outils tiers | Exclure secret, fragments, captures et valeurs saisies |
+| URL / historique / notification | Secret conservé hors écran | Aucun secret dans URL, titre, notification ou message |
+| Appareil rooté / espionné | Lecture ou photographie pendant affichage | Risque résiduel explicite ; aucune protection absolue |
+| Accessibilité / lecteur d'écran | Exposition à un service tiers | Évaluer les services actifs ; ne pas sacrifier l'accessibilité sans analyse |
+
+### Tests requis avant GO
+- Inspecter stockage navigateur, caches, service worker et sauvegardes : aucune occurrence du secret.
+- Inspecter requêtes réseau : aucun caractère du kit envoyé au serveur.
+- Inspecter journaux, analytics, crash reports et traces : aucun secret ni fragment.
+- Vérifier effacement à fermeture, navigation, expiration, verrouillage et mise en arrière-plan sur les plateformes supportées.
+- Sur Android natif, tester capture, enregistrement, aperçu multitâche et sauvegarde sur plusieurs versions et fabricants.
+- Sur PWA, documenter explicitement les captures et enregistrements qui restent possibles.
+- Vérifier qu'aucun bouton ne copie, partage, télécharge ou exporte le secret.
+- Vérifier que le secret n'est pas restauré après fermeture, redémarrage, restauration de sauvegarde ou réinstallation.
+- Tester accessibilité, contraste, zoom et lecteur d'écran avec un modèle de menace explicite.
+
+**NO-GO :** aucun test n'est exécuté ; aucune protection native ou écran réel n'est livré.
