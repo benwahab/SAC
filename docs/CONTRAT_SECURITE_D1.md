@@ -150,3 +150,8 @@ Aucune migration ou API d'authentification ne doit être créée avant :
 - confirmation que le déploiement Pages Preview est isolé de la base de production.
 
 Les choix de fournisseur OTP, push, SMS et paiement restent indépendants et non sélectionnés.
+
+
+## Référence complémentaire — restauration et continuité
+
+Lire `CONTRAT_RESILIENCE_CONTINUITE_ET_REPRISE_INCIDENT.md` avant toute conception de sauvegarde, restauration ou reprise D1. Une restauration ne peut réactiver les sessions, appareils, invitations, permissions ou alertes révoqués/clôturés, ni ressusciter des données GPS/alertes purgées. La base restaurée doit rester isolée jusqu'à réconciliation et vérification des invariants. Aucun objectif RTO/RPO ou procédure de restauration n'est approuvé par cette référence.
