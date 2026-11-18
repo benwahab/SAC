@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createPublicKey, verify } from "node:crypto";
 import test from "node:test";
 
+// This adapter remains test-only until the SAC wire format is formally approved.
 const P256_ORDER = BigInt(
   "0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
 );
