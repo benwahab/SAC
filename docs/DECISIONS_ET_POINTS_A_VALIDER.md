@@ -880,3 +880,59 @@ Une passkey synchronisée peut éventuellement servir à l'authentification ordi
 - Parcours exact de preuve renforcée si l'appareil racine survivant est disponible mais potentiellement compromis.
 
 **NO-GO :** aucune API, migration D1, notification réelle, commande de révocation ou cérémonie d'approbation n'est implémentée par cette annexe.
+
+
+## Compromission possible du téléphone racine et code de déverrouillage connu (18 novembre 2026)
+
+**Statut : proposition de protection à arbitrer ; aucune règle nouvelle n'est encore activée.**
+
+### Hypothèse de menace
+Le téléphone racine est perdu ou volé et l'attaquant peut connaître le code de déverrouillage Android. Il peut donc éventuellement ouvrir l'appareil, accéder aux sessions et tenter d'utiliser les autorisations locales. Un statut serveur « appareil approuvé » ne prouve plus que le propriétaire contrôle physiquement l'appareil.
+
+Ne pas promettre qu'une biométrie, un code applicatif ou le stockage matériel Android bloque à coup sûr un voleur connaissant le code de l'appareil. Leur niveau réel dépend du modèle, de la version Android, du matériel et de la configuration cryptographique.
+
+### Mesures de conception recommandées
+1. **Ne jamais faire confiance au seul état local.** Toute opération sensible revalide côté serveur l'état appareil, révocation, époque racine et autorisation au moment du commit.
+2. **Séparer les opérations ordinaires des opérations de sécurité.** Changer les coordonnées, modifier les facteurs de récupération, approuver un appareil, exporter des données ou modifier les paramètres de sécurité exige une preuve fraîche et une confirmation explicite. Une session simplement déverrouillée ne suffit pas.
+3. **Ne pas considérer le code Android connu comme une preuve indépendante.** Une demande de confirmation dans la même session et sur le même appareil compromis n'est pas une protection suffisante.
+4. **Prévoir un signalement d'urgence depuis un autre appareil approuvé.** Proposition : un secondaire actif peut déclencher une suspension immédiate et irréversible de l'autorité de la racine suspectée. Ce pouvoir sert uniquement à neutraliser ; il ne permet jamais de désigner une nouvelle racine, d'approuver un appareil ou de restaurer une clé.
+5. Après suspension, l'ancienne racine ne revient jamais à l'état approuvé, même si le téléphone réapparaît. La procédure de récupération racine distincte s'applique : nouvelle paire de clés générée localement et vérification indépendante de la nouvelle empreinte par les contacts concernés avant reprise du GPS.
+6. Si aucun secondaire sûr n'est disponible, le titulaire utilise le kit de récupération pour l'accès au compte, mais ce kit ne restaure pas la racine. L'ancien appareil doit être considéré comme suspect ; les limites de neutralisation à distance sont expliquées sans promesse d'effacement.
+7. Un appareil secondaire signalant la compromission doit lui-même prouver fraîchement sa possession et être revalidé côté serveur ; un appareil révoqué ou en récupération ne peut pas déclencher cette action.
+
+### Portée proposée de la suspension
+- Invalider sessions, jetons d'accès, renouvellements et abonnements push de la racine suspectée.
+- Refuser toute opération signée ou autorisée par cette racine, toute approbation d'appareil et toute modification de sécurité qui en dépend.
+- Conserver compte, contacts, abonnement, historique et alertes existantes.
+- Ne pas annuler les tâches de notification des alertes actives ni modifier leurs destinataires.
+- Les autres appareils approuvés restent actifs selon leur propre statut ; ils ne deviennent pas racine automatiquement.
+- Un secondaire survivant peut continuer à accéder à ses seules fonctions déjà autorisées et initier la récupération racine. Il ne peut pas consulter des données privées supplémentaires ni approuver son propre remplacement.
+- Les nouveaux SOS peuvent être déclenchés depuis un appareil encore autorisé selon les règles SOS existantes ; le téléphone racine suspendu ne doit plus pouvoir initier une action SAC authentifiée. Ne pas prétendre bloquer les appels téléphoniques ou SMS natifs du système.
+
+### Protection contre les abus et le déni de service
+Le pouvoir de suspendre la racine est dangereux s'il est utilisé par un secondaire compromis ou malveillant. Avant activation, définir :
+- confirmation explicite « téléphone racine perdu/volé ou suspecté compromis » ;
+- preuve fraîche et contrôle serveur de l'appareil demandeur ;
+- journal append-only de l'auteur, de l'appareil, du motif catégoriel et de l'horodatage, sans contenu sensible ni GPS ;
+- notification de sécurité sur les canaux encore sûrs, sans révéler de données privées ;
+- comportement en cas de demandes concurrentes, de réseau interrompu et de suspension déjà engagée ;
+- information claire : suspension irréversible de l'ancienne racine, récupération séparée nécessaire ;
+- procédure de contestation qui ne réactive jamais automatiquement l'ancienne racine.
+
+Une suspension peut être déclenchée abusivement et provoquer un déni de service. C'est un risque à accepter explicitement, comparer à la prise de contrôle du compte et limiter par la vérification de l'appareil demandeur. Aucun délai automatique de réactivation ne doit être inventé.
+
+### Sécurité Android — limites à tester
+- Clés privées générées et conservées dans Android Keystore, matériel sécurisé/StrongBox si disponible, avec politique d'authentification par opération lorsque supportée.
+- Ne jamais supposer que StrongBox est présent sur tous les téléphones ; prévoir une politique explicite si le niveau matériel requis n'est pas disponible.
+- Examiner les effets du code PIN, du verrouillage biométrique, de l'ajout d'empreinte, de la réinitialisation du verrouillage et de la restauration système sur l'accès aux clés.
+- Une biométrie avec code de secours Android ne garantit pas l'indépendance si l'attaquant connaît ce code.
+- Ne jamais exporter la clé privée racine vers le serveur ou dans une sauvegarde cloud ordinaire.
+- Tester sur appareils Android réellement ciblés ; aucune garantie générique ne peut être annoncée sans résultats.
+
+### Décisions encore ouvertes
+- Autoriser ou non tout appareil secondaire approuvé à suspendre immédiatement la racine, avec confirmation forte.
+- Étendue exacte du gel des opérations du compte pendant récupération.
+- Notifications et mécanisme de contestation sans réactivation de l'ancienne racine.
+- Niveau matériel Android minimal exigé et comportement des appareils qui ne le supportent pas.
+
+**NO-GO :** aucune suspension, révocation, preuve renforcée, intégration Android Keystore/StrongBox, API, migration ou notification réelle n'est implémentée. Cette proposition doit être arbitrée et testée avant tout développement.
