@@ -748,3 +748,53 @@ Le seuil de preuve (clé seule + nouvel OTP ou facteur indépendant supplémenta
 
 **NO-GO :** ce document ne permet pas d'implémenter ou d'activer la récupération réelle.
 
+
+
+## Annexe — Politique candidate des preuves, du délai et des sessions (18 novembre 2026)
+
+**Statut : proposition à valider ; ne constitue pas une autorisation de créer des endpoints, des états D1 ou du code.**
+
+### Seuil de preuve candidat
+- Exiger une clé hors ligne active et valide, puis un OTP envoyé à la nouvelle adresse.
+- L'OTP est lié à la demande et à l'adresse exacte ; il prouve uniquement le contrôle de cette boîte.
+- Ne pas ajouter automatiquement un SMS OTP de secours.
+- Si la clé est déclarée copiée, volée ou suspectée compromise, ne pas accepter le parcours standard sur la seule base de la clé et du nouvel OTP. La procédure indépendante reste à concevoir.
+- Aucun contact, agent de support ou administrateur ne peut remplacer une preuve manquante.
+
+### Délai candidat
+- Démarrer une période de sécurité de 24 heures seulement après validation des deux preuves.
+- Pendant cette période, aucun accès privé ni session complète n'est créé.
+- Une notification neutre peut être envoyée aux sessions encore actives et à l'ancien e-mail uniquement s'il n'est pas signalé compromis. Elle ne révèle ni nouvelle adresse, ni clé, ni contenu privé.
+- Une notification n'est pas une preuve de livraison, une approbation ou un veto.
+- Une contestation authentifiée depuis une session active peut suspendre la demande selon une règle à définir ; aucun blocage indéfini ni veto d'un ancien canal compromis n'est admis.
+- Le délai de 24 heures est une valeur candidate, pas une décision utilisateur approuvée.
+
+### Session limitée candidate
+Après expiration du délai sans contestation recevable et après commit atomique, émettre une seule session de récupération à privilèges réduits sur le nouvel appareil. Elle peut uniquement permettre les opérations minimales nécessaires au rétablissement de la sécurité du compte, à définir précisément.
+
+Interdictions minimales :
+- consulter les alertes privées et leur historique sensible ;
+- consulter les coordonnées privées des contacts ;
+- consulter, recevoir ou partager la localisation GPS précise ;
+- approuver d'autres appareils ;
+- utiliser ou restaurer l'ancienne racine ;
+- modifier les relations de confiance ou accéder aux fonctions d'administration ;
+- présenter le nouvel appareil comme déjà approuvé.
+
+Le droit de déclencher un SOS depuis cette session limitée, notamment sans GPS, doit faire l'objet d'une décision distincte ; l'OTP e-mail ne doit jamais être un prérequis ajouté au moment du SOS.
+
+### Politique de révocation candidate
+Au succès :
+1. invalider toutes les sessions et tous les jetons de session existants, sauf la nouvelle session limitée créée par le commit ;
+2. révoquer l'appareil explicitement déclaré perdu et ses abonnements push ;
+3. conserver séparément les enregistrements cryptographiques des autres appareils approuvés, sans leur conserver de session active ;
+4. exiger une nouvelle authentification et une preuve fraîche de possession de la clé d'appareil avant de rétablir une session sur un appareil secondaire ;
+5. ne jamais restaurer une racine perdue ou annuler une révocation antérieure.
+
+La révocation des sessions n'est pas une révocation automatique de toutes les identités cryptographiques secondaires. Les événements doivent être ordonnés et idempotents.
+
+### État de l'appareil récupéré
+Le nouvel appareil reste « récupération limitée / non approuvé » jusqu'à une cérémonie cryptographique distincte. La récupération d'accès ne suffit pas à lui donner l'autorité d'un appareil approuvé ou racine.
+
+**NO-GO maintenu :** délai, contestation, droits de session, SOS en session limitée et portée de révocation doivent être explicitement validés et testés avant tout contrat exécutable.
+
