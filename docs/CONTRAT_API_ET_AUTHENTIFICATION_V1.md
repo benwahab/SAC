@@ -460,3 +460,74 @@ Les événements de sécurité sont minimisés et append-only ; ils ne contienne
 - Changement de numéro : aucune autorité racine implicite.
 
 Ces contrats restent documentaires jusqu'à validation des facteurs, seuils, durées, recours, fournisseur et modèle de menace. Aucun endpoint ni migration D1 n'est créé.
+## Annexe — Changement sécurisé des coordonnées du compte (18 novembre 2026)
+
+**Statut :** contrat documentaire proposé ; aucun endpoint, fournisseur ou schéma D1 n'est autorisé par cette annexe.
+
+### A. Séparer les rôles des coordonnées
+
+SAC doit distinguer dans son modèle logique, même si certaines valeurs sont identiques :
+- l'identifiant de connexion du compte ;
+- le numéro de téléphone vérifié ;
+- l'adresse e-mail vérifiée ;
+- les canaux autorisés pour la récupération d'accès ;
+- les canaux de notification ;
+- les coordonnées éventuellement visibles par les contacts, selon une règle de confidentialité distincte.
+
+Une coordonnée ne reçoit pas automatiquement tous ces rôles. Le fait de vérifier un numéro ou une adresse e-mail ne lui confère pas un pouvoir de récupération racine. Le changement d'une coordonnée ne change ni l'identifiant interne immuable du compte, ni l'identité cryptographique racine, ni l'identité des appareils.
+
+### B. Règle de preuve
+
+Un code envoyé à une nouvelle destination prouve uniquement le contrôle ponctuel de cette destination. Il ne prouve :
+- ni la continuité avec l'ancien titulaire d'un numéro réattribué ;
+- ni la maîtrise de l'ancienne boîte e-mail ;
+- ni l'identité historique du compte ;
+- ni la possession de l'appareil racine ou de sa clé privée ;
+- ni le droit d'approuver un nouvel appareil ou une nouvelle empreinte.
+
+Aucun OTP SMS/e-mail, mot de passe réinitialisé ou intervention du support ne peut remplacer la racine cryptographique.
+
+### C. Parcours conceptuels
+
+1. **Changement volontaire, ancien canal encore disponible :** l'utilisateur authentifié demande le changement, confirme le nouveau canal, puis accomplit une preuve renforcée liée à une session/appareil déjà approuvé. Une notification de sécurité minimale peut être envoyée à l'ancien canal seulement si celui-ci est encore considéré sûr. L'ancien canal ne reçoit jamais le nouveau code ni un lien qui permettrait à lui seul de prendre le compte.
+2. **Ancienne SIM perdue ou numéro devenu inaccessible :** aucun code n'est envoyé à l'ancien numéro comme condition impossible à satisfaire. La vérification du nouveau numéro reste nécessaire mais insuffisante. La continuité doit être établie par une session/appareil approuvé et une preuve forte indépendante du nouveau numéro, selon un facteur à arbitrer.
+3. **Ancienne adresse e-mail perdue :** même principe ; le nouveau courriel est vérifié comme canal, mais ne prouve pas la continuité du compte. La voie de secours doit reposer sur une preuve indépendante préalablement approuvée.
+4. **Ancien canal suspecté compromis :** ne pas lui envoyer de détail de sécurité ni lui accorder un droit de contestation privilégié. L'utilisateur doit pouvoir signaler le risque depuis un appareil/session sûr ; une vérification renforcée et une éventuelle révocation ciblée sont à définir.
+5. **Perte simultanée du numéro et de l'e-mail :** aucun cumul de deux nouveaux OTP ne constitue une preuve suffisante. Sans appareil approuvé ou procédure de récupération forte déjà validée, le changement reste bloqué et suit la procédure de récupération de compte/racine, sans raccourci.
+6. **Demande depuis une session ou un appareil suspect :** une session active n'est pas à elle seule une preuve de sécurité. L'état courant de l'appareil, sa révocation, l'époque de racine et les signaux de risque doivent être revérifiés côté serveur au moment de la validation finale.
+
+### D. Activation et confidentialité
+
+- Le nouveau canal reste « en attente de vérification » jusqu'à validation complète ; il ne reçoit aucune donnée privée ou notification de récupération avant activation.
+- L'ancien canal ne reste pas une destination de notification indéfinie après remplacement. Dès que le changement est effectif, il est désactivé pour les usages retirés ; aucune donnée d'alerte future ne doit lui être envoyée.
+- La notification de sécurité à l'ancien canal, si sûr, reste neutre : elle signale qu'une modification a eu lieu et indique un moyen de signaler une opération non reconnue, sans révéler les nouvelles coordonnées, les alertes, les contacts ou la localisation.
+- Les contacts de confiance ne reçoivent pas automatiquement la nouvelle coordonnée privée. Sa visibilité éventuelle est une préférence distincte, explicite et révocable.
+- Les invitations en attente adressées à une ancienne coordonnée ne sont ni transférées ni acceptées automatiquement vers la nouvelle. Elles doivent être annulées ou réémises avec vérification explicite.
+- Les relations déjà acceptées restent liées aux identifiants de compte immuables. Le changement de canal ne transfère pas une relation à une autre personne et ne modifie pas l'empreinte de clé d'identité approuvée.
+- Si l'identité racine change lors d'une récupération, les règles existantes de nouvelle empreinte et de vérification indépendante par les contacts s'appliquent séparément.
+
+### E. Sessions, alertes et données existantes
+
+- Le changement de numéro/e-mail ne modifie pas l'auteur, les destinataires figés, l'historique ni l'état d'une alerte en cours.
+- Il ne modifie pas rétroactivement l'instantané des destinataires, les rappels push ou les tâches d'escalade SMS d'une alerte.
+- Il ne réactive jamais un appareil révoqué et ne révoque pas implicitement tous les autres appareils.
+- Le comportement des sessions déjà ouvertes doit être déterminé par une politique explicite de révocation ciblée ; aucune déconnexion globale arbitraire n'est présumée.
+- Toute session utilisée pour une opération de changement doit être revalidée à la validation finale. Un appareil révoqué entre-temps ne peut pas terminer la demande.
+- Les changements de coordonnées ne restaurent ni ne rendent accessibles les données GPS expirées.
+
+### F. Concurrence et anti-rejeu
+
+- Les changements de coordonnées sont sérialisés au niveau du compte et protégés par une version de coordonnées/une précondition de version.
+- Un challenge est lié au compte, à la coordonnée exacte, au type d'opération, à la demande et à son contexte ; il est à usage unique.
+- Deux demandes concurrentes ne peuvent pas chacune devenir la coordonnée principale. Une demande devenue obsolète est refusée et doit être recommencée.
+- Un challenge consommé, expiré, annulé ou lié à une ancienne demande ne peut être réutilisé.
+- Une contestation valide reçue avant le commit final peut suspendre la demande selon une procédure à définir ; après commit, elle déclenche une procédure de sécurité distincte, sans rollback silencieux.
+- La vérification finale doit relire atomiquement l'état du compte, de la session, de l'appareil, de la racine, du challenge et de la version de coordonnées.
+- Les opérations répétées avec la même clé d'idempotence et le même contenu retournent le résultat stable ; une clé réutilisée avec un contenu différent est refusée.
+- Si une récupération racine est en cours, les modifications qui changent les canaux d'authentification/récupération sont bloquées, sauf parcours de récupération explicitement validé.
+
+### G. Points non décidés
+
+Aucune durée arbitraire n'est fixée ici. Restent à arbitrer : facteur fort de continuité si l'ancien canal est perdu ; délai de sécurité ; période de contestation ; critères de risque ; portée de révocation des sessions ; nombre de coordonnées vérifiées ; ordre de priorité entre numéro et e-mail ; gestion d'un numéro recyclé ; traitement des changements pendant une alerte active ; et fonctions autorisées pendant une récupération racine.
+
+**NO-GO :** aucun parcours de changement de coordonnées ne doit être implémenté avant arbitrage de ces points, tests de concurrence et validation du contrat de récupération.
