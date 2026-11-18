@@ -28,14 +28,19 @@ SAC est un outil privé de mise en relation avec les proches de confiance. Le pa
 
 ## 3. Parcours proposé sur téléphone
 
-### Écran A — Accès SOS
+### Écran A — Deux accès SOS complémentaires
 
-- Un bouton SOS rouge, immédiatement identifiable, reste accessible depuis l'accueil.
-- Le bouton ouvre le parcours de déclenchement ; il ne doit pas déclencher une alerte silencieusement sans que l'utilisateur ait pu vérifier le type et les destinataires.
+Deux entrées distinctes sont prévues et coexistent :
+
+- **SOS principal guidé** : un bouton SOS rouge, immédiatement identifiable depuis l'accueil, ouvre un parcours compact. L'utilisateur choisit la catégorie et le niveau (préventif, urgent ou critique), vérifie les destinataires, puis déclenche l'alerte. Ce parcours est le point d'entrée général.
+- **SOS critique immédiat** : un accès distinct, clairement identifié et visuellement différencié, permet de déclencher directement une alerte de niveau critique. Il utilise la catégorie et les destinataires préconfigurés par l'utilisateur pour ce raccourci. Il ne demande pas une seconde confirmation générique qui ralentirait l'action.
+
+Le raccourci critique immédiat ne doit être activable que si sa catégorie et au moins un destinataire éligible ont été configurés et vérifiés au préalable. Si cette configuration manque, SAC explique ce qui doit être configuré et ne prétend pas avoir transmis une alerte.
+
+Pour les deux entrées :
 - Aucun écran de connexion supplémentaire ne doit apparaître si la session est déjà valide.
 - Une erreur de permission GPS ne doit jamais interrompre l'ouverture du parcours.
-
-**Point à confirmer :** le comportement exact du bouton principal SOS est décrit en section 7.
+- Le résultat affiché doit refléter exclusivement la réponse confirmée du serveur ; aucune transmission ne peut être annoncée sans preuve.
 
 ### Écran B — Type et niveau
 
@@ -138,16 +143,22 @@ L'action « Annuler l'alerte » après déclenchement est une clôture explicite
 | Double appui / réponse réseau perdue | Reprendre la même commande idempotente et retrouver la même alerte, sans doublon |
 | Alerte clôturée pendant une tâche de rappel | Empêcher les nouvelles tâches non envoyées ; conserver le statut des envois déjà acceptés |
 
-## 7. Décisions produit encore nécessaires avant de figer les écrans
+## 7. Décisions actées et points encore ouverts
 
-Ces points ne sont pas tranchés par le présent document :
+### Décision validée — deux parcours SOS complémentaires
 
-1. **Bouton SOS principal :** doit-il ouvrir un formulaire compact où l'utilisateur choisit la catégorie et le niveau, ou déclencher directement une alerte critique avec une catégorie prédéfinie ?  
-   **Recommandation de conception :** ouvrir un écran compact ; proposer un accès « SOS critique immédiat » distinct, sans seconde confirmation, après que l'utilisateur a défini ses contacts par catégorie.
-2. **Destinataires à la volée :** l'utilisateur peut-il modifier pour une alerte précise la sélection préconfigurée pour sa catégorie, ou doit-il d'abord gérer les préférences dans les paramètres ?  
-   **Recommandation :** autoriser une modification ponctuelle avant l'envoi, sans changer les préférences permanentes.
-3. **Aucun contact éligible :** faut-il bloquer la création de l'alerte, permettre une alerte locale non transmise, ou proposer une autre solution ? Aucun comportement n'est choisi ici ; ne jamais afficher une fausse confirmation d'envoi.
-4. **Seuil SMS sans fournisseur opérationnel :** le choix 1–5 reste enregistré dans la commande, mais l'interface doit expliquer que le canal SMS n'est pas encore disponible. Le comportement de lancement avant sélection du fournisseur doit être validé.
+Le propriétaire produit a validé le 18 novembre 2026 la coexistence des deux accès :
+
+1. **SOS principal guidé** : ouvre un écran compact où l'utilisateur choisit la catégorie et le niveau d'urgence avant l'envoi.
+2. **SOS critique immédiat** : accès distinct qui déclenche directement une alerte critique avec la catégorie et les destinataires préconfigurés.
+
+Le raccourci critique immédiat suppose une configuration préalable valide (catégorie et destinataires éligibles). Il ne doit pas ajouter une seconde confirmation générique. Dans les deux parcours, SAC ne doit jamais afficher une transmission comme réussie sans confirmation réelle du serveur.
+
+### Points restant à arbitrer
+
+1. **Destinataires à la volée :** l'utilisateur peut-il modifier pour une alerte précise la sélection préconfigurée pour sa catégorie, sans changer les préférences permanentes ? Recommandation : oui, modification ponctuelle avant l'envoi.
+2. **Aucun contact éligible :** faut-il bloquer la création de l'alerte, permettre une alerte locale non transmise ou proposer une autre solution ? Aucun comportement n'est choisi ; ne jamais afficher une fausse confirmation d'envoi.
+3. **Seuil SMS sans fournisseur opérationnel :** le choix 1–5 reste enregistré dans la commande, mais l'interface doit expliquer que le canal SMS n'est pas disponible. Le comportement de lancement avant sélection du fournisseur reste à valider.
 
 ## 8. Limites d'implémentation actuelles
 
