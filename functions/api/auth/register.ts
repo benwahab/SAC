@@ -58,6 +58,22 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (!validation.ok) return json({ error: validation.error }, 400);
 
   const { email, phone, password, language } = validation.value;
+
+  // Évite un calcul PBKDF2 coûteux pour une identité déjà enregistrée.
+  // L'unicité est malgré tout réimposée par les contraintes SQL lors du batch.
+  try {
+    const existingIdentity = await env.DB.prepare(
+      `SELECT 1 AS present
+       FROM account_identities
+       WHERE (channel = 'email' AND normalized_value = ?)
+          OR (channel = 'phone' AND normalized_value = ?)
+       LIMIT 1`,
+    ).bind(email, phone).first<{ present: number }>();
+    if (existingIdentity) return json(GENERIC_ACCEPTED, 202);
+  } catch {
+    return json({ error: "registration_unavailable" }, 503);
+  }
+
   const now = Date.now();
   const accountId = crypto.randomUUID();
   const emailIdentityId = crypto.randomUUID();
