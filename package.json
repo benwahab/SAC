@@ -22,7 +22,8 @@
     "test:email": "node --experimental-strip-types --test tests/resend-email.test.ts",
     "test:otp-policy": "node --experimental-strip-types --test tests/email-otp-policy.test.ts",
     "test:registration-policy": "node --experimental-strip-types --test tests/registration-policy.test.ts",
-    "test:otp-code": "node --experimental-strip-types --test tests/email-otp-code.test.ts"
+    "test:otp-code": "node --experimental-strip-types --test tests/email-otp-code.test.ts",
+    "test:password-hash": "node --experimental-strip-types --test tests/password-hash.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
