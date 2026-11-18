@@ -278,7 +278,19 @@ La capacité d'urgence ne doit pas donner au titulaire suspendu un pouvoir unila
 - **Clôture :** le titulaire suspendu peut signaler que l'alerte peut être clôturée et transmettre une demande à l'administration SAC, mais il ne clôture jamais lui-même l'alerte. Les proches, y compris le responsable principal, ne disposent pas non plus du pouvoir de clôture. Seule l'administration SAC décide et exécute la clôture, après vérifications adaptées, en préservant les preuves et en tenant compte de l'état de prise en charge.
 - **Aucune suppression de preuve :** ni la mise à jour ni la demande de clôture ne peuvent supprimer, réécrire ou masquer les événements, accusés de réception, prises en charge ou éléments d'audit déjà enregistrés.
 
-Les critères précis de contrôle, le profil administratif autorisé à clôturer et les notifications restent à spécifier. Une seule décision d'un administrateur SAC habilité suffit : aucune double validation ni approbation par un second administrateur n'est exigée. Cette règle ne doit pas empêcher les contacts et les services d'urgence de poursuivre l'assistance.
+Les critères précis de contrôle, le profil administratif autorisé à clôturer et les notifications restent à spécifier. Une seule décision d'un administrateur SAC habilité suffit : aucune double validation ni approbation par un second administrateur n'est exigée.
+
+### Vérification avant clôture — règle validée
+
+L'administrateur habilité consulte la référence et le statut de l'alerte, le signalement du responsable principal, les accusés de réception, les prises en charge et les dernières mises à jour des proches. Il vérifie qu'aucune information récente ne signale un danger persistant et applique les contrôles renforcés en cas de suspicion d'abus lié à l'alerte.
+
+- Si les informations fiables confirment que le danger est terminé et qu'aucun élément ne le contredit, un seul administrateur habilité peut clôturer l'alerte.
+- Si un proche signale que le danger persiste, l'alerte n'est pas clôturée.
+- Si les informations sont contradictoires ou insuffisantes, l'alerte reste active pendant les vérifications.
+- Si le responsable principal est injoignable, l'administration peut vérifier auprès des autres proches ; son indisponibilité ne vaut pas confirmation.
+- **Le silence ou l'absence de réponse d'un proche ne constitue jamais une preuve que la personne est en sécurité.** Si la fin du danger ne peut pas être vérifiée, l'alerte reste active et les rappels continuent toutes les 5 minutes vers les seuls destinataires initiaux, sans ajout automatique.
+
+La décision de clôture, son motif, l'identité de l'administrateur et l'horodatage sont conservés dans la trace d'audit. Cette règle ne doit pas empêcher les contacts et les services d'urgence de poursuivre l'assistance.
 
 ### Limites et questions à arbitrer
 
