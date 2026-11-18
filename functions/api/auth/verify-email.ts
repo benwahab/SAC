@@ -60,7 +60,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
                 WHERE c.account_id = a.id AND c.identity_id = i.id
                 ORDER BY c.created_at DESC
                 LIMIT 1
-              ) AS challenge_id
+              ) AS challenge_id,
+              (
+                SELECT c.digest
+                FROM email_otp_challenges c
+                WHERE c.account_id = a.id AND c.identity_id = i.id
+                ORDER BY c.created_at DESC
+                LIMIT 1
+              ) AS challenge_digest
        FROM account_identities i
        JOIN accounts a ON a.id = i.account_id
        WHERE i.channel = 'email' AND i.normalized_value = ?
