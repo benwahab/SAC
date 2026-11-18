@@ -195,3 +195,6 @@ Cette consolidation est documentaire. Elle ne modifie ni code ni tests, ne crée
 ## Sécurité des connexions et sessions
 
 La politique de défense contre les tentatives frauduleuses, le vol/rejeu de session, les connexions simultanées, la révocation et les notifications est détaillée dans `PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md`. Les recommandations y restent à arbitrer ; elles ne changent pas les décisions validées sur les durées 30/90 jours ni le verrou de racine V1.
+
+### Spécification candidate multi-appareils — 19 novembre 2026
+Le document `SPECIFICATION_CANDIDATE_ENROLEMENT_MULTI_APPAREILS_V1.md` centralise maintenant les exigences d'enrôlement secondaire. Il reste non homologué : les formats cryptographiques, le SAS, les durées de défi et les détails de session sont ouverts. La récupération de racine demeure interdite en V1. Aucun endpoint ni aucune activation n'en découle.
