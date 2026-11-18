@@ -87,3 +87,5 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 - [Contrat de conservation et de suppression des alertes](docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md) — GPS supprimé à la clôture, catégorie seule conservée 30 jours, puis suppression définitive et interdiction de résurrection après restauration.
 
 - [Propositions d'arbitrage — groupes privés](docs/PROPOSITIONS_ARBITRAGE_GROUPES_PRIVES.md) — séparation entre adhésion, relation de confiance et droits SOS/GPS ; propositions à confirmer.
+
+- [Propositions d'arbitrage — SOS programmé et SOS discret](docs/PROPOSITIONS_ARBITRAGE_SOS_PROGRAMME_ET_DISCRET.md) — distingue les deux mécanismes, reprend les règles validées et isole les points restant à arbitrer.
