@@ -43,6 +43,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Enrichir la proposition avec les corrections structurelles de la revue : liens composites, abonnements push, outbox récupérable, responsabilité principale, immutabilité et prévention des fuites GPS.
 - [x] Formaliser les machines à états métier et la matrice de conservation/suppression (durées hors GPS explicitement laissées ouvertes) dans docs/MACHINES_ETATS_ET_CONSERVATION.md.
 - [x] Définir les contrats des opérations D1 atomiques (création d'alerte, prise en charge, clôture, révocation appareil, consommation OTP/jumelage, outbox et accès) dans docs/CONTRATS_OPERATIONS_ATOMIQUES_D1.md.
+- [x] Créer le registre des décisions produit restantes avec recommandations explicites et points à valider dans docs/DECISIONS_PRODUIT_RESTANTES.md.
 - [ ] Faire valider les règles encore ouvertes : accès après révocation d'un contact, suppression de compte, durées de conservation hors GPS et détails des trois modes de Protection des trajets.
 - [ ] Valider le schéma relationnel détaillé, les rôles, les politiques d'accès, les états, les sauvegardes et les tests de sécurité avant toute migration D1.
 - [ ] Créer les migrations D1 et les tests d'accès après validation de ces prérequis.
