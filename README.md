@@ -95,3 +95,5 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 - [Contrat proposé de suppression du compte et cas particuliers](docs/CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md) — cinq états, demande/finalisation, comptes non vérifiés ou suspendus, alertes/trajets actifs, courses concurrentes et arbitrages ouverts.
 
 - [Consolidation appareils, sessions et récupération](docs/CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md) — matrice des pertes/changements d'appareil, sessions 30/90 jours, séparation récupération du compte/racine et blocages V1.
+
+- [Proposition de sécurité des connexions et sessions](docs/PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md) — anti-brute-force, vol/rejeu de session, multi-appareils, révocation et notifications ; propositions à arbitrer, non implémentées.
