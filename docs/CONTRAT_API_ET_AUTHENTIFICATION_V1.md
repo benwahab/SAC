@@ -562,3 +562,60 @@ Aucune durée arbitraire n'est fixée ici. Restent à arbitrer : facteur fort de
 - Aucun fournisseur e-mail n'est choisi à ce stade. Coût, délivrabilité, disponibilité et protection des données devront être comparés avant intégration.
 
 **Verrou :** cette décision ne vaut pas autorisation d'implémenter un fournisseur ou un parcours OTP. Les facteurs de continuité, délais, limites, sessions et recours restent à spécifier ; aucune récupération racine ne peut reposer sur l'e-mail seul.
+
+
+## Annexe — Perte d'accès à l'adresse e-mail et récupération du compte (18 novembre 2026)
+
+**Statut :** parcours de sécurité proposé pour arbitrage ; ce texte ne choisit aucun facteur externe, fournisseur, délai ni mécanisme de vérification d'identité. Aucun endpoint, secret ou schéma D1 n'est créé.
+
+### 1. Distinguer les situations
+
+SAC ne doit pas traiter comme équivalents :
+- une personne encore connectée sur un appareil approuvé, mais qui a perdu sa boîte e-mail ;
+- une personne qui contrôle encore l'appareil racine et peut prouver cryptographiquement cette possession ;
+- une personne qui n'a plus aucun appareil approuvé ;
+- une personne qui soupçonne que son ancienne boîte a été compromise ;
+- une personne qui a perdu simultanément l'e-mail, le téléphone et tous les appareils approuvés.
+
+### 2. Parcours de changement si un appareil approuvé est encore disponible
+
+1. L'utilisateur démarre une demande depuis une session active ; le serveur vérifie que l'appareil est toujours approuvé, non révoqué et autorisé pour cette opération.
+2. L'utilisateur prouve la possession de l'autorité de l'appareil selon un défi cryptographique lié à la demande. Une simple session ouverte ou un OTP reçu sur la nouvelle adresse ne remplace pas cette preuve.
+3. La nouvelle adresse e-mail est vérifiée par OTP envoyé à cette adresse. Ce contrôle prouve uniquement l'accès à la nouvelle boîte.
+4. Le serveur lie les preuves à la demande, à la destination, au compte et à la version des coordonnées ; la validation finale est atomique et recontrôle les révocations et changements concurrents.
+5. L'ancienne adresse est retirée des usages remplacés après commit. Une notification de sécurité neutre peut être envoyée à l'ancien canal seulement si celui-ci n'est pas suspecté compromis.
+6. Le changement ne modifie ni l'identité racine, ni les appareils, ni les relations de confiance, ni les alertes actives, ni les instantanés de destinataires.
+
+### 3. Aucun appareil approuvé disponible
+
+- Un OTP envoyé à une nouvelle adresse ne suffit pas à reprendre le compte.
+- Un OTP envoyé par SMS n'est pas un secours automatique et ne suffit pas non plus.
+- Une demande peut être enregistrée dans un état de récupération en attente, sans accorder immédiatement les privilèges du compte historique.
+- Avant toute restauration d'accès sensible, une méthode indépendante doit être approuvée : facteur de récupération préenregistré, procédure de vérification indépendante ou autre mécanisme ayant fait l'objet d'une analyse de menace et d'une validation explicite.
+- Tant que cette méthode n'est pas définie et testée, SAC doit refuser la prise de contrôle plutôt que d'inventer une preuve. L'interface doit expliquer clairement les limites et les étapes possibles, sans promettre une récupération garantie.
+- La récupération de l'accès au compte ne restaure jamais l'ancienne racine. Si celle-ci est perdue, la procédure séparée de nouvelle racine et de vérification indépendante des empreintes par les contacts s'applique avant toute reprise GPS.
+
+### 4. Boîte suspectée compromise
+
+- Ne pas envoyer à cette boîte des détails permettant de contester, annuler ou détourner la récupération.
+- Ne pas considérer une réponse reçue de cette boîte comme preuve suffisante de propriété.
+- Préserver un parcours depuis un appareil approuvé encore sûr ; si aucun n'est disponible, appliquer la récupération indépendante sans raccourci.
+- Les notifications aux contacts ne doivent pas révéler les nouvelles coordonnées ni des détails sensibles.
+
+### 5. Limites de sécurité et état du compte
+
+- Une demande en attente n'est pas une récupération réussie et n'accorde pas implicitement l'accès aux données privées.
+- Une demande refusée, expirée ou annulée ne réactive aucun appareil révoqué et ne rétablit aucune ancienne racine.
+- Aucun changement d'e-mail ne doit permettre de contourner une révocation d'appareil, une récupération racine en cours ou une protection GPS J+30.
+- Les sessions existantes ne sont ni toutes conservées ni toutes révoquées par hypothèse : la portée de révocation doit être explicitement définie selon le niveau de risque et validée avant implémentation.
+- Le parcours de récupération ne doit pas ajouter une étape OTP e-mail au déclenchement d'un SOS valide depuis une session encore autorisée.
+
+### 6. Arbitrages obligatoires avant implémentation
+
+- Quels facteurs indépendants peuvent établir la continuité lorsqu'aucun appareil approuvé n'est disponible ?
+- Les contacts de confiance peuvent-ils contribuer à une récupération d'accès, et selon quelle vérification indépendante, sans devenir un support capable de remplacer la racine ?
+- Quel délai de sécurité, quelle période de contestation et quelles règles d'expiration appliquer ?
+- Quelles fonctions sont accessibles pendant l'attente et quelles sessions/appareils sont révoqués après validation ?
+- Comment traiter un compte dont tous les canaux et appareils sont perdus, sans récupération techniquement ou humainement vérifiable ?
+
+**NO-GO :** pas de récupération complète fondée uniquement sur une nouvelle adresse, un OTP, un SMS, un mot de passe ou le support ; pas d'implémentation avant validation des facteurs, des états, des délais, des recours et des tests adversariaux.
