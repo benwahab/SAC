@@ -62,3 +62,7 @@ Avant toute API, migration D1 ou raccordement de clés au GPS :
 5. vérifier récupération et rotation de la racine.
 
 Aucune modification de code, API, migration, ressource Cloudflare ou donnée GPS réelle n'est autorisée par ce relevé. La règle NO-GO sur l'historique GPS et la destruction irréversible J+30 reste inchangée.
+
+## Référence de décision transversale
+
+Consulter également `CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md` pour la matrice des scénarios et les blocages V1. Les divergences du format canonique, des signatures, nonces et SAS recensées ici restent ouvertes ; ce lien ne choisit aucun protocole.
