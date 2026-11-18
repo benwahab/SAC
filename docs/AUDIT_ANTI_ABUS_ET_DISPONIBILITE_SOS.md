@@ -572,3 +572,10 @@ La reconnaissance humaine peut éventuellement être étudiée comme signal comp
 **Tests adversariaux requis :** copie/photo du kit, saisies erronées, tentatives distribuées, rejeu, concurrence, perte du kit, régénération, révocation d'appareil pendant récupération, récupération sans accès e-mail, absence de restauration racine/GPS, et fuite du vérificateur serveur.
 
 **NO-GO :** ne pas implémenter avant choix explicite du format et de la politique, analyse cryptographique, tests sur appareils mobiles réels et revue indépendante.
+
+
+### Décision utilisateur — une clé unique hors ligne (18 novembre 2026)
+
+Le format retenu pour la suite de la conception est une seule clé personnelle de récupération, générée localement, affichée une fois et à usage unique. Les risques de copie, photographie, vol, perte, rejeu et saisie automatisée restent à tester. La clé doit être invalidée atomiquement après récupération réussie ; aucune série de codes n'est retenue.
+
+Le choix de ce format ne valide pas encore l'entropie exacte, l'encodage, le stockage du vérificateur, les limites de tentatives ou les délais. La clé ne doit jamais permettre une restauration racine, une approbation d'appareil ou un accès GPS.
