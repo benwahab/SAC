@@ -23,6 +23,8 @@ jobs:
         run: npm run test:jcs-input
       - name: Test JCS and Web Crypto in local Cloudflare Workers runtime
         run: npm run test:jcs-worker
+      - name: Test P-256 ECDSA RFC 6979 signature interoperability
+        run: npm run test:ecdsa
       - run: npm run typecheck
       - name: Test experimental location encryption primitive
         run: npm run test:crypto
