@@ -285,3 +285,14 @@ Le document `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` distingue les règl
 - Le numéro de téléphone reste obligatoire comme coordonnée déclarée, mais ne remplace jamais l'adresse e-mail et ne peut pas servir de voie de contournement.
 - Aucun SMS OTP de compte n'est autorisé. Cette décision ne modifie pas les usages SMS propres au cycle SOS.
 - Cette règle est une décision produit validée ; elle ne signifie pas que l'authentification ou l'envoi OTP sont déjà implémentés.
+
+
+## 15. Arbitrages détaillés — trajets et alertes orphelines — 18 novembre 2026
+
+Le document `docs/PROPOSITIONS_ARBITRAGE_TRAJETS_ET_ALERTES_ORPHELINES.md` rassemble les recommandations à examiner pour les trois modes de Protection des trajets, les retards, le partage de position, la suppression pendant une activité et l'absence prolongée de l'auteur.
+
+Les propositions chiffrées (délai de grâce de 10 minutes, choix 5/10/15/30 minutes, durées d'accompagnement 15/30/60 minutes, plafond de partage de deux heures) ne sont pas approuvées. Elles ne doivent pas être codées comme valeurs par défaut sans validation.
+
+Les invariants déjà établis restent inchangés : pas de SOS automatique sur simple retard ou perte de réseau ; pas de clôture automatique par silence ; pas de clôture ordinaire par un proche ; rappels SOS initiaux toutes les cinq minutes jusqu'à la clôture explicite par l'auteur ; destruction GPS J+30 irréversible obligatoire avant activation de la collecte persistante.
+
+La durée de vie d'une alerte, la durée d'un partage de position et la durée de conservation des preuves doivent rester trois notions séparées. L'expiration d'un partage ne clôture jamais l'alerte.
