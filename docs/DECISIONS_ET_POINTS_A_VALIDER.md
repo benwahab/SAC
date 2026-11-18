@@ -936,3 +936,61 @@ Une suspension peut être déclenchée abusivement et provoquer un déni de serv
 - Niveau matériel Android minimal exigé et comportement des appareils qui ne le supportent pas.
 
 **NO-GO :** aucune suspension, révocation, preuve renforcée, intégration Android Keystore/StrongBox, API, migration ou notification réelle n'est implémentée. Cette proposition doit être arbitrée et testée avant tout développement.
+
+
+## Récupération avec le kit hors ligne mais sans aucun appareil approuvé disponible (18 novembre 2026)
+
+**Statut : parcours de conception proposé ; délais et droits provisoires non validés.** Le kit personnel unique est déjà validé comme moyen de récupération du compte, mais ses pouvoirs exacts restent limités. Cette annexe ne transforme pas le kit en clé racine.
+
+### Conditions d'entrée
+- Aucun appareil approuvé n'est disponible pour initier une reprise normale.
+- Le titulaire saisit le kit personnel de récupération hors ligne, encore valide et non consommé.
+- Le titulaire prouve le contrôle d'une nouvelle adresse e-mail par OTP, si l'ancienne boîte est inaccessible.
+- Le kit est vérifié côté serveur sans jamais recevoir ni conserver le secret brut ; le challenge est lié au compte, à la demande, à la version du kit et à la finalité.
+- L'OTP e-mail prouve uniquement le contrôle ponctuel de la nouvelle boîte. Il ne prouve pas l'identité historique, la possession de la racine ni l'approbation d'un appareil.
+- Toute demande est limitée, protégée contre le rejeu, les essais distribués et les demandes concurrentes.
+
+### Parcours recommandé
+1. Le demandeur ouvre une demande de récupération depuis un nouveau téléphone ou navigateur.
+2. Il saisit le kit hors ligne unique et vérifie une nouvelle adresse e-mail par OTP.
+3. Le serveur vérifie que le kit est valide, non consommé, associé au compte et que la demande n'est pas concurrente ou déjà terminée.
+4. Le compte passe en état de récupération en attente. Aucune session complète ni donnée privée n'est délivrée à ce stade.
+5. Proposition à arbitrer : délai de sécurité de 24 heures avant l'activation d'une session de récupération limitée. Le délai ne doit pas être présenté comme une preuve d'identité ; il sert seulement à laisser le temps de détecter une récupération frauduleuse.
+6. À l'issue du délai, si les conditions de sécurité sont satisfaites, le kit est consommé atomiquement et une session temporaire à privilèges minimaux est délivrée.
+7. Le titulaire peut alors reprendre l'accès administratif de base au compte, définir un nouveau mot de passe si nécessaire et préparer une nouvelle cérémonie cryptographique. Il ne récupère pas les anciennes clés.
+8. Une fois la récupération du compte finalisée, le kit consommé est invalidé ; un nouveau kit ne peut être généré qu'après établissement d'une session de confiance selon la procédure à valider.
+
+### Droits interdits pendant la session limitée
+- Aucun accès au contenu des anciennes alertes, à l'historique privé, aux conversations, aux pièces jointes ou aux coordonnées privées des contacts.
+- Aucun accès au GPS, à l'historique de position ou à une archive GPS.
+- Aucune modification des contacts de confiance, des relations, des destinataires d'une alerte active ou des préférences de notification.
+- Aucun changement de canal de récupération supplémentaire, aucun nouvel appareil approuvé, aucune approbation de racine et aucun déverrouillage GPS.
+- Aucun transfert d'abonnement, de propriété ou de droits vers un autre compte.
+- Aucun pouvoir de clôture, d'annulation ou de modification d'une alerte existante.
+- L'état agrégé du SOS de secours personnel reste limité à la décision déjà validée : statut de l'alerte, état notification, accusé humain, prise en charge et clôture, sans identité ni coordonnées des contacts.
+
+### Neutralisation des anciennes sessions et appareil volé
+- Recommandation : au succès final de la récupération du compte, invalider côté serveur toutes les sessions et tous les jetons d'accès/renouvellement antérieurs, ainsi que les abonnements push associés aux anciennes sessions.
+- Une session hors ligne sur un appareil volé ne peut pas être effacée à distance ; lorsqu'elle revient en ligne, elle doit échouer à toute revalidation serveur.
+- Ne pas prétendre que cette invalidation efface les données déjà présentes localement.
+- Le kit ne révoque pas cryptographiquement l'ancienne racine et ne restaure pas une nouvelle racine. La nouvelle cérémonie racine reste séparée.
+- Aucun appareil secondaire n'est promu automatiquement ; toute nouvelle identité d'appareil doit suivre la procédure d'approbation correspondante après rétablissement d'une racine de confiance.
+- Les alertes actives, instantanés de destinataires, tâches de notification et historiques restent conservés et ne sont pas modifiés par la récupération.
+
+### Cas de fraude, contestation et échec
+- Kit invalide, consommé, expiré ou vérificateur incohérent : refus sans révéler si le compte existe.
+- OTP incorrect ou expiré : refus du contrôle de la nouvelle boîte ; aucun changement de compte.
+- Demandes simultanées : une seule demande active par compte/version de kit ; résolution atomique.
+- Une contestation ou un signalement de compromission pendant le délai doit suspendre la finalisation et imposer une revue de sécurité définie, sans donner à l'ancienne boîte un droit de veto automatique.
+- Pas de récupération manuelle par support, contact, SMS, pièce d'identité ou connaissance personnelle.
+- Si le kit est perdu ou déjà consommé et qu'aucun appareil approuvé n'existe, le compte historique reste irrécupérable selon la règle actuelle.
+
+### Arbitrages requis avant implémentation
+- Confirmer ou refuser le délai proposé de 24 heures.
+- Définir qui peut signaler une contestation et quelles preuves sont recevables, sans fuite de nouvelles coordonnées.
+- Confirmer l'invalidation de toutes les sessions au succès, et la portée des sessions temporaires.
+- Définir les opérations exactes permises dans la session limitée et sa durée.
+- Définir à quel moment le kit est consommé pour éviter qu'une panne technique ne le brûle avant réussite.
+- Définir la procédure distincte de création et vérification d'une nouvelle racine.
+
+**NO-GO :** aucun flux réel, endpoint, session, OTP, consommation de kit, migration ou révocation n'est implémenté par cette proposition.
