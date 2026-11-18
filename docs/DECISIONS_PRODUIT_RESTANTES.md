@@ -296,3 +296,16 @@ Les propositions chiffrées (délai de grâce de 10 minutes, choix 5/10/15/30 mi
 Les invariants déjà établis restent inchangés : pas de SOS automatique sur simple retard ou perte de réseau ; pas de clôture automatique par silence ; pas de clôture ordinaire par un proche ; rappels SOS initiaux toutes les cinq minutes jusqu'à la clôture explicite par l'auteur ; destruction GPS J+30 irréversible obligatoire avant activation de la collecte persistante.
 
 La durée de vie d'une alerte, la durée d'un partage de position et la durée de conservation des preuves doivent rester trois notions séparées. L'expiration d'un partage ne clôture jamais l'alerte.
+
+## 16. Décision confirmée — conservation des alertes et suppression GPS — 18 novembre 2026
+
+La règle produit confirmée remplace les anciennes formulations de conservation GPS J+30 :
+
+- À la clôture effective d'une alerte, toutes les positions GPS qui lui sont associées sont supprimées immédiatement des systèmes contrôlés par SAC.
+- Pendant les 30 jours suivant la clôture, seule la nature/catégorie de l'alerte reste dans l'historique.
+- À l'expiration des 30 jours, l'entrée d'historique et sa catégorie sont supprimées définitivement.
+- Une sauvegarde, un snapshot, une réplication, D1 Time Travel, un export ou une restauration ne doit jamais faire réapparaître une position supprimée à la clôture ni une alerte/catégorie supprimée à J+30.
+
+La durée de 30 jours est donc une durée de conservation de l'alerte clôturée, et non une période de conservation GPS. Le délai part de la clôture de l'alerte. Voir docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md.
+
+Les anciennes options de conservation d'un historique GPS précis pendant 30 jours sont supersédées. Cela ne lève pas le NO-GO technique : la collecte GPS réelle reste bloquée jusqu'à démonstration des purges, des sauvegardes/restaurations et des tests de non-résurrection.
