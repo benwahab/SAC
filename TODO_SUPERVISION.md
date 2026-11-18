@@ -40,7 +40,8 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Ajouter un workflow CI de typecheck et build.
 - [x] Préparer une proposition de schéma relationnel D1 sans migration ni stockage GPS dans docs/SCHEMA_RELATIONNEL_D1_PROPOSITION.md.
 - [x] Réaliser une revue critique de cette proposition et relever les contraintes composites, les garanties de prise en charge, les rappels/outbox, les abonnements push, l'immutabilité, la suppression et les risques de fuite GPS dans docs/REVUE_SCHEMA_RELATIONNEL_D1.md.
-- [ ] Corriger la proposition de schéma à partir de la revue et formaliser les machines à états avant toute migration.
+- [x] Enrichir la proposition avec les corrections structurelles de la revue : liens composites, abonnements push, outbox récupérable, responsabilité principale, immutabilité et prévention des fuites GPS.
+- [ ] Formaliser les machines à états et la matrice de conservation/suppression avant toute migration.
 - [ ] Valider le schéma relationnel détaillé, les rôles, les politiques d'accès, les états, les sauvegardes et les tests de sécurité avant toute migration D1.
 - [ ] Créer les migrations D1 et les tests d'accès après validation de ces prérequis.
 - [x] Installer les dépendances, exécuter typecheck et build dans GitHub Actions (run 44151374924, commit 6edbd77d).
