@@ -337,3 +337,9 @@ Points à arbitrer avant implémentation : durées, preuves minimales de sécuri
 Le document [CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md](CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md) consolide les invariants déjà validés et isole les arbitrages restant ouverts : inscription non vérifiée, suppression depuis un compte suspendu, suspension pendant une suppression, mode restreint de clôture, SOS programmés, activités orphelines et effets sur les relations/groupes.
 
 Il ne crée aucune nouvelle décision produit. Les propositions (dont expiration provisoire de 24 h, canal d'effacement avant vérification, annulation des SOS programmés et révocation des relations à finalisation) doivent être confirmées explicitement. La finalisation reste impossible avec alerte ou trajet actif ; aucune clôture automatique n'est inventée. Les durées non GPS demeurent soumises à la matrice de conservation et à la validation juridique.
+
+## 21. Consolidation appareils, sessions et récupération — 18 novembre 2026
+
+La [consolidation appareils, sessions et récupération](CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md) établit la matrice des scénarios et les frontières de confiance. Elle rappelle les durées de session validées (30 jours d'inactivité, 90 jours maximum), distingue récupération d'accès, enrôlement d'appareil et récupération de racine, et maintient le remplacement de racine hors V1.
+
+Arbitrages encore ouverts : facteurs de récupération d'accès, perte de tous les facteurs, révocation urgente d'un appareil racine perdu/volé, refresh token ou non, protocole canonique d'enrôlement secondaire et disponibilité du SOS non-GPS pendant récupération. Aucun de ces points n'est décidé par la consolidation.
