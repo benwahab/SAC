@@ -700,3 +700,20 @@ La session de récupération ne doit pas ouvrir les données privées, l'histori
 
 **NO-GO :** aucune activation avant validation explicite de la politique et tests indépendants du délai, de la contestation, de la révocation et de la session limitée.
 
+
+
+### Audit de moindre privilège — session de récupération
+
+**Statut : matrice candidate à valider.**
+
+Tester explicitement que la session limitée :
+- ne peut pas énumérer les alertes, contacts, groupes ou coordonnées privées ;
+- ne peut pas lire l'historique GPS, les positions précises, les clés ou les métadonnées sensibles ;
+- ne peut pas approuver un appareil, changer la racine, récupérer une clé privée ou créer une session de privilège supérieur ;
+- ne peut pas modifier silencieusement les coordonnées de compte une seconde fois ;
+- ne peut pas générer une nouvelle clé de récupération avant l'étape de confiance requise ;
+- ne peut pas accéder aux fonctions de paiement ou d'administration ;
+- expire et peut être révoquée sans affecter l'intégrité des alertes actives.
+
+Le droit SOS est un cas distinct : tester l'usurpation, les alertes abusives et la possibilité de transmettre une alerte sans GPS depuis une session limitée, sans jamais bloquer le SOS d'une session déjà autorisée par un OTP e-mail.
+
