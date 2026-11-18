@@ -275,7 +275,7 @@ Pour le titulaire suspendu, le principe d'une capacité cryptographique d'urgenc
 
 La clôture appartient exclusivement à l'administration SAC. Ni le titulaire suspendu ni les proches, y compris le responsable principal, ne peuvent clôturer l'alerte. Un proche peut signaler que la situation est terminée et demander une clôture administrative ; la décision et l'action de clôture restent réservées à l'administration SAC.
 
-Points encore ouverts : procédure de vérification de la demande, personnes habilitées au sein de l'administration, conditions de décision et notifications ; garde-fous et conservation des éléments de preuve en cas de suspension pour abus lié à l'alerte.
+Points encore ouverts : procédure de vérification des informations, profil administratif habilité, conditions de décision et notifications ; garde-fous et conservation des éléments de preuve en cas de suspension pour abus lié à l'alerte. Le nombre de validations est tranché : un seul administrateur SAC habilité peut décider et clôturer ; aucune seconde validation n'est obligatoire.
 
 ### Garde-fou validé contre l'abus de clôture
 
@@ -285,7 +285,7 @@ La distinction suivante est validée :
 - Une **demande ou confirmation de clôture** du titulaire suspendu ne suffit pas, à elle seule, à clôturer automatiquement une alerte lorsque la suspension est liée à un abus potentiel sur cette alerte. Des contrôles supplémentaires côté serveur sont obligatoires avant toute clôture.
 - Aucun événement, accusé de réception, prise en charge ou élément d'audit ne peut être supprimé ou réécrit par cette capacité. La continuité de l'assistance des contacts doit être préservée.
 
-Les critères de déclenchement du contrôle renforcé, la procédure administrative de clôture et les notifications restent à spécifier. L'autorité finale est toutefois tranchée : administration SAC uniquement. Cette décision ne crée aucune permission opérationnelle ni route API.
+Les critères de déclenchement du contrôle renforcé, la procédure administrative de clôture et les notifications restent à spécifier. L'autorité finale est toutefois tranchée : administration SAC uniquement, avec une seule validation par un administrateur habilité ; aucune double validation n'est exigée. Cette décision ne crée aucune permission opérationnelle ni route API.
 
 Règles validées : la suspension ne ferme ni n'annule l'alerte ; les rappels continuent toutes les 5 minutes vers les seuls destinataires initiaux, sans ajout automatique ; les actions de réception et de prise en charge restent disponibles ; la capacité du titulaire est limitée à l'alerte concernée et ne rétablit aucun accès général. La révocation générale des sessions reste immédiate.
 
