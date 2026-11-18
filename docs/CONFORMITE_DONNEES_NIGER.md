@@ -1,3 +1,5 @@
+> **AVERTISSEMENT DE MISE À JOUR — 18 novembre 2026 :** cette pré-analyse a été rédigée avant la suppression de la HAPDP en juin 2026. L'ANP rapporte que ses missions ont été transférées au Ministère de la Justice et au Ministère de l'Intérieur. Une ordonnance n° 2026-30 du 8 juin 2026 aurait également abrogé certaines dispositions de la loi n° 2022-59 ; le détail exact n'a pas encore été vérifié sur le texte officiel. Les passages ci-dessous qui attribuent des compétences à la HAPDP ou décrivent ses formalités sont donc **historiques et à revalider**, pas des instructions opérationnelles actuelles. Lire impérativement [la mise à jour juridique du 18 novembre 2026](MISE_A_JOUR_JURIDIQUE_NIGER_NOV_2026.md) avant toute décision ou démarche.
+
 # SAC — Pré-analyse de conformité des données au Niger
 
 **Statut :** pré-analyse documentaire, non avis juridique et non validation de la HAPDP.  
