@@ -118,3 +118,10 @@ Cette recherche ne permet pas de conclure que le numéro spécial de juin 2026 n
 ## Contrat transversal de gouvernance juridique — 18 novembre 2026
 
 Lire également `CONTRAT_GOUVERNANCE_JURIDIQUE_ET_CONFORMITE.md`, qui regroupe les conséquences produit, l'identité du responsable du traitement, les mineurs, les données sensibles, les fournisseurs/transferts, les droits et les conditions d'utilisation. Il ne lève pas le blocage de l'ordonnance 2026-30 : le texte authentique et les circuits ministériels doivent toujours être confirmés.
+
+
+## 9. Complément de lecture juridique des obligations données — 18 novembre 2026
+
+Le document `ANALYSE_JURIDIQUE_NIGER_SAC_2026-11-18_COMPLEMENT.md` approfondit les articles du texte de base 2022-59 concernant les formalités préalables, les catégories soumises à autorisation (notamment numéro de téléphone et transfert vers un pays tiers), les principes de finalité et de conservation, les données de santé, les GPS, les obligations des sous-traitants, les incidents, les droits et la désignation historique d'un correspondant.
+
+Ce complément ne lève pas le blocage institutionnel : l'ordonnance 2026-30, le décret de suppression et les services ministériels destinataires doivent toujours être authentifiés. Les formulaires et procédures historiques de l'ancienne HAPDP ne sont pas des instructions opérationnelles actuelles. Les dispositions citées du texte de base doivent être confrontées aux actes modificatifs de 2024 et 2026 avant toute conclusion définitive.
