@@ -381,3 +381,18 @@ Cette règle complète la coordination précédente. Elle distingue strictement 
 - Les commandes répétées avec la même clé d'idempotence ne créent pas de doublon.
 
 **Statut : proposition UX et métier à valider.** Les règles déjà actées restent inchangées : un seul responsable principal à la fois, les rappels continuent après prise en charge et seul l'auteur clôture.
+
+
+### Révocation d'un contact pendant une alerte — proposition UX à valider
+
+Si la relation de confiance d'un destinataire est révoquée pendant une alerte active :
+
+- Une candidature non encore attribuée devient inadmissible. L'interface ne doit pas afficher ce contact comme futur responsable possible.
+- Si le contact était déjà responsable principal, SAC affiche que sa responsabilité a pris fin à la suite de la révocation, puis attend la confirmation serveur du prochain responsable. Si personne n'est admissible, afficher « Aucun responsable principal pour le moment ».
+- Les événements valablement enregistrés avant la révocation restent dans la chronologie ; ils ne sont pas effacés.
+- Le contact révoqué ne peut plus envoyer de nouvelle candidature, déclaration d'arrivée, déclaration de résolution, accusé ou retrait après la prise d'effet serveur.
+- Les autres contacts ne voient que le changement de coordination nécessaire, sans détail privé sur le motif de révocation.
+
+**Important :** l'écran ne doit pas prétendre que l'accès en lecture du contact révoqué ou ses rappels ont été coupés tant que la politique correspondante n'est pas validée. L'instantané initial reste historique ; la politique de lecture et de notification après révocation demeure un arbitrage séparé.
+
+**Statut : proposition UX à valider.**
