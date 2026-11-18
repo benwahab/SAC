@@ -81,3 +81,9 @@ La portée exacte à préserver est la suivante :
 - **Enrôlement secondaire :** reste bloqué tant que le transcript, l'encodage canonique, les preuves de possession, le défi anti-rejeu, la comparaison indépendante et les contrôles atomiques n'ont pas été unifiés, testés et revus indépendamment.
 
 La décision d'autorité est donc **fermée**. Les choix cryptographiques et le parcours de récupération restent **ouverts/bloquants**. Aucun endpoint, migration D1 ou activation d'appareil n'est autorisé par cette clarification.
+
+## 8. Spécification consolidée candidate — 19 novembre 2026
+
+Le document `SPECIFICATION_CANDIDATE_ENROLEMENT_MULTI_APPAREILS_V1.md` rassemble désormais les invariants, la séquence candidate, les preuves distinctes, le transcript requis, l'autorité racine, les exigences D1, les tests et les conditions de levée du NO-GO.
+
+Il ne ferme pas artificiellement les choix cryptographiques : RFC 8785/JCS contre CBOR déterministe, formats de signature, règle ECDSA low-S, construction SAS, durée du défi et détails de session restent explicitement ouverts. Le document est un candidat de travail et non une homologation. Aucun raccordement du certificat expérimental, endpoint, migration ou activation réelle n'est autorisé.
