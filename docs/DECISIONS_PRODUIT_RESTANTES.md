@@ -224,3 +224,16 @@ La proposition de séparation des autorisations reste à valider :
 Le backend devra distinguer au minimum l'éligibilité au rappel, l'accès au détail, l'autorisation de recevoir de nouvelles positions et l'autorisation de répondre/agir. Une seule colonne `is_recipient` ne suffit pas.
 
 **Aucune révocation ne doit effacer rétroactivement les paquets GPS déjà reçus par un contact.** La révocation doit toutefois empêcher toute nouvelle transmission autorisée par SAC. La gestion des paquets en transit et l'ordre atomique entre révocation et émission restent à spécifier.
+
+
+## 10. Arbitrages détaillés — contact révoqué et alerte orpheline
+
+Le dossier `docs/ARBITRAGES_CONTACT_REVOQUE_ET_ALERTE_ORPHELINE.md` détaille les options sans les considérer comme approuvées.
+
+Deux décisions restent particulièrement importantes :
+- après révocation, le contact continue de recevoir les rappels initiaux (règle établie), mais doit-il recevoir un détail minimal de l'alerte active ou uniquement des rappels opaques sans accès au dossier ?
+- si l'auteur ne revient jamais, maintient-on strictement les rappels toutes les cinq minutes jusqu'à sa clôture, ou accepte-t-on une suspension après échéance tout en laissant l'alerte ouverte ?
+
+La note recommande aussi de séparer la durée de partage de position de la durée de vie de l'alerte : une position peut cesser d'être transmise sans que l'alerte soit déclarée résolue. Aucune durée maximale n'est fixée ici.
+
+Ces décisions sont bloquantes avant l'API de révocation, la suppression finale et la planification durable des rappels.
