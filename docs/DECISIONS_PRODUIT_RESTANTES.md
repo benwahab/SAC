@@ -385,3 +385,12 @@ Le contrat `CONTRAT_SECURITE_TRAJETS_ET_LOCALISATION.md` consolide les règles d
 Les paramètres chiffrés déjà proposés dans `PROPOSITIONS_ARBITRAGE_TRAJETS_ET_ALERTES_ORPHELINES.md` restent non approuvés : délais de grâce, durées d'accompagnement, plafond de partage, seuils de fraîcheur et durée du partage d'une alerte orpheline. Aucune durée de conservation des positions GPS de trajet n'est validée.
 
 Le GPS réel demeure NO-GO jusqu'à preuve de suppression irréversible et de non-résurrection, revue indépendante et autorisation explicite. La règle déjà approuvée pour les GPS liés aux alertes (suppression immédiate à la clôture, catégorie seule 30 jours, purge définitive à J+30) reste inchangée et ne doit pas être confondue avec la conservation des trajets.
+
+
+## 27. Sécurité des comptes et appareils en situation d'urgence — 18 novembre 2026
+
+Le contrat `CONTRAT_SECURITE_COMPTES_ET_APPAREILS_EN_URGENCE.md` consolide les cas de téléphone perdu/volé, appareil compromis, e-mail compromis, SIM swap, changement de téléphone, perte de tous les appareils et récupération du compte.
+
+Les invariants confirmés restent : e-mail obligatoire vérifié par OTP avant activation ; téléphone déclaré/non vérifié ; aucun SMS OTP de compte ; sessions 30 jours d'inactivité et 90 jours absolus ; appareil secondaire non promouvable racine ; récupération de compte distincte de la racine ; aucune racine perdue ou compromise remplaçable en V1.
+
+Restent à arbitrer : récupération de compte sans appareil fiable, facteurs renforcés, sécurisation d'urgence, autorité de révocation d'une racine volée, changement d'e-mail compromis, capacité du secondaire en mode dégradé et clôture d'une alerte si l'auteur perd tous ses appareils. Aucun mécanisme nouveau n'est approuvé ou implémenté.
