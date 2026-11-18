@@ -215,6 +215,17 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Exécuter les tests D1 localement puis sur Preview isolé, avec vérification des identifiants de base.
 
 
+## Alignement de l'architecture GPS — 18 novembre 2026
+
+- [x] Auditer la cohérence entre l'étude KMS, le contrat D1, les machines à états et la matrice de schéma.
+- [x] Corriger `docs/SECURITE_GPS_DESTRUCTION_CRYPTO.md` : la conservation GPS serveur par KMS est désormais explicitement historique et hors cible.
+- [x] Mettre en tête la direction retenue : relais chiffré éphémère sans persistance GPS serveur ; archive locale chiffrée sur le téléphone de l'auteur pendant 30 jours.
+- [x] Retirer comme point à rediscuter la portée des copies reçues par les contacts ; le périmètre de la garantie est celui des données sous contrôle de SAC.
+- [ ] Tester l'archive locale sur Android/iOS, les sauvegardes/restaurations, la réinstallation, la perte de téléphone et les appareils sans matériel sécurisé compatible.
+- [ ] Démontrer le refus d'accès dès la première reprise après J+30 et caractériser séparément la limite de suppression physique lorsque le téléphone reste éteint.
+- [ ] Prouver qu'aucun payload GPS n'est écrit dans D1, R2, KV, Durable Objects, files, logs, traces, analytics, crash reports ou sauvegardes.
+- [ ] Tester le relais éphémère en direct, réseau faible et destinataires hors ligne ; distinguer alerte transmise et position effectivement disponible.
+
 ## Mise à jour juridique institutionnelle — 18 novembre 2026
 
 - [x] Vérifier auprès de l'Agence Nigérienne de Presse que la HAPDP a été supprimée le 8 juin 2026 et que ses missions sont transférées au Ministère de la Justice et au Ministère de l'Intérieur.
