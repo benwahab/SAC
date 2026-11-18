@@ -160,7 +160,7 @@ Le contrat de domaine historique ne reconnaît que trois états, alors que la d�
 
 ### 6.3 Vérification du numéro de téléphone
 
-Le modèle général mentionne une vérification du téléphone ou de l'e-mail pour activer un contact. Cela ne doit pas être confondu avec la règle du compte utilisateur : téléphone obligatoire mais non vérifié indépendamment, OTP e-mail uniquement pour la vérification initiale du compte. Le parcours d'acceptation des contacts doit être précisé séparément ; aucune vérification SMS ne doit être ajoutée par analogie.
+Toute personne qui devient un contact SAC actif doit disposer d'un compte SAC actif. Chaque compte exige une adresse e-mail obligatoire, vérifiée par OTP avant activation ; le téléphone obligatoire reste déclaré et non vérifié. Une invitation ou une réponse SMS ne peut remplacer ni le compte actif, ni l'e-mail vérifié, ni le consentement explicite. Les anciennes mentions de vérification du téléphone ou d'inscription par téléphone seul sont obsolètes. Les détails de remise et de correspondance de l'invitation restent à spécifier ; aucune vérification SMS ne doit être ajoutée par analogie.
 
 ### 6.4 Rôle administratif versus mission
 
