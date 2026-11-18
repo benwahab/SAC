@@ -1,3 +1,5 @@
+import { evaluateSessionAge } from "./auth-policy";
+
 /**
  * Contrat pur d'autorisation des sessions liées à un appareil.
  *
@@ -15,6 +17,7 @@ export interface DeviceSessionRecord {
   readonly status: SessionStatus;
   readonly authVersion: number;
   readonly createdAt: string;
+  readonly lastActivityAt: string;
   readonly expiresAt: string;
   readonly revokedAt: string | null;
 }
@@ -57,6 +60,8 @@ function validSession(session: DeviceSessionRecord): boolean {
     Number.isSafeInteger(session.authVersion) &&
     session.authVersion >= 0 &&
     isUtc(session.createdAt) &&
+    isUtc(session.lastActivityAt) &&
+    Date.parse(session.lastActivityAt) >= Date.parse(session.createdAt) &&
     isUtc(session.expiresAt) &&
     Date.parse(session.expiresAt) > Date.parse(session.createdAt) &&
     (session.revokedAt === null ||
@@ -87,6 +92,16 @@ export function authorizeDeviceSession(
   }
 
   if (session.status === "revoked") return { ok: false, error: "session_revoked" };
+  const age = evaluateSessionAge(
+    { createdAt: session.createdAt, lastActivityAt: session.lastActivityAt },
+    context.now,
+  );
+  if (!age.ok) {
+    return {
+      ok: false,
+      error: age.error === "invalid_session_dates" ? "invalid_session_record" : "session_expired",
+    };
+  }
   if (Date.parse(context.now) >= Date.parse(session.expiresAt)) {
     return { ok: false, error: "session_expired" };
   }
