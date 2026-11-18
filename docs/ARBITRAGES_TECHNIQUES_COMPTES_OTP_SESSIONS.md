@@ -159,3 +159,73 @@ Aucun SQL, code d'authentification, secret, fournisseur, ressource Cloudflare ou
 
 ---
 **Conclusion :** le mode de connexion e-mail + mot de passe est validé. Le socle compte/session peut être conçu sans fournisseur e-mail et sans activer la racine. En revanche, le SQL définitif et les parcours réels doivent attendre la clôture des décisions bloquantes ci-dessus.
+
+
+## 11. Politique de mot de passe — proposition technique
+
+**Statut : recommandation à valider, pas encore une règle produit activée.**
+
+Pour le mode de connexion e-mail + mot de passe validé :
+- Longueur minimale recommandée : **15 caractères** ; longueur maximale acceptée : au moins **128 caractères**, sans troncature silencieuse.
+- Autoriser phrases de passe, espaces et Unicode ; ne pas imposer de règles artificielles de composition.
+- Refuser les mots de passe manifestement communs ou compromis ; ne pas transmettre le mot de passe en clair à un service tiers.
+- Ne pas imposer de changement périodique sans indice de compromission.
+- Autoriser collage, gestionnaires de mots de passe et outils d'accessibilité.
+- Messages de connexion génériques, sans révéler si l'adresse existe.
+
+### Stockage et vérification
+- Aucun mot de passe brut, réversible ou journalisé.
+- Hachage lent, salé, paramétré par compte ; stocker algorithme et paramètres pour permettre leur évolution.
+- Choisir un algorithme réellement compatible avec le runtime Cloudflare Workers et le valider par benchmark. Ne pas utiliser SHA-256 simple ni importer une bibliothèque native non compatible.
+- N'ajouter un pepper que si son stockage et sa rotation hors D1 sont réellement opérationnels.
+- Calibrer le coût de calcul et limiter les tentatives avant les opérations coûteuses.
+- Aucun secret d'authentification dans les logs, traces ou analytics.
+
+### Réinitialisation et changement
+- Réinitialisation uniquement après un défi OTP e-mail valide, unique et non expiré.
+- Réponse publique générique ; aucun indice sur l'existence d'un compte.
+- Après changement ou réinitialisation, incrémenter la version d'autorisation et révoquer toutes les sessions ; reconnexion obligatoire.
+- Notification de sécurité à l'adresse vérifiée, sans mot de passe.
+- L'OTP ne peut ni approuver un appareil ni restaurer la racine cryptographique.
+
+## 12. Sessions PWA — proposition de paramètres
+
+**Statut : recommandations à valider.**
+
+| Paramètre | Proposition |
+|---|---|
+| Inactivité maximale | 30 jours |
+| Durée absolue maximale | 90 jours |
+| Cookie | `Secure; HttpOnly; SameSite=Lax`, chemin `/`, sans `Domain` si possible |
+| Transport | HTTPS uniquement ; HSTS après vérification du domaine |
+| CSRF | Jeton lié à la session et contrôle strict de `Origin` sur les mutations |
+| Rotation | Rotation du jeton opaque au renouvellement et après réauthentification |
+| Réutilisation d'un ancien jeton | Révoquer la famille de renouvellement et exiger une reconnexion |
+| Révocation | Effet à la requête protégée suivante, vérifié côté serveur |
+| Changement du mot de passe | Révoquer toutes les sessions et imposer une reconnexion |
+| Déconnexion | Révocation serveur immédiate, puis suppression du cookie |
+
+Conditions :
+1. Jeton opaque généré par CSPRNG, entropie d'au moins 256 bits.
+2. D1 ne conserve que l'empreinte du jeton, jamais le secret brut.
+3. Expiration, révocation, version d'autorisation et rotation vérifiées atomiquement.
+4. Ne pas lier l'identité à l'IP ou à une empreinte navigateur fragile.
+5. Aucun jeton dans `localStorage`, `sessionStorage`, URL ou état React persistant.
+6. Ne pas réutiliser automatiquement la session PWA dans Capacitor ; le natif exige un stockage sécurisé et un protocole distinct.
+7. Configurer les attributs du cookie après confirmation du domaine et des flux de navigation ; ne pas les affaiblir pour contourner un problème de déploiement.
+
+## 13. Tests obligatoires avant activation
+
+- mots de passe longs, Unicode, espaces et caractères combinés ;
+- absence de secrets dans D1, logs, erreurs, traces et analytics ;
+- attaques par dictionnaire et tentatives répétées, sans verrouillage permanent exploitable ;
+- OTP expiré, rejoué, remplacé, consommé deux fois en concurrence et résultat fournisseur ambigu ;
+- fixation de session, CSRF, origine non autorisée, cookie absent ou altéré ;
+- session expirée, révoquée, renouvelée et rejeu d'un ancien jeton ;
+- révocation après changement/réinitialisation du mot de passe ;
+- changement d'adresse e-mail et rejeu de défi ;
+- changement d'IP/réseau mobile sans déconnexion injustifiée ;
+- récupération du compte sans restauration de la racine ;
+- essai Android PWA réel et réseau faible.
+
+Aucun parcours n'est opérationnel avant vérification des tests automatisés, des tests D1 et des essais sur appareils.
