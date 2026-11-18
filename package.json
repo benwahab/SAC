@@ -13,7 +13,8 @@
     "test:crypto": "node --experimental-strip-types --test tests/location-crypto.test.ts",
     "test:devices": "node --experimental-strip-types --test tests/device-lifecycle.test.ts",
     "test:certificates": "node --experimental-strip-types --test tests/device-certificate.test.ts",
-    "test:sessions": "node --experimental-strip-types --test tests/session-authorization.test.ts"
+    "test:sessions": "node --experimental-strip-types --test tests/session-authorization.test.ts",
+    "test:alerts": "node --experimental-strip-types --test tests/alert-lifecycle.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
