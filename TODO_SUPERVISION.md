@@ -136,7 +136,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Exiger un délai de grâce explicite au niveau du trajet, sans inventer de valeur par défaut.
 - [x] Modéliser la confirmation tardive et l'état « arrivée non confirmée » sans déclenchement automatique d'un SOS.
 - [x] Réserver la clôture du trajet à son auteur dans le contrat métier pur.
-- [x] Ajouter 12 tests dédiés et les intégrer à la CI.
+- [x] Ajouter 15 tests dédiés et les intégrer à la CI.
 - [x] Documenter les limites du prototype et les contrats D1 futurs.
 - [ ] Exécuter et vérifier la CI du commit intégrant ces changements.
 - [ ] Valider les délais de grâce, les rappels à l'auteur et aux contacts, la pause/reprise, la fraîcheur des positions et le comportement hors ligne.
