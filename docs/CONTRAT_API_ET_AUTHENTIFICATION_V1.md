@@ -634,3 +634,21 @@ SAC ne doit pas traiter comme équivalents :
 - Le silence ou le refus d'un contact n'est pas une approbation et ne doit pas être contourné par un quorum improvisé.
 
 **Verrou :** aucune récupération sociale par vote ou quorum ne doit être implémentée. Le mécanisme indépendant de récupération d'accès reste à définir ; la vérification des nouvelles empreintes reste une étape cryptographique distincte, relation par relation.
+
+
+## Annexe — Proposition de facteur de récupération hors ligne (18 novembre 2026)
+
+**Statut :** proposition uniquement ; aucun flux réel ni fournisseur n'est autorisé.
+
+- Étudier un kit personnel créé à l'avance depuis une session et un appareil autorisés, contenant un secret aléatoire à forte entropie généré localement et présenté une seule fois.
+- Le kit doit rester utilisable sans accès à l'ancien e-mail, au numéro de téléphone ou à un appareil approuvé.
+- Le secret brut ne doit jamais être envoyé par réseau ni conservé côté serveur. Seul un vérificateur protégé peut être conservé, après validation de sa méthode de dérivation et de stockage.
+- L'utilisation doit être à usage unique, atomique, liée à la demande et à la version du compte, résistante au rejeu et aux requêtes concurrentes.
+- Le kit autoriserait uniquement la récupération d'accès au compte selon une procédure encore à définir. Il ne peut pas restaurer une racine, approuver un appareil, annuler une révocation ou autoriser le GPS.
+- Après usage ou régénération, l'ancien kit est invalidé ; un nouveau kit ne peut être créé qu'après reprise authentifiée du compte.
+- Limiter strictement les tentatives et éviter toute réponse permettant l'énumération des comptes. Les journaux ne contiennent ni secret, ni code, ni nouvelle coordonnée.
+- Les notifications de sécurité aux anciens canaux sûrs ou aux contacts consentants sont informatives uniquement : aucun contact ne valide, ne bloque ou ne récupère le compte.
+
+**À spécifier avant implémentation :** format, entropie exacte, checksum, stockage hors ligne, vérificateur serveur, délais, contestation, révocation des sessions, limites de tentatives, perte du kit et tests adversariaux.
+
+**Verrou :** cette proposition ne vaut pas autorisation d'API, de schéma D1, de code métier ou de récupération réelle. La récupération d'accès reste distincte de la récupération de la racine.
