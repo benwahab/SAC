@@ -190,3 +190,7 @@ Aucun SQL définitif n'est prêt à partir des contrats actuels.
 Cette consolidation est documentaire. Elle ne modifie ni code ni tests, ne crée aucune API, migration D1, ressource Cloudflare, fournisseur, notification ou déploiement. Elle ne valide aucune récupération de racine et ne lève aucun verrou GPS.
 
 **Conclusion :** le socle de principes est cohérent, mais l'enrôlement multi-appareils, la récupération d'accès et les sessions ne sont pas prêts pour la production. La récupération de racine reste explicitement hors V1.
+
+## Sécurité des connexions et sessions
+
+La politique de défense contre les tentatives frauduleuses, le vol/rejeu de session, les connexions simultanées, la révocation et les notifications est détaillée dans `PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md`. Les recommandations y restent à arbitrer ; elles ne changent pas les décisions validées sur les durées 30/90 jours ni le verrou de racine V1.
