@@ -126,7 +126,7 @@ L'attribution doit être une transition conditionnelle atomique :
 **Préconditions :** alerte active et session de l'auteur valide.
 
 **Effets cohérents :**
-- transition conditionnelle de `active` vers `cancelled` ou `closed` ;
+- transition conditionnelle de `active` vers `closed` ; une demande « Annuler l'alerte » après déclenchement est une clôture dont le motif est « annulée » ;
 - événement final append-only ;
 - fin de la responsabilité courante ;
 - annulation des rappels et tâches non encore envoyées ;
@@ -195,7 +195,7 @@ Pour les OTP à faible entropie, un hash rapide seul est interdit. Le mécanisme
 - séquence d'occurrence déterministe toutes les cinq minutes ;
 - destinataires issus de l'instantané initial ;
 - accusé de réception et responsabilité n'arrêtent pas les rappels ;
-- annulation/clôture empêche les occurrences futures et annule les tâches en attente ;
+- clôture explicite par l'auteur (y compris avec motif « annulée ») empêche les occurrences futures et annule les tâches en attente ;
 - la planification et l'annulation concurrentes doivent avoir une règle atomique.
 
 **Limite :** l'envoi exactement une fois n'est pas garanti si le fournisseur n'offre pas d'idempotence ni de mécanisme de réconciliation. Il faut concevoir pour livraison au moins une fois avec déduplication, ou documenter précisément les limites du canal.
