@@ -390,3 +390,7 @@ Les 30 jours ne sont pas une durée de conservation GPS. Le GPS réel reste NO-G
 ## Politique générale de conservation — proposition du 18 novembre 2026
 
 Le document [PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md](PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md) propose une matrice non GPS couvrant les comptes, identités, appareils, sessions, invitations, relations, groupes, notifications, journaux, support, exports et données administratives/financières. Toutes les durées nouvelles restent à arbitrer et à faire examiner juridiquement. Le contrat spécialisé des alertes/GPS conserve sa priorité et ses règles validées ne sont pas modifiées.
+
+## Appareils, sessions et récupération — référence transversale
+
+Le document `CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md` centralise les scénarios de perte/changement d'appareil, les sessions 30/90 jours validées, les règles de révocation, la séparation récupération du compte/enrôlement/racine, les divergences cryptographiques et les blocages V1. Les contrats spécialisés restent les références détaillées ; aucune récupération de racine n'est autorisée en V1.
