@@ -5,6 +5,8 @@
 **Base concernée :** D1 `sac-db`, actuellement vide selon le dernier audit connu.  
 **Règle absolue :** aucune table de coordonnées GPS précises n'est proposée tant que la destruction cryptographique irréversible à J+30 n'est pas démontrée.
 
+La revue critique ouverte de cette proposition est consignée dans `docs/REVUE_SCHEMA_RELATIONNEL_D1.md`. Les points de cette revue doivent être traités avant toute conversion en SQL.
+
 Ce document complète :
 - `ARCHITECTURE_ET_MODELE_DONNEES.md` ;
 - `PROTOCOLE_MULTI_APPAREILS.md` ;
