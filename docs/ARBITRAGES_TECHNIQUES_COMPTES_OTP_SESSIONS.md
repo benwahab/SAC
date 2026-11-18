@@ -277,6 +277,14 @@ La clôture appartient exclusivement à l'administration SAC. Ni le titulaire su
 
 Points encore ouverts : procédure de vérification des informations, profil administratif habilité, conditions de décision et notifications ; garde-fous et conservation des éléments de preuve en cas de suspension pour abus lié à l'alerte. Le nombre de validations est tranché : un seul administrateur SAC habilité peut décider et clôturer ; aucune seconde validation n'est obligatoire.
 
+### Vérification avant clôture — règle validée
+
+L'administrateur consulte la référence et le statut de l'alerte, le signalement du responsable principal, les accusés de réception, les prises en charge et les dernières informations des proches. Il vérifie qu'aucun élément récent ne signale un danger persistant et applique les contrôles renforcés en cas de suspicion d'abus lié à l'alerte. Une seule décision d'un administrateur habilité suffit si la fin du danger est suffisamment confirmée.
+
+Un signalement indiquant que le danger persiste, des informations contradictoires ou des informations insuffisantes empêchent la clôture tant que les vérifications ne sont pas concluantes. Si le responsable principal est injoignable, l'administration peut consulter les autres proches ; cette indisponibilité ne vaut pas confirmation. Le silence ou l'absence de réponse d'un proche ne constitue jamais une preuve de sécurité. Tant que la fin du danger ne peut pas être vérifiée, l'alerte reste active et les rappels continuent toutes les 5 minutes vers les seuls destinataires initiaux, sans ajout automatique.
+
+La décision, son motif, l'administrateur et l'horodatage doivent être conservés dans la trace d'audit.
+
 ### Garde-fou validé contre l'abus de clôture
 
 La distinction suivante est validée :
