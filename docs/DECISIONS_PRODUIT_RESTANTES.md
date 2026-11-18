@@ -228,7 +228,7 @@ Le backend devra distinguer au minimum l'éligibilité au rappel, l'accès au d�
 
 ## 10. Arbitrages détaillés — contact révoqué et alerte orpheline
 
-Le dossier `docs/ARBITRAGES_CONTACT_REVOQUE_ET_ALERTE_ORPHELINE.md` détaille les options sans les considérer comme approuvées.
+Le dossier `docs/ARBITRAGES_CONTACT_REVOQUE_ET_ALERTE_ORPHELINE.md` détaille les options d'accès à l'alerte orpheline et le document `docs/PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md` propose un paquet de règles pour les invitations et la révocation. Ces propositions ne sont pas approuvées sans confirmation explicite.
 
 Deux décisions restent particulièrement importantes :
 - après révocation, le contact continue de recevoir les rappels initiaux (règle établie), mais doit-il recevoir un détail minimal de l'alerte active ou uniquement des rappels opaques sans accès au dossier ?
@@ -274,7 +274,7 @@ Le référentiel `MODELE_GLOBAL_DONNEES_SAC.md` rassemble les domaines et signal
 
 ## 14. Cycle de compte et preuve des proches — clarification du 18 novembre 2026
 
-Le document `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` distingue les règles validées des détails encore ouverts. Conséquence de la condition obligatoire d'activation : tout proche qui devient un contact SAC actif doit disposer d'un compte SAC actif, donc d'une adresse e-mail vérifiée par OTP. Aucun parcours téléphone seul ou SMS OTP ne peut créer/activer ce compte ou la relation. Les détails de remise de l'invitation, de correspondance de la destination et de consentement restent à spécifier. Le téléphone déclaré ne prouve ni la propriété du numéro ni le consentement du proche.
+Le document `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` distingue les règles validées des détails encore ouverts. Conséquence de la condition obligatoire d'activation : tout proche qui devient un contact SAC actif doit disposer d'un compte SAC actif, donc d'une adresse e-mail vérifiée par OTP. Aucun parcours téléphone seul ou SMS OTP ne peut créer/activer ce compte ou la relation. Les détails de remise de l'invitation, de correspondance de la destination et de consentement sont consolidés dans `docs/CONTRAT_CYCLE_VIE_PROCHES_ET_INVITATIONS.md` ; les valeurs par défaut proposées restent à confirmer dans `docs/PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md`. Le téléphone déclaré ne prouve ni la propriété du numéro ni le consentement du proche.
 
 ## Décision confirmée — adresse e-mail obligatoire pour activer un compte SAC — 18 novembre 2026
 
