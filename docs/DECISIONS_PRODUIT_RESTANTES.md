@@ -171,3 +171,20 @@ Aucune réponse n'est présumée. Les sujets qui nécessitent une validation pro
 6. fixer les droits d'accès après clôture d'une alerte.
 
 **Tant que ces décisions ne sont pas validées, le schéma et les contrats restent des propositions de conception. Aucun endpoint ne doit supposer un choix implicite.**
+
+
+## 7. Contrat technique initial de Protection des trajets — 18 novembre 2026
+
+Le module expérimental `src/domain/trip-protection.ts` et ses tests définissent une séparation explicite des trois modes :
+
+- `arrival_check` : heure estimée et délai de grâce configurés, sans partage de position requis ;
+- `accompaniment` : partage de position autorisé et durée choisie, sans état de confirmation d'arrivée ;
+- `full_protection` : partage de position autorisé, heure estimée et confirmation d'arrivée.
+
+Le contrat exige que le délai de grâce soit fourni explicitement pour chaque trajet concerné. Il ne fixe aucune valeur par défaut, cadence de rappel ou fréquence GPS.
+
+Une absence de confirmation après l'heure estimée et le délai configuré produit uniquement l'état « arrivée non confirmée » ; le trajet reste actif. L'auteur peut confirmer tardivement, événement conservé dans la chronologie. Seul l'auteur clôture le trajet.
+
+**Limites :** ce module ne déclenche aucun rappel, n'envoie aucune notification, ne lit ni n'enregistre de coordonnées GPS et ne constitue pas une API ou une migration D1. La fréquence de position, le délai de grâce par défaut, les rappels à l'auteur et aux contacts, la pause/reprise, la fraîcheur des positions et le comportement hors ligne restent à valider.
+
+Les règles techniques ne remplacent donc pas les arbitrages produit de la section 6.
