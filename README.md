@@ -66,3 +66,6 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 
 
 - [Modèle de menaces et plan de sécurité de l'administration](docs/MODELE_MENACES_ET_PLAN_SECURITE_ADMIN.md)
+
+
+- [Contrats atomiques des opérations administratives](docs/CONTRATS_OPERATIONS_ADMIN_ATOMIQUES.md)
