@@ -281,6 +281,8 @@ Les règles suivantes complètent les décisions déjà actées (un seul respons
 **Garde-fou non négociable :** aucun contact, volontaire ou responsable principal ne peut clôturer l'alerte à la place de son auteur. Une déclaration « situation résolue » reste une déclaration humaine, pas une preuve vérifiée par SAC.
 
 
+Les valeurs et comportements recommandés pour les invitations, la révocation symétrique, les rappels opaques, l'accès au dossier et la responsabilité principale sont regroupés dans `PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md`. Ils restent à confirmer explicitement.
+
 ### 7.3 Révocation pendant une alerte active — proposition à valider
 
 - La révocation prend effet selon l'ordre de commit serveur, jamais selon l'heure du téléphone ou une lecture préalable.
