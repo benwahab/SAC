@@ -1,5 +1,5 @@
 import { normalizeRegistrationEmail } from "../../../src/domain/registration-policy.ts";
-import { digestEmailOtp } from "../../lib/security/email-otp-code.ts";
+import { verifyEmailOtpDigest } from "../../lib/security/email-otp-code.ts";
 
 interface Env {
   DB: D1Database;
@@ -42,6 +42,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     account_id: string;
     identity_id: string;
     challenge_id: string | null;
+    challenge_digest: string | null;
     account_status: string;
     verified_at: number | null;
   };
@@ -77,14 +78,17 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ error: "invalid_or_expired_code" }, 400);
   }
 
-  let candidateDigest: string;
+  if (!record.challenge_digest) return json({ error: "invalid_or_expired_code" }, 400);
+
+  let codeMatches: boolean;
   try {
-    candidateDigest = await digestEmailOtp(
+    codeMatches = await verifyEmailOtpDigest(
       crypto,
       env.EMAIL_OTP_HMAC_SECRET,
       record.challenge_id,
       "account_email_verification",
       body.code,
+      record.challenge_digest,
     );
   } catch {
     return json({ error: "verification_unavailable" }, 503);
@@ -95,9 +99,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const consumed = await env.DB.prepare(
       `UPDATE email_otp_challenges
        SET attempt_count = attempt_count + 1,
-           consumed_at = CASE WHEN digest = ? THEN ? ELSE NULL END,
+           consumed_at = CASE WHEN ? = 1 THEN ? ELSE NULL END,
            invalidated_at = CASE
-             WHEN digest <> ? AND attempt_count + 1 >= max_attempts THEN ?
+             WHEN ? = 0 AND attempt_count + 1 >= max_attempts THEN ?
              ELSE NULL
            END
        WHERE id = ?
@@ -109,9 +113,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
          AND attempt_count < max_attempts
        RETURNING consumed_at, attempt_count`,
     ).bind(
-      candidateDigest,
+      codeMatches ? 1 : 0,
       now,
-      candidateDigest,
+      codeMatches ? 1 : 0,
       now,
       record.challenge_id,
       record.account_id,
