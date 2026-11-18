@@ -652,3 +652,51 @@ Pour chaque option, tester le cas où un appareil secondaire légitime est encor
 
 **NO-GO :** pas de mise en production avant décision sur le seuil de preuve, le délai, la contestation, les droits temporaires, la politique de session et la validation des tests de concurrence et d'abus.
 
+
+
+## Annexe — Évaluation des choix candidats pour la récupération sans ancien téléphone ni e-mail (18 novembre 2026)
+
+**Statut : recommandations à arbitrer ; aucune politique n'est activée.**
+
+### 1. Risque résiduel du couple clé + nouvel e-mail
+La clé hors ligne est un facteur de possession indépendant seulement si elle a été générée correctement et conservée séparément. Le nouvel OTP confirme le contrôle de la nouvelle boîte, pas l'identité du titulaire. Si un attaquant vole ou photographie la clé et contrôle une adresse qu'il vient de créer, le couple de preuves peut être détourné. Le délai réduit la fenêtre de prise de contrôle mais ne corrige pas une clé compromise.
+
+Contrôles candidats :
+- clé aléatoire à forte entropie, usage unique, vérificateur protégé et consommation atomique ;
+- OTP à durée limitée, lié à la demande et à la nouvelle adresse ;
+- réponses uniformes, limites d'essais multidimensionnelles et absence de fuite dans les journaux ;
+- refus du parcours standard lorsque la clé est signalée compromise ;
+- procédure indépendante distincte à concevoir pour les cas de clé compromise ou perdue.
+
+### 2. Délai de sécurité candidat : 24 heures
+Un délai de 24 heures après validation des deux preuves permet aux sessions encore actives de signaler un comportement suspect. Il ne garantit pas que le titulaire verra une notification, notamment si le téléphone perdu était son seul appareil. Le délai n'est donc ni une preuve d'identité, ni une protection suffisante en cas de clé volée.
+
+À tester : demandes répétées, délai contourné par concurrence, contestation tardive, notification non délivrée, ancien e-mail compromis et absence de tout autre appareil connecté.
+
+### 3. Contestation sans récupération sociale
+- Une session active et authentifiée peut signaler une activité suspecte et suspendre provisoirement le traitement selon une politique définie.
+- Un ancien e-mail ne doit pas disposer d'un bouton de veto ou d'un pouvoir de récupération ; notification neutre uniquement si canal non suspecté compromis.
+- Aucun quorum, vote ou reconnaissance humaine de contacts.
+- La suspension doit avoir une durée maximale et une résolution documentée pour éviter le déni de service par un appareil secondaire compromis.
+
+### 4. Révocation et appareils secondaires
+Option candidate : invalider toutes les sessions et tous les jetons existants au commit, sauf la nouvelle session limitée. Révoquer l'appareil déclaré perdu et ses abonnements push. Conserver séparément les enregistrements cryptographiques des appareils secondaires approuvés ; leur propriétaire devra se réauthentifier et prouver la possession de leur clé locale avant de retrouver une session.
+
+Cette séparation évite deux erreurs opposées : laisser vivre une session volée, ou détruire sans nécessité l'identité cryptographique d'un appareil secondaire encore légitime. Elle ne restaure jamais la racine perdue.
+
+### 5. Session limitée et SOS
+La session de récupération ne doit pas ouvrir les données privées, l'historique d'alertes, les coordonnées des contacts ou le GPS. La possibilité de déclencher un SOS sans GPS depuis cette session est un arbitrage séparé : elle peut préserver l'accès à l'urgence, mais nécessite un contrôle anti-usurpation et un périmètre très précis. Aucun OTP e-mail ne doit être demandé au moment d'un SOS valide.
+
+### Tests adversariaux supplémentaires
+- clé copiée + nouvelle adresse contrôlée par l'attaquant ;
+- notification neutre reçue sur une session encore active ;
+- contestation d'une session secondaire compromise visant à bloquer le titulaire ;
+- suspension qui expire correctement et ne peut pas être prolongée abusivement ;
+- toutes sessions invalidées sauf session limitée, même en cas de commit rejoué ;
+- appareils secondaires conservés cryptographiquement mais incapables de réutiliser une ancienne session ;
+- tentative d'accès aux alertes privées, coordonnées, GPS ou fonctions racine depuis la session limitée ;
+- tentative de déclencher SOS depuis session limitée, selon la politique finalement retenue ;
+- clé compromise signalée avant, pendant et après le délai de sécurité.
+
+**NO-GO :** aucune activation avant validation explicite de la politique et tests indépendants du délai, de la contestation, de la révocation et de la session limitée.
+
