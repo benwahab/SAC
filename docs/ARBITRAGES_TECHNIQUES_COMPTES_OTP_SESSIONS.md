@@ -335,7 +335,7 @@ Chaque utilisateur doit obligatoirement fournir un numéro de téléphone lors d
 
 La collecte obligatoire ne vaut pas vérification du numéro. La méthode de vérification, ainsi que les règles de changement et de mise à jour, restent à définir. La décision déjà prise de ne pas utiliser de SMS OTP pour l'authentification des comptes reste en vigueur : aucun SMS OTP ni mécanisme de vérification par SMS n'est autorisé implicitement.
 
-Le numéro ne peut être utilisé comme moyen de contact fiable dans la procédure administrative de clôture que lorsque son caractère vérifié et son accessibilité sont établis. Si ce n'est pas le cas, l'administration consigne cette limite et poursuit les vérifications sans assimiler le silence à une preuve de sécurité. Aucun compte n'est clôturé automatiquement pour absence de réponse.
+Le numéro déclaré peut être utilisé comme coordonnée de contact dans la procédure administrative de clôture sans vérification téléphonique indépendante. Une réponse provenant de ce numéro ne prouve pas à elle seule l'identité de l'interlocuteur et doit être appréciée et recoupée. Le silence ne constitue jamais une preuve de sécurité et ne permet aucune clôture automatique.
 
 Décision documentaire uniquement : aucun champ, validation, envoi SMS, service externe, endpoint ou migration D1 n'est implémenté ici.
 
