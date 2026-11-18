@@ -318,3 +318,29 @@ Tests d'intégration obligatoires :
 - révocation pendant une prise en charge ou un transfert ;
 - clôture puis tentative de lecture par le contact révoqué ;
 - réessai idempotent de la révocation et panne partielle.
+
+
+## 13. Contrat — escalade SMS après rappels push, selon le seuil du lanceur
+
+**Décision produit validée :** le lanceur choisit, pour chaque alerte, le nombre de rappels push avant l'envoi de SMS de secours. Le push reste le canal principal ; le SMS est une escalade et non le canal normal.
+
+**Données à figer avec la création atomique de l'alerte :** seuil de rappels choisi par l'auteur ; compteur serveur des occurrences de rappels push déjà planifiées ; destinataires issus de l'instantané initial ; état d'escalade SMS normalisé (non dû, dû, en attente, accepté, livré si confirmé, échoué, ambigu ou annulé).
+
+**Règles de séquencement :**
+1. La notification push initiale n'entre pas dans le compteur des rappels.
+2. Les rappels push suivants sont espacés de cinq minutes selon le scheduler serveur.
+3. Chaque occurrence est créée une seule fois par alerte, destinataire, canal et numéro de séquence.
+4. Lorsque le nombre de rappels choisi est atteint, le serveur vérifie dans l'état métier courant si un responsable principal est attribué.
+5. Si aucun responsable principal n'existe, les tâches SMS de secours peuvent être créées pour les destinataires initiaux, de façon idempotente.
+6. Si un responsable principal est attribué avant la création des tâches SMS, l'escalade est annulée. Si l'attribution concurrence le scheduler, l'opération atomique doit établir un ordre déterministe : aucune tâche SMS ne doit être créée après une prise en charge déjà validée.
+7. Un accusé de réception ou une candidature volontaire seule ne bloque pas l'escalade.
+8. Les rappels push continuent selon la règle existante jusqu'à clôture par l'auteur, même si un contact a accusé réception ou pris la responsabilité.
+9. La clôture annule toutes les tâches push/SMS encore en attente ; un envoi déjà accepté par un fournisseur peut encore être livré.
+
+**Destinataires :** uniquement l'instantané initial. Aucun ajout de contact au moment de l'escalade.
+
+**Choix utilisateur :** le seuil est configuré par le lanceur pour chaque alerte. La plage minimale/maximale, la valeur par défaut et le traitement d'une valeur manquante doivent être arbitrés avant l'interface et l'API ; ne pas inventer une plage en backend.
+
+**Tests D1 obligatoires :** notification initiale exclue du compteur ; seuil atteint exactement une fois malgré deux workers concurrents ; prise en charge avant le seuil, juste au seuil et en concurrence avec la création SMS ; accusé seul et candidature seule n'empêchent pas le SMS ; prise en charge annule les SMS non encore créés/en attente selon état ; clôture annule les tâches non envoyées ; tâche déjà acceptée reste marquée comme potentiellement livrable ; aucune tâche vers un contact absent de l'instantané ; retry/rejeu ne crée pas de doublon ni ne remet le compteur à zéro.
+
+**Limite :** un rappel planifié n'est pas une garantie de livraison push. L'escalade est fondée sur le nombre d'occurrences push du calendrier serveur et l'absence de responsable principal, pas sur une prétendue preuve que le téléphone n'a pas reçu la notification.
