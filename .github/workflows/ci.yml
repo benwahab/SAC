@@ -34,7 +34,7 @@ jobs:
         run: npm run test:accounts
       - name: Test account authentication and session policy
         run: npm run test:auth-policy
-      - name: Test Resend email adapter preconditions
+      - name: Test Resend email adapter and delivery outcomes
         run: npm run test:email
       - name: Test validated email OTP policy
         run: npm run test:otp-policy
