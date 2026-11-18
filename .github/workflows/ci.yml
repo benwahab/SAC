@@ -28,6 +28,8 @@ jobs:
         run: npm run test:alerts
       - name: Test alert response and responsibility contract
         run: npm run test:responses
+      - name: Test trip protection domain contract
+        run: npm run test:trips
       - run: npm run build
       - name: Audit production dependencies (blocking)
         run: npm audit --omit=dev --audit-level=high
