@@ -944,3 +944,16 @@ La session limitée n'accède pas aux données privées, contacts, GPS, ancienne
 Au succès final, recommandation d'invalider toutes les sessions et tous les jetons antérieurs et abonnements push associés. Cette invalidation côté serveur ne constitue pas un effacement à distance des données locales. Les alertes actives, leurs instantanés et leurs tâches de notification restent intacts.
 
 Le kit ne restaure jamais l'ancienne identité cryptographique. Une nouvelle racine et toute approbation d'appareil suivent leurs cérémonies distinctes. La consommation atomique du kit, le délai, les contestations, les droits exacts et la durée de session restent à arbitrer. Aucun code, fournisseur, endpoint, migration D1 ou session réelle n'est créé.
+
+
+## Kit compromis et ancienne adresse e-mail accessible — limites d'autorisation (18 novembre 2026)
+
+Cette annexe ne définit aucun endpoint ni aucune opération réelle.
+
+Si un appareil approuvé sûr subsiste, la compromission du kit peut être déclarée depuis cet appareil ; le kit est invalidé et remplacé uniquement depuis une session de confiance. Si aucun appareil approuvé ne subsiste, l'ancienne adresse e-mail ne remplace pas le kit compromis et ne permet pas de récupérer le compte historique.
+
+L'e-mail peut éventuellement recevoir une notification neutre et présenter une contestation à privilège négatif, limitée à la mise en pause d'une demande précise. Cette action ne donne aucun accès, ne change aucune coordonnée, ne réinitialise aucun mot de passe, ne révoque aucune racine et ne génère aucun nouveau kit. Elle doit être à usage unique, liée à la demande, limitée dans le temps et protégée contre les abus de disponibilité. Une demande suspendue ne reprend pas automatiquement sans preuve indépendante.
+
+OTP e-mail prouve uniquement le contrôle ponctuel de la boîte. Il ne prouve pas l'identité historique, la continuité du compte, la possession de la racine ou l'approbation d'un appareil. Si kit compromis et aucun appareil approuvé, le compte historique reste irrécupérable en l'absence d'un facteur indépendant préenregistré et validé.
+
+Aucune nouvelle adresse, donnée de contact, alerte, position ou secret ne doit être divulgué par notification. Aucun fournisseur, endpoint, champ, migration D1 ou flux n'est créé.
