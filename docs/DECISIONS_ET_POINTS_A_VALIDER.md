@@ -111,8 +111,8 @@ Aucun fournisseur, compte externe, coût, intégration ou calendrier de destruct
 | 1.2 | Rappels alignés sur la validation utilisateur : toutes les 5 minutes vers les contacts initiaux jusqu'à clôture ; détails du SOS discret et de la protection contre désactivation forcée consignés. |
 | 1.3 | Architecture Cloudflare rétablie conformément au cahier des charges : Pages, Pages Functions, D1 et R2 sous réserve d'activation/autorisation. |
 | 1.4 | Catégories d'alerte, vérification des contacts invités et fenêtres de partage de localisation harmonisées avec les décisions récupérées. |
-| 1.5 | Conservation des positions GPS précises validée à 30 jours après la fin du partage, avec purge automatique définitive des données actives. |
-| 1.6 | Exigence ferme : après 30 jours, aucune restauration de sauvegarde, D1 Time Travel, snapshot, export ou réplication ne doit permettre de récupérer ou rendre lisibles les coordonnées GPS expirées ; destruction cryptographique indépendante et non restaurable obligatoire. |
+| 1.5 | **DÉCISION HISTORIQUE REMPLACÉE le 18 novembre 2026** : l'ancienne conservation des positions GPS pendant 30 jours après fin du partage n'est plus applicable aux alertes SOS. Voir la décision actuelle section 3.5 et le contrat spécialisé. |
+| 1.6 | **GARANTIE DE NON-RÉSURRECTION TOUJOURS EXIGÉE, mais échéance et objet corrigés le 18 novembre 2026** : GPS d'alerte supprimé à la clôture ; alerte/catégorie supprimées à J+30 ; aucune sauvegarde/restauration ne peut ressusciter ces données. GPS de trajet : durée à arbitrer séparément. |
 | 1.7 | Seuil d'escalade SMS validé : le lanceur choisit de 1 à 5 rappels push par alerte ; 2 rappels (10 minutes) sont présélectionnés. |
 
 | 1.8 | Cadre de sécurité du changement de numéro/e-mail : séparation des canaux, OTP non assimilé à une preuve d'identité, continuité des relations et arbitrages de récupération consignés. |
