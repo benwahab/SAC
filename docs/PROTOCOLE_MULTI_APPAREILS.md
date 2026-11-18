@@ -630,3 +630,17 @@ Le numéro de téléphone et l'adresse e-mail sont des canaux de contact/authent
 - Une récupération d'accès au compte et une récupération d'identité cryptographique sont deux opérations distinctes. Aucune modification de canal ne doit restaurer une clé privée absente.
 
 **Point à arbitrer :** déterminer quelles opérations de compte un appareil secondaire peut initier ou finaliser (simple demande, changement avec preuve racine, changement après authentification renforcée), sans lui donner un pouvoir d'approbation racine.
+
+
+## Annexe — OTP e-mail et frontière de confiance multi-appareils (18 novembre 2026)
+
+La politique OTP validée utilise l'e-mail comme canal standard pour les codes de vérification du compte. Cette décision ne modifie pas la hiérarchie de confiance des appareils.
+
+- Un OTP envoyé à une adresse e-mail vérifiée prouve uniquement le contrôle ponctuel de cette boîte.
+- Un OTP e-mail, même valide, ne peut pas approuver un appareil secondaire, promouvoir un appareil en racine, signer une cérémonie, restaurer une clé privée ni annuler une révocation.
+- La récupération d'accès au compte par e-mail reste distincte de la récupération de l'identité cryptographique racine.
+- Si l'utilisateur a perdu l'accès à son ancienne boîte, la vérification d'une nouvelle adresse ne suffit pas à établir la continuité du compte ; une preuve indépendante préalablement approuvée ou une procédure forte validée est requise.
+- Le SMS n'est pas un canal OTP de secours automatique. Il reste réservé à l'escalade SOS et ne participe pas à la récupération de la racine.
+- Les appareils secondaires conservent leurs capacités strictement autorisées ; la réception d'un OTP e-mail ne leur confère aucun privilège supplémentaire.
+
+**Verrou :** aucune transition de racine ou approbation d'appareil ne doit être implémentée sur la seule base d'un OTP, qu'il soit reçu par e-mail ou SMS.
