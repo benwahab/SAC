@@ -615,3 +615,18 @@ Cette liste est une politique proposée. Les fonctions exactes accessibles sur u
 - absence de secret, empreinte complète, coordonnées ou détail sensible dans les notifications et journaux.
 
 **Verrou :** aucune récupération racine ne doit être implémentée avant validation des facteurs de récupération du compte, de la politique de vérification des contacts, de l'UX anti-hameçonnage, de la spécification cryptographique et d'une revue indépendante. Aucune migration D1, route API ou ressource Cloudflare n'est créée par cette proposition.
+## Annexe — Coordonnées du compte et identité multi-appareils (18 novembre 2026)
+
+Le numéro de téléphone et l'adresse e-mail sont des canaux de contact/authentification du compte ; ils ne sont pas l'identité cryptographique d'un appareil et ne constituent pas une preuve de possession de la racine.
+
+- Modifier le numéro ou l'e-mail ne modifie pas les clés publiques/privées d'un appareil, le certificat d'approbation, l'identifiant de compte ou l'époque de racine.
+- La vérification du nouveau canal ne crée, n'approuve, ne réactive et ne certifie aucun appareil.
+- Une session secondaire ne peut pas s'auto-élever au rôle racine en démontrant uniquement le contrôle d'un nouveau numéro ou e-mail.
+- Un appareil révoqué reste révoqué même si le propriétaire modifie ensuite ses coordonnées ou réinitialise son mot de passe.
+- La demande de changement doit vérifier le statut serveur actuel de l'appareil et de la session au moment du commit ; une révocation concurrente gagnante fait échouer la demande.
+- Si le changement est effectué avec l'ancienne racine toujours active, l'identité racine reste inchangée. Il n'est donc pas nécessaire de faire revérifier automatiquement toutes les empreintes des contacts uniquement parce qu'un canal de contact a changé.
+- Si la racine est perdue et remplacée, le protocole de récupération déjà documenté s'applique : nouvelle identité, révocation de l'ancienne racine, vérification indépendante de la nouvelle empreinte par les contacts concernés avant reprise des partages GPS.
+- Les coordonnées privées ne sont pas distribuées aux autres appareils ou contacts sans règle explicite. Les relations de confiance restent attachées à l'identifiant de compte, jamais à la seule valeur d'un numéro ou d'un e-mail.
+- Une récupération d'accès au compte et une récupération d'identité cryptographique sont deux opérations distinctes. Aucune modification de canal ne doit restaurer une clé privée absente.
+
+**Point à arbitrer :** déterminer quelles opérations de compte un appareil secondaire peut initier ou finaliser (simple demande, changement avec preuve racine, changement après authentification renforcée), sans lui donner un pouvoir d'approbation racine.
