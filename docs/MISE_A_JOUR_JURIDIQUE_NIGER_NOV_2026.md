@@ -15,7 +15,7 @@ Conséquence pour SAC : les anciennes coordonnées, pages de formalités et proc
 
 ## 2. Une ordonnance du 8 juin 2026 aurait également modifié le texte légal lui-même
 
-Le texte du décret reproduit dans des sources secondaires cite une **ordonnance n° 2026-30 du 8 juin 2026**, présentée comme abrogeant certaines lois portant création d'autorités de régulation et certaines dispositions de la loi n° 2022-59 du 16 décembre 2022.
+Le décret de suppression est identifié dans plusieurs sources comme le **décret n° 2026-310/PRN/PM du 8 juin 2026** ; l'ANP confirme la date et les effets du décret, sans reproduire son numéro dans sa dépêche. Le texte du décret reproduit dans des sources secondaires cite une **ordonnance n° 2026-30 du 8 juin 2026**, présentée comme abrogeant certaines lois portant création d'autorités de régulation et certaines dispositions de la loi n° 2022-59 du 16 décembre 2022. Une copie numérisée/OCR consultée présente une lecture contradictoire du numéro du décret (310 dans son intitulé, 340 dans le corps transcrit) : le numéro doit donc être confirmé sur le Journal officiel avant citation dans un acte juridique.
 
 À ce stade, le texte intégral officiel de cette ordonnance n'a pas été retrouvé dans une source gouvernementale consultable. Une source de veille juridique signale expressément que les dispositions précises abrogées n'ont pas pu être vérifiées. Il serait donc incorrect d'affirmer que les articles matériels de la loi 2022-59 sont tous restés inchangés, ou au contraire de supposer qu'ils ont tous disparu.
 
@@ -40,9 +40,25 @@ Références :
 - PDF du texte initial 2022 : https://www.hapdp.ne/uploads/files/Loi-N%C2%B02022-59HAPDP.pdf
 - Loi modificative 2023-31, PDF publié sur l'ancien site HAPDP : https://www.hapdp.ne/uploads/files/Loi%20N%C2%B0%202023-31%20Modifiant%20la%20Loi%20N%C2%B0%202022-59.pdf
 
-La loi 2023-31 indique qu'elle modifie notamment les articles 6, 7, 14, 23, 24 et 111. Une source de veille secondaire décrit les textes 2023 et 2024 comme visant principalement les dispositions institutionnelles de la HAPDP ; cette synthèse ne remplace pas la lecture des ordonnances officielles.
+La loi 2023-31 du 4 juillet 2023 est disponible en PDF et son article premier confirme qu'elle a modifié les articles 6, 7, 14, 23, 24 et 111 de la loi 2022-59. Ces dispositions concernent notamment la création, le statut, la composition, le commissaire du Gouvernement, les ressources, le budget et les dispositions transitoires de la HAPDP. Cette modification de 2023 ne permet pas, à elle seule, de conclure quels articles ont ensuite été abrogés par l'ordonnance 2026-30. Source consultée : https://www.dataguidance.com/sites/default/files/loi_ndeg_2023-31_modifiant_la_loi_ndeg_2022-59.pdf.
 
-## 4. Conséquences immédiates pour la documentation SAC
+## 4. Ce que l'on peut et ne peut pas conclure sur la loi 2022-59
+
+Établi par les textes consultés :
+- la loi 2022-59 constitue le texte général de protection des données personnelles ;
+- la loi 2023-31 a expressément modifié les articles 6, 7, 14, 23, 24 et 111 ;
+- l'ordonnance 2026-30 est citée comme abrogeant certaines dispositions de la loi 2022-59 ;
+- le décret 2026 de suppression transfère les missions de l'ancienne HAPDP aux ministères de la Justice et de l'Intérieur.
+
+Non établi à ce stade :
+- la liste exacte des articles de la loi 2022-59 abrogés par l'ordonnance 2026-30 ;
+- le maintien, la modification ou l'abrogation de chaque formalité préalable ;
+- la répartition opérationnelle des compétences entre les deux ministères ;
+- le service, formulaire, adresse et délai à utiliser pour une déclaration, une autorisation, une demande d'avis ou une notification de violation.
+
+Il est donc prématuré d'écrire que toutes les obligations substantielles de la loi 2022-59 restent inchangées. Il est tout aussi incorrect d'affirmer que la protection des données a disparu. Chaque disposition doit être confrontée au texte authentique de l'ordonnance 2026-30 et aux textes d'application.
+
+## 5. Conséquences immédiates pour la documentation SAC
 
 Jusqu'à obtention des textes officiels postérieurs à juin 2026 :
 
@@ -53,7 +69,7 @@ Jusqu'à obtention des textes officiels postérieurs à juin 2026 :
 5. Identifier par écrit, auprès des ministères de la Justice et de l'Intérieur, le service qui exerce désormais chaque compétence de protection des données et les modalités de saisine.
 6. Faire contrôler le texte de l'ordonnance 2026-30 et les textes d'application par un juriste nigérien avant toute mise en production.
 
-## 5. Principes de protection SAC maintenus indépendamment de l'incertitude institutionnelle
+## 6. Principes de protection SAC maintenus indépendamment de l'incertitude institutionnelle
 
 Cette évolution institutionnelle ne réduit aucune exigence produit de SAC :
 
@@ -68,7 +84,7 @@ Cette évolution institutionnelle ne réduit aucune exigence produit de SAC :
 
 La règle J+30 est une exigence de sécurité produit. Elle ne doit pas être interprétée comme une durée légale générale pour les autres données de SAC.
 
-## 6. Questions à résoudre avant validation juridique
+## 7. Questions à résoudre avant validation juridique
 
 - Obtenir le texte officiel intégral de l'ordonnance n° 2026-30 du 8 juin 2026.
 - Vérifier précisément les articles de la loi 2022-59 abrogés ou modifiés par cette ordonnance.
