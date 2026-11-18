@@ -132,3 +132,6 @@ Avant toute conception ou évolution des notifications push, e-mails, SMS, abonn
 
 
 Avant toute conception ou évolution des trajets, de la vérification d'arrivée, de l'accompagnement, du partage de position ou des permissions GPS, lire `docs/CONTRAT_SECURITE_TRAJETS_ET_LOCALISATION.md` avec les contrats de conservation GPS J+30, SOS, communications et confidentialité. Ne jamais activer une collecte GPS réelle tant que le NO-GO J+30 et la non-résurrection après restauration ne sont pas levés par preuves et autorisation explicite. Les durées proposées ne sont pas des décisions validées.
+
+
+Avant toute conception ou modification de récupération de compte, perte/vol d'appareil, sécurisation d'urgence, changement d'e-mail, révocation globale ou remplacement d'appareil, lire `docs/CONTRAT_SECURITE_COMPTES_ET_APPAREILS_EN_URGENCE.md` avec la consolidation appareils/sessions, le plan socle compte, les arbitrages OTP et les contrats SOS. Ne jamais confondre récupération du compte et récupération de la racine. En V1, aucune racine perdue ou compromise ne peut être remplacée par OTP, mot de passe, support, Super Admin ou appareil secondaire. Les parcours décrits comme propositions ne sont pas implémentables sans arbitrage et autorisation distincte.
