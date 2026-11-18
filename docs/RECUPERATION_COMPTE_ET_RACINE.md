@@ -85,7 +85,7 @@ Transitions proposées :
 | Accéder à un historique GPS | Interdit ; aucune archive GPS ne doit être restaurée |
 | Changer la racine par simple OTP | Interdit |
 
-Le maintien du SOS non-GPS est important : la sécurité de récupération ne doit pas neutraliser la fonction d'urgence de base.
+Le maintien du SOS non-GPS est un objectif produit important, mais sa disponibilité pendant une récupération n'est pas une garantie technique acquise. L'authentification, l'anti-abus et la transmission doivent être spécifiés et testés ; aucun contournement par OTP seul, appareil neuf non approuvé ou ancienne session révoquée n'est permis. Lire également `AUDIT_RECUPERATION_COMPTE_SANS_APPAREIL_FIABLE.md` et `CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md`.
 
 ## 6. Sauvegardes et restaurations
 - Une sauvegarde de l'application ne doit pas restaurer une clé privée racine exportable.
