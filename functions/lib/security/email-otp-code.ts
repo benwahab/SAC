@@ -5,7 +5,7 @@
  * doit être persisté ni journalisé. L'empreinte doit être calculée avec un
  * secret aléatoire conservé hors D1 (secret Cloudflare).
  */
-import { EMAIL_OTP_CODE_LENGTH } from "../../../src/domain/email-otp-policy.ts";
+const EMAIL_OTP_CODE_LENGTH = 6;
 
 const OTP_SPACE = 1_000_000;
 const UINT32_RANGE = 0x1_0000_0000;
