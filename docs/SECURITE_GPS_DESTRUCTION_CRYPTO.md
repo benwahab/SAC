@@ -1,7 +1,7 @@
 # SAC — Étude de conception : destruction cryptographique des positions GPS
 
 **Statut : étude technique, aucun fournisseur ni mécanisme de production validé.**  
-**Objectif impératif :** à l'expiration des 30 jours suivant la fin du partage (ou la collecte pour une position ponctuelle), aucune restauration de D1, d'un export, d'une sauvegarde ou du service de clés ne doit pouvoir rendre les coordonnées GPS lisibles.
+**Périmètre et priorité :** ce document est une étude technique, pas une décision de conservation. Pour les alertes SOS, le contrat prioritaire impose la suppression immédiate de toutes les positions GPS à la clôture, puis la conservation de la seule catégorie d'alerte pendant 30 jours et la purge de l'entrée à J+30. Aucune archive GPS locale post-clôture n'est autorisée. Pour les trajets et positions ponctuelles indépendants d'une alerte, aucune durée de conservation n'est approuvée ; aucune collecte GPS persistante n'est autorisée avant arbitrage distinct et GO technique. Les scénarios J+30 ci-dessous sont historiques/candidats et ne doivent pas être appliqués aux positions d'une alerte clôturée.
 
 ## 1. Cible de conception candidate — non approuvée
 
@@ -15,12 +15,12 @@ Règles non négociables :
 1. Aucune coordonnée GPS précise ni aucun payload GPS ne doit être persisté dans D1, R2, KV, Durable Objects, files, journaux, traces, analytics, exports ou sauvegardes serveur.
 2. Le téléphone chiffre les positions avant leur transmission. Le serveur authentifie, vérifie les droits et relaie les paquets chiffrés sans les déchiffrer ni créer d'historique GPS durable.
 3. Le relais est éphémère : les paquets ne sont conservés que le temps technique nécessaire à la livraison et ne sont jamais utilisés comme archive.
-4. Si un historique local de 30 jours est finalement approuvé, il devra être chiffré avec une clé propre à chaque session de partage ou trajet, exclu de toute sauvegarde/transfert/synchronisation, et ne jamais être restauré sur un autre appareil. Cette règle ne prouve pas à elle seule la destruction J+30 ; voir les scénarios GPS-01 à GPS-36.
+4. Aucune archive GPS locale de 30 jours n'est approuvée. Pour une alerte, toute copie locale gérée par SAC doit être supprimée à la clôture. Pour un trajet, toute éventuelle conservation locale nécessite une décision séparée ; les scénarios GPS-01 à GPS-36 sont une étude de faisabilité, pas une autorisation de collecte.
 5. À J+30, l'accès doit être refusé même si le téléphone était éteint à l'échéance. Une vérification au prochain démarrage ne suffit pas à elle seule : il faut une expiration cryptographique résistante à la restauration et à la manipulation de l'horloge.
 6. La PWA seule ne peut pas être présentée comme preuve de destruction matérielle irréversible. Android Keystore/TEE/StrongBox et iOS Keychain ne doivent pas être considérés comme suffisants avant démonstration d'une expiration J+30 indépendante de l'application.
 7. Si la clé locale est perdue, l'archive devient irrécupérable avant J+30 : la confidentialité prime sur la récupération de l'historique. La récupération de compte ou l'ajout d'un appareil ne restaure jamais les anciennes clés GPS.
 
-**État réel :** cible produit documentée ; architecture de conservation locale non approuvée tant que l'expiration hors ligne et téléphone éteint n'est pas démontrée. Aucun GPS réel connecté, aucun mécanisme de production implémenté, aucune preuve de destruction J+30 validée. Les tests natifs, la résistance aux sauvegardes/restaurations et la gestion des téléphones éteints restent des bloqueurs.
+**État réel :** aucune conservation locale GPS de 30 jours n'est approuvée. La règle de purge immédiate des GPS d'alerte à la clôture est normative ; la conservation GPS des trajets reste non arbitrée. Aucun GPS réel connecté, aucun mécanisme de production implémenté, aucune preuve de destruction J+30 validée. Les tests natifs, la résistance aux sauvegardes/restaurations et la gestion des téléphones éteints restent des bloqueurs.
 
 ## 2. Pistes KMS historiques — non retenues pour l'architecture actuelle
 
