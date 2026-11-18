@@ -266,3 +266,16 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Rechercher un mécanisme permettant de prouver la destruction irréversible de toutes les copies à l'échéance, sans fenêtre de restauration administrative et sans cache de clé locale.
 - [ ] Faire auditer contractuellement et techniquement toute solution KMS candidate avant de l'utiliser ; aucune ressource ou compte externe ne doit être créé sans autorisation explicite.
 - [ ] Ne pas présenter la lecture hors ligne de l'historique GPS et la destruction stricte J+30 comme simultanément garanties tant que la clé complète peut être copiée ou restaurée.
+
+
+## Compléments de recherche — 18 novembre 2026
+
+- [x] Nuancer l'analyse Android : certains matériels peuvent appliquer des autorisations temporelles en hardware ; vérifier l'attestation `hardwareEnforced`. La précision StrongBox documentée (±10 %) ne permet toujours pas de garantir J+30 exact.
+- [x] Examiner AWS External Key Store / HYOK : la révocation de la clé externe peut rendre le ciphertext irrécupérable, mais les data keys déjà en cache peuvent continuer à fonctionner ; XKS ne fournit pas à lui seul une destruction automatique à J+30.
+- [x] Examiner Fortanix DSM : l'expiration/désactivation laisse possible le déchiffrement ; la destruction est distincte et la Key Undo Policy introduit une période réversible. Sauvegardes et réplication à analyser.
+- [x] Examiner Azure Managed HSM : soft-delete récupérable 7 à 90 jours, incompatible avec l'accès jusqu'à J+30 puis l'irréversibilité immédiate.
+- [x] Étendre la recherche juridique aux domaines gouvernementaux nigériens ; le Journal officiel est identifié par le ministère de la Justice comme référence officielle, mais l'ordonnance n° 2026-30 n'a pas été authentifiée.
+- [ ] Obtenir le numéro spécial du Journal officiel du 8 juin 2026 contenant l'ordonnance n° 2026-30 et le décret de suppression, puis faire analyser les articles par un juriste nigérien.
+- [ ] Pour chaque gestionnaire externe candidat, obtenir les garanties écrites sur l'effacement des réplicas, sauvegardes, archives, exports, clés de récupération et clés de données en cache.
+- [ ] Tester une destruction de clé avec tentative de restauration de toutes les sauvegardes, réplicas et exports disponibles ; conserver les preuves et journaux d'audit.
+- [ ] Évaluer le coût, la latence, la disponibilité et la localisation juridique d'un service HSM externe avant toute décision d'architecture.
