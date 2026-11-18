@@ -340,3 +340,52 @@ Référence institutionnelle :
 - Ministère de la Justice, « Mission Ministérielle de visites des Juridictions du pays : Renforcement des capacités documentaires des Magistrats » : https://justice.gouv.ne/index.php/les-actualites-1/353-mission-ministerielle-de-visites-des-juridictions-du-pays-renforcement-des-capacites-documentaires-des-magistrats
 
 **Statut de recherche :** le texte officiel n'est toujours pas authentifié. La prochaine étape juridique est d'obtenir directement le numéro spécial du Journal officiel du 8 juin 2026 auprès du Secrétariat général du Gouvernement ou du ministère de la Justice, puis de faire analyser l'ordonnance article par article. Aucune hypothèse sur les articles supprimés ne doit être convertie en règle de conception SAC.
+
+
+## 14. Trois pistes supplémentaires — Thales CipherTrust, Oracle OCI Vault et HashiCorp Vault
+
+### 14.1 Thales CipherTrust Manager — sauvegardes et clé racine HSM
+
+La documentation Thales consultée indique que les sauvegardes CipherTrust Manager sont chiffrées avec une clé de sauvegarde, puis peuvent être téléchargées et restaurées sur la même appliance ou une autre. Les sauvegardes peuvent être planifiées périodiquement. Dans le cas d'une sauvegarde liée au HSM (« tied-to-HSM »), la clé Root of Trust du HSM est nécessaire pour déchiffrer et restaurer la sauvegarde. Thales avertit que supprimer la dernière clé Root of Trust rend les sauvegardes concernées définitivement irrécupérables.
+
+Cela décrit un mécanisme puissant de destruction par perte contrôlée de la clé de restauration, mais ne prouve pas une destruction automatique de la clé GPS à une échéance J+30. Supprimer la Root of Trust est en outre une opération de décommissionnement global, pas une expiration sélective et planifiée d'une clé de dossier. Les sauvegardes ordinaires et leur clé de sauvegarde doivent être inventoriées ; les sauvegardes liées au HSM, les nœuds du cluster et les copies exportées doivent être testés séparément.
+
+Références officielles :
+- Thales — Backups : https://www.thalesdocs.com/ctp/cm/2.18/admin/cm_admin/backups/index.html
+- Thales — Root of Trust Hardware Security Module : https://thalesdocs.com/ctp/cm/2.19/admin/cm_admin/hardware-security-module/index.html
+- Thales — Scheduling Backups : https://thalesdocs.com/ctp/cm/2.14/admin/cm_admin/scheduling-backups/index.html
+
+**Décision : non approuvé.** La documentation étudiée expose la protection et la restauration des sauvegardes, mais pas un contrat de destruction sélective, automatique, irréversible et datée à J+30 pour une clé individuelle.
+
+### 14.2 Oracle Cloud Infrastructure Vault — suppression planifiée mais annulable
+
+La documentation OCI décrit une suppression de clé planifiée à une date comprise entre 7 et 30 jours après la demande. Pendant l'état « Pending Deletion », l'opération peut être annulée ; l'annulation rétablit l'utilisation de la clé et l'accès aux données chiffrées. Le délai de 30 jours par défaut ne constitue donc pas une preuve que la suppression est irréversible à J+30 : un administrateur autorisé peut annuler l'opération avant son terme.
+
+Références officielles :
+- Oracle CLI — schedule-deletion : https://docs.oracle.com/en-us/iaas/tools/oci-cli/latest/oci_cli_docs/cmdref/kms/management/key/schedule-deletion.html
+- Oracle CLI — cancel-deletion : https://docs.oracle.com/en-us/iaas/tools/oci-cli/latest/oci_cli_docs/cmdref/kms/management/vault/cancel-deletion.html
+
+**Décision : non approuvé pour la garantie SAC.** Le délai est intéressant, mais la possibilité d'annulation durant la période est incompatible avec l'exigence d'une irréversibilité garantie à l'instant J+30. Il faudrait également qualifier les sauvegardes et clés exportées.
+
+### 14.3 HashiCorp Vault Transit — destruction de versions et restauration par sauvegarde
+
+Vault Transit permet de supprimer définitivement des versions anciennes d'une clé via l'opération « trim ». La documentation indique également qu'une sauvegarde Transit contient les configurations et toutes les versions de clé et qu'elle peut être restaurée par l'API de restauration. La sauvegarde de clé est renvoyée en clair par l'API ; elle constitue donc elle-même un secret extrêmement sensible.
+
+Vault Transit ne fournit pas de délai de suppression différée intégré. Le contrôle de la date J+30 devrait être construit par l'application ou un orchestrateur externe. Une sauvegarde exportée avant le trim pourrait réintroduire les anciennes versions si elle est conservée et accessible. Il faudrait donc interdire les exports de sauvegarde, ou disposer d'une preuve de destruction de toutes les copies et de tous les accès de restauration, ce qui n'est pas démontré ici.
+
+Références officielles :
+- HashiCorp — Transit API (backup, restore et trim) : https://developer.hashicorp.com/vault/api-docs/secret/transit
+- HashiCorp — Transit secrets engine : https://developer.hashicorp.com/vault/docs/secrets/transit
+- HashiCorp — Protect your keys : https://developer.hashicorp.com/terraform/cloud-docs/hold-your-own-key/protect
+
+**Décision : non approuvé.** La suppression de versions est techniquement utile, mais la présence d'un mécanisme de sauvegarde/restauration et l'absence de destruction différée native ne permettent pas de garantir J+30 sans une architecture externe supplémentaire.
+
+### 14.4 Synthèse de cette vague
+
+| Solution | Fonction observée | Limite décisive pour SAC |
+|---|---|---|
+| Thales CipherTrust Manager | Sauvegardes chiffrées, restauration, clé Root of Trust HSM | Pas de preuve de destruction sélective automatique J+30 ; suppression de la Root of Trust trop globale |
+| Oracle OCI Vault | Suppression planifiée entre 7 et 30 jours | Suppression annulable avant échéance |
+| HashiCorp Vault Transit | Trim irréversible des versions et API de sauvegarde/restauration | Pas de planification J+30 native ; sauvegarde exportée restaurable |
+
+Cette vague ne fait émerger aucun fournisseur approuvé. Elle confirme que la fonction « delete/destroy » isolée ne suffit jamais : le critère est l'impossibilité démontrée de restaurer la matière de clé après J+30, depuis chaque sauvegarde, réplica, export, cache, compte administrateur et procédure de reprise. Une promesse commerciale ou un état API terminal ne remplace pas les essais de restauration négatifs et les engagements contractuels.
