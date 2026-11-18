@@ -248,3 +248,14 @@ Références officielles :
 - Apple Developer — isExcludedFromBackup et nécessité de réappliquer l'attribut après certaines opérations : https://developer.apple.com/documentation/foundation/urlresourcekey/isexcludedfrombackupkey
 - Apple Developer — accessibilité Keychain et ThisDeviceOnly : https://developer.apple.com/documentation/security/restricting-keychain-item-accessibility
 - Apple Developer — synchronisation Keychain et copies synchronisées : https://developer.apple.com/documentation/security/ksecattrsynchronizable
+
+## Addendum — nouveau sens de J+30 pour les alertes — 18 novembre 2026
+
+Le présent plan contient des formulations historiques sur l'expiration des positions GPS à J+30. Pour les alertes SOS, elles sont supersédées par docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md :
+
+- les positions GPS associées à une alerte sont supprimées immédiatement à sa clôture ;
+- seule la nature/catégorie de l'alerte reste dans l'historique pendant 30 jours après clôture ;
+- l'alerte et sa catégorie sont ensuite supprimées définitivement ;
+- aucune restauration, sauvegarde ou copie contrôlée par SAC ne peut ressusciter les positions ou alertes supprimées.
+
+Les tests de non-résurrection de ce plan doivent donc être adaptés à deux échéances distinctes : clôture (GPS) et J+30 après clôture (entrée d'historique). L'exigence historique de « GPS J+30 » ne s'applique plus à ce cycle d'alerte. Le GPS réel reste NO-GO tant que l'architecture de partage, les purges et les restaurations ne sont pas démontrées.
