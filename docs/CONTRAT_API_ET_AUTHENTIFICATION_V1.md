@@ -665,3 +665,33 @@ L'utilisateur a choisi **l'option A : une seule clé personnelle de récupérati
 - La clé autorise uniquement le parcours de récupération d'accès à définir ; elle ne restaure pas la racine, ne certifie aucun appareil et ne débloque pas le GPS.
 
 Cette décision porte uniquement sur le choix du format. Elle n'autorise aucun endpoint, schéma D1, code ou flux de récupération réel.
+
+
+## Proposition de format et de vérification de la clé hors ligne (18 novembre 2026)
+
+**Statut : contrat conceptuel à auditer ; aucune API ni migration n'est autorisée.**
+
+### Format côté appareil
+
+- Générer 32 octets (256 bits) avec le CSPRNG natif de la plateforme, uniquement pendant une session de création authentifiée et autorisée.
+- Encoder en Base32 Crockford sous une représentation canonique de 52 caractères. Les bits de remplissage du dernier symbole doivent être nuls et vérifiés strictement au décodage.
+- Présenter des groupes visuels séparés pour la lisibilité ; ne jamais stocker ces séparateurs comme partie du secret.
+- Le parseur peut ignorer uniquement les séparateurs explicitement autorisés. Il ne doit pas convertir silencieusement des caractères ambigus ou corriger une faute de frappe.
+- Aucun checksum n'est imposé à ce stade. Si un contrôle de transcription est retenu, employer une construction standard documentée et testée, jamais une somme de contrôle improvisée.
+- Afficher la clé une seule fois. Ne pas l'envoyer au serveur en clair, par e-mail, SMS, notification, journal ou télémétrie. Prévoir un avertissement clair : toute personne qui obtient une copie peut tenter la récupération.
+
+### Vérificateur serveur — choix non final
+
+Pour un secret réellement uniforme de 256 bits, un hash cryptographique rapide n'a pas le même risque qu'un hash de mot de passe humain : l'espace de recherche est astronomique. Une empreinte SHA-256 domain-separée, liée à l'identifiant immuable du compte et à la version du kit, est une base techniquement défendable. Un HMAC-SHA-256 avec pepper séparé du stockage peut renforcer la protection en cas de fuite de base, au prix d'une gestion de secret et d'une procédure de rotation/restauration plus complexes. Le choix exact doit être validé par revue cryptographique avant implémentation ; aucun secret serveur ou fournisseur n'est choisi ici.
+
+### Consommation et abus
+
+- Une seule demande gagnante peut consommer le kit ; la vérification et l'invalidation doivent être atomiques.
+- Le challenge est lié à l'identifiant du compte, à la demande, à la version du kit et à la finalité récupération d'accès.
+- Les limites doivent couvrir compte, kit, appareil et signaux réseau sans transformer une limite OTP en blocage général du SOS.
+- Les réponses externes restent uniformes et ne révèlent ni existence de compte, ni validité partielle de la clé.
+- Les journaux ne contiennent jamais la clé, un fragment, le vérificateur exploitable ou une coordonnée privée.
+- Une récupération réussie invalide le kit et les demandes concurrentes ; un nouveau kit n'est créé qu'après retour à une session authentifiée.
+- La clé ne restaure jamais la racine, n'approuve aucun appareil, ne réactive aucune révocation et ne donne aucun accès GPS.
+
+**NO-GO :** pas d'endpoint, de schéma D1, de code de génération, de vérification ou de récupération tant que le format, la normalisation, la gestion du vérificateur, les limites, les sessions et les tests adversariaux n'ont pas été approuvés.
