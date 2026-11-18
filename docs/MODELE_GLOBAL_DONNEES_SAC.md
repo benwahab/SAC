@@ -407,3 +407,8 @@ Le modèle n'est pas prêt pour migration tant que :
 
 **État final : NON PRÊT POUR MIGRATION.**  
 Cette consolidation ne modifie ni code applicatif, ni API, ni schéma D1, ni ressources Cloudflare, ni déploiement. Elle ne transforme pas les lacunes identifiées en décisions produit.
+
+
+## 11. Revue finale de cohérence relationnelle — complément du 18 novembre 2026
+
+La revue détaillée des cardinalités, FK composites, politiques de suppression, concurrence et critères d'acceptation est consignée dans `REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md`. Ce document est le contrôle préalable au futur schéma SQL ; son verdict actuel est NON PRÊT POUR MIGRATION.
