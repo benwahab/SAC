@@ -1089,3 +1089,51 @@ Le titulaire qui possède encore un appareil approuvé, sûr et non révoqué pe
 - Politique de notification de sécurité après remplacement, sans révéler le kit.
 
 **NO-GO :** aucun générateur, vérificateur, endpoint, migration, écran, notification ou remplacement réel n'est implémenté.
+
+
+## Protection du kit pendant sa génération et son affichage (18 novembre 2026)
+
+**Statut : exigences de sécurité recommandées ; garanties dépendantes de la plateforme à valider.**
+
+### Règle de conception
+Le kit est un secret de récupération à haute sensibilité. Il est généré localement, affiché une seule fois, et ne doit jamais être transmis au serveur en clair, enregistré automatiquement ou inclus dans une télémétrie.
+
+### Mesures obligatoires
+- Génération locale par CSPRNG ; aucun appel réseau ne transporte le secret brut.
+- Affichage uniquement après action explicite du titulaire, dans un écran dédié sans publicité, analytics, chat, support intégré ni contenu tiers.
+- Aucun enregistrement dans localStorage, sessionStorage, IndexedDB, Cache API, service worker, cookies, URL, historique de navigation, presse-papiers automatique, fichiers temporaires ou sauvegardes applicatives.
+- Secret conservé en mémoire volatile le temps strictement nécessaire ; effacement de l'état applicatif à la fermeture de l'écran, à l'expiration de la session d'affichage, à la mise en arrière-plan lorsque détectable, et à la navigation hors écran.
+- L'écran est masqué/neutralisé lorsque l'application passe en arrière-plan ; au retour, le titulaire doit réauthentifier la demande et, si le secret a été effacé, générer un nouveau kit.
+- Pas de saisie du kit au clavier pour le créer ; aucun clavier tiers n'est nécessaire à sa génération.
+- Aucun bouton « partager », envoi par e-mail/SMS, capture intégrée, export PDF ou téléchargement automatique.
+- Avertissement clair : ne pas photographier, envoyer par messagerie ou conserver dans galerie, notes ou cloud.
+- Le kit ne doit apparaître ni dans les notifications, ni dans les aperçus multitâches, ni dans les rapports de crash, traces, journaux, outils de support ou captures de diagnostic.
+- Les événements analytiques peuvent enregistrer uniquement qu'une étape a été atteinte, jamais le secret, ses caractères, sa longueur saisie ou un fragment permettant de le reconstruire.
+
+### Android natif et PWA : limites distinctes
+- **Application Android native :** utiliser les protections système adaptées pour empêcher autant que possible captures d'écran et enregistrement de l'écran sur cette vue, masquer le contenu dans l'aperçu des applications récentes et désactiver les sauvegardes de cette donnée. Tester selon versions Android et fabricants.
+- **PWA / navigateur :** aucune API web standard ne garantit le blocage des captures d'écran, de l'enregistrement, des extensions, des outils développeur ou des captures par un autre appareil. L'application peut masquer l'écran lors d'un changement de visibilité, mais cette mesure est seulement défensive et ne constitue pas une garantie.
+- Ne jamais présenter « capture impossible » comme une promesse sur PWA ou Android.
+- Un appareil rooté, compromis, avec logiciel espion ou contrôlé par un attaquant peut lire ou photographier le secret pendant son affichage. Aucun écran ne peut garantir une protection absolue contre un appareil compromis.
+
+### Presse-papiers
+- Aucun bouton de copie par défaut.
+- Ne jamais copier automatiquement le kit.
+- Si une copie est envisagée ultérieurement, elle exige une décision séparée, une action explicite, un avertissement visible et une politique d'effacement best-effort. Ne jamais promettre que l'application peut vider le presse-papiers de façon fiable sur tous appareils ; d'autres applications ou le système peuvent conserver son contenu.
+- Préférer un stockage hors ligne choisi par le titulaire, sans intégration automatique à un cloud.
+
+### UX de sauvegarde
+- Montrer le kit en groupes lisibles avec possibilité de révéler/masquer l'ensemble ; ne pas masquer une partie au point de rendre la copie manuelle impossible.
+- Proposer une checklist locale non sensible : « Je l'ai conservé hors ligne » et « Je comprends qu'il ne sera plus affiché ».
+- La checklist ne prouve pas le stockage et ne doit pas être interprétée comme une sauvegarde.
+- Après fermeture ou expiration, ne pas proposer « réafficher le kit ». Si le titulaire ne l'a pas conservé, il doit lancer un nouveau remplacement depuis un appareil sûr ; l'ancien kit ne redevient jamais valide.
+- Éviter un compte à rebours anxiogène ; une durée d'affichage raisonnable et clairement annoncée est à définir après tests d'accessibilité.
+
+### Points à valider avant implémentation
+- Durée maximale d'affichage et comportement exact à l'arrière-plan / verrouillage.
+- Faisabilité et limites des protections Android selon versions et appareils ciblés.
+- Accessibilité : taille de caractères, contraste, lecture d'écran sans exposer le secret à un service externe.
+- Méthode de stockage hors ligne recommandée à l'utilisateur, sans suggérer un emplacement cloud.
+- Stratégie PWA réaliste qui explique les limites sans donner un faux sentiment de sécurité.
+
+**NO-GO :** aucun écran, génération, stockage, API, intégration Android ou protection native n'est implémenté.
