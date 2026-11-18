@@ -382,7 +382,7 @@ La durée exacte hors GPS n'est pas décidée. Ne pas inventer de durée par dé
 
 | Donnée | Règle déjà connue | Durée / suppression à valider |
 |---|---|---|
-| Coordonnées GPS précises | 30 jours après fin du partage, puis destruction irréversible de toute possibilité de lecture/restauration | preuve technique J+30 encore bloquante ; aucune coordonnée dans D1 |
+| GPS précis associé à une alerte SOS | Suppression immédiate à la clôture ; aucune coordonnée conservée dans l'historique | preuve technique de purge immédiate et de non-résurrection encore bloquante ; aucune coordonnée réelle avant GO |\n| GPS précis d'un trajet indépendant | Durée de conservation non décidée ; ne pas collecter/persister avant arbitrage et GO | durée, architecture et preuve de destruction à définir séparément |
 | Clés GPS et matériel de déchiffrement | aucune clé privée côté serveur ; clé de partage sous contrôle de l'appareil selon architecture retenue | cycle de vie et preuve de destruction J+30 non validés |
 | Comptes et identités | minimisation ; suppression de compte à traiter sans effacer l'historique nécessaire | délais, anonymisation et obligations à définir |
 | Invitations expirées/refusées | aucune permission résiduelle | durée de trace minimale à définir |
@@ -407,7 +407,7 @@ Avant migration, définir pour chaque table :
 - effet sur une alerte ou un trajet en cours ;
 - traitement des exports, sauvegardes et restaurations.
 
-Les durées doivent être fixées selon la nécessité opérationnelle, les attentes des utilisateurs et les obligations applicables. La règle GPS J+30 est une exigence distincte et plus stricte : une simple purge logique ne la satisfait pas.
+Les durées doivent être fixées selon la nécessité opérationnelle, les attentes des utilisateurs et les obligations applicables. La règle spécialisée prévaut : GPS d'alerte supprimé immédiatement à la clôture ; seule la catégorie d'alerte reste 30 jours ; entrée/catégorie purgées à J+30. Le GPS de trajet possède une durée distincte non décidée. Une purge logique seule ne prouve pas la non-résurrection.
 
 ## 9. Tests de transitions obligatoires
 
