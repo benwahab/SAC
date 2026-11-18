@@ -59,3 +59,39 @@ test("dates invalides ou incohérentes refusées", () => {
     lastActivityAt: "2025-12-31T23:59:59.000Z",
   }, "2026-01-02T00:00:00.000Z"), { ok: false, error: "invalid_session_dates" });
 });
+
+test("les phrases de passe longues ne sont ni tronquées ni plafonnées artificiellement", () => {
+  const longPassphrase = "A".repeat(256);
+  assert.deepEqual(validateAccountPassword(longPassphrase), { ok: true });
+});
+
+test("le minimum est compté en points de code Unicode", () => {
+  assert.deepEqual(validateAccountPassword("🙂".repeat(11)), { ok: false, error: "password_too_short" });
+  assert.deepEqual(validateAccountPassword("🙂".repeat(12)), { ok: true });
+});
+
+test("les dates UTC impossibles et les formats ambigus sont rejetés", () => {
+  for (const invalidDate of [
+    "2026-02-30T00:00:00.000Z",
+    "2026-01-01T00:00:00Z",
+    "2026-01-01T01:00:00+01:00",
+    "not-a-date",
+  ]) {
+    assert.deepEqual(evaluateSessionAge({
+      createdAt,
+      lastActivityAt: "2026-01-10T00:00:00.000Z",
+    }, invalidDate), { ok: false, error: "invalid_session_dates" });
+  }
+});
+
+test("une activité ne peut pas être antérieure à la création ni postérieure à maintenant", () => {
+  assert.deepEqual(evaluateSessionAge({
+    createdAt,
+    lastActivityAt: "2025-12-31T23:59:59.000Z",
+  }, "2026-01-10T00:00:00.000Z"), { ok: false, error: "invalid_session_dates" });
+
+  assert.deepEqual(evaluateSessionAge({
+    createdAt,
+    lastActivityAt: "2026-01-11T00:00:00.000Z",
+  }, "2026-01-10T00:00:00.000Z"), { ok: false, error: "invalid_session_dates" });
+});
