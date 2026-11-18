@@ -237,3 +237,24 @@ Deux décisions restent particulièrement importantes :
 La note recommande aussi de séparer la durée de partage de position de la durée de vie de l'alerte : une position peut cesser d'être transmise sans que l'alerte soit déclarée résolue. Aucune durée maximale n'est fixée ici.
 
 Ces décisions sont bloquantes avant l'API de révocation, la suppression finale et la planification durable des rappels.
+
+## 11. Historique GPS, accès hors ligne et suppression stricte J+30
+
+**Décision produit non validée — bloquante avant toute conservation d'historique GPS.**
+
+L'exigence de sécurité est que les positions GPS précises ne puissent plus être rendues lisibles après 30 jours, y compris après restauration d'une sauvegarde, retour à un ancien état logiciel, réinstallation, migration d'appareil ou accès administrateur.
+
+Les recherches et documentations officielles disponibles ne démontrent actuellement aucune solution locale PWA/Android/iOS qui garantisse à la fois :
+- la consultation hors ligne de l'historique GPS pendant toute la période de 30 jours ;
+- l'impossibilité irréversible de restaurer ou réutiliser une copie locale après l'échéance exacte, même si l'appareil est éteint ou hors ligne à cet instant.
+
+**Recommandation technique provisoire :** ne pas conserver d'historique GPS précis dans la première version tant que la garantie n'est pas démontrée. Distinguer la position ponctuelle actuelle et le partage temporaire d'une position pendant une alerte/trajet de l'historique consultable après coup. Une position ancienne ou non actualisée doit toujours être affichée avec son horodatage et son état réel ; elle ne doit jamais être présentée comme une position en direct.
+
+Trois orientations restent à arbitrer :
+1. **Priorité à la destruction stricte :** aucun historique GPS hors ligne ; toute consultation d'un historique éventuel dépendrait d'un service externe validé, sans cache récupérable.
+2. **Priorité à l'accès hors ligne :** conserver l'historique local, mais ne pas annoncer la garantie J+30 irréversible tant qu'un mécanisme matériel par appareil n'a pas été prouvé ; cette option ne respecte donc pas encore l'exigence de sécurité.
+3. **Compromis pour la première version :** pas d'historique GPS après la session de partage ; uniquement la position ponctuelle ou le flux temporaire strictement nécessaire à l'alerte/trajet, selon des règles de conservation encore à spécifier.
+
+Aucune option n'est réputée approuvée par cette note. L'historique GPS reste NO-GO. Aucun GPS réel, stockage d'historique, service de clés ou ressource cloud ne doit être activé avant arbitrage produit, tests complets et revue cryptographique indépendante.
+
+Références de travail : docs/PLAN_VALIDATION_DESTRUCTION_GPS_J30.md, docs/SECURITE_GPS_DESTRUCTION_CRYPTO.md et docs/RECHERCHE_COMPLEMENTAIRE_GPS_J30_ET_TEXTES_NIGER.md.
