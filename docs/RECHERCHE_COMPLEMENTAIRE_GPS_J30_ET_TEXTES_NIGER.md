@@ -441,3 +441,41 @@ Références officielles :
 - Thales Luna — Best Practices for HSMs, rôles, partitions, sauvegarde et reprise : https://thalesdocs.com/gphsm/luna/7/docs/network/Content/Product_Overview/best_practices_hsms_partitions_clients.htm
 - NIST CMVP — Security Policy d'un module Luna Backup HSM, section 3.6 « Cryptographic Material Management » (décrit le comportement de `C_DestroyObject`) : https://csrc.nist.gov/csrc/media/projects/cryptographic-module-validation-program/documents/security-policies/140sp2429.pdf
 - Thales CipherTrust Manager — Root of Trust HSM, suppression de clés RoT et sauvegardes liées au HSM : https://thalesdocs.com/ctp/cm/2.17/admin/cm_admin/hardware-security-module/index.html
+
+
+## 17. Architecture à deux composants — limites de l'accès hors ligne et restauration D1
+
+### 17.1 Principe de sécurité
+
+Une architecture de chiffrement par enveloppe peut séparer :
+- une clé de données (DEK) qui chiffre le contenu GPS ;
+- une clé d'enveloppement (KEK), ou un composant indispensable à sa dérivation, conservé dans un domaine de confiance distinct.
+
+La séparation n'apporte une garantie J+30 que si aucune copie locale, sauvegarde, cache, export ou appareil associé ne permet de reconstituer le composant externe après l'échéance. Une clé locale non exportable protège contre certains vols de secrets, mais ne prouve pas à elle seule une expiration temporelle irréversible.
+
+### 17.2 Contradiction à traiter explicitement : accès hors ligne
+
+Si l'appareil doit pouvoir déchiffrer l'historique GPS pendant 30 jours sans réseau, il doit conserver localement tout le matériel cryptographique nécessaire, ou disposer d'un mécanisme matériel autonome qui l'autorise. Un adversaire contrôlant l'appareil peut chercher à copier l'état chiffré, les clés exportables, les données déjà déchiffrées ou une image de sauvegarde avant J+30.
+
+Une partie de clé conservée uniquement sur un service externe, sans cache ni clé de données locale persistante, permet au service de refuser le déchiffrement à l'échéance ; en contrepartie, le déchiffrement à la demande devient impossible hors ligne. Les caches de clés de données ou les clés de session persistantes réintroduisent un chemin de contournement et doivent être absents ou bornés par un mécanisme matériel réellement vérifiable.
+
+**Conclusion :** l'exigence « historique consultable hors ligne pendant 30 jours » et l'exigence « aucune restauration locale ne peut rendre les données lisibles après J+30 » ne sont pas garanties ensemble par une simple architecture à deux clés. Toute exception exige un matériel certifié, une horloge fiable, un état anti-retour arrière et des preuves spécifiques à chaque modèle d'appareil. Android documente StrongBox avec minuterie sécurisée, mais précise que les autorisations temporelles du Keystore ne sont généralement pas appliquées par le matériel faute d'horloge temps réel indépendante. Il faut donc tester et attester le comportement de chaque appareil ; la présence de StrongBox ne suffit pas.
+
+### 17.3 Cloudflare D1 Time Travel : frontière de conservation
+
+La documentation Cloudflare indique que D1 Time Travel est activé automatiquement. Les bookmarks de restauration sont disponibles jusqu'à 30 jours (Workers Paid) ou 7 jours (Workers Free) et une restauration peut remettre la base à un état antérieur ; la restauration peut elle-même être annulée en restaurant le bookmark précédent.
+
+Il ne faut donc jamais utiliser D1 Time Travel comme mécanisme d'effacement J+30. Les coordonnées GPS précises et les clés ou composants permettant de les déchiffrer doivent être exclus de D1, de ses journaux, de ses exports et de tout autre stockage serveur si notre exigence demeure qu'une restauration ne puisse pas les faire réapparaître lisibles. D1 peut contenir des métadonnées non sensibles nécessaires au fonctionnement, selon la matrice de conservation validée.
+
+### 17.4 Options de produit à arbitrer avant architecture
+
+- **Option A — disponibilité hors ligne :** historique consultable hors ligne pendant la période autorisée ; nécessite une preuve de sécurité matérielle et anti-rollback par appareil. Aucun modèle n'est actuellement validé pour J+30 strict.
+- **Option B — priorité à l'irréversibilité :** déchiffrement via un service externe sans cache de DEK ; pas de consultation de l'historique GPS hors ligne. Piste techniquement plus contrôlable, mais disponibilité réseau nécessaire.
+- **Option C — compromis limité :** seules les positions nouvelles sont visibles en direct pendant l'alerte ; l'historique détaillé n'est pas conservé localement hors ligne. À étudier comme alternative produit, sans la considérer comme déjà approuvée.
+
+Aucune de ces options n'est adoptée par cette note. L'arbitrage doit rester explicite et être validé avec les tests de restauration, les contraintes de connectivité au Niger et une revue cryptographique indépendante.
+
+Références officielles :
+- Android Keystore — StrongBox, secure timer et limites d'application des autorisations temporelles : https://developer.android.com/privacy-and-security/keystore
+- Cloudflare D1 — Time Travel and backups, rétention des bookmarks, restauration et annulation : https://developers.cloudflare.com/d1/reference/time-travel/
+- NIST SP 800-57 Part 1 Rev. 5 — gestion des clés, sauvegarde, récupération et cycle de vie : https://csrc.nist.gov/pubs/sp/800/57/pt1/r5/final
