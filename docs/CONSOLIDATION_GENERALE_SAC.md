@@ -348,3 +348,8 @@ Les documents suivants détaillent le modèle cible de gouvernance et de sécuri
 - `docs/MODELE_MENACES_ET_PLAN_SECURITE_ADMIN.md` : menaces, contrôles et critères de mise en production.
 
 Ces documents sont des spécifications et analyses. Ils ne signifient pas que la console administrative ou ses contrôles sont opérationnels.
+
+
+## Contrats transactionnels administratifs — complément du 18 novembre 2026
+
+`docs/CONTRATS_OPERATIONS_ADMIN_ATOMIQUES.md` formalise les commandes sensibles : missions, permissions, suspension de compte, clôture administrative dans le scénario spécifique validé, consultations sensibles, exports et journal d'audit. Il décrit aussi les courses concurrentes, l'idempotence et les tests d'intégration. Il reste une conception non implémentée.
