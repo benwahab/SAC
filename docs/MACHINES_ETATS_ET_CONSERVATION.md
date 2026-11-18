@@ -549,3 +549,8 @@ Une alerte produit une intention de notification vers un destinataire. Le servic
 - Une réinscription utilise une nouvelle identité de session et une cérémonie neuve ; un ancien appareil révoqué ne redevient pas actif par rejeu.
 
 **Statut : proposition à valider.** La disponibilité exacte des fonctions non GPS pendant root_recovery_required doit être cartographiée avant de figer les contrôles d'accès.
+
+
+## 10. Référentiel inter-domaines — complément du 18 novembre 2026
+
+Le document `MODELE_GLOBAL_DONNEES_SAC.md` consolide les domaines et relève les écarts entre les machines à états, le cahier des charges, la proposition D1 et les contrats TypeScript. Les états qui y sont signalés comme incohérents doivent être harmonisés avant migration. Les objets groupes, alertes programmées, SOS discret et paiements restent à spécifier. Ce renvoi ne vaut ni validation SQL ni autorisation d'implémentation.
