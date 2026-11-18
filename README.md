@@ -89,3 +89,5 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 - [Propositions d'arbitrage — groupes privés](docs/PROPOSITIONS_ARBITRAGE_GROUPES_PRIVES.md) — séparation entre adhésion, relation de confiance et droits SOS/GPS ; propositions à confirmer.
 
 - [Propositions d'arbitrage — SOS programmé et SOS discret](docs/PROPOSITIONS_ARBITRAGE_SOS_PROGRAMME_ET_DISCRET.md) — distingue les deux mécanismes, reprend les règles validées et isole les points restant à arbitrer.
+
+- [Proposition de politique générale de conservation des données](docs/PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md) — matrice proposée pour comptes, appareils, invitations, groupes, notifications, journaux, support et sauvegardes ; durées à valider, sans modifier le contrat déjà approuvé des alertes/GPS.
