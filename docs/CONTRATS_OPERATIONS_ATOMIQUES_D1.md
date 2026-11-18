@@ -370,3 +370,69 @@ Tests d'intégration obligatoires :
 **Tests D1 obligatoires :** notification initiale exclue du compteur ; seuil atteint exactement une fois malgré deux workers concurrents ; prise en charge avant le seuil, juste au seuil et en concurrence avec la création SMS ; accusé seul et candidature seule n'empêchent pas le SMS ; prise en charge annule les SMS non encore créés/en attente selon état ; clôture annule les tâches non envoyées ; tâche déjà acceptée reste marquée comme potentiellement livrable ; aucune tâche vers un contact absent de l'instantané ; retry/rejeu ne crée pas de doublon ni ne remet le compteur à zéro.
 
 **Limite :** un rappel planifié n'est pas une garantie de livraison push. L'escalade est fondée sur le nombre d'occurrences push du calendrier serveur et l'absence de responsable principal, pas sur une prétendue preuve que le téléphone n'a pas reçu la notification.
+
+
+## 17. Contrat proposé — coordination multi-contact et courses concurrentes (à valider)
+
+Ce contrat complète les opérations de candidature, attribution, retrait et clôture. Il ne vaut pas autorisation de créer une migration ou une API avant validation du schéma et des décisions produit.
+
+### 17.1 Commandes et autorisations
+
+- `submit_volunteer(alert_id, idempotency_key)` : destinataire de l'instantané initial, relation et accès encore admissibles, alerte active.
+- `report_arrival(alert_id, idempotency_key)` : destinataire autorisé ; enregistre une déclaration « arrivé sur place » sans modifier le responsable ni l'état de l'alerte.
+- `report_resolution(alert_id, idempotency_key, note?)` : destinataire autorisé ; enregistre une déclaration de résolution sans clôturer.
+- `withdraw_primary(alert_id, idempotency_key)` : responsable principal courant uniquement ; termine sa période et promeut le volontaire admissible suivant dans la même transaction, ou laisse l'alerte sans responsable.
+- `close_alert(alert_id, idempotency_key, reason?)` : auteur de l'alerte uniquement ; transition conditionnelle active vers clôturée.
+
+Le responsable principal peut envoyer un compte rendu informatif, mais aucun droit de clôture ne lui est accordé. Aucun contact ne peut clôturer, même s'il déclare avoir résolu le problème ou être arrivé sur place.
+
+### 17.2 Séquence atomique d'attribution
+
+Dans une transaction D1 :
+1. vérifier l'existence de l'alerte, son état actif, l'appartenance du contact à l'instantané et ses droits courants ;
+2. vérifier la clé d'idempotence et retourner le résultat déjà enregistré si elle a été utilisée ;
+3. enregistrer la candidature avec une séquence monotone serveur ;
+4. si l'alerte est `unassigned`, effectuer une mise à jour conditionnelle qui attribue le rôle et ouvre la période ; sinon conserver la candidature comme non retenue ;
+5. enregistrer l'événement append-only et le résultat idempotent ;
+6. créer dans l'outbox les notifications utiles uniquement après que le résultat d'attribution soit déterminé ;
+7. commit.
+
+La contrainte de données doit empêcher plus d'une période principale ouverte par alerte. Une contrainte applicative seule ne suffit pas. Deux transactions concurrentes ne peuvent jamais toutes deux réussir l'attribution.
+
+### 17.3 Retrait et promotion
+
+Le retrait du responsable courant, la fermeture de sa période, la sélection du prochain volontaire admissible et l'ouverture de sa période doivent être une seule transaction. Le prochain volontaire est le plus ancien selon la séquence d'acceptation serveur ; les candidatures retirées, révoquées ou devenues inadmissibles sont ignorées. En l'absence de volontaire, l'alerte reste active et `unassigned`.
+
+Une candidature concurrente au retrait est sérialisée par la base : elle est prise en compte si elle est validée dans l'ordre transactionnel avant la sélection, sinon elle reste candidate pour une attribution ultérieure selon la règle retenue. Aucun téléphone ne choisit lui-même le gagnant.
+
+### 17.4 Arrivée et résolution déclarées
+
+`report_arrival` et `report_resolution` sont des événements informatifs append-only. Ils ne modifient ni le responsable, ni le statut actif/clôturé, ni les tâches de rappel, ni l'échéance SMS. Le serveur vérifie que l'alerte est active au moment du commit et que l'acteur est un destinataire autorisé.
+
+Le contenu utilisateur éventuel doit être limité, nettoyé et soumis à une politique de conservation à définir. Ne pas enregistrer de coordonnées GPS précises dans ces déclarations. Une déclaration de résolution ne constitue pas une preuve indépendante de résolution.
+
+### 17.5 Course entre clôture et action d'un contact
+
+Toutes les opérations contact commencent par une vérification conditionnelle de l'état actif dans la transaction. La clôture auteur utilise une transition conditionnelle de même nature. L'ordre de commit établit l'ordre canonique :
+- si l'action contact commit avant la clôture, son événement est conservé puis la clôture termine l'alerte ;
+- si la clôture commit en premier, l'action contact est rejetée comme action sur alerte clôturée ;
+- aucune opération contact ne peut remettre une alerte clôturée à active.
+
+La clôture annule les tâches non envoyées et les notifications en attente selon le contrat outbox existant ; les envois déjà acceptés par un fournisseur peuvent encore arriver.
+
+### 17.6 Journal, notifications et idempotence
+
+Chaque mutation métier ajoute un événement immuable avec acteur, type, horodatage serveur, séquence serveur et clé d'idempotence. Les notifications sont créées dans l'outbox dans la transaction métier, puis envoyées après commit. Une notification de responsable principal n'est émise qu'après attribution effective ; les autres contacts ne reçoivent que les informations de coordination nécessaires, sans numéro, e-mail ou coordonnées privées d'un tiers.
+
+**Tests D1 obligatoires avant production :**
+- 2, 5 et 10 candidatures simultanées : une seule attribution principale ;
+- deux retraits/candidatures simultanés : une seule période ouverte et succession déterministe ;
+- arrivée et déclaration de résolution simultanées : événements distincts, aucun changement d'état ;
+- déclaration « résolu » par un contact : aucun effet de clôture ni arrêt des rappels/SMS ;
+- responsable principal qui tente de clôturer : refus d'autorisation ;
+- clôture auteur concurrente à candidature, arrivée, résolution et retrait : ordre de commit cohérent, aucune action après clôture ;
+- rejeu d'une même clé : un seul événement et un seul effet ;
+- panne avant commit / après commit avant envoi outbox : pas de perte ni doublon métier ;
+- révocation concurrente à une action : résultat conforme à la règle d'accès retenue.
+
+**Statut : proposition de contrat à valider.** Aucun endpoint, table, migration, scheduler ou envoi réel n'est créé ici.
