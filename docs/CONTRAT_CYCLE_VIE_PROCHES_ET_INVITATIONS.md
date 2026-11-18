@@ -28,7 +28,7 @@
 5. Le jeton est aléatoire, imprévisible, lié à l'invitation et à sa destination, à usage unique et expirant. Seul son hash est stocké ; le jeton brut ne figure jamais dans les logs.
 6. L'invitation est envoyée à cette adresse. L'interface indique « en attente », jamais « proche ajouté ».
 
-**À arbitrer :** durée de validité, nombre/cadence des relances, fournisseur e-mail, limites anti-abus et contenu exact du message.
+Les valeurs recommandées (validité, relances, limites anti-abus et approche fournisseur) sont regroupées dans `PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md` ; elles restent à confirmer.
 
 ### 2.2 Ouverture et acceptation par le proche
 1. Le lien ouvre SAC sans exposer de données privées avant authentification.
@@ -85,7 +85,7 @@ La relation et son historique ne sont pas effacés lors de la révocation. Les n
 - Elle ne donne jamais au contact un droit de clôture d'alerte.
 
 ### Qui peut révoquer ?
-**Proposition à arbitrer :** le propriétaire peut retirer le proche et le proche peut quitter volontairement la relation. Les deux actions terminent la relation, enregistrent l'acteur et déclenchent une notification neutre à l'autre partie. Cette symétrie n'est pas encore une décision validée ; ne pas l'implémenter avant arbitrage.
+**Proposition à arbitrer :** adopter une révocation symétrique (propriétaire ou proche). Les causes, notifications et effets recommandés sont détaillés dans `PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md`. Cette symétrie n'est pas encore une décision validée ; ne pas l'implémenter avant confirmation.
 
 ### Alerte déjà active
 Les destinataires initiaux, l'instantané historique et les règles de rappel propres à l'alerte ne sont pas réécrits par la révocation. Les droits exacts après révocation — détail accessible, accusé de réception, volontariat, responsabilité principale, rappels et partage de position — restent non arbitrés. Voir `ARBITRAGES_CONTACT_REVOQUE_ET_ALERTE_ORPHELINE.md`. Les options A/B de ce document ne sont pas approuvées ici.
@@ -94,7 +94,7 @@ Une révocation serveur ne peut pas effacer à distance les informations déjà 
 
 ## 5. Réinvitation
 
-**Règle de sécurité proposée :** toute réinvitation est un nouvel objet, un nouveau jeton et un nouveau consentement ; aucun ancien lien ne peut être réactivé.
+**Règle de sécurité proposée :** toute réinvitation est un nouvel objet, un nouveau jeton et un nouveau consentement ; aucun ancien lien ne peut être réactivé. Les délais de refroidissement et seuils anti-abus proposés figurent dans `PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md`.
 - Après refus, expiration ou retrait : l'invitant peut créer une nouvelle invitation, sous réserve de limites anti-harcèlement à définir.
 - Après révocation d'une relation active : une nouvelle relation ne peut être créée qu'après une nouvelle invitation et une nouvelle acceptation explicite. Aucun rétablissement unilatéral.
 - Si une relation est déjà active, empêcher les invitations en double pour le même couple directionnel.
@@ -145,7 +145,11 @@ Ces noms sont conceptuels, pas un schéma SQL approuvé. Les contraintes et l'hi
 19. Les réponses ne révèlent pas l'existence d'un compte pour une adresse arbitraire.
 20. Aucun droit GPS/alerte n'est accordé sans permission explicite et contrat propre.
 
-## 9. Points à arbitrer avant API et D1
+## 9. Propositions de valeurs par défaut
+
+Consulter `PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md` pour un paquet cohérent de valeurs proposées : validité 7 jours, relance à 48 heures, limites anti-abus, révocation symétrique et droits pendant une alerte active. Aucune de ces valeurs ou options n'est approuvée tant qu'une confirmation explicite n'a pas été donnée.
+
+## 10. Points à arbitrer avant API et D1
 
 1. Durée d'invitation et cadence/nombre de relances.
 2. Fournisseur e-mail et gestion des rebonds/renvois.
@@ -157,7 +161,7 @@ Ces noms sont conceptuels, pas un schéma SQL approuvé. Les contraintes et l'hi
 8. Rétention/anonymisation de l'historique hors GPS.
 9. Destinataire externe sans compte : fonctionnalité non définie, qui ne doit pas contourner l'activation e-mail.
 
-## 10. Critères de sortie
+## 11. Critères de sortie
 
 Pas d'implémentation avant arbitrage des points produit, alignement des contrats TypeScript et tests purs, tests de propriétés/concurrence, contrat API/D1 avec autorisation serveur/idempotence/vérification des lignes affectées, revue de sécurité e-mail/jeton/anti-abus et validation du modèle relationnel/conservation.
 
