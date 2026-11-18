@@ -43,9 +43,9 @@ La réponse positive de l'API signifie que Resend a accepté le message, pas que
 
 - Ne jamais placer la clé API dans le frontend, Git, les fichiers de configuration suivis ou les logs.
 - Ne jamais exposer le code OTP dans une réponse HTTP, un log ou une télémétrie.
-- La persistance du challenge, son empreinte protégée, son expiration, ses tentatives, sa consommation unique, ses limites anti-abus et l'activation atomique du compte restent à implémenter selon le contrat SAC.
+- La persistance du défi, son empreinte HMAC, son expiration, ses tentatives, sa consommation unique et l'activation atomique du compte sont maintenant codées dans la migration D1 `0001_account_email_otp.sql` et les routes `/api/auth/register`, `/api/auth/resend-email` et `/api/auth/verify-email`. Les tests SQLite et unitaires sont intégrés à la CI. Les tests runtime D1 Cloudflare, la configuration des secrets et les limites anti-abus globales restent à finaliser.
 - Aucun SMS ne remplace la vérification e-mail.
 - Aucun compte ne doit devenir actif et aucune session ne doit être créée avant validation serveur du code.
 - Le module d'envoi seul ne constitue pas une authentification complète.
 
-**Statut : fournisseur sélectionné et adaptateur réel intégré ; configuration du compte fournisseur/domaine et parcours OTP complet encore nécessaires.**
+**Statut :** fournisseur sélectionné, adaptateur réel et parcours serveur OTP implémentés ; configuration du compte fournisseur/domaine/secrets et validation runtime D1 encore nécessaires.
