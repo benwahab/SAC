@@ -166,3 +166,7 @@ Consulter `PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md` pour un paquet c
 Pas d'implémentation avant arbitrage des points produit, alignement des contrats TypeScript et tests purs, tests de propriétés/concurrence, contrat API/D1 avec autorisation serveur/idempotence/vérification des lignes affectées, revue de sécurité e-mail/jeton/anti-abus et validation du modèle relationnel/conservation.
 
 **État : DOCUMENTATION CONSOLIDÉE — NON PRÊT POUR API OU MIGRATION D1.**
+
+## Référence complémentaire — anti-harcèlement et abus
+
+Lire `CONTRAT_PREVENTION_ABUS_USURPATION_ET_SATURATION.md` avec `PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md`. Les seuils d'invitation, refroidissements et relances restent des propositions à confirmer ; aucune valeur chiffrée n'est approuvée par le contrat de prévention. Préserver le refus, le consentement explicite, la révocation et l'impossibilité de contourner ces choix par de nouveaux comptes ou groupes.
