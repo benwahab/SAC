@@ -438,3 +438,8 @@ Restent ouverts : entité porteuse/responsable du traitement, formalités et bas
 ## Audit transversal — 18 novembre 2026
 
 Consulter `AUDIT_TRANSVERSAL_COHERENCE_ET_MATURITE_2026-11-18.md` pour la liste consolidée des blocages et contradictions. Les arbitrages concernant le contact révoqué pendant un SOS actif, la séquence push/SMS, la récupération du compte, les trajets, groupes et SOS programmés/discrets restent ouverts lorsqu'ils sont explicitement marqués comme propositions. L'audit ne les transforme pas en décisions approuvées.
+
+
+## Cycle de suppression des comptes — synthèse d'arbitrage
+
+Les recommandations consolidées dans `RECOMMANDATIONS_ARBITRAGE_FINAL_SUPPRESSION_COMPTES.md` couvrent les cas non vérifiés, actifs, suspendus, deletion_pending, deleted, les SOS programmés, les activités orphelines, les relations/groupes et les courses concurrentes. Elles restent des propositions non approuvées. Les cinq états validés et les règles de sécurité existantes ne sont pas modifiés. Le P0 reste ouvert jusqu'à arbitrage explicite.
