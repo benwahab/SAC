@@ -390,3 +390,13 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Surveiller fusion et publication d'une version picomatch 4.x corrigée.
 - [ ] Après publication, confirmer que l'avis GHSA identifie la version corrigée, vérifier l'arbre npm réel et exécuter toute la CI.
 - [ ] Ne pas utiliser de commit Git non publié, patch artisanal, override non vérifié, suppression de l'audit ou rétrogradation forcée.
+
+## Revue crypto complémentaire — 18 novembre 2026
+
+- [x] Corriger la chronologie de la revue crypto : le contexte HKDF v4 inclut désormais compte et cérémonie ; les anciennes mentions v3 sont historiques.
+- [x] Consigner la distinction entre signature auto-incluse d'un bundle et identité réellement ancrée par un canal indépendant.
+- [ ] Ajouter validation cryptographique/import de la clé publique ECDH incluse dans un bundle signé ; rejeter un point P-256 invalide même si les champs JWK ont le bon format.
+- [ ] Tester l'empreinte indépendante, la substitution de racine, le changement de clé, la récupération après perte d'appareil et l'interopérabilité Android/iOS.
+- [ ] Définir le transcript canonique complet et la confirmation de clé, puis faire examiner le protocole par un spécialiste indépendant.
+- [ ] Vérifier l'orchestration serveur : certificat validé avant dérivation, révocation vérifiée avant chaque partage, et protection contre les courses entre révocation et envoi.
+- [ ] Ne pas brancher ces prototypes à des positions réelles avant validation indépendante et preuve J+30.
