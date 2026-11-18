@@ -91,15 +91,25 @@ function isValidState(state: AlertResponderState): boolean {
 
   let openPeriods = 0;
   const periodSequences = new Set<number>();
+  const periodContacts = new Set<string>();
   for (const period of state.responsibilityHistory) {
     if (
       !responderIds.has(period.contactAccountId) ||
       !isUtc(period.startedAt) ||
       !Number.isSafeInteger(period.sequence) ||
       period.sequence <= 0 ||
-      periodSequences.has(period.sequence)
+      periodSequences.has(period.sequence) ||
+      periodContacts.has(period.contactAccountId)
+    ) return false;
+    const periodResponder = state.responders.find((item) => item.contactAccountId === period.contactAccountId);
+    if (
+      !periodResponder ||
+      periodResponder.volunteeredAt === null ||
+      periodResponder.volunteeredSequence !== period.sequence ||
+      Date.parse(period.startedAt) < Date.parse(periodResponder.volunteeredAt)
     ) return false;
     periodSequences.add(period.sequence);
+    periodContacts.add(period.contactAccountId);
     if (period.endedAt === null) {
       openPeriods += 1;
       if (period.endReason !== null) return false;
@@ -113,7 +123,8 @@ function isValidState(state: AlertResponderState): boolean {
     } else if (
       !isUtc(period.endedAt) ||
       Date.parse(period.endedAt) < Date.parse(period.startedAt) ||
-      (period.endReason !== "withdrawn" && period.endReason !== "alert_closed")
+      (period.endReason !== "withdrawn" && period.endReason !== "alert_closed") ||
+      (period.endReason === "withdrawn" && periodResponder.withdrawnAt !== period.endedAt)
     ) return false;
   }
   return openPeriods <= 1;
