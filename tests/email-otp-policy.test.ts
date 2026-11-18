@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  EMAIL_OTP_CODE_LENGTH,
   EMAIL_OTP_MAX_ATTEMPTS,
   EMAIL_OTP_RESEND_COOLDOWN_MS,
   EMAIL_OTP_TTL_MS,
@@ -11,6 +12,7 @@ import {
 const createdAt = "2026-11-18T12:00:00.000Z";
 
 test("les paramètres OTP correspondent aux décisions validées", () => {
+  assert.equal(EMAIL_OTP_CODE_LENGTH, 6);
   assert.equal(EMAIL_OTP_TTL_MS, 10 * 60 * 1000);
   assert.equal(EMAIL_OTP_MAX_ATTEMPTS, 6);
   assert.equal(EMAIL_OTP_RESEND_COOLDOWN_MS, 60 * 1000);
