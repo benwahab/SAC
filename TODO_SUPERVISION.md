@@ -26,7 +26,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Documenter une proposition de politique de mot de passe et de paramètres de session PWA dans `docs/ARBITRAGES_TECHNIQUES_COMPTES_OTP_SESSIONS.md` ; seuils OTP et autres paramètres techniques encore à valider ; durées de session validées séparément.
 - [x] Valider un minimum de 12 caractères pour le mot de passe (décision utilisateur du 18 novembre 2026).
 - [x] Valider la déconnexion automatique après 30 jours consécutifs sans activité et la reconnexion obligatoire au plus tard après 90 jours, même en cas d'utilisation régulière (décision utilisateur du 18 novembre 2026).
-- [x] Décider la conservation des positions GPS précises : 30 jours après la fin du partage, puis purge automatique définitive des données actives SAC.
+- [x] Décision remplacée le 18 novembre 2026 : GPS d'une alerte supprimé dès clôture ; seule la nature de l'alerte reste 30 jours dans l'historique, puis suppression définitive de l'alerte. Les anciennes règles de conservation GPS 30 jours après partage sont supersédées.
 - [x] Réaliser une étude comparative des pistes de destruction cryptographique (KMS externe, D1 Time Travel, Durable Objects) et consigner les limites dans `docs/SECURITE_GPS_DESTRUCTION_CRYPTO.md`.
 - [x] Compléter l'évaluation documentaire des limites Google KMS, AWS KMS, AWS CloudHSM et Cloudflare Secrets ; aucun candidat n'est validé pour la garantie stricte J+30.
 - [ ] Étudier un mécanisme externe dont l'effacement de clé et toutes ses sauvegardes sont irréversibles à l'échéance, avec preuve contractuelle et testable.
