@@ -32,3 +32,78 @@ test("un code vide est rejeté avant tout appel fournisseur", async () => {
     { ok: false, reason: "invalid_recipient" },
   );
 });
+
+
+test("envoie le code à Resend et ne considère le résultat réussi qu'avec un identifiant", async () => {
+  const originalFetch = globalThis.fetch;
+  let requestUrl = "";
+  let requestInit: RequestInit | undefined;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    requestUrl = String(input);
+    requestInit = init;
+    return new Response(JSON.stringify({ id: "resend-message-123" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }) as typeof fetch;
+
+  try {
+    const result = await sendAccountVerificationCode(
+      { RESEND_API_KEY: "test-api-key", RESEND_FROM_EMAIL: "SAC <noreply@example.com>" },
+      "person@example.com",
+      "004219",
+      "fr",
+    );
+    assert.deepEqual(result, { ok: true, messageId: "resend-message-123" });
+    assert.equal(requestUrl, "https://api.resend.com/emails");
+    assert.equal(requestInit?.method, "POST");
+    const headers = new Headers(requestInit?.headers);
+    assert.equal(headers.get("Authorization"), "Bearer test-api-key");
+    const body = JSON.parse(String(requestInit?.body)) as {
+      to: string[];
+      html: string;
+      subject: string;
+    };
+    assert.deepEqual(body.to, ["person@example.com"]);
+    assert.match(body.html, /004219/);
+    assert.match(body.subject, /SAC/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("un refus HTTP du fournisseur n'est jamais présenté comme un envoi réussi", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () => new Response("rejected", { status: 429 })) as typeof fetch;
+  try {
+    assert.deepEqual(
+      await sendAccountVerificationCode(
+        { RESEND_API_KEY: "test-api-key", RESEND_FROM_EMAIL: "SAC <noreply@example.com>" },
+        "person@example.com",
+        "123456",
+        "fr",
+      ),
+      { ok: false, reason: "provider_rejected" },
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("une réponse 2xx sans identifiant fournisseur reste un résultat non confirmé", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () => new Response("{}", { status: 200 })) as typeof fetch;
+  try {
+    assert.deepEqual(
+      await sendAccountVerificationCode(
+        { RESEND_API_KEY: "test-api-key", RESEND_FROM_EMAIL: "SAC <noreply@example.com>" },
+        "person@example.com",
+        "123456",
+        "fr",
+      ),
+      { ok: false, reason: "provider_rejected" },
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
