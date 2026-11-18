@@ -115,6 +115,8 @@ Aucun fournisseur, compte externe, coût, intégration ou calendrier de destruct
 | 1.6 | Exigence ferme : après 30 jours, aucune restauration de sauvegarde, D1 Time Travel, snapshot, export ou réplication ne doit permettre de récupérer ou rendre lisibles les coordonnées GPS expirées ; destruction cryptographique indépendante et non restaurable obligatoire. |
 | 1.7 | Seuil d'escalade SMS validé : le lanceur choisit de 1 à 5 rappels push par alerte ; 2 rappels (10 minutes) sont présélectionnés. |
 
+| 1.8 | Cadre de sécurité du changement de numéro/e-mail : séparation des canaux, OTP non assimilé à une preuve d'identité, continuité des relations et arbitrages de récupération consignés. |
+
 Mettre à jour ce tableau à chaque nouvelle validation importante.
 
 
