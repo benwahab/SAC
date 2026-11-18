@@ -5,7 +5,7 @@
 
 ## 1. Direction d'architecture retenue pour SAC
 
-**Décision de conception retenue : aucune conservation GPS précise durable côté serveur.** Les positions sont chiffrées sur le téléphone, partagées en direct aux contacts autorisés par un relais éphémère, puis l'historique conservé par SAC reste uniquement sur l'appareil de l'auteur pendant 30 jours après la fin du partage. À l'échéance, la clé locale dédiée doit être détruite et l'archive chiffrée supprimée.
+**Décision de conception retenue : aucune conservation GPS précise durable côté serveur.** Les positions sont chiffrées sur le téléphone, partagées en direct aux contacts autorisés par un relais éphémère, puis l'historique conservé par SAC reste uniquement sur l'appareil de l'auteur pendant 30 jours après la fin du partage (ou, pour une position ponctuelle, pendant 30 jours à compter de sa collecte). À l'échéance, la clé locale dédiée doit être détruite et l'archive chiffrée supprimée.
 
 Cette direction remplace les anciennes pistes d'archivage GPS serveur décrites dans les sections historiques qui suivent. Elle ne signifie pas que la garantie technique J+30 est déjà prouvée ou implémentée.
 
@@ -23,8 +23,6 @@ Règles non négociables :
 ## 2. Pistes KMS historiques — non retenues pour l'architecture actuelle
 
 Les sections 2 à 10 ci-dessous documentent des alternatives étudiées lorsque l'architecture envisageait un stockage GPS chiffré côté serveur. Elles sont conservées comme historique de recherche et ne constituent plus la cible de SAC. Aucun KMS ne doit être intégré pour archiver des positions GPS côté serveur tant que la décision « aucune persistance GPS serveur » reste en vigueur.
-
-## 2.1 Solutions examinées
 
 ### 2.1 Cloudflare D1 — non adapté comme coffre de clés
 
