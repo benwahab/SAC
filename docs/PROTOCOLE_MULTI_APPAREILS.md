@@ -411,3 +411,30 @@ Le contrôle partagé `validateLocationExchangePublicKey` vérifie la forme JWK,
 Le contrôle est appelé par le vérificateur de bundle signé et par le vérificateur de certificat secondaire. Un test adversarial construit un transcript correctement signé par une clé d'identité P-256 et un autre certificat correctement signé par la racine, chacun contenant le point (0,0) encodé dans des coordonnées de 32 octets. Les deux vérificateurs doivent refuser ces objets.
 
 **Limites inchangées :** cela ne valide pas l'identité du propriétaire, n'ancre pas la clé racine, ne constitue pas une cérémonie d'enrôlement, ne gère pas la révocation et ne prouve pas la destruction GPS J+30. Le code reste expérimental et non raccordé aux positions réelles. Le résultat CI doit être contrôlé avant de déclarer ces tests réussis ; des essais WebCrypto sur navigateurs Android/iOS et Cloudflare Workers restent requis.
+
+## 23. Écart entre le certificat expérimental et le transcript d'enrôlement
+
+La comparaison du prototype `SecondaryDeviceCertificate` avec la cérémonie proposée aux sections 3 et 15 révèle un écart bloquant avant toute intégration :
+
+- Le certificat signé lie actuellement le compte, l'identifiant d'appareil, la plateforme, la date, l'empreinte racine et les deux clés publiques.
+- Il ne lie pas encore l'identifiant de cérémonie, le défi serveur à usage unique, le nonce du nouvel appareil, la version complète du protocole ni une échéance d'expiration.
+- Le champ `createdAt` n'est pas un remplacement d'un défi aléatoire, d'une preuve de fraîcheur et d'une consommation atomique côté serveur.
+- Le test de signature du certificat ne démontre donc pas, à lui seul, que l'approbation correspond à la demande d'enrôlement actuellement ouverte.
+
+### Conséquence
+
+Ne pas brancher ce certificat au futur endpoint d'approbation en l'état. Avant toute intégration, définir un transcript canonique unique, partagé par les deux appareils et le serveur, qui lie au minimum : compte, appareil racine, nouvel appareil, identifiants des deux clés, identifiant de cérémonie, défi serveur, nonce client, version du protocole, usages, émission et expiration. La signature racine doit couvrir l'intégralité de ces champs dans un ordre/version déterministes.
+
+Le serveur devra consommer le défi et faire passer l'enrôlement à son état terminal dans une opération atomique conditionnelle. Un certificat expiré, lié à une autre demande, déjà consommé ou destiné à un autre appareil doit être refusé. Les règles d'idempotence après perte réseau doivent être définies sans permettre de réutiliser le défi pour une nouvelle cérémonie.
+
+### Tests obligatoires avant intégration
+
+- Altération de chaque champ du transcript après signature.
+- Rejeu du même défi dans une seconde demande.
+- Défi expiré et horloge client manipulée (l'heure d'autorité est serveur).
+- Nonce, compte, rootDeviceId ou deviceId remplacé.
+- Deux approbations concurrentes sur le même défi : un seul commit métier.
+- Révocation de la racine entre lecture de la demande et écriture finale : aucune approbation ne doit réussir après le commit de révocation.
+- Perte réseau avant/après commit : récupération idempotente sans réutilisation du défi.
+
+**Statut :** constat d'audit documentaire et prototype ; aucune API ni migration n'est créée. Le format final du transcript doit être conçu et revu avant modification du code du certificat.
