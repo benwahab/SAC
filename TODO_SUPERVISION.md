@@ -20,6 +20,8 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Valider le mode de connexion SAC : adresse e-mail + mot de passe (option A) ; OTP e-mail pour vérification initiale, opérations sensibles et réinitialisation, sans OTP systématique à chaque connexion.
 - [x] Documenter les recommandations techniques comptes, OTP et sessions dans `docs/ARBITRAGES_TECHNIQUES_COMPTES_OTP_SESSIONS.md` ; les durées proposées, le fournisseur e-mail et les protocoles cryptographiques restent à valider ; le mode de connexion e-mail + mot de passe a depuis été validé.
 - [ ] Faire valider les arbitrages utilisateur et obtenir une revue cryptographique indépendante avant toute migration D1 ou route d'authentification.
+- [x] Documenter une proposition de politique de mot de passe et de paramètres de session PWA dans `docs/ARBITRAGES_TECHNIQUES_COMPTES_OTP_SESSIONS.md` ; seuils et durées non encore validés.
+- [ ] Faire valider la longueur minimale du mot de passe, la durée d'inactivité et la durée absolue de session avant le schéma D1.
 - [x] Décider la conservation des positions GPS précises : 30 jours après la fin du partage, puis purge automatique définitive des données actives SAC.
 - [x] Réaliser une étude comparative des pistes de destruction cryptographique (KMS externe, D1 Time Travel, Durable Objects) et consigner les limites dans `docs/SECURITE_GPS_DESTRUCTION_CRYPTO.md`.
 - [x] Compléter l'évaluation documentaire des limites Google KMS, AWS KMS, AWS CloudHSM et Cloudflare Secrets ; aucun candidat n'est validé pour la garantie stricte J+30.
