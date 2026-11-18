@@ -160,6 +160,20 @@ Comportement proposé :
 
 **Statut : proposition de conception uniquement.** Cette règle ne devient une décision produit qu'après validation explicite. Elle n'autorise aucune implémentation, API, migration, intégration téléphonique ou notification réelle.
 
+### Proposition technique et UX — seuil SMS sans fournisseur opérationnel (à valider)
+
+Le choix de 1 à 5 rappels reste un paramètre de l'alerte, mais il ne constitue jamais une preuve qu'un SMS pourra être envoyé. Tant qu'aucun fournisseur réel n'est configuré, vérifié et opérationnel :
+
+1. Avant le déclenchement, l'interface conserve le réglage choisi mais indique clairement : **« SMS de secours indisponible pour le moment ; les notifications push restent le seul canal prévu »**. Ne pas laisser entendre qu'un SMS sera envoyé.
+2. Le push initial et les rappels push continuent selon les règles déjà validées, sous réserve de disponibilité réelle du service push.
+3. À l'échéance du seuil choisi, si aucun responsable principal n'est attribué et qu'aucun fournisseur SMS opérationnel n'existe, le serveur enregistre un résultat métier explicite « escalade SMS impossible — fournisseur non configuré ». Il ne crée pas une tâche d'envoi fictive et ne simule aucune livraison.
+4. **Proposition :** ne pas envoyer rétroactivement le SMS si un fournisseur est ajouté ou rétabli après le seuil de cette alerte. Cette alerte conserve son résultat « impossible au moment du seuil » ; les nouvelles alertes pourront bénéficier du fournisseur après vérification. Cela évite l'arrivée tardive et inattendue d'un SMS de détresse.
+5. Si un fournisseur était configuré au déclenchement mais devient indisponible au moment de l'escalade, enregistrer « échec/indisponibilité fournisseur » selon le résultat vérifiable. Toute nouvelle tentative éventuelle doit être bornée, idempotente et soumise à une politique de délai validée ; ne jamais multiplier les SMS en cas de réponse ambiguë.
+6. Si le fournisseur accepte le SMS puis que la réponse réseau est perdue, l'état doit rester « résultat ambigu » jusqu'à réconciliation. Ne pas réenvoyer aveuglément : un SMS accepté peut arriver même si SAC n'a pas reçu l'accusé technique.
+7. Le tableau de suivi doit distinguer « SMS non configuré », « non dû », « dû », « en attente », « accepté », « livré si confirmé », « échec », « ambigu » et « annulé ». Une tâche planifiée n'est pas une livraison.
+
+**Statut : proposition à valider.** Elle ne choisit aucun fournisseur, ne crée aucune intégration, aucun secret, aucun compte externe, aucune API, aucun scheduler et aucun envoi SMS réel.
+
 ## 7. Décisions actées et points encore ouverts
 
 ### Décision validée — deux parcours SOS complémentaires
