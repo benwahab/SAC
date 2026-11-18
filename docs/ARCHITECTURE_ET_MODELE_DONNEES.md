@@ -441,3 +441,9 @@ Le module `src/domain/device-management.ts` définit les types `DeviceRecord`, `
 Les tests `tests/device-lifecycle.test.ts` sont exécutés par `npm run test:devices` et intégrés au workflow CI. Ils ne valident ni l'authentification, ni les signatures cryptographiques, ni la persistance, ni les sessions, ni les endpoints. Ce module n'est donc pas une implémentation serveur et ne peut pas être utilisé seul pour autoriser une action sensible.
 
 **Vérification :** CI GitHub Actions run `44191818016`, commit `eab16e659bd6d8759747f466d4dab57962178005` — typecheck, 14 tests de cycle de vie, tests crypto existants, build et audit bloquant des dépendances de production réussis. L'audit complet de l'outillage de développement reste non bloquant selon la configuration existante.
+
+## 13. Clarification des règles de clôture — complément du 18 novembre 2026
+
+La règle générale de la section 4 (« seul l'auteur ») s'applique à la clôture ordinaire d'une alerte. Elle doit être lue avec l'exception administrative étroite, validée ultérieurement et détaillée dans [MODELE_DONNEES_ADMIN_ET_INTEGRATION_SAC.md](MODELE_DONNEES_ADMIN_ET_INTEGRATION_SAC.md) et [CONTRATS_OPERATIONS_ADMIN_ATOMIQUES.md](CONTRATS_OPERATIONS_ADMIN_ATOMIQUES.md) : dans le scénario spécifique du titulaire suspendu et d'une suspicion d'abus/perte de téléphone, seul le Super Admin ou un Administrateur sécurité disposant de la permission nominative dédiée peut clôturer après vérification. Cette exception ne donne aucun droit général de clôture aux administrateurs ni aux contacts.
+
+Le modèle relationnel doit distinguer explicitement l'autorité et le motif de clôture. Aucun schéma SQL ou changement de code n'est autorisé par cette clarification documentaire.
