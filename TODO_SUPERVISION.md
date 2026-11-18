@@ -333,3 +333,14 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Aligner la matrice de conservation et les contrats de données sur cette distinction, sans ajouter de stockage GPS réel avant autorisation.
 - [ ] Valider les règles de rétention exactes du flux actif (mémoire, stockage temporaire, notifications, files, journaux, sauvegardes) et démontrer qu'aucune coordonnée ne fuit dans les textes libres.
 - [ ] Maintenir historique GPS précis : désactivé / NO-GO jusqu'à preuve de destruction J+30 et revue indépendante.
+
+
+## Modèle de menace GPS J+30 — 18 novembre 2026
+
+- [x] Ajouter les chemins de restauration à tester : sauvegardes OS, copie fichiers, rollback application, caches, presse-papiers, clés dérivées, copies DEK, HSM/KMS HA/DR, exports et comptes break-glass.
+- [x] Définir la limite fondamentale : un OS entièrement compromis pendant une période d'accès autorisé peut capturer du plaintext déjà affiché ; SAC ne peut pas effacer rétroactivement cette copie exfiltrée.
+- [x] Ajouter les scénarios GPS-19 à GPS-26 et renforcer le critère GO.
+- [ ] Faire relire le modèle de menace par un spécialiste indépendant mobile/cryptographie et confirmer le périmètre adversaire retenu.
+- [ ] Pour chaque OS supporté, établir les réglages précis de sauvegarde système, exclusions applicatives et scénarios de transfert/restauration.
+- [ ] Obtenir des preuves contractuelles et techniques fournisseur couvrant toutes les copies de clés, réplicas, sauvegardes, caches, exports et procédures break-glass.
+- [ ] Garder historique GPS : NO-GO tant qu'un scénario critique reste FAIL ou NON TESTABLE.
