@@ -650,3 +650,32 @@ Le titulaire a perdu son téléphone, ne peut plus accéder à son ancienne adre
 
 **NO-GO :** pas d'implémentation avant validation explicite des facteurs, délais, contestations, droits temporaires, politique de sessions, états et tests adversariaux. La récupération du compte reste distincte de la récupération de la racine.
 
+
+
+## 3.9 Orientation recommandée — arbitrages du parcours de récupération (18 novembre 2026)
+
+**Statut : recommandation structurée à soumettre à validation utilisateur ; aucune de ces valeurs n'est encore une décision approuvée.**
+
+| Sujet | Orientation recommandée | Motif / limite |
+|---|---|---|
+| Preuves | Clé hors ligne valide + OTP sur nouvelle adresse | Deux preuves de contrôle distinctes. Le nouvel OTP ne prouve jamais l'identité historique. Si la clé est suspectée copiée, suspendre et refuser le parcours standard ; aucun contournement par support ou contacts. |
+| Délai | Délai de sécurité candidat de 24 heures après validation des deux preuves | Laisser le temps à une session encore active de signaler une activité suspecte. Ce délai n'est pas une preuve supplémentaire et ne doit pas devenir un veto d'une ancienne boîte inaccessible. |
+| Contestation | Notification neutre aux sessions déjà actives et à l'ancien e-mail seulement s'il n'est pas signalé compromis ; aucune donnée sensible, aucun lien d'approbation ; aucun vote de contacts | Informer sans divulguer la nouvelle adresse ni donner une autorité de récupération à un canal potentiellement compromis. |
+| Session | Après délai et validation atomique : une session de récupération limitée sur le nouvel appareil | Elle ne vaut pas approbation cryptographique de l'appareil et ne donne pas accès aux fonctions racine/GPS. |
+| Révocation | À la réussite, révoquer les sessions actives et jetons de session existants ; marquer l'appareil perdu comme révoqué ; invalider ses abonnements push. Préserver séparément les enregistrements d'approbation des autres appareils, mais exiger une nouvelle authentification et une preuve de possession avant réouverture de session | Fermer les sessions potentiellement volées sans détruire les clés d'appareils secondaires encore légitimes. La révocation de session ne doit pas être confondue avec la révocation cryptographique de tous les appareils. |
+| Nouvel appareil | État « récupération limitée / non approuvé » jusqu'à une cérémonie distincte | Aucun accès racine, aucune approbation d'autre appareil, aucune opération GPS. |
+| Données | Aucun accès aux données privées pendant l'attente ; après récupération limitée, accès limité aux paramètres de sécurité nécessaires au rétablissement | Éviter qu'une clé volée donne accès aux données personnelles pendant la fenêtre de récupération. |
+| SOS | Ne jamais faire dépendre un SOS valide d'un OTP e-mail ; définir séparément si une session limitée peut déclencher un SOS sans GPS | Préserver l'urgence sans accorder implicitement toutes les permissions de l'appareil récupéré. |
+
+### Conditions et limites
+- Le délai candidat de 24 heures commence seulement après validation de la clé et de la nouvelle adresse ; une demande incomplète ne démarre pas le compte à rebours.
+- Une notification ou l'absence de notification ne prouve ni l'identité ni la livraison. Une notification n'est jamais un vote ou un veto.
+- Une contestation provenant d'une session authentifiée encore active peut suspendre temporairement la demande pour examen de sécurité ; ses critères, sa durée maximale et les recours doivent être définis afin d'éviter un déni de service par un appareil compromis.
+- Si une compromission de la clé est plausible, ne pas traiter le délai comme une compensation suffisante : refuser le parcours standard et appliquer une procédure indépendante qui reste à concevoir.
+- La session limitée ne doit pas pouvoir consulter les alertes privées, l'historique sensible, les coordonnées des contacts ou la localisation précise.
+- Les appareils secondaires déjà approuvés ne sont pas automatiquement effacés ou rétrogradés cryptographiquement ; leurs sessions sont fermées et leur reprise exige une preuve fraîche.
+- Le nouvel appareil ne récupère jamais l'ancienne clé racine. Une nouvelle racine doit être générée localement et vérifiée séparément par relation avant tout GPS.
+- Le traitement des demandes répétées, du délai maximal, des erreurs réseau et des limites d'essais reste à spécifier.
+
+**Validation utilisateur requise :** confirmer ou modifier le seuil de preuve, le délai candidat de 24 h, la notification/contestation, les droits de session limitée et la politique de révocation. Tant que cette validation n'est pas obtenue, toutes ces orientations restent des propositions et le NO-GO implémentation est maintenu.
+
