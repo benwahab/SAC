@@ -215,6 +215,8 @@ Les rappels toutes les cinq minutes vont aux destinataires initiaux jusqu'à la 
 
 ### 5.3 Réponse des proches
 
+Les réponses et la responsabilité sont également représentées par un contrat TypeScript pur dans `src/domain/alert-responses.ts`, avec tests dédiés dans `tests/alert-responses.test.ts`. L'ordre des candidatures utilise une séquence monotone fournie par le serveur ; le prototype ne remplace pas l'attribution atomique D1.
+
 Les réponses sont des actions distinctes :
 - `acknowledge` : le proche confirme avoir vu l'alerte ;
 - `volunteer` : le proche se propose pour prendre la responsabilité ;
