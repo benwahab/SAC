@@ -864,3 +864,17 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases
 - [ ] Obtenir une autorisation distincte avant tout code, endpoint, journal opérationnel, stockage, migration D1, ressource Cloudflare ou déploiement.
 
 **Statut :** consolidation documentaire uniquement ; aucun accès interne, journal ou contrôle n'a été activé.
+
+
+## Sécurité du cycle SOS et intégrité des alertes — 18 novembre 2026
+
+- [x] Auditer le parcours SOS, les machines à états, la matrice d'autorisation, les contrats D1 et la purge GPS avant consolidation.
+- [x] Formaliser l'authenticité du déclenchement, l'idempotence, la protection contre le rejeu, l'isolation des destinataires, la chronologie et la séparation des statuts de transport dans `docs/CONTRAT_SECURITE_CYCLE_SOS_ET_INTEGRITE_ALERTES.md`.
+- [x] Préserver les décisions validées : destinataires figés, rappels push toutes les cinq minutes, clôture par l'auteur, GPS supprimé à la clôture et catégorie purgée à J+30.
+- [ ] Arbitrer la preuve de commande, les clés d'idempotence et la réauthentification éventuelle.
+- [ ] Arbitrer le contenu minimal des notifications, les droits après révocation et les seuils anti-abus sans bloquer le SOS critique.
+- [ ] Définir les tests d'intégration concurrents, de rejeu, de restauration et d'absence de fuite avant activation réelle.
+- [ ] Maintenir le GPS réel NO-GO jusqu'à preuve indépendante de destruction irréversible.
+- [ ] Obtenir une autorisation explicite distincte avant tout code, test applicatif, migration D1, fournisseur, ressource Cloudflare ou déploiement.
+
+**Statut :** consolidation documentaire uniquement ; aucun parcours SOS réel ni contrôle supplémentaire n'a été activé.
