@@ -278,3 +278,7 @@ Ces niveaux indiquent un ordre recommandé, pas un calendrier promis.
 ## 18. État de la feuille de route
 
 Ce plan décrit l'ordre cible. Il ne signifie pas que les phases sont terminées. L'état réel est suivi dans `TODO_SUPERVISION.md` et doit être vérifié sur le code, les ressources et les résultats CI récents avant chaque mise à jour.
+
+## Référence complémentaire — résilience et continuité
+
+La mise en production doit également satisfaire `CONTRAT_RESILIENCE_CONTINUITE_ET_REPRISE_INCIDENT.md` : tests de réseau faible, perte de réponse après commit, workers redémarrés, indisponibilité des fournisseurs, sauvegarde/restauration isolée et non-résurrection. Une phase n'est pas validée par un simple health check ; les objectifs RTO/RPO et runbooks restent à arbitrer et à démontrer.
