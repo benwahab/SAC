@@ -1164,3 +1164,13 @@ Le kit est un secret de récupération à haute sensibilité. Il est généré l
 Écran court : « Écrivez ce kit sur papier. Gardez-le dans un endroit privé et verrouillé, séparé de votre téléphone. Ne le photographiez pas et ne le partagez jamais. » Puis affichage unique et confirmation utilisateur. Pas de questionnaire, pas d'envoi externe, pas de copie automatique.
 
 **À valider :** conserver le papier comme méthode recommandée par défaut et autoriser ou non un duplicata volontaire. Aucun stockage, génération ou écran n'est implémenté.
+## Décision validée — conservation des alertes et suppression GPS — 18 novembre 2026
+
+Cette décision remplace toute ligne antérieure indiquant une conservation des positions GPS pendant 30 jours après la fin du partage :
+
+- GPS lié à une alerte : suppression automatique dès la clôture de l'alerte.
+- Historique pendant 30 jours après clôture : seule la nature/catégorie de l'alerte demeure.
+- À J+30 après clôture : suppression définitive de l'entrée d'historique et de sa catégorie.
+- Aucune sauvegarde, restauration, réplication, snapshot, Time Travel ou export ne peut ressusciter ces données.
+
+Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les garanties techniques restent à implémenter et à prouver ; le GPS réel demeure NO-GO.
