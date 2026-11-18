@@ -92,3 +92,6 @@ Règles pour les agents :
 - Ne pas élargir les droits pour contourner un point non arbitré ; appliquer le refus par défaut.
 - Toute implémentation future doit inclure des tests positifs et négatifs, une revue de sécurité et une vérification des effets de révocation côté serveur.
 - Ne jamais exposer ou journaliser OTP, mots de passe, clés privées, jetons bruts, secrets de récupération ou GPS précis.
+
+
+Complément obligatoire pour tout travail administratif ou de sécurité : lire également `docs/MODELE_MENACES_ET_PLAN_SECURITE_ADMIN.md`. Toute implémentation doit traiter les scénarios de menace, les frontières de confiance et les critères de passage en production qui y sont définis. Les exigences documentaires ne prouvent pas que les contrôles existent déjà.
