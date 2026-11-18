@@ -19,6 +19,8 @@ jobs:
       - run: npm ci
       - name: Test full RFC 8785 Appendix B numeric vector set
         run: npm run test:jcs
+      - name: Test strict JSON boundary parser and duplicate-key rejection
+        run: npm run test:jcs-input
       - run: npm run typecheck
       - name: Test experimental location encryption primitive
         run: npm run test:crypto
