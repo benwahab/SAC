@@ -415,3 +415,44 @@ Aucune décision ici ne permet d'effacer les données locales à distance, de co
 - Aucun signal de risque non confirmé ne doit bloquer silencieusement le SOS valide.
 - Aucune détection SIM swap n'est annoncée sans intégration et preuve réelles.
 - Aucun fournisseur, endpoint, quota chiffré, mécanisme de verrouillage, migration D1 ou intégration n'est autorisé par cette proposition.
+## 3.8 Changement de numéro et d'adresse e-mail — cadre de sécurité (18 novembre 2026)
+
+**Statut :** invariants de sécurité retenus pour la conception ; parcours détaillé et facteurs de récupération encore à arbitrer. Aucun fournisseur ni endpoint n'est autorisé.
+
+### Invariants à respecter
+
+- Le compte SAC conserve un identifiant interne immuable ; modifier le numéro ou l'e-mail ne crée pas un nouveau compte et ne transfère pas l'ancien compte au titulaire ultérieur d'une SIM réattribuée.
+- Un OTP envoyé au nouveau numéro ou au nouvel e-mail prouve seulement le contrôle ponctuel de ce canal. Il ne prouve pas l'identité historique, la possession de l'ancienne SIM/boîte, ni la possession de la racine.
+- Un OTP SMS/e-mail, une réinitialisation de mot de passe ou une action du support ne peut jamais remplacer ou recréer silencieusement la racine cryptographique.
+- La perte de l'ancien canal n'autorise pas à envoyer des codes à l'ancienne destination ni à considérer deux nouveaux OTP comme une preuve suffisante.
+- Les appareils révoqués restent révoqués ; un changement de coordonnées ne les réactive pas.
+- Les relations de confiance existantes restent liées aux identifiants de compte, pas à la chaîne du numéro ou à l'adresse e-mail. Une invitation en attente vers l'ancienne coordonnée n'est jamais transférée ou acceptée automatiquement.
+- Les coordonnées privées ne sont pas communiquées automatiquement aux contacts de confiance.
+- Une modification de coordonnées ne réécrit pas les alertes actives, leurs destinataires figés, leur historique, les rappels push ou l'escalade SMS.
+- Toute validation finale doit revérifier côté serveur la session, l'appareil, la racine, le challenge et la version de coordonnées courante.
+- Le changement de racine et le changement de coordonnées sont deux procédures séparées. Si la récupération racine est en cours, les changements des canaux d'authentification/récupération sont bloqués jusqu'à une voie explicitement validée.
+
+### Scénarios à spécifier
+
+1. Changement volontaire avec accès à l'ancien numéro/e-mail et appareil approuvé.
+2. Ancienne SIM perdue, détruite ou numéro devenu inaccessible.
+3. Ancienne adresse e-mail inaccessible ou boîte compromise.
+4. Soupçon de SIM swap ou de réattribution du numéro.
+5. Perte simultanée du numéro et de l'e-mail.
+6. Demande initiée depuis un appareil secondaire, une session volée ou un appareil dont la révocation est concurrente.
+7. Changement pendant une alerte active ou une récupération racine.
+8. Deux demandes concurrentes, contestation avant/après validation, challenge rejoué ou changement de destination pendant la vérification.
+
+### Arbitrages obligatoires avant développement
+
+- Facteur indépendant requis lorsque l'ancien canal est perdu : appareil racine, autre facteur fort préenregistré ou procédure de récupération déjà validée.
+- Si l'ancien canal est disponible, déterminer s'il s'agit d'une simple notification ou d'une preuve supplémentaire, sans en faire une condition inaccessible en cas de perte.
+- Délai de sécurité et période de contestation ; aucune durée n'est fixée arbitrairement.
+- Conditions permettant de considérer l'ancien canal comme sûr ou compromis.
+- Politique de révocation ciblée des sessions et appareils après un changement volontaire ou suspect.
+- Ordre de priorité et nombre de numéros/e-mails vérifiés autorisés.
+- Effet sur les préférences de notification, les coordonnées visibles aux contacts et les invitations en attente.
+- Procédure en cas de numéro réattribué ; aucune détection automatique de SIM swap ne doit être prétendue sans signal fiable.
+- Actions autorisées pendant une récupération racine et traitement d'une alerte active.
+
+**NO-GO :** pas de changement autonome fondé uniquement sur un OTP du nouveau canal ; pas de récupération racine par SMS/e-mail ; pas d'implémentation avant résolution des arbitrages critiques.
