@@ -13,7 +13,7 @@ Documents et code examinés sur `main` :
 - `docs/MACHINES_ETATS_ET_CONSERVATION.md`
 - `src/domain/session-authorization.ts`
 
-Le module TypeScript est un évaluateur pur. Il ne crée pas de session, ne lit pas D1, ne vérifie pas un jeton présenté, ne renouvelle pas une session et ne révoque aucun appareil.
+Le module TypeScript reste un évaluateur pur. Il ne crée pas de session, ne lit pas D1, ne vérifie pas un jeton présenté, ne renouvelle pas une session et ne révoque aucun appareil. Depuis le 19 novembre 2026, il applique également les limites validées de 30 jours d'inactivité et 90 jours absolus à chaque évaluation, à partir de `createdAt` et `lastActivityAt` fournis par le serveur.
 
 ## 2. Garanties déjà écrites et cohérentes
 
@@ -112,6 +112,8 @@ Les tests de concurrence doivent être exécutés sur un runtime D1 isolé. Les 
 Aucun endpoint, migration D1, fournisseur OTP/SMS, stockage de refresh token ou changement du code d'autorisation n'est autorisé par cet audit. Le document ne choisit pas les durées et ne rend pas le mécanisme de session prêt pour production.
 
 Aucune donnée GPS précise ne doit être ajoutée aux sessions, jetons, journaux ou mécanismes de renouvellement. Le verrou de destruction irréversible J+30 reste indépendant et inchangé.
+
+**État d'implémentation au 19 novembre 2026 :** le contrat pur d'autorisation applique maintenant les deux durées de session validées (30 jours d'inactivité et 90 jours absolus), avec tests de borne exacte et de dates incohérentes. Il ne constitue toujours pas une session serveur : aucune persistance D1, vérification de jeton client, création/révocation de session ou renouvellement n'est implémenté. Le cycle de renouvellement reste bloqué par l'absence d'arbitrage utilisateur.
 
 **Conclusion :** le contrôle de session et la révocation par appareil sont correctement posés comme invariants, mais le cycle de renouvellement n'est pas encore spécifié. Le point le plus important à trancher est l'existence ou non d'un refresh token séparé ; tant que ce choix et ses règles anti-rejeu ne sont pas validés, il ne faut pas implémenter de renouvellement silencieux.
 
