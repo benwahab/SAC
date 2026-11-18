@@ -669,3 +669,17 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Transformer les exigences validées en conception technique détaillée avant toute implémentation.
 - [ ] Vérifier la conformité juridique, la conservation, la purge et les obligations de notification.
 - [ ] Ne pas déclarer les contrôles opérationnels avant preuve dans le code, tests et CI.
+
+
+## Contrats atomiques des opérations administratives — 18 novembre 2026
+
+- [x] Formaliser les contrats de création et transitions des missions.
+- [x] Formaliser suspension de compte et continuité des alertes déjà transmises.
+- [x] Formaliser la clôture administrative dans le scénario spécifique du titulaire suspendu.
+- [x] Définir les contrôles de consultation sensible et d'export.
+- [x] Définir les invariants d'audit, d'idempotence et de concurrence.
+- [x] Établir les tests d'intégration et de courses concurrentes.
+- [ ] Valider le modèle D1 final et les primitives transactionnelles exactes.
+- [ ] Faire relire les contrats par une personne indépendante en sécurité applicative.
+- [ ] Arbitrer conservation/scellement des audits, durée des exports et sessions administratives.
+- [ ] N'implémenter qu'après validation et autorisation explicite distincte.
