@@ -19,7 +19,9 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Finaliser les choix OTP restants, fournisseur e-mail, push, SMS et paiement.
 - [x] Valider le mode de connexion SAC : adresse e-mail + mot de passe (option A) ; OTP e-mail pour vérification initiale, opérations sensibles et réinitialisation, sans OTP systématique à chaque connexion.
 - [x] Documenter les recommandations techniques comptes, OTP et sessions dans `docs/ARBITRAGES_TECHNIQUES_COMPTES_OTP_SESSIONS.md` ; les durées de session (30 jours d'inactivité / 90 jours absolus) sont désormais validées ; le fournisseur e-mail et les protocoles cryptographiques restent à valider.
-- [x] Valider et documenter les cinq états du cycle de vie du compte (en attente de vérification, actif, suspendu, suppression en attente, supprimé) dans les documents de référence ; le traitement d'une alerte déjà active pendant une suspension reste à arbitrer.
+- [x] Valider et documenter les cinq états du cycle de vie du compte (en attente de vérification, actif, suspendu, suppression en attente, supprimé).
+- [x] Valider le principe de continuité d'une alerte SOS déjà transmise pendant une suspension : rappels maintenus vers les destinataires initiaux et capacité d'urgence strictement limitée à cette alerte, sans session générale.
+- [ ] Définir les règles de clôture si le titulaire a perdu son appareil, les notifications et les garde-fous anti-abus ; aucune implémentation avant spécification et revue.
 - [ ] Obtenir une revue cryptographique indépendante et clôturer les autres points bloquants avant toute migration D1 ou route d'authentification.
 - [x] Documenter une proposition de politique de mot de passe et de paramètres de session PWA dans `docs/ARBITRAGES_TECHNIQUES_COMPTES_OTP_SESSIONS.md` ; seuils OTP et autres paramètres techniques encore à valider ; durées de session validées séparément.
 - [x] Valider un minimum de 12 caractères pour le mot de passe (décision utilisateur du 18 novembre 2026).
@@ -485,6 +487,10 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Confirmer ultérieurement les valeurs hexadécimales définitives de la charte visuelle.
 
 
-## Cycle de vie du compte — point SOS en attente
+## Cycle de vie du compte — continuité SOS validée, détails ouverts
 
-- [ ] Arbitrer le comportement du titulaire et des contacts lorsqu'une alerte SOS est déjà active au moment d'une suspension ; proposition documentée dans `docs/PLAN_SOCLE_COMPTE_SESSIONS_APPAREILS.md` et `docs/ARBITRAGES_TECHNIQUES_COMPTES_OTP_SESSIONS.md`.
+- [x] Valider le principe : une suspension ne clôture ni n'interrompt une alerte SOS déjà transmise ; les rappels restent adressés toutes les 5 minutes aux seuls contacts initiaux, sans ajout automatique.
+- [x] Valider le principe d'une capacité d'urgence cryptographique limitée à l'alerte existante et à l'appareil d'origine : état minimal, mise à jour de sécurité et demande/confirmation de clôture ; aucun accès général au compte ni aux autres alertes.
+- [ ] Définir qui peut clôturer si le titulaire a perdu son appareil, les conditions et notifications de clôture, ainsi que les garde-fous anti-abus si la suspension est liée à l'alerte.
+- [ ] Spécifier et faire examiner indépendamment le protocole cryptographique et les contrôles serveur avant toute implémentation.
+- [ ] Ne créer aucune route API, permission opérationnelle, session spéciale ou migration D1 sans autorisation distincte.
