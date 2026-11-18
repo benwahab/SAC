@@ -494,10 +494,10 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Valider la distinction anti-abus : le titulaire suspendu peut signaler qu'il est en sécurité, mais cette mise à jour ne clôture pas l'alerte ; si la suspension est liée à un abus potentiel sur cette alerte, sa demande de clôture ne suffit pas à elle seule et des contrôles serveur supplémentaires sont requis ; aucune preuve ni trace ne peut être effacée.
 - [x] Valider que seule l'administration SAC peut clôturer une alerte dans ce contexte ; ni le titulaire suspendu ni les proches, même le responsable principal, ne peuvent la clôturer.
 - [x] Trancher le nombre de validations : un seul administrateur SAC habilité suffit pour décider et clôturer ; aucune double validation n'est exigée.
-- [ ] Définir la procédure de vérification de clôture administrative, le profil habilité, les critères de contrôle renforcé et les notifications aux contacts.
+- [x] Définir la procédure de vérification de clôture administrative, le profil habilité, les critères de contrôle renforcé et les notifications aux contacts.
 - [x] Valider que le silence ou l'absence de réponse d'un proche ne prouve jamais que la personne est en sécurité ; si la fin du danger n'est pas vérifiable, l'alerte reste active et les rappels continuent vers les seuls destinataires initiaux.
 - [x] Valider les vérifications préalables : statut et référence de l'alerte, signalement du responsable principal, accusés de réception, prises en charge, dernières informations et absence d'indice récent de danger persistant ; informations contradictoires ou insuffisantes = pas de clôture.
-- [ ] Définir la procédure détaillée de vérification de clôture administrative, le profil habilité, les critères de contrôle renforcé et les notifications aux contacts.
+- [x] Définir la procédure détaillée de vérification de clôture administrative, le profil habilité, les critères de contrôle renforcé et les notifications aux contacts.
 - [ ] Spécifier et faire examiner indépendamment le protocole cryptographique et les contrôles serveur avant toute implémentation.
 - [ ] Ne créer aucune route API, permission opérationnelle, session spéciale ou migration D1 sans autorisation distincte.
 
@@ -509,8 +509,8 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Valider que l'absence de réponse du titulaire ou d'un proche ne prouve jamais la sécurité ; si la fin du danger ne peut être vérifiée, l'alerte reste active et les rappels continuent vers les seuls destinataires initiaux.
 - [x] Confirmer que les informations contradictoires ou insuffisantes, ou tout indice récent de danger persistant, interdisent la clôture à ce stade.
 - [x] Confirmer qu'un proche peut signaler une fin supposée et demander une clôture, mais que seul un administrateur SAC habilité l'exécute ; un seul administrateur suffit, sans double validation.
-- [ ] Définir le canal de contact direct du titulaire, les délais et les tentatives, sans transformer l'absence de réponse en preuve.
-- [ ] Définir le profil administratif habilité, les contrôles renforcés déclenchés par suspicion d'abus et les notifications de clôture aux contacts.
+- [x] Définir le canal de contact direct du titulaire, les délais et les tentatives, sans transformer l'absence de réponse en preuve.
+- [x] Définir le profil administratif habilité, les contrôles renforcés déclenchés par suspicion d'abus et les notifications de clôture aux contacts.
 - [ ] Spécifier et faire examiner indépendamment les contrôles serveur et la traçabilité avant toute implémentation.
 - [ ] Ne créer aucune route API, permission opérationnelle, session spéciale ou migration D1 sans autorisation distincte.
 
