@@ -4,6 +4,10 @@ SAC est une application de sécurité personnelle et familiale. Elle permet à u
 
 ## Références obligatoires
 
+- [Consolidation générale de l'architecture](docs/CONSOLIDATION_GENERALE_SAC.md)
+- [Décisions complémentaires du 18 novembre 2026](docs/DECISIONS_COMPLEMENTAIRES_2026-11-18.md)
+- [Console professionnelle et services](docs/CONSOLE_PROFESSIONNELLE_ET_SERVICES.md)
+- [Plan directeur de réalisation](docs/PLAN_DIRECTEUR_REALISATION_SAC.md)
 - [Architecture de référence](ARCHITECTURE.md)
 - [Suivi et supervision](TODO_SUPERVISION.md)
 - [Cahier des charges complet](docs/CAHIER_DES_CHARGES_SAC.md)
@@ -34,4 +38,8 @@ Base relationnelle cible : Cloudflare D1. Stockage privé : Cloudflare R2 si act
 
 ## État du projet
 
-**Phase : socle technique initial en cours.** Le premier socle React/Vite/TypeScript, l'interface mobile de démarrage, le manifeste PWA, un service worker minimal, les contrats d'adaptateurs Web et une route Pages Functions de vérification D1 sont versionnés. Le SOS, l'authentification, les alertes, les notifications, les paiements et les migrations métier ne sont pas encore implémentés. Aucune alerte réelle ne peut être déclenchée à ce stade.
+**Phase : socle technique initial en cours.** Le premier socle React/Vite/TypeScript, l'interface mobile de démarrage, le manifeste PWA, un service worker minimal, les contrats d'adaptateurs Web et une route Pages Functions de vérification D1 sont versionnés. Des contrats TypeScript purs et des tests existent également pour certains cycles métier.
+
+Le SOS réel, l'authentification complète, les alertes métier, les notifications réelles, les paiements et les migrations métier D1 ne sont pas déclarés opérationnels. Le GPS précis reste bloqué par l'exigence de destruction irréversible J+30. La console professionnelle et les services administratifs sont documentés comme conception, pas comme fonctionnalités livrées.
+
+Vérifier `TODO_SUPERVISION.md`, le code, les ressources Cloudflare et les résultats CI récents avant toute affirmation sur l'état d'une fonction.
