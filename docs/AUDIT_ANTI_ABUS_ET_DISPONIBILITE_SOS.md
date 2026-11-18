@@ -413,3 +413,59 @@ Si une session est réellement révoquée ou invalide, le serveur doit refuser h
 **NO-GO permanent pour toute récupération racine fondée uniquement sur SMS, e-mail, mot de passe ou support.**
 
 Cette section est documentaire. Elle ne crée aucun fournisseur, endpoint, quota chiffré, verrouillage, ressource Cloudflare, SMS réel ni mécanisme GPS.
+## Annexe — Audit anti-abus du changement de coordonnées (18 novembre 2026)
+
+**Statut :** analyse de menaces et contrôles proposés ; pas de code ni de fournisseur activé.
+
+### Menaces couvertes
+
+| Menace | Risque | Contrôle de conception |
+|---|---|---|
+| SIM swap | Un attaquant reçoit les SMS du numéro historique | OTP SMS jamais considéré comme preuve racine ; exiger une preuve indépendante déjà approuvée |
+| Numéro recyclé/réattribué | Un nouveau titulaire reçoit des codes destinés à l'ancien titulaire | Identité du compte immuable ; aucune récupération sur la seule possession du numéro ; notification neutre et absence de transfert d'historique |
+| Boîte e-mail compromise | L'attaquant intercepte les liens de changement/récupération | L'e-mail est un canal, pas une racine ; lien à usage unique, lié à la demande et à sa finalité |
+| Perte des deux canaux | Un tiers contrôle les nouveaux canaux mais pas le compte historique | Deux nouveaux OTP ne s'additionnent pas en preuve d'identité ; suivre la récupération forte sans contournement |
+| Session volée | Un attaquant modifie les coordonnées depuis une session ouverte | Réauthentification/élévation de preuve à arbitrer ; vérification finale de l'état appareil et session ; notification minimale sur un canal encore sûr |
+| Appareil secondaire compromis | L'attaquant utilise une session valide mais non autorisée à changer certains paramètres | Autorisation serveur par rôle d'appareil ; aucune élévation racine ; politique de capacité à définir |
+| Hameçonnage du support | Un faux support demande un code ou change les coordonnées | Support ne demande jamais OTP, mot de passe, clé privée, QR complet ou code de récupération ; support sans pouvoir de remplacement racine |
+| Énumération | Un attaquant teste si un numéro/e-mail est associé à un compte | Réponses publiques uniformes, absence de confirmation d'existence et limitation anti-abus |
+| Déni de service | Multiples demandes bloquent le propriétaire ou le SOS | Limites ciblées par opération, destination et contexte ; pas de verrouillage global fondé sur IP seule ; ne pas bloquer le SOS essentiel |
+| Rejeu/concurrence | Un ancien code ou deux demandes remplacent successivement le canal | Challenge à usage unique, version de coordonnées, sérialisation atomique, idempotence et contrôle d'état final |
+
+### Notifications et contestation
+
+- Une notification à l'ancien canal n'est envoyée que si ce canal est encore considéré sûr. La notification est neutre et ne contient ni nouvelle coordonnée, ni lien de connexion automatique, ni détail d'alerte.
+- Un ancien canal suspecté compromis ne doit pas recevoir de secret ni disposer d'un veto qui permettrait à un attaquant de bloquer indéfiniment le propriétaire.
+- La contestation depuis un appareil déjà approuvé peut suspendre une demande avant son commit, sous réserve d'une règle atomique et d'une procédure de résolution. Les critères et délais restent à arbitrer.
+- Après validation, un signal de compromission ouvre une procédure de sécurité distincte (révocation ciblée, récupération, examen des sessions) ; il ne restaure pas l'ancien canal par simple message.
+- SAC ne doit pas affirmer détecter un SIM swap si aucun signal opérateur ou fournisseur fiable n'est disponible.
+
+### Limites OTP et stockage
+
+- Codes à durée limitée, consommation unique, tentatives et renvois limités de manière atomique ; paramètres numériques à valider avant implémentation.
+- Challenge lié au compte, à la destination normalisée, au but, à la demande et à l'époque/version concernée.
+- Un vérificateur OTP de faible entropie ne doit pas être stocké sous forme de hash rapide seul ; secret serveur/HMAC ou protection équivalente à définir lors de la conception.
+- Aucun OTP, lien de vérification, jeton, adresse complète, numéro complet ou réponse brute fournisseur dans les logs, analytics, tickets ou notifications.
+- Réponses publiques uniformes pour limiter l'énumération ; ne pas confirmer si la nouvelle destination appartient déjà à un autre compte.
+- La vérification du nouveau canal ne doit pas déclencher automatiquement des invitations, notifications aux contacts ou transferts de relations.
+
+### Continuité du service et alertes actives
+
+- Une demande de changement de coordonnées ne doit jamais retarder ou bloquer un SOS essentiel déjà autorisé.
+- Les alertes actives gardent leur instantané de destinataires et leur cycle d'alerte ; les notifications en cours ne sont pas reroutées vers une nouvelle coordonnée de l'auteur.
+- Une demande de changement ne modifie pas la liste initiale des contacts destinataires.
+- Une indisponibilité du fournisseur de vérification ne doit jamais être présentée comme une réussite ; elle ne doit pas entraîner de verrouillage global arbitraire.
+- La politique de sessions après changement (conservation de l'appareil courant, révocation ciblée, révocation des sessions récentes ou autre) demeure ouverte et doit être testée contre le vol de session.
+
+### Tests adversariaux requis avant toute mise en œuvre
+
+- SIM swap simulé, numéro réattribué, ancien canal compromis et canal perdu.
+- Perte simultanée téléphone/SIM/e-mail ; nouveaux OTP reçus par un tiers.
+- Session volée, appareil secondaire, appareil révoqué pendant la demande.
+- Challenge expiré, consommé, rejoué ou destiné à une autre demande.
+- Deux demandes concurrentes pour le même champ ou pour numéro et e-mail.
+- Contestation simultanée au commit, changement de version, demande répétée après coupure réseau.
+- Récupération racine en cours, alerte active, appareil hors ligne.
+- Vérification qu'aucun secret, canal complet ou donnée GPS n'apparaît dans logs et réponses.
+
+**NO-GO :** aucun flux de changement de coordonnées ne peut être déclaré sûr tant que le facteur indépendant, la politique de session, la contestation et les tests de concurrence ne sont pas approuvés.
