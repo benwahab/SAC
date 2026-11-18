@@ -96,6 +96,8 @@ L'annexe cryptographique doit encore fixer sans ambiguïté :
 - algorithmes et paramètres exacts ;
 - représentation binaire des signatures sur les trois clients et le Worker ;
 - canonicalisation des signatures, y compris traitement low-S si ECDSA est conservé ;
+
+L’évaluation des formats raw/DER, du vecteur RFC 6979 P-256 et de la malléabilité low-S est consignée dans `ANNEXE_EVALUATION_ECDSA_P256_INTEROPERABILITE.md`. Cette annexe rapporte des tests Node.js et Workers locaux réussis, mais ne ferme aucun arbitrage et ne remplace pas les essais réels Android/iOS.
 - identifiants/empreintes des clés et règles de validation des clés publiques ;
 - domaines de signature distincts pour éviter la confusion d'usage ;
 - vecteurs positifs et négatifs interopérables.
