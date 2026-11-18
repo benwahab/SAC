@@ -98,3 +98,6 @@ Complément obligatoire pour tout travail administratif ou de sécurité : lire 
 
 
 Avant toute conception ou modification d'opérations administratives, lire également `docs/CONTRATS_OPERATIONS_ADMIN_ATOMIQUES.md`. Respecter ses préconditions, contrôles transactionnels, règles d'idempotence et tests de concurrence. Ne jamais considérer ce contrat documentaire comme une autorisation d'implémenter.
+
+
+Avant toute évolution du schéma, des comptes administratifs, missions, permissions, sessions, audits, clôtures ou exports, lire `docs/MODELE_DONNEES_ADMIN_ET_INTEGRATION_SAC.md`. Vérifier les incohérences identifiées et ne pas figer les points « à arbitrer ». Ce document ne vaut pas autorisation de migration.
