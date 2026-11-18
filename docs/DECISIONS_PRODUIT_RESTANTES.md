@@ -331,3 +331,9 @@ Une proposition transversale est disponible dans [PROPOSITION_POLITIQUE_GENERALE
 Les durées chiffrées de cette proposition sont toutes **non approuvées** et ne constituent pas des durées légales. Elles doivent être validées catégorie par catégorie après revue juridique Niger/pays de lancement. La règle déjà approuvée pour les alertes/GPS reste exclusivement celle du contrat spécialisé : GPS supprimé à la clôture, catégorie seule conservée 30 jours, puis suppression définitive sans résurrection.
 
 Points à arbitrer avant implémentation : durées, preuves minimales de sécurité/consentement, comptes non vérifiés, identités après suppression, exports, support, données administratives/financières et protocole de restauration forward-only. Aucun code, endpoint, fournisseur, table ou purge n'est autorisé par cette proposition.
+
+## 20. Contrat proposé de suppression de compte et cas particuliers — 18 novembre 2026
+
+Le document [CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md](CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md) consolide les invariants déjà validés et isole les arbitrages restant ouverts : inscription non vérifiée, suppression depuis un compte suspendu, suspension pendant une suppression, mode restreint de clôture, SOS programmés, activités orphelines et effets sur les relations/groupes.
+
+Il ne crée aucune nouvelle décision produit. Les propositions (dont expiration provisoire de 24 h, canal d'effacement avant vérification, annulation des SOS programmés et révocation des relations à finalisation) doivent être confirmées explicitement. La finalisation reste impossible avec alerte ou trajet actif ; aucune clôture automatique n'est inventée. Les durées non GPS demeurent soumises à la matrice de conservation et à la validation juridique.
