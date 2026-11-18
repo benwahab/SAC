@@ -3,9 +3,9 @@
 **Statut : étude technique, aucun fournisseur ni mécanisme de production validé.**  
 **Objectif impératif :** à l'expiration des 30 jours suivant la fin du partage (ou la collecte pour une position ponctuelle), aucune restauration de D1, d'un export, d'une sauvegarde ou du service de clés ne doit pouvoir rendre les coordonnées GPS lisibles.
 
-## 1. Direction d'architecture retenue pour SAC
+## 1. Cible de conception candidate — non approuvée
 
-**Cible produit : aucune conservation GPS précise durable côté serveur.** Les positions sont chiffrées sur le téléphone, partagées en direct aux contacts autorisés par un relais éphémère. L'historique éventuellement conservé par SAC doit rester uniquement sur l'appareil de l'auteur pendant 30 jours après la fin du partage (ou, pour une position ponctuelle, pendant 30 jours à compter de sa collecte). À l'échéance, la clé dédiée doit devenir irrécupérable et l'archive chiffrée doit être supprimée.
+**Orientation de conception à évaluer, pas décision d'architecture approuvée : aucune conservation GPS précise durable côté serveur.** Une position partagée en direct pourrait être chiffrée sur le téléphone puis relayée éphémèrement aux contacts autorisés. L'éventuel historique de 30 jours serait local à l'appareil de l'auteur uniquement, mais cette option reste NO-GO tant que la destruction J+30 hors ligne, appareil éteint et après restauration n'est pas prouvée. À l'échéance, la clé dédiée devrait devenir irrécupérable et l'archive chiffrée devrait être supprimée.
 
 **Important : l'archive locale + Android Keystore/iOS Keychain n'est pas encore une architecture approuvée pour garantir J+30.** La documentation Android indique que les contraintes temporelles sont généralement appliquées par le logiciel, faute d'horloge indépendante dans le matériel sécurisé. iOS documente la non-migration de certaines clés, pas leur destruction automatique à une date donnée. Si le téléphone est éteint à l'échéance, l'application ne peut pas exécuter sa purge. La faisabilité de l'exigence stricte est donc un bloqueur. Voir obligatoirement `docs/PLAN_VALIDATION_DESTRUCTION_GPS_J30.md`.
 
@@ -15,7 +15,7 @@ Règles non négociables :
 1. Aucune coordonnée GPS précise ni aucun payload GPS ne doit être persisté dans D1, R2, KV, Durable Objects, files, journaux, traces, analytics, exports ou sauvegardes serveur.
 2. Le téléphone chiffre les positions avant leur transmission. Le serveur authentifie, vérifie les droits et relaie les paquets chiffrés sans les déchiffrer ni créer d'historique GPS durable.
 3. Le relais est éphémère : les paquets ne sont conservés que le temps technique nécessaire à la livraison et ne sont jamais utilisés comme archive.
-4. L'archive de 30 jours est locale au téléphone de l'auteur, chiffrée avec une clé propre à chaque session de partage ou trajet. Aucune synchronisation automatique vers un autre appareil ou vers le compte SAC ne doit copier l'archive ou sa clé privée.
+4. Si un historique local de 30 jours est finalement approuvé, il devra être chiffré avec une clé propre à chaque session de partage ou trajet, exclu de toute sauvegarde/transfert/synchronisation, et ne jamais être restauré sur un autre appareil. Cette règle ne prouve pas à elle seule la destruction J+30 ; voir les scénarios GPS-01 à GPS-36.
 5. À J+30, l'accès doit être refusé même si le téléphone était éteint à l'échéance. Une vérification au prochain démarrage ne suffit pas à elle seule : il faut une expiration cryptographique résistante à la restauration et à la manipulation de l'horloge.
 6. La PWA seule ne peut pas être présentée comme preuve de destruction matérielle irréversible. Android Keystore/TEE/StrongBox et iOS Keychain ne doivent pas être considérés comme suffisants avant démonstration d'une expiration J+30 indépendante de l'application.
 7. Si la clé locale est perdue, l'archive devient irrécupérable avant J+30 : la confidentialité prime sur la récupération de l'historique. La récupération de compte ou l'ajout d'un appareil ne restaure jamais les anciennes clés GPS.
