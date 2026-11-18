@@ -244,3 +244,14 @@ La proposition détaillée est consignée dans [PARCOURS_DECLENCHEMENT_SOS_V1.md
 **Décision validée le 18 novembre 2026 — destinataires ponctuels :** dans le parcours guidé, l'auteur peut retirer des destinataires préconfigurés et ajouter, pour cette alerte seulement, d'autres contacts de confiance dont la relation est active, l'invitation acceptée et le moyen de contact vérifié. Cette sélection ponctuelle peut déroger aux préférences habituelles de catégorie sans les modifier. Les limites de l'offre restent applicables. Le raccourci SOS critique immédiat conserve sa liste préconfigurée et ne propose pas de modification à la volée. La liste finale est vérifiée puis figée atomiquement à la création ; aucune modification ultérieure ne réécrit les destinataires ou les rappels de l'alerte.
 
 Restent à arbitrer : le comportement lorsqu'aucun contact éligible n'est configuré et le comportement du seuil SMS lorsque le fournisseur n'est pas opérationnel. Dans les deux parcours, aucune transmission ne doit être annoncée sans confirmation réelle du serveur. Le blocage GPS J+30 reste absolu ; aucune position réelle ne doit être collectée ou persistée avant preuve de destruction irréversible.
+
+
+### 7.1 Continuité du responsable principal — proposition à valider
+
+- La perte de connexion, l'extinction du téléphone, la suspension de la PWA ou le silence ne déclenchent pas de retrait automatique. SAC affiche uniquement la dernière activité confirmée côté serveur ; il ne prétend pas connaître la disponibilité réelle.
+- Le responsable principal se retire explicitement. Le serveur termine sa période et promeut atomiquement le volontaire admissible le plus ancien selon l'ordre serveur.
+- Sans volontaire disponible, l'alerte reste active sans responsable principal ; les rappels continuent vers les destinataires initiaux.
+- L'ancien responsable ne récupère pas automatiquement son rôle à la reconnexion.
+- Aucun délai d'abandon automatique ni présence temps réel n'est prévu dans la V1.
+
+**Statut :** proposition de conception, pas encore décision produit validée. Voir `docs/PARCOURS_DECLENCHEMENT_SOS_V1.md` et `docs/CONTRATS_OPERATIONS_ATOMIQUES_D1.md`.
