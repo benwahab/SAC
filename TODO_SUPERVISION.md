@@ -192,3 +192,14 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Valider les valeurs d'accès par destinataire après révocation avant de figer les tables et contraintes.
 - [ ] Valider la règle de secours si l'auteur ne revient jamais ; aucune clôture automatique ou par contact avant arbitrage.
 - [ ] Réaliser une revue finale croisée de la proposition de schéma et des contrats D1 après ces décisions.
+
+
+## Matrice de traçabilité du schéma D1
+
+- [x] Inventorier les 21 tables conceptuelles de la proposition et relier chacune à ses invariants, contraintes, tests D1 et points de conservation.
+- [x] Identifier les objets manquants ou conditionnels : permissions par destinataire, idempotence persistante, suppression, partage GPS hors D1, politique d'alerte orpheline.
+- [x] Définir les critères d'acceptation avant première migration.
+- [ ] Traiter les décisions produit ouvertes avant de figer les contraintes de droits.
+- [ ] Compléter les durées de conservation hors GPS après revue juridique consolidée.
+- [ ] Faire une revue croisée de la matrice avec les contrats d'opérations atomiques.
+- [ ] Garder la décision « non prêt pour migration » tant que tous les critères de passage ne sont pas satisfaits.
