@@ -862,3 +862,33 @@ Cette décision autorise uniquement la visibilité minimale décrite. Elle n'act
 - Vérifier qu'aucune interface ne prétend effacer à distance un téléphone hors ligne.
 
 **NO-GO :** aucun scénario n'est déclaré testé. Aucun code, API, migration, notification réelle ou commande de révocation n'est ajouté.
+
+
+## Audit — téléphone racine volé avec code de déverrouillage connu (18 novembre 2026)
+
+| Scénario | Risque | Contrôle attendu |
+|---|---|---|
+| Voleur connaît le code Android | Accès à la session et aux facteurs locaux | Ne pas considérer le déverrouillage local comme preuve indépendante ; revalidation serveur |
+| Racine approuvée mais propriétaire absent | Opérations sensibles effectuées par voleur | Suspension/révocation de l'autorité racine selon procédure à arbitrer |
+| Secondaire compromis | Suspension abusive de la racine | Preuve fraîche, appareil actif non révoqué, confirmation explicite, audit |
+| Secondaire tente de se promouvoir | Prise de contrôle de l'identité cryptographique | Interdiction absolue d'auto-promotion et d'approbation de remplacement |
+| Ancienne racine revient en ligne | Réactivation après déclaration de compromission | Révocation irréversible de l'ancienne époque ; aucun renouvellement |
+| Suspension pendant un SOS | Interruption des alertes | Conserver alertes actives, instantanés et tâches de notification |
+| Demande de suspension abusive | Déni de service au titulaire | Risque explicite, preuve du demandeur, procédure de contestation sans réactivation ancienne racine |
+| Téléphone hors ligne | Faux sentiment d'effacement | Révocation serveur seulement ; aucune promesse d'effacement distant |
+| StrongBox indisponible | Niveau de protection matériel inférieur | Politique de compatibilité explicite ; ne pas annoncer une garantie uniforme |
+| Code Android connu avec biométrie activée | Le code peut rester un facteur de secours | Ne pas présenter la biométrie comme indépendante du code système |
+
+### Tests requis avant implémentation
+- Vol simulé d'un appareil racine avec code système connu ; vérifier quelles opérations restent possibles et les protections effectives.
+- Vérifier que la confirmation d'une opération sensible sur le même appareil n'est pas traitée comme une preuve indépendante.
+- Depuis un secondaire valide, vérifier la suspension de la racine et l'impossibilité d'approuver un remplaçant.
+- Depuis un secondaire révoqué ou non autorisé, vérifier le refus de suspension.
+- Reconnecter l'ancienne racine après suspension : aucun renouvellement, approbation ou accès sensible.
+- Vérifier que les alertes actives et tâches SOS persistent après suspension.
+- Tester les courses suspension/réauthentification/approbation avec revalidation transactionnelle.
+- Tester Android Keystore, StrongBox quand présent, fallback matériel, verrouillage biométrique et code système sur appareils cibles.
+- Vérifier que la contestation ne réactive pas l'ancienne racine et qu'aucun support ne peut contourner la procédure.
+- Vérifier l'absence de fuite de clés, secrets, OTP, GPS et contenu d'alerte dans les journaux.
+
+**NO-GO :** ces tests ne sont pas exécutés. Aucune intégration Android, API, migration, notification ou suspension réelle n'est mise en place.
