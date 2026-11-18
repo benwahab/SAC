@@ -255,3 +255,14 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Prototyper le stockage local natif uniquement après définition d'un mécanisme d'expiration qui résiste à l'arrêt, au retour d'horloge et à la restauration.
 - [ ] Étudier un modèle de clé à deux parts avec destruction externe non restaurable, sans transmettre ni stocker les coordonnées GPS sur le service externe.
 - [ ] Ne pas activer de stockage historique GPS, de migration, de ressource cloud ni de flux GPS réel tant que le GO n'est pas démontré.
+
+
+## Comparaison KMS complémentaire — 18 novembre 2026
+
+- [x] Examiner la documentation officielle Google Cloud KMS sur la période de restauration avant destruction, la désactivation immédiate pendant l'état planifié et la purge de la matière de clé des infrastructures/sauvegardes.
+- [x] Examiner la documentation officielle AWS KMS sur la période obligatoire de 7 à 30 jours, l'annulation possible pendant l'attente, la suppression finale et les exceptions CloudHSM/External Key Store.
+- [x] Consigner la comparaison et les limites dans `docs/RECHERCHE_COMPLEMENTAIRE_GPS_J30_ET_TEXTES_NIGER.md`.
+- [x] Écarter Cloudflare KV comme mécanisme de destruction cryptographique : expiration logique, cohérence éventuelle et chiffrement au repos géré par Cloudflare ne prouvent pas la destruction de toutes les copies de clé.
+- [ ] Rechercher un mécanisme permettant de prouver la destruction irréversible de toutes les copies à l'échéance, sans fenêtre de restauration administrative et sans cache de clé locale.
+- [ ] Faire auditer contractuellement et techniquement toute solution KMS candidate avant de l'utiliser ; aucune ressource ou compte externe ne doit être créé sans autorisation explicite.
+- [ ] Ne pas présenter la lecture hors ligne de l'historique GPS et la destruction stricte J+30 comme simultanément garanties tant que la clé complète peut être copiée ou restaurée.
