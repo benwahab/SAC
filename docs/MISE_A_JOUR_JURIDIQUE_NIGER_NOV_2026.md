@@ -125,3 +125,20 @@ Lire également `CONTRAT_GOUVERNANCE_JURIDIQUE_ET_CONFORMITE.md`, qui regroupe l
 Le document `ANALYSE_JURIDIQUE_NIGER_SAC_2026-11-18_COMPLEMENT.md` approfondit les articles du texte de base 2022-59 concernant les formalités préalables, les catégories soumises à autorisation (notamment numéro de téléphone et transfert vers un pays tiers), les principes de finalité et de conservation, les données de santé, les GPS, les obligations des sous-traitants, les incidents, les droits et la désignation historique d'un correspondant.
 
 Ce complément ne lève pas le blocage institutionnel : l'ordonnance 2026-30, le décret de suppression et les services ministériels destinataires doivent toujours être authentifiés. Les formulaires et procédures historiques de l'ancienne HAPDP ne sont pas des instructions opérationnelles actuelles. Les dispositions citées du texte de base doivent être confrontées aux actes modificatifs de 2024 et 2026 avant toute conclusion définitive.
+
+
+## 10. Recoupement supplémentaire sur les actes du 8 juin 2026
+
+Une recherche complémentaire a permis de mieux préciser la portée des sources, sans lever le besoin d'obtenir les exemplaires authentiques :
+
+- L'ANP confirme officiellement la suppression de la HAPDP et le transfert de ses missions aux ministères de la Justice et de l'Intérieur, mais sa dépêche du 12 juin 2026 ne donne pas le numéro du décret.
+- Africa Data Protection, dans une analyse publiée en août 2026, indique que la suppression de l'autorité a été accompagnée le même jour d'une ordonnance abrogeant certaines dispositions de la loi 2022-59 qui fondaient l'existence de la HAPDP. Cette source spécialisée ne fournit pas dans l'article consulté la liste article par article des dispositions supprimées.
+- Une copie numérisée diffusée sur Scribd cite l'ordonnance n° 2026-30 du 8 juin 2026 et montre une contradiction de numérotation du décret : l'intitulé de la page/document mentionne 2026-310, tandis que le corps OCR reproduit le numéro 2026-340. Cette copie n'est ni le Journal officiel ni une source authentique ; elle ne permet pas de trancher.
+- Plusieurs sources secondaires utilisent 2026-310, mais l'ANP n'en donne pas la référence numérique dans sa dépêche.
+
+**Conclusion renforcée :** la suppression de la HAPDP et le transfert des missions sont corroborés ; le numéro exact du décret, le contenu authentique de l'ordonnance 2026-30 et les articles précis de la loi 2022-59 abrogés restent non établis. Ne pas citer un numéro de décret dans un document contractuel ou une démarche officielle avant consultation du Journal officiel.
+
+Sources de recoupement :
+- ANP, 12 juin 2026 : https://anp.ne/niger-plusieurs-services-rattaches-ou-sous-tutelle-de-la-presidence-de-la-primature-et-du-secretariat-general-du-gouvernement-supprimes/
+- Africa Data Protection, août 2026 : https://www.africadataprotection.org/niger-suppression-de-la-haute-autorite-de-protection-des-donnees-a-caractere-personnel.html
+- Copie OCR non authentifiée sur Scribd, à ne jamais utiliser comme preuve juridique : https://www.scribd.com/document/1060415798/Decret-2026-310-Du-08-Juin-Pourtant-Suppression-de-Certains-Services
