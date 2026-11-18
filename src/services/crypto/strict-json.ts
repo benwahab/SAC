@@ -8,6 +8,8 @@ export type StrictJsonValue =
   | StrictJsonValue[]
   | { [key: string]: StrictJsonValue };
 
+const MAX_SUPPORTED_DEPTH = 128;
+
 export interface StrictJsonLimits {
   /** Maximum UTF-8 size of the original JSON document. */
   maxBytes: number;
@@ -40,7 +42,8 @@ function validateLimits(limits: StrictJsonLimits): void {
     !Number.isSafeInteger(limits.maxBytes) ||
     limits.maxBytes < 1 ||
     !Number.isSafeInteger(limits.maxDepth) ||
-    limits.maxDepth < 0
+    limits.maxDepth < 0 ||
+    limits.maxDepth > MAX_SUPPORTED_DEPTH
   ) {
     throw new Error("strict_json_invalid:limits");
   }
@@ -161,7 +164,7 @@ export function parseStrictJson(
         const keyStart = index;
         const key = parseString();
         if (names.has(key)) {
-          fail("duplicate_property:" + key, keyStart);
+          fail("duplicate_property", keyStart);
         }
         names.add(key);
         skipWhitespace();
