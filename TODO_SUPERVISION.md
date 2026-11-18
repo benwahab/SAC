@@ -432,3 +432,17 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Arbitrer le comportement du seuil SMS tant qu'aucun fournisseur opérationnel n'est sélectionné.
 - [ ] Concevoir les écrans détaillés des deux parcours après clôture des points ouverts.
 - [ ] Ne pas activer le SOS, créer d'API ou de migration D1, ni collecter de GPS réel dans le cadre de cette mise à jour documentaire.
+
+
+## Sélection ponctuelle des destinataires SOS — décision validée — 18 novembre 2026
+
+- [x] Autoriser, dans le parcours SOS guidé uniquement, le retrait et l'ajout explicites de contacts pour une alerte donnée.
+- [x] Limiter les ajouts aux relations de confiance actives, invitations acceptées et moyens de contact vérifiés.
+- [x] Autoriser cette sélection ponctuelle à déroger aux préférences habituelles de catégorie sans modifier les préférences permanentes.
+- [x] Maintenir les plafonds de l'offre et interdire tout ajout automatique de destinataire.
+- [x] Garder le raccourci SOS critique immédiat sur sa liste préconfigurée, sans écran de modification.
+- [x] Exiger la validation serveur de chaque relation et le gel atomique de la sélection finale avec l'alerte et les tâches initiales.
+- [ ] Arbitrer le comportement lorsqu'aucun contact éligible n'est configuré ou sélectionné.
+- [ ] Arbitrer le comportement du seuil SMS tant qu'aucun fournisseur opérationnel n'est sélectionné.
+- [ ] Concevoir les écrans détaillés des deux parcours après clôture des points ouverts.
+- [ ] Ne pas activer le SOS, créer d'API ou de migration D1, ni collecter de GPS réel dans le cadre de cette mise à jour documentaire.
