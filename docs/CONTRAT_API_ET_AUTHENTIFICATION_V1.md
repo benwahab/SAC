@@ -824,3 +824,34 @@ La génération d'une nouvelle clé de récupération attend la fin de la céré
 
 Le déclenchement SOS depuis cette session est un droit séparé à arbitrer. Il ne doit pas être déduit automatiquement de l'autorisation de récupérer l'accès au compte. En revanche, aucun OTP e-mail ne doit être ajouté au déclenchement d'un SOS depuis une session déjà autorisée.
 
+
+
+### Autorisation candidate — SOS de secours sans GPS depuis session limitée
+
+**Statut : proposition non exécutable, à valider.**
+
+Une session de récupération limitée achevée pourrait recevoir une permission unique et étroite de déclencher un SOS de secours sans GPS. Cette permission ne confère aucune autre capacité.
+
+Préconditions à revérifier côté serveur au déclenchement :
+- récupération achevée et session limitée encore valide ;
+- session, compte et appareil non révoqués ;
+- appareil toujours marqué « récupération limitée / non approuvé » ;
+- destinataires issus exclusivement de la configuration SOS préexistante à la récupération ;
+- relations et moyens de notification encore éligibles.
+
+Contenu candidat :
+- catégorie et niveau d'urgence SAC ;
+- aucune position GPS ni donnée de localisation ;
+- aucun texte libre, aucune pièce jointe ;
+- destinataires figés à partir de la configuration antérieure, sans divulgation de la liste privée au terminal limité.
+
+L'événement destiné aux contacts doit porter un indicateur explicite « appareil en récupération limitée, non approuvé » et « localisation non disponible ». Il ne doit pas exposer les détails de récupération ou la nouvelle adresse e-mail.
+
+Le déclenchement n'exige aucun OTP e-mail. Les notifications et l'escalade suivent les mécanismes SOS déjà validés, sans assimiler SMS SOS à un OTP ni inventer un canal direct hors ligne.
+
+L'opération doit être idempotente : une référence de demande stable permet de retrouver le résultat si la réponse réseau est perdue. Le serveur doit sérialiser les demandes concurrentes et ne confirmer que l'état effectivement accepté. En absence de réseau, le client indique clairement que l'envoi n'est pas confirmé.
+
+Le droit est interdit si aucun destinataire préconfiguré n'est éligible. La session limitée ne peut pas modifier la liste pour contourner cette condition.
+
+**NO-GO :** cette proposition ne constitue ni une route API, ni une permission D1, ni une activation de l'envoi SOS.
+
