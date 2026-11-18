@@ -36,6 +36,8 @@ jobs:
         run: npm run test:auth-policy
       - name: Test Resend email adapter preconditions
         run: npm run test:email
+      - name: Test validated email OTP policy
+        run: npm run test:otp-policy
       - run: npm run build
       - name: Audit production dependencies (blocking)
         run: npm audit --omit=dev --audit-level=high
