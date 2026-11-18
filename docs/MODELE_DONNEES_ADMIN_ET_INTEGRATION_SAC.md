@@ -234,3 +234,8 @@ Aucune migration ne doit être créée avant :
 7. autorisation explicite distincte de créer les migrations.
 
 Ce document est une consolidation de conception, pas une implémentation ni une autorisation de modifier la base.
+
+
+## 12. Convention d'identité canonique — complément du 18 novembre 2026
+
+Le référentiel global `MODELE_GLOBAL_DONNEES_SAC.md` fixe `accounts` comme nom conceptuel canonique du compte SAC. Dans ce document administratif, les occurrences conceptuelles de `users` doivent donc être comprises comme des références à `accounts` ; elles ne justifient pas une table d'identité distincte. Les affectations de rôles, missions et sessions professionnelles sont liées au même identifiant de compte, tout en conservant leurs contrôles d'accès spécifiques. Cette convention ne constitue pas une migration.
