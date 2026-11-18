@@ -63,3 +63,12 @@ Claude, Qwen et les autres assistants autorisés travaillent sur les mêmes réf
 - **Bundles ECDH :** avant d'accepter un bundle signé, vérifier la structure JWK, importer effectivement la clé publique ECDH P-256 avec WebCrypto pour faire valider le point de courbe, puis vérifier la signature sous une identité déjà ancrée indépendamment. Le test du point (0,0) doit rester dans la suite adversariale. Une signature auto-incluse ne prouve jamais l'identité du propriétaire.
 
 - **Cérémonie multi-appareils :** le certificat secondaire expérimental actuel ne lie pas encore le défi serveur, le nonce du nouvel appareil, l'identifiant de cérémonie et l'expiration. Ne pas l'intégrer à une API d'approbation. Exiger un transcript canonique versionné signé par la racine et une consommation atomique du défi avant toute implémentation serveur.
+
+
+## Interface, langues et direction visuelle
+
+- Tous les textes visibles par l'utilisateur doivent être centralisés dans `src/i18n/translations.ts` ; ne pas ajouter de textes métier directement dans les composants.
+- Langues de lancement : français, anglais et arabe. L'arabe exige une interface RTL réelle, pas uniquement une traduction des libellés.
+- Toute nouvelle page ou tout nouveau composant doit utiliser les traductions et respecter `dir="rtl"` sans casser les parcours LTR.
+- Conserver le vert clair effet verre dépoli, le blanc, le rouge d'alerte et un vert de confirmation distinct. Aucun violet ni bleu nuit comme couleur principale.
+- Les codes hexadécimaux présents dans le thème sont des valeurs initiales de mise en œuvre ; ils ne doivent pas être présentés comme une charte définitive validée.
