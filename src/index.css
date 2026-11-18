@@ -50,7 +50,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid #26764b; outline-offs
   backdrop-filter: blur(20px);
 }
 [dir="rtl"] .sac-copy { text-align: right; }
-[dir="rtl"] .sac-inline-icon { flex-direction: row-reverse; }
 [dir="rtl"] .sac-hero-layout { direction: rtl; }
 [dir="rtl"] .sac-header { direction: rtl; }
 @media (prefers-reduced-motion: reduce) {
