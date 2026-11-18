@@ -462,3 +462,17 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Implémenter et tester les endpoints métier côté serveur avant toute activation du SOS.
 - [ ] Obtenir la preuve irréversible GPS J+30 avant toute collecte GPS précise.
 - [ ] Refaire une vérification CI complète sur le code récent, y compris Protection des trajets et suppression de compte.
+
+
+## Mise à jour interface citoyenne — 18 novembre 2026
+
+- [x] Appliquer la première déclinaison vert clair Glassmorphism à la page d'accueil.
+- [x] Réserver le rouge à l'état d'alerte et employer un vert distinct pour les confirmations.
+- [x] Harmoniser la couleur de thème, le fond et les métadonnées PWA.
+- [x] Centraliser les textes de la page dans `src/i18n/translations.ts`.
+- [x] Ajouter le sélecteur français / anglais / arabe et conserver la préférence localement.
+- [x] Activer `lang` et `dir` sur le document ; ajouter les adaptations RTL de la page d'accueil.
+- [ ] Faire relire les traductions, particulièrement les formulations d'urgence en arabe et en anglais.
+- [ ] Appliquer le système i18n et RTL à chaque nouvel écran avant son ouverture aux utilisateurs.
+- [ ] Valider les contrastes, le rendu mobile et les langues sur appareils Android réels.
+- [ ] Confirmer ultérieurement les valeurs hexadécimales définitives de la charte visuelle.
