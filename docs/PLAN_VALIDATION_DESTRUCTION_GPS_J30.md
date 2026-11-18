@@ -120,3 +120,73 @@ Une simple disparition de l'écran, une suppression de fichier ou un refus de l'
 - [ ] Évaluation d'un service externe de part de clé non restaurable.
 - [ ] Revue cryptographique indépendante.
 - [ ] Décision GO/NO-GO documentée avant toute connexion GPS réelle.
+
+
+## 9. Modèle de menace et limites de la promesse J+30
+
+La phrase « aucune restauration ne peut rendre les données lisibles » doit être interprétée avec un modèle de menace explicite. Sans cela, un test peut réussir sur un téléphone standard tout en laissant des chemins de récupération non testés.
+
+### 9.1 Capacités adverses à couvrir
+
+Les essais doivent considérer, au minimum :
+- restauration Android Auto Backup / transfert d'appareil et restauration iCloud/Finder lorsque l'application ou sa configuration y est éligible ;
+- copie de fichiers applicatifs, snapshots système accessibles, restauration d'une image locale et retour à une version antérieure de l'application ;
+- réinstallation, effacement/réinitialisation de l'appareil, migration et réassociation d'un second appareil ;
+- cache applicatif, base locale, fichiers temporaires, miniatures, index de recherche, presse-papiers et exports déclenchés par l'application ;
+- crash reports, diagnostics, journaux, traces, sauvegardes de support et captures d'écran de diagnostic ;
+- clés enveloppées, copies de DEK, clés de session, secrets de récupération, sauvegardes de HSM/KMS, réplication HA/DR et procédures de restauration administrateur ;
+- restauration d'un ancien état serveur, d'un ancien état du service de clés ou d'un ancien état de l'appareil ;
+- comptes de support et d'administration, y compris accès d'urgence (« break glass »), exports et opérations de récupération.
+
+Pour chaque chemin, préciser s'il est techniquement impossible, désactivé par configuration, exclu par hypothèse ou simplement non testé. « Nous faisons confiance à l'administrateur » n'est pas une preuve cryptographique d'irréversibilité.
+
+### 9.2 Limite fondamentale : compromission pendant la période autorisée
+
+Tant que l'utilisateur ou l'application est autorisé à afficher une position avant J+30, un appareil totalement compromis au niveau du système d'exploitation peut potentiellement capturer l'écran, la mémoire du processus ou les données après déchiffrement. Aucun chiffrement au repos ne peut garantir qu'un contenu déjà rendu lisible ne sera jamais copié par un adversaire qui contrôle entièrement l'appareil au moment où l'accès est légitime.
+
+La garantie J+30 doit donc distinguer :
+- **garantie visée :** aucune archive, sauvegarde, clé ou restauration contrôlée par SAC ne permet de relire les données après l'échéance ;
+- **limite à déclarer :** SAC ne peut pas effacer rétroactivement une copie plaintext déjà exfiltrée par un appareil entièrement compromis ou par un destinataire autorisé avant l'échéance.
+
+Cette limite ne réduit pas l'obligation de minimiser les données et de sécuriser l'appareil ; elle empêche seulement de promettre une propriété techniquement impossible. Elle doit figurer dans l'analyse de risque et les informations produit.
+
+### 9.3 Preuves de suppression du côté fournisseur
+
+Pour tout fournisseur KMS/HSM éventuel, demander une réponse écrite couvrant précisément :
+1. le sort de toutes les copies de clé, versions précédentes, réplicas, sauvegardes HA/DR et sauvegardes hors ligne ;
+2. la possibilité et la durée d'une annulation de suppression, restauration ou récupération par un administrateur ;
+3. les caches de clés de données et les durées de vie maximales des clés dérivées/session ;
+4. les journaux et exports contenant du matériau de clé ou des métadonnées permettant une récupération ;
+5. la preuve d'achèvement de destruction, son horodatage, son périmètre et les limites contractuelles ;
+6. le comportement en cas de panne, région indisponible, compte suspendu ou procédure de récupération d'urgence.
+
+Une réponse commerciale indiquant « HSM certifié », « clé supprimée » ou « zeroization » sans détailler ces chemins ne constitue pas une preuve suffisante.
+
+### 9.4 Compléments à la matrice de test
+
+Ajouter aux scénarios GPS-01 à GPS-18 les cas suivants :
+
+| ID | Scénario complémentaire | Résultat exigé |
+|---|---|---|
+| GPS-19 | Restauration Auto Backup Android / sauvegarde iOS éligible | aucune clé ou archive expirée ne redevient lisible |
+| GPS-20 | Retour à une ancienne version de l'application et de ses données | aucune prolongation ni réactivation de l'accès |
+| GPS-21 | Copie de fichiers applicatifs et restauration sur un appareil de test | aucune récupération après J+30 |
+| GPS-22 | Cache, miniatures, index, presse-papiers et fichiers temporaires | aucune coordonnée ou copie déchiffrée conservée après l'échéance |
+| GPS-23 | Restauration d'une sauvegarde HSM/KMS, réplica HA/DR ou export administrateur | aucune part de clé expirée ne peut être réactivée |
+| GPS-24 | Compte administrateur / procédure break-glass après J+30 | aucune capacité de récupération de la clé expirée |
+| GPS-25 | Clés dérivées, copies de DEK et clés de session encore en mémoire/cache | aucune voie de déchiffrement après l'échéance ; sinon NO-GO |
+| GPS-26 | Compromission complète de l'appareil pendant la période autorisée | documenter explicitement la limite ; ne pas prétendre effacer une copie plaintext déjà exfiltrée |
+
+Les scénarios GPS-19 à GPS-26 doivent recevoir un résultat PASS / FAIL / NON TESTABLE et être inclus dans le rapport de revue indépendante. Aucun test destructif ne doit être exécuté sur un appareil personnel ou une ressource de production.
+
+## 10. Critère GO renforcé
+
+La décision GO exige désormais :
+- PASS des scénarios GPS-02 à GPS-25 sur chaque plateforme et configuration effectivement supportées ;
+- GPS-26 documenté comme limite de menace, avec mesures de réduction et information produit ;
+- preuve fournisseur sur toutes les copies et voies de restauration si un KMS/HSM est utilisé ;
+- revue cryptographique indépendante ;
+- absence de données GPS précises dans D1, stockage objet, files, logs, analytics, sauvegardes et exports serveur ;
+- décision explicite sur la disponibilité hors ligne, qui ne peut être annoncée sans preuve propre à chaque classe d'appareil.
+
+Tout cas NON TESTABLE sur une voie de récupération critique maintient le statut NO-GO pour l'historique GPS.
