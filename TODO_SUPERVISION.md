@@ -446,7 +446,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 ## Sélection ponctuelle des destinataires SOS — décision validée — 18 novembre 2026
 
 - [x] Autoriser, dans le parcours SOS guidé uniquement, le retrait et l'ajout explicites de contacts pour une alerte donnée.
-- [x] Limiter les ajouts aux relations de confiance actives, invitations acceptées et moyens de contact vérifiés.
+- [x] Limiter les ajouts aux relations de confiance actives, issues d'une invitation acceptée, avec compte SAC actif et e-mail vérifié.
 - [x] Autoriser cette sélection ponctuelle à déroger aux préférences habituelles de catégorie sans modifier les préférences permanentes.
 - [x] Maintenir les plafonds de l'offre et interdire tout ajout automatique de destinataire.
 - [x] Garder le raccourci SOS critique immédiat sur sa liste préconfigurée, sans écran de modification.
@@ -748,13 +748,14 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Séparer l'état de vérification e-mail de l'état du compte.
 - [x] Rappeler que le téléphone obligatoire reste non vérifié et qu'aucun SMS OTP de compte n'est autorisé.
 - [x] Distinguer invitation, preuve de destination, compte destinataire et consentement explicite.
-- [x] Documenter une voie recommandée par e-mail vérifié sans la présenter comme approuvée.
+- [x] Documenter le parcours complet du proche lié à un compte actif et à l'e-mail vérifié, en séparant les décisions validées des propositions à arbitrer.
 - [x] Définir les tests de transitions, OTP, invitation, rejeu, concurrence et révocation.
 - [ ] Arbitrer la durée et l'expiration d'une inscription non vérifiée.
 - [ ] Arbitrer les transitions suppression/suspension concomitantes.
 - [x] Confirmer que tout proche devenant contact SAC actif doit disposer d'un compte SAC actif avec adresse e-mail vérifiée par OTP.
 - [x] Exclure l'activation d'un contact SAC par téléphone seul ou SMS OTP.
-- [ ] Spécifier les détails de remise de l'invitation, la correspondance entre destination invitée et e-mail vérifié, et l'enregistrement du consentement.
+- [x] Consolider le parcours logique d'invitation, acceptation, refus, expiration, retrait, révocation, réinvitation, sécurité et tests dans `docs/CONTRAT_CYCLE_VIE_PROCHES_ET_INVITATIONS.md`.
+- [ ] Arbitrer les détails opérationnels : durée, relances, fournisseur e-mail, révocation symétrique, limites anti-abus et permissions proposées.
 - [ ] Décider séparément si une fonctionnalité de destinataire externe sans compte SAC est souhaitée ; elle n'est pas définie et ne doit pas contourner l'obligation d'activation e-mail.
 - [ ] Autoriser distinctement la mise à jour du contrat TypeScript et des tests.
 - [ ] Refaire la revue de préparation D1 après alignement code/produit.
