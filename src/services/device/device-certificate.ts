@@ -7,7 +7,10 @@
  *
  * Ce module ne gère ni stockage, ni révocation serveur, ni sessions.
  */
-import { fingerprintLocationIdentityKey } from "../location/key-exchange.ts";
+import {
+  fingerprintLocationIdentityKey,
+  validateLocationExchangePublicKey,
+} from "../location/key-exchange.ts";
 
 const encoder = new TextEncoder();
 const PLATFORMS = ["web", "android", "ios"] as const;
@@ -187,10 +190,10 @@ export async function verifySecondaryDeviceCertificate(
     const identityKey = await cryptoProvider.subtle.importKey(
       "jwk", certificate.identityPublicKey, { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"],
     );
-    const exchangeKey = await cryptoProvider.subtle.importKey(
-      "jwk", certificate.exchangePublicKey, { name: "ECDH", namedCurve: "P-256" }, false, [],
-    );
-    if (identityKey.algorithm.name !== "ECDSA" || exchangeKey.algorithm.name !== "ECDH") return false;
+    if (
+      identityKey.algorithm.name !== "ECDSA" ||
+      !(await validateLocationExchangePublicKey(certificate.exchangePublicKey, cryptoProvider))
+    ) return false;
     const { signature, ...unsigned } = certificate;
     return await cryptoProvider.subtle.verify(
       { name: "ECDSA", hash: "SHA-256" },
