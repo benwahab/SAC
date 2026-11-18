@@ -21,6 +21,8 @@ jobs:
         run: npm run test:jcs
       - name: Test strict JSON boundary parser and duplicate-key rejection
         run: npm run test:jcs-input
+      - name: Test JCS and Web Crypto in local Cloudflare Workers runtime
+        run: npm run test:jcs-worker
       - run: npm run typecheck
       - name: Test experimental location encryption primitive
         run: npm run test:crypto
