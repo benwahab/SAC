@@ -120,7 +120,7 @@ L'attribution doit être une transition conditionnelle atomique :
 
 **Cas simultané :** deux demandes de retrait/reprise ne doivent jamais créer deux responsables ou perdre l'historique. La règle de priorité des volontaires déjà en attente doit être validée et testée.
 
-## 6. Contrat — annulation ou clôture par l'auteur
+## 6. Contrat — clôture de l'alerte par l'auteur
 
 **Acteur :** auteur de l'alerte uniquement.  
 **Préconditions :** alerte active et session de l'auteur valide.
