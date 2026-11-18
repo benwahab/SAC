@@ -290,3 +290,13 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Pour Thales ou tout HSM dédié, obtenir par écrit le comportement exact des sauvegardes, réplicas, nœuds, clés de restauration et procédures de reprise après destruction d'une clé individuelle.
 - [ ] Pour tout service candidat, démontrer qu'aucun administrateur ne peut annuler, restaurer, réimporter ou récupérer la clé après l'instant J+30.
 - [ ] Ne pas lancer de prototype d'archive GPS historique avant qu'une solution candidate satisfasse les tests GO/NO-GO de `docs/PLAN_VALIDATION_DESTRUCTION_GPS_J30.md`.
+
+
+## Précision Thales CipherTrust — Root of Trust — 18 novembre 2026
+
+- [x] Vérifier la documentation officielle sur la suppression d'une clé Root of Trust et l'impact sur les sauvegardes « tied-to-HSM ».
+- [x] Confirmer que supprimer la dernière RoT peut rendre l'appliance et ses clés irrécupérables, sans confondre cette opération globale avec une destruction sélective de clé GPS.
+- [x] Ajouter la nuance et les limites à la section 15 de `docs/RECHERCHE_COMPLEMENTAIRE_GPS_J30_ET_TEXTES_NIGER.md`.
+- [ ] Demander à Thales une confirmation écrite sur l'isolation d'une clé par dossier, les partitions HSM, clusters/HA, copies RoT, sauvegardes liées au HSM, exports et procédures de reprise.
+- [ ] N'envisager une démonstration qu'en environnement isolé, après autorisation explicite et protocole de test approuvé ; aucune destruction de clé réelle SAC.
+- [ ] Vérifier que toute preuve de sanitisation s'aligne sur NIST SP 800-88 Rev. 2 sans présenter cette référence comme une certification automatique de l'architecture.
