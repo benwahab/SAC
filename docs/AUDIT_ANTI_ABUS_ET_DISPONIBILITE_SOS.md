@@ -892,3 +892,36 @@ Cette décision autorise uniquement la visibilité minimale décrite. Elle n'act
 - Vérifier l'absence de fuite de clés, secrets, OTP, GPS et contenu d'alerte dans les journaux.
 
 **NO-GO :** ces tests ne sont pas exécutés. Aucune intégration Android, API, migration, notification ou suspension réelle n'est mise en place.
+
+
+## Audit — récupération avec kit hors ligne sans appareil approuvé (18 novembre 2026)
+
+| Scénario | Risque | Contrôle attendu |
+|---|---|---|
+| Kit volé avec téléphone | Prise de contrôle du compte | Kit à usage unique, OTP nouvelle boîte, délai proposé, session limitée |
+| Kit divulgué à distance | Récupération frauduleuse | Secret aléatoire fort, vérificateur protégé, challenge lié à la demande, limitation d'essais |
+| OTP nouvelle boîte présenté comme identité | Usurpation | OTP prouve uniquement le contrôle de la boîte, jamais l'identité historique |
+| Ancienne session du téléphone volé encore valide | Attaquant conserve l'accès | Invalidation serveur de toutes les sessions/jetons au succès final |
+| Téléphone volé hors ligne | Fausse promesse d'effacement | Pas d'effacement distant ; rejet des opérations lors du retour en ligne |
+| Rejeu du kit | Réutilisation après récupération | Consommation atomique unique et version de kit |
+| Deux demandes simultanées | Double session ou double consommation | Une seule demande active et verrouillage atomique |
+| Contestation pendant le délai | Récupération abusive ou blocage malveillant | Politique de contestation à définir, sans veto automatique d'une ancienne boîte |
+| Session limitée trop puissante | Accès privé avant rétablissement confiance | Liste d'autorisation minimale, refus par défaut |
+| Récupération confondue avec racine | Restauration abusive des clés | Séparation stricte compte/racine/appareil/GPS |
+| Panne pendant finalisation | Kit consommé sans récupération effective | Transaction atomique et règles de reprise idempotentes |
+| SOS actif pendant récupération | Interruption ou réécriture de l'alerte | Conserver instantanés, tâches et historique ; accès limité à l'état agrégé déjà validé |
+
+### Tests obligatoires avant implémentation
+- Kit correct + nouvelle adresse vérifiée : demande en attente, aucune session complète.
+- Kit incorrect, expiré ou déjà consommé : refus générique, aucune fuite d'existence du compte.
+- OTP nouvelle adresse invalide : aucune modification de canal.
+- Tentatives distribuées, rejeu, deux demandes concurrentes et consommation simultanée.
+- Contestation pendant le délai et panne au moment de la finalisation.
+- Vérifier que la session limitée ne peut lire ni modifier les données privées, contacts, alertes, GPS, appareils ou racine.
+- Vérifier que l'état agrégé du SOS de secours n'expose aucune identité ou coordonnée de contact.
+- Au succès final, vérifier invalidation de toutes les sessions, jetons et abonnements push antérieurs.
+- Reconnecter le téléphone volé après récupération : rejet serveur et absence de réactivation.
+- Vérifier conservation des alertes actives, instantanés destinataires et tâches de notification.
+- Vérifier qu'aucune opération de récupération ne restaure une clé GPS expirée ou une archive détruite.
+
+**NO-GO :** ces tests ne sont pas exécutés. Aucun mécanisme réel de récupération ou de révocation n'est activé.
