@@ -9,7 +9,7 @@ test("RFC 8785 JCS-01: numbers, strings and literals", () => {
     string: "€$\u000f\nA'B\"\\\"/",
     literals: [null, true, false],
   };
-  const expected = String.raw`{"literals":[null,true,false],"numbers":[333333333.3333333,1e+30,4.5,0.002,1e-27],"string":"€$\u000f\nA'B\"\\\\\"/" }\`;
+  const expected = String.raw`{"literals":[null,true,false],"numbers":[333333333.3333333,1e+30,4.5,0.002,1e-27],"string":"€$\u000f\nA'B\"\\\\\"/"}`;
   assert.equal(canonicalize(input), expected);
 });
 
