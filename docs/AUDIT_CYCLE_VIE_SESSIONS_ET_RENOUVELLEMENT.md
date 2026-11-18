@@ -1,7 +1,7 @@
 # SAC — Audit du cycle de vie des sessions et de leur renouvellement
 
 **Date :** 18 novembre 2026  
-**Statut :** audit documentaire et du contrat de domaine ; aucune politique de durée ou de renouvellement approuvée, aucun endpoint ni stockage implémenté.
+**Statut :** audit documentaire et du contrat de domaine ; les durées de session (30 jours consécutifs d'inactivité et 90 jours maximum absolus) ont depuis été validées par l'utilisateur le 18 novembre 2026. Le mécanisme de renouvellement reste non décidé ; aucun endpoint ni stockage n'est implémenté.
 
 ## 1. Périmètre vérifié
 
