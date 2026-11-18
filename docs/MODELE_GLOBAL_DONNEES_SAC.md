@@ -447,3 +447,8 @@ Lire `CONTRAT_PROTECTION_DONNEES_ACCES_INTERNES_ET_AUDIT.md` avec les documents 
 ## Communications et abonnements — complément du 18 novembre 2026
 
 Lire `CONTRAT_SECURITE_NOTIFICATIONS_ET_COMMUNICATIONS.md` avant toute évolution des abonnements push, files de notification, e-mails, SMS ou webhooks. Les abonnements et secrets fournisseurs sont des données sensibles ; les statuts de transport sont distincts des états métier. Aucun schéma, champ, fournisseur ou durée n'est approuvé par ce complément. Le modèle global reste non prêt pour migration.
+
+
+## Trajets et localisation — référence sécurité
+
+Lire `CONTRAT_SECURITE_TRAJETS_ET_LOCALISATION.md` avant toute évolution des trajets, partages GPS, autorisations ou rétention. Le modèle conceptuel ne vaut pas autorisation de collecte ni validation des durées. La conservation des positions de trajet reste à arbitrer ; le contrat spécifique des GPS liés aux alertes conserve ses règles validées distinctes. GPS réel NO-GO.
