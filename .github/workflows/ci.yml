@@ -38,6 +38,8 @@ jobs:
         run: npm run test:email
       - name: Test validated email OTP policy
         run: npm run test:otp-policy
+      - name: Test registration input policy
+        run: npm run test:registration-policy
       - run: npm run build
       - name: Audit production dependencies (blocking)
         run: npm audit --omit=dev --audit-level=high
