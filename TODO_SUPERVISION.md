@@ -500,3 +500,16 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Définir la procédure détaillée de vérification de clôture administrative, le profil habilité, les critères de contrôle renforcé et les notifications aux contacts.
 - [ ] Spécifier et faire examiner indépendamment le protocole cryptographique et les contrôles serveur avant toute implémentation.
 - [ ] Ne créer aucune route API, permission opérationnelle, session spéciale ou migration D1 sans autorisation distincte.
+
+
+## Procédure de clôture administrative d'une alerte pendant suspension — 18 novembre 2026
+
+- [x] Valider une vérification administrative avant clôture : identifier l'alerte et l'appareil d'origine ; examiner les accusés de réception, prises en charge, signalements et dernières mises à jour ; tenter si possible de joindre directement le titulaire ; rechercher les contradictions et indices récents de danger.
+- [x] Valider que la déclaration du titulaire disant être en sécurité est un élément à examiner, jamais une clôture automatique.
+- [x] Valider que l'absence de réponse du titulaire ou d'un proche ne prouve jamais la sécurité ; si la fin du danger ne peut être vérifiée, l'alerte reste active et les rappels continuent vers les seuls destinataires initiaux.
+- [x] Confirmer que les informations contradictoires ou insuffisantes, ou tout indice récent de danger persistant, interdisent la clôture à ce stade.
+- [x] Confirmer qu'un proche peut signaler une fin supposée et demander une clôture, mais que seul un administrateur SAC habilité l'exécute ; un seul administrateur suffit, sans double validation.
+- [ ] Définir le canal de contact direct du titulaire, les délais et les tentatives, sans transformer l'absence de réponse en preuve.
+- [ ] Définir le profil administratif habilité, les contrôles renforcés déclenchés par suspicion d'abus et les notifications de clôture aux contacts.
+- [ ] Spécifier et faire examiner indépendamment les contrôles serveur et la traçabilité avant toute implémentation.
+- [ ] Ne créer aucune route API, permission opérationnelle, session spéciale ou migration D1 sans autorisation distincte.
