@@ -109,3 +109,6 @@ Avant toute évolution du modèle relationnel, lire `docs/MODELE_GLOBAL_DONNEES_
 
 
 Avant toute proposition SQL ou migration, lire aussi `docs/REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md`. Son verdict est NON PRÊT POUR MIGRATION. Ne pas transformer les recommandations P0/P1 en décisions produit sans validation. Aucun SQL ne doit être créé sur la seule base de la carte globale.
+
+
+Avant toute modification du cycle de compte ou des invitations de proches, lire `docs/ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md`. Les cinq états du compte sont des décisions validées, mais les transitions explicitement marquées ouvertes et le moyen de preuve des proches ne doivent pas être inventés. L'orientation d'acceptation par e-mail vérifié est une recommandation non validée. Ne pas modifier le code, les tests ou D1 sans autorisation distincte.
