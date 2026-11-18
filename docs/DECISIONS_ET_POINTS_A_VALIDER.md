@@ -1174,3 +1174,8 @@ Cette décision remplace toute ligne antérieure indiquant une conservation des 
 - Aucune sauvegarde, restauration, réplication, snapshot, Time Travel ou export ne peut ressusciter ces données.
 
 Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les garanties techniques restent à implémenter et à prouver ; le GPS réel demeure NO-GO.
+
+
+## Audit transversal de cohérence — 18 novembre 2026
+
+Lire `AUDIT_TRANSVERSAL_COHERENCE_ET_MATURITE_2026-11-18.md` pour le registre des contradictions corrigées et des dépendances P0. Les anciennes formulations GPS « 30 jours après fin du partage » sont historiques et remplacées pour les alertes SOS par le contrat spécialisé : GPS supprimé à la clôture, catégorie seule pendant 30 jours, entrée/catégorie supprimées à J+30. Les trajets indépendants d'une alerte ont une durée GPS non arbitrée. Ne pas utiliser les passages historiques comme règles opérationnelles.
