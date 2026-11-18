@@ -34,11 +34,13 @@ Le lanceur d'alerte choisit lui-même, pour chaque alerte, le nombre de rappels 
 
 Les SMS de secours ne peuvent viser que les contacts figurant dans l'instantané initial de l'alerte. Aucun nouveau destinataire n'est ajouté automatiquement.
 
-## Proposition d'interface à valider
+## Réglage validé par le porteur du projet
 
-Pour rendre le réglage simple sur téléphone, proposition : choix explicite de 1 à 5 rappels, par boutons de sélection plutôt qu'un curseur imprécis. Chaque choix affiche aussi le délai correspondant avant l'escalade : 5, 10, 15, 20 ou 25 minutes. Proposition de valeur présélectionnée : 2 rappels (10 minutes), afin de ne pas retarder excessivement le secours tout en laissant un premier délai de réaction.
+**Décision validée le 18 novembre 2026 :** pour chaque alerte, le lanceur choisit explicitement de 1 à 5 rappels push avant l'escalade SMS. Les délais correspondants sont de 5, 10, 15, 20 ou 25 minutes, puisque les rappels sont espacés de cinq minutes et que le push initial ne compte pas. La valeur présélectionnée est de **2 rappels (10 minutes)**.
 
-**Cette plage et cette valeur par défaut sont une recommandation de conception, pas encore une décision validée par l'utilisateur.** Elles doivent être confirmées avant de figer l'interface, le schéma et la validation serveur. Le seuil reste propre à chaque alerte ; le lanceur peut le modifier à chaque déclenchement. Le serveur doit refuser toute valeur hors plage une fois celle-ci approuvée. Aucun choix « aucun SMS » n'est ajouté pour le moment, car la règle validée prévoit un SMS de secours après le seuil choisi.
+L'interface utilise cinq boutons de sélection accessibles plutôt qu'un curseur ; chaque choix affiche le délai correspondant. Le seuil reste propre à chaque alerte et peut être modifié à chaque déclenchement. Le serveur devra refuser toute valeur hors de la plage 1–5. Aucun choix « aucun SMS » n'est prévu : la règle validée prévoit l'escalade SMS après le seuil choisi si aucun responsable principal n'a été attribué.
+
+Cette validation fixe le comportement produit attendu ; elle ne signifie pas que l'interface, le schéma, le serveur ou l'envoi SMS sont déjà implémentés.
 
 ## Garanties et limites
 
