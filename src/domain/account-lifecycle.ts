@@ -5,7 +5,7 @@
  * d'effacement/anonymisation, les délais légaux et les dépendances doivent
  * être définis séparément et exécutés atomiquement côté serveur.
  */
-export type AccountLifecycleStatus = "active" | "deletion_pending" | "deleted";
+export type AccountLifecycleStatus = "pending_verification" | "active" | "suspended" | "deletion_pending" | "deleted";
 
 export interface AccountLifecycleRecord {
   readonly accountId: string;
@@ -49,7 +49,9 @@ function isUtc(value: string): boolean {
 
 function isValidAccount(account: AccountLifecycleRecord): boolean {
   if (!account.accountId.trim() || !isUtc(account.createdAt)) return false;
-  if (account.status === "active") return account.deletionRequestedAt === null && account.deletedAt === null;
+  if (account.status === "pending_verification" || account.status === "active" || account.status === "suspended") {
+    return account.deletionRequestedAt === null && account.deletedAt === null;
+  }
   if (account.status === "deletion_pending") {
     return account.deletionRequestedAt !== null && isUtc(account.deletionRequestedAt) &&
       Date.parse(account.deletionRequestedAt) >= Date.parse(account.createdAt) && account.deletedAt === null;
@@ -67,7 +69,7 @@ function result(account: AccountLifecycleRecord): AccountLifecycleResult {
     ok: true,
     account,
     allowNewActivity: account.status === "active",
-    allowCloseExistingActivity: account.status !== "deleted",
+    allowCloseExistingActivity: account.status === "active" || account.status === "deletion_pending",
   };
 }
 
