@@ -695,3 +695,56 @@ Pour un secret réellement uniforme de 256 bits, un hash cryptographique rapide 
 - La clé ne restaure jamais la racine, n'approuve aucun appareil, ne réactive aucune révocation et ne donne aucun accès GPS.
 
 **NO-GO :** pas d'endpoint, de schéma D1, de code de génération, de vérification ou de récupération tant que le format, la normalisation, la gestion du vérificateur, les limites, les sessions et les tests adversariaux n'ont pas été approuvés.
+
+
+## Annexe — Contrat conceptuel du parcours avec clé hors ligne et nouvelle adresse (18 novembre 2026)
+
+**Statut :** proposition documentaire uniquement. Aucun endpoint, schéma D1, migration ou code métier n'est autorisé.
+
+### Préconditions
+- Le titulaire ne possède plus son téléphone précédent et ne peut plus accéder à l'ancienne adresse e-mail.
+- Une clé personnelle hors ligne a été créée antérieurement, est encore active et n'a jamais été consommée.
+- Le titulaire dispose d'un nouvel appareil et d'une nouvelle adresse e-mail qu'il peut vérifier.
+- La nouvelle adresse ne doit pas être considérée comme un facteur historique : elle ne fait que recevoir un OTP de contrôle de destination.
+
+### Séquence logique
+1. **Ouverture :** créer une demande opaque liée à un compte candidat, à une finalité unique, à une version de récupération et à une échéance. Les réponses externes doivent rester uniformes pour éviter l'énumération.
+2. **Preuve hors ligne :** vérifier la clé contre le vérificateur protégé, sans jamais conserver ni journaliser le secret brut, ses fragments ou une représentation réutilisable.
+3. **Vérification de destination :** envoyer l'OTP uniquement à la nouvelle adresse déclarée. Le challenge est lié à la demande, au compte, à l'adresse normalisée, à la finalité et à la version ; il expire et ne peut être consommé qu'une fois.
+4. **Attente :** enregistrer les preuves réussies sans créer de session complète. La demande reste en attente jusqu'à satisfaction des règles de délai, contestation et autorisation qui seront explicitement approuvées.
+5. **Validation finale :** dans une transaction atomique, revalider la demande, la version de compte, la version de la clé, son état non consommé, les révocations, les contestations et l'absence d'une autre demande gagnante.
+6. **Commit :** consommer la clé une seule fois, invalider les demandes concurrentes de la même version, appliquer la politique de coordonnées et de sessions approuvée, puis émettre uniquement les capacités de session limitées autorisées.
+7. **Après commit :** notifier de manière neutre les canaux sûrs préexistants si la politique le prévoit. Une notification n'est ni un vote, ni un veto, ni une preuve de récupération.
+
+### Séparation des autorités
+- La réussite de la récupération d'accès n'approuve pas le nouvel appareil comme appareil racine ou secondaire.
+- La nouvelle session doit porter un état et des droits distincts de ceux d'un appareil cryptographiquement approuvé.
+- Les opérations sensibles dépendant de la racine restent interdites : approbation d'autres appareils, opérations de clés racine, rotation/récupération racine et partage GPS.
+- La clé de récupération ne fournit aucune clé privée et ne restaure aucun secret cryptographique antérieur.
+- La nouvelle racine, si nécessaire, est générée localement sur un appareil éligible ; sa nouvelle empreinte doit être vérifiée indépendamment par chaque contact concerné avant reprise du GPS avec cette relation.
+- Les alertes actives, leurs instantanés de destinataires et leur historique ne sont pas réécrits par la récupération.
+
+### États conceptuels candidats
+- `recovery_requested` : demande créée, aucune preuve complète.
+- `recovery_key_verified` : clé vérifiée, sans accès complet.
+- `recovery_destination_verified` : nouvelle adresse vérifiée, sans accès complet.
+- `recovery_pending_security` : attente du délai ou de la résolution de contestation.
+- `recovery_completed_limited` : récupération d'accès réussie avec session limitée ; appareil non approuvé.
+- `recovery_refused`, `recovery_expired`, `recovery_cancelled` : demande terminale sans privilège nouveau.
+
+Ces noms sont des candidats de documentation, pas un contrat d'API ni des états D1 approuvés.
+
+### Concurrence, rejeu et interruption
+- Une seule demande gagnante peut consommer une version donnée de la clé.
+- La vérification de la clé, la consommation et l'invalidation des demandes concurrentes doivent être sérialisées atomiquement.
+- Une révocation d'appareil ou de compte gagnant avant le commit fait échouer la récupération.
+- Une réponse réseau ambiguë ne doit pas provoquer une deuxième consommation ni une fausse confirmation côté client ; le client doit pouvoir retrouver l'état de la demande sans révéler de secret.
+- Une clé incorrecte, expirée, consommée ou appartenant à une autre version produit une réponse externe uniforme.
+- Une demande expirée ou annulée ne consomme pas automatiquement la clé, sauf décision de sécurité explicite ; les règles doivent empêcher l'énumération et les abus.
+- Une régénération de clé invalide atomiquement l'ancienne version et toute demande encore liée à celle-ci.
+
+### Décisions requises avant contrat exécutable
+Le seuil de preuve (clé seule + nouvel OTP ou facteur indépendant supplémentaire), le délai de sécurité, la contestation, les droits de session, la portée de révocation, les limites d'essais et les notifications ne sont pas décidés. Aucun endpoint ou schéma ne doit être conçu comme si ces choix étaient acquis.
+
+**NO-GO :** ce document ne permet pas d'implémenter ou d'activer la récupération réelle.
+
