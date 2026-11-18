@@ -433,3 +433,8 @@ Lire `docs/CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md` pour les r
 ## Prévention des abus, usurpations et saturation — complément du 18 novembre 2026
 
 `docs/CONTRAT_PREVENTION_ABUS_USURPATION_ET_SATURATION.md` complète les contrats SOS, communications, invitations, comptes/appareils, confidentialité et audit. Il traite le harcèlement, l'usurpation, les fausses alertes, les automatismes, le déni de service et les abus internes. Il réaffirme que l'anti-abus doit protéger la disponibilité du SOS : pas de blocage automatique fondé uniquement sur la fréquence des alertes, pas de CAPTCHA/paiement obligatoire par défaut et pas de dépendance externe dans le chemin critique. Les seuils et procédures restent à arbitrer ; aucune implémentation n'est autorisée.
+
+
+## Résilience opérationnelle, continuité et reprise après incident — complément du 18 novembre 2026
+
+`docs/CONTRAT_RESILIENCE_CONTINUITE_ET_REPRISE_INCIDENT.md` consolide les règles réseau faible/hors ligne, perte de réponse, pannes API/D1 et fournisseurs, outbox/worker, sauvegardes, restauration et exercices de reprise. Il rappelle que `/api/health` vérifie uniquement un accès D1 élémentaire et que le service worker PWA ne garantit aucun SOS hors ligne. La remise en service après restauration est conditionnée à la réconciliation des révocations et suppressions, et à la preuve de non-résurrection. RTO/RPO, SLA, fournisseurs et procédures opérationnelles restent à arbitrer ; aucune infrastructure n'a été modifiée.
