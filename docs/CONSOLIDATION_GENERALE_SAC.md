@@ -403,3 +403,8 @@ Le document `PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md` formalise les menac
 ## Protection des données et audit interne — complément du 18 novembre 2026
 
 `docs/CONTRAT_PROTECTION_DONNEES_ACCES_INTERNES_ET_AUDIT.md` complète la matrice des permissions, la classification C0-C4, la gouvernance des missions, le modèle de menaces et les contrats transactionnels. Il détaille les consultations C3, la minimisation côté serveur, la séparation lecture/export, l'intégrité des journaux et les limites de contrôle du Super Admin. Les points ouverts restent à arbitrer ; aucune implémentation ou durée nouvelle n'est approuvée.
+
+
+## Sécurité du cycle SOS — complément du 18 novembre 2026
+
+`docs/CONTRAT_SECURITE_CYCLE_SOS_ET_INTEGRITE_ALERTES.md` complète le parcours de déclenchement, la matrice d'autorisation, les machines à états, les contrats transactionnels et le contrat de conservation. Il regroupe les menaces d'usurpation, de rejeu, de concurrence, de fuite entre destinataires, d'abus, de confusion entre états métier et transport, ainsi que les tests de restauration. Les décisions validées sont reprises sans modification ; les nouvelles options restent à arbitrer. Aucun code, fournisseur, mécanisme GPS ou service SOS réel n'est activé.
