@@ -17,7 +17,8 @@
     "test:alerts": "node --experimental-strip-types --test tests/alert-lifecycle.test.ts",
     "test:responses": "node --experimental-strip-types --test tests/alert-responses.test.ts",
     "test:trips": "node --experimental-strip-types --test tests/trip-protection.test.ts",
-    "test:accounts": "node --experimental-strip-types --test tests/account-lifecycle.test.ts"
+    "test:accounts": "node --experimental-strip-types --test tests/account-lifecycle.test.ts",
+    "test:auth-policy": "node --experimental-strip-types --test tests/auth-policy.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
