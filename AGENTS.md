@@ -18,6 +18,12 @@ Avant toute tâche, lis :
 12. `docs/MISE_A_JOUR_JURIDIQUE_NIGER_NOV_2026.md`
 13. `docs/CONFORMITE_DONNEES_NIGER.md`
 14. `docs/AUDIT_DEPENDANCES_ET_REPRODUCTIBILITE.md`
+15. `docs/CONSOLIDATION_GENERALE_SAC.md`
+16. `docs/DECISIONS_COMPLEMENTAIRES_2026-11-18.md`
+17. `docs/CONSOLE_PROFESSIONNELLE_ET_SERVICES.md`
+18. `docs/PLAN_DIRECTEUR_REALISATION_SAC.md`
+
+Avant toute intervention, lis aussi les quatre documents de consolidation ajoutés à la liste obligatoire. Pour les sujets qu'il couvre, `docs/DECISIONS_COMPLEMENTAIRES_2026-11-18.md` remplace les anciennes formulations relatives à l'identité visuelle, aux langues de lancement, à la console mobile, à la gouvernance des délégations et au kit de récupération. En cas de conflit non couvert ou ambigu, ne tranche pas seul : demande validation.
 
 ## Stack verrouillée
 - React
