@@ -323,3 +323,11 @@ Le document docs/PROPOSITIONS_ARBITRAGE_SOS_PROGRAMME_ET_DISCRET.md regroupe les
 Invariants : mécanismes distincts ; annulation d'un SOS programmé avant échéance empêche la création de l'alerte ; après déclenchement, cycle SOS ordinaire ; écran neutre du SOS discret déjà validé ; rappels push, escalade SMS, destinataires figés et clôture conservent leurs règles existantes.
 
 Restent à arbitrer : revalidation des destinataires à l'échéance, compte suspendu/suppression en attente, fuseau et changement d'heure, rappels préalables, catégorie/niveau du SOS discret, code et remplacement, anti-essais, appareils secondaires, comportement hors ligne et rétention des événements. Les recommandations du document ne sont pas des décisions approuvées.
+
+## 19. Politique générale de conservation des données non GPS — 18 novembre 2026
+
+Une proposition transversale est disponible dans [PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md](PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md). Elle couvre comptes, identités, appareils, sessions, invitations, relations, groupes, notifications, journaux, support, exports, administration et données financières éventuelles.
+
+Les durées chiffrées de cette proposition sont toutes **non approuvées** et ne constituent pas des durées légales. Elles doivent être validées catégorie par catégorie après revue juridique Niger/pays de lancement. La règle déjà approuvée pour les alertes/GPS reste exclusivement celle du contrat spécialisé : GPS supprimé à la clôture, catégorie seule conservée 30 jours, puis suppression définitive sans résurrection.
+
+Points à arbitrer avant implémentation : durées, preuves minimales de sécurité/consentement, comptes non vérifiés, identités après suppression, exports, support, données administratives/financières et protocole de restauration forward-only. Aucun code, endpoint, fournisseur, table ou purge n'est autorisé par cette proposition.
