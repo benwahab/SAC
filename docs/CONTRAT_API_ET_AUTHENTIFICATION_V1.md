@@ -333,3 +333,70 @@ Aucun état « proche prévenu » ne peut être déduit d'une simple tentative o
 ### 12.5 Préconditions techniques
 
 Avant activation, il faut prouver : compteur durable et idempotent, concurrence entre scheduler et attribution du responsable, annulation conditionnelle des tâches SMS, déduplication/réconciliation fournisseur, limites de coût, rétention des tentatives et tests D1/Preview isolés. Aucun fournisseur, scheduler, worker, numéro SMS ou envoi réel n'est créé par ce contrat.
+
+
+## 13. Récupération de compte et de racine — contrats conceptuels, non routes implémentées
+
+**Statut :** exigences de sécurité proposées ; hors périmètre d'implémentation de ce contrat. Aucun endpoint, fournisseur d'authentification, facteur OTP, e-mail ou mécanisme de support n'est créé ici.
+
+### 13.1 Séparation obligatoire des autorités
+
+Le contrat doit distinguer :
+1. l'authentification et la récupération d'accès au compte ;
+2. la preuve de possession d'une clé d'appareil ;
+3. l'autorité de la clé racine ;
+4. la vérification indépendante de la nouvelle empreinte par chaque contact pour le partage GPS.
+
+Une session authentifiée peut autoriser une demande de récupération, mais ne prouve jamais la possession de l'ancienne clé racine. La récupération du mot de passe, l'OTP, la session d'un appareil secondaire ou l'assistance ne doivent pas modifier directement la clé publique racine ni son époque.
+
+### 13.2 Commandes conceptuelles à spécifier avant toute route
+
+Les opérations ci-dessous sont des noms de domaine indicatifs, pas des chemins API approuvés :
+- demander la récupération du compte ;
+- déclarer la perte, le vol/suspicion de compromission, la panne ou le remplacement ;
+- demander la révocation de l'appareil racine ;
+- créer une demande de récupération cryptographique ;
+- enregistrer la preuve de possession de la nouvelle racine ;
+- enregistrer la vérification indépendante d'une empreinte par un contact ;
+- finaliser ou refuser la transition racine.
+
+Chaque commande devra contrôler côté serveur l'acteur authentifié, la session et l'appareil exacts, l'état courant du compte, l'époque racine attendue, les autorisations, l'expiration, l'idempotence, le débit et la concurrence. Les décisions finales doivent être prises dans une transaction atomique ou un mécanisme de sérialisation équivalent.
+
+### 13.3 États de domaine proposés
+
+- recovery_requested
+- recovery_pending_review
+- root_reestablished
+- recovery_refused
+- recovery_expired
+- recovery_cancelled
+
+Ces états ne sont pas des rôles ni des preuves de vérification humaine. root_reestablished n'implique pas que tous les contacts ont vérifié la nouvelle empreinte ; l'autorisation GPS reste évaluée par relation/contact.
+
+### 13.4 Invariants serveur
+
+- Une demande active par compte et par époque racine ; une répétition avec la même clé d'idempotence retourne le résultat existant.
+- Toute transition compare l'époque racine attendue ; une demande périmée ne peut pas remplacer une racine plus récente.
+- La création de la nouvelle racine et la révocation de l'ancienne sont atomiques : jamais deux racines actives pour la même époque.
+- Un appareil secondaire peut initier une demande, mais ne peut jamais s'auto-promouvoir ni signer au nom de la racine.
+- Une racine révoquée est refusée même si son jeton signé n'a pas expiré.
+- Une cérémonie finale revérifie le statut actif de l'appareil, la révocation, l'expiration, le défi à usage unique, la version et l'époque.
+- Une révocation qui commit avant une approbation fait échouer cette approbation ; une mutation validée avant révocation reste dans l'historique.
+- Un timeout après commit doit être résolu par lecture de l'état de la demande ; le client ne crée pas une seconde racine à l'aveugle.
+- Les notifications sont produites après commit et ne constituent jamais une preuve de livraison, de possession ou de vérification.
+- Les événements sont append-only et séquencés côté serveur ; aucun secret, clé privée, jeton, OTP, transcript sensible ou GPS ne figure dans les logs.
+
+### 13.5 Accès pendant root_recovery_required
+
+Les opérations dépendant de la racine sont refusées : approbation d'appareils, rotation normale signée par l'ancienne racine et création/reprise de partage GPS. Les sessions secondaires encore actives peuvent continuer les fonctions indépendantes de la racine, selon leur propre autorisation. La liste exacte de ces fonctions reste à arbitrer ; aucune promotion secondaire n'est autorisée.
+
+### 13.6 Préconditions avant conception détaillée des routes
+
+- mécanisme d'authentification forte et de récupération d'accès choisi et évalué ;
+- preuve de possession et cérémonie de création de nouvelle racine spécifiées ;
+- politique de vérification indépendante des contacts et gestion des refus/absences décidées ;
+- modèle de menace couvrant vol, hameçonnage, support abusif, appareil secondaire compromis et serveur compromis ;
+- tests de concurrence et d'idempotence définis ;
+- revue cryptographique indépendante réalisée.
+
+Tant que ces conditions ne sont pas remplies, les contrats restent documentaires. Aucune route Pages Functions, migration D1, file d'attente ou notification réelle ne doit être ajoutée.
