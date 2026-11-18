@@ -121,6 +121,63 @@ L'écran de suivi de l'alerte doit distinguer visuellement :
 
 L'action « Annuler l'alerte » après déclenchement est une clôture explicite par l'auteur, horodatée dans l'historique. Un message déjà accepté par un fournisseur peut encore arriver après la clôture.
 
+### Proposition UX détaillée — écran de suivi après déclenchement (à valider)
+
+Le suivi doit répondre à quatre questions en un regard : **l'alerte existe-t-elle ? quels proches ont réagi ? quelqu'un est-il responsable ? l'alerte est-elle toujours ouverte ?** Il ne doit jamais transformer un état technique en preuve d'aide humaine.
+
+#### Vue de l'auteur de l'alerte
+
+1. **En-tête persistant :** afficher la catégorie, le niveau, l'heure de création confirmée par SAC et l'état métier « Alerte active » ou « Alerte clôturée ». Une alerte active reste active même si un proche l'a accusée réception ou a pris la responsabilité.
+2. **Résumé des proches :** une ligne par destinataire de l'instantané initial, avec son nom et des états distincts : « Notification en cours », « Notification acceptée par le service », « Réception confirmée », « Se propose pour aider », « Responsable principal », ou « Aucun retour enregistré ». Afficher l'heure des actions humaines confirmées. Ne pas afficher une absence de réponse comme un refus.
+3. **Responsable principal :** lorsqu'il existe, afficher clairement son nom et l'heure de prise en charge. En cas de retrait, montrer que la responsabilité est de nouveau à attribuer, puis afficher le nouveau responsable dès que l'attribution serveur est confirmée. Conserver l'historique des relais sans présenter deux responsables simultanés.
+4. **Rappels :** afficher le nombre de rappels push déjà traités et le prochain rappel uniquement si son échéance est connue du serveur. Préciser que les rappels continuent toutes les cinq minutes jusqu'à la clôture par l'auteur, même après prise en charge.
+5. **Escalade SMS :** présenter séparément le seuil choisi et l'état réel : « seuil non atteint », « escalade due », « en attente », « acceptée par le fournisseur », « livraison confirmée par le fournisseur », « échec », « résultat ambigu », « annulée » ou « indisponible — fournisseur non configuré » si cette proposition est validée. Un SMS accepté n'est pas une preuve de lecture.
+6. **Action de l'auteur :** proposer « Clôturer l'alerte » avec une confirmation qui explique que les rappels non envoyés seront arrêtés et que les messages déjà acceptés par un fournisseur peuvent encore arriver. La clôture enregistre l'heure et, si l'auteur le souhaite, un motif facultatif. Ce motif facultatif est une proposition UX, pas une décision métier.
+7. **Après clôture :** remplacer l'état actif par « Alerte clôturée par son auteur », conserver une chronologie consultable et ne plus proposer d'action de prise en charge. Les statuts de transport déjà obtenus restent visibles et ne sont pas réécrits.
+
+#### Vue d'un contact destinataire
+
+1. Afficher l'identité de l'auteur selon les règles de confidentialité, la catégorie, le niveau, l'heure de déclenchement et les informations réellement partagées avec ce contact.
+2. Proposer deux actions humaines distinctes : « J'ai vu l'alerte » (accusé de réception) et « Je peux prendre en charge » (candidature). Elles ne doivent pas être fusionnées en un seul bouton.
+3. Après candidature, afficher « Candidature envoyée — en attente d'attribution » jusqu'à la confirmation serveur. Seule l'attribution effective permet d'afficher « Vous êtes le responsable principal ».
+4. Si un autre proche devient responsable principal, l'indiquer clairement sans retirer au contact son statut de destinataire initial. Il peut consulter le suivi autorisé, mais ne peut ni clôturer l'alerte ni modifier ses destinataires.
+5. Le responsable principal peut choisir « Me retirer » ; l'écran explique que la responsabilité redeviendra disponible pour un autre volontaire. Le retrait ne clôture pas l'alerte et ne stoppe pas les rappels. Le résultat doit attendre la confirmation serveur.
+6. Après clôture par l'auteur, afficher « Alerte clôturée par son auteur ». Les actions de réception, candidature et retrait deviennent indisponibles.
+
+#### Chronologie commune
+
+La chronologie est ordonnée par horodatage serveur et distingue les événements métier des événements de transport :
+
+- alerte créée par SAC ;
+- notification planifiée / tentative de transmission ;
+- notification acceptée par le fournisseur, si confirmé ;
+- réception déclarée par un proche ;
+- candidature volontaire ;
+- attribution ou retrait du responsable principal ;
+- rappel push suivant ;
+- seuil d'escalade SMS atteint et résultat réel de l'escalade ;
+- clôture par l'auteur.
+
+Une action reçue deux fois par répétition réseau n'apparaît qu'une fois dans la chronologie métier. Les événements de transport ne sont pas présentés comme des actions humaines. Une absence d'événement ne permet pas de déduire qu'une personne a ignoré ou refusé l'alerte.
+
+#### États à ne jamais confondre
+
+| Ce que l'utilisateur voit | Ce que SAC peut réellement affirmer |
+|---|---|
+| Alerte créée | SAC a confirmé la création métier de l'alerte |
+| Notification en traitement | Une tâche ou tentative existe ; aucune livraison n'est prouvée |
+| Notification acceptée | Le fournisseur a accepté la demande ; lecture non prouvée |
+| Réception confirmée | Le contact a explicitement effectué l'action d'accusé de réception |
+| Candidature envoyée | Le contact a proposé son aide ; il n'est pas encore responsable |
+| Responsable principal | L'attribution atomique a été confirmée par le serveur |
+| SMS accepté | Le fournisseur a accepté le SMS ; réception sur le téléphone non garantie |
+| SMS livré | Seulement si un accusé de livraison fiable du fournisseur est disponible |
+| Alerte clôturée | L'auteur a clôturé l'alerte ; cela ne prouve pas à lui seul que le danger est résolu |
+
+**Limites :** aucun indicateur « secours en route », « danger résolu » ou « personne en sécurité » ne doit être déduit automatiquement d'un accusé, d'une candidature, d'une prise en charge ou de la clôture. SAC ne suit pas l'intervention des services publics. L'interface doit rester lisible sur petit écran et en connexion faible ; le dernier état confirmé est horodaté et signalé comme potentiellement ancien si la synchronisation est interrompue.
+
+**Statut : proposition UX de travail à valider.** Elle ne crée aucune interface, API, table D1, notification réelle, intégration SMS ou logique métier.
+
 ## 5. Règles de rapidité et d'accessibilité
 
 - Grandes zones tactiles, textes courts, contraste élevé et boutons éloignés les uns des autres.
