@@ -195,6 +195,75 @@ La CI verte valide les contrôles automatisés exécutés ; elle ne vaut pas hom
 7. Choisir/configurer le fournisseur e-mail seulement après approbation du parcours OTP.
 8. Implémenter progressivement, puis tester en Preview avant toute activation de production.
 
+
+
+## Sécurité de l'administration et traçabilité — cadre de conception du 18 novembre 2026
+
+### 1. Autorité et délégations
+
+Les règles produit déjà validées restent la référence :
+
+- Le Super Admin est l'autorité suprême. Lui seul crée les délégations, attribue les missions et permissions, les modifie, les suspend ou les retire.
+- Un délégataire ne peut jamais déléguer à son tour, créer un administrateur, modifier ses propres droits ou élargir le périmètre de sa mission.
+- Les permissions sont individuelles, explicites et limitées à une action et à un périmètre définis. Tout droit non attribué est refusé par défaut.
+- La permission de clôture administrative d'une alerte dans le scénario de compte suspendu reste distincte. Elle est réservée au Super Admin, ou à un administrateur sécurité auquel le Super Admin l'a explicitement attribuée. Support, auditeur, proches et titulaire suspendu n'ont pas ce droit.
+- La délégation de clôture ne peut être transmise par son bénéficiaire. Une seule personne habilitée suffit ; aucune double validation n'est requise.
+- L'administration SAC reste accessible sur ordinateur et tablette, pas sur téléphone.
+
+### 2. Autorisation technique obligatoire
+
+La visibilité d'un bouton ou d'une page ne constitue jamais une autorisation. Chaque opération administrative doit être autorisée côté serveur, au moment de l'action, à partir de l'identité de session et des droits enregistrés côté serveur.
+
+Le contrôle doit vérifier au minimum : compte et session actifs, identité de l'acteur, rôle effectif, permission précise, périmètre de la ressource, état de la délégation et éventuelle révocation. Les rôles, permissions, identifiants d'acteur et périmètres envoyés par le navigateur ne sont jamais considérés comme une preuve.
+
+Principes obligatoires :
+- refus par défaut et liste explicite des opérations autorisées ;
+- séparation entre lecture, modification, suspension, révocation, attribution de délégation et clôture d'alerte ;
+- aucune auto-attribution, auto-élévation ou modification de ses propres droits par un délégataire ;
+- contrôle serveur répété pour chaque requête, y compris les appels directs qui contournent l'interface ;
+- révocation effective des droits et sessions administratives selon une règle serveur cohérente, sans attendre une reconnexion du navigateur ;
+- opérations sensibles atomiques et protégées contre les doubles soumissions et le rejeu ;
+- vérification du périmètre sur chaque objet afin d'empêcher l'accès à une autre région, équipe, mission ou alerte.
+
+Une permission accordée pour une mission ne doit pas implicitement donner accès à toutes les fonctions du rôle. Le Super Admin doit pouvoir consulter les délégations et leurs traces, mais la consultation ne doit pas réécrire l'historique.
+
+### 3. Journal d'audit non réinscriptible
+
+Les événements de sécurité et d'administration doivent être conservés dans un journal append-only : une entrée enregistrée ne peut être ni modifiée ni supprimée par l'interface d'administration, y compris par le Super Admin. Une correction se fait par un nouvel événement explicatif qui référence l'événement initial ; elle ne remplace pas l'historique.
+
+Chaque événement doit contenir, selon le type d'action et sans collecte excessive :
+- identifiant unique de l'événement et horodatage UTC produit par le serveur ;
+- identifiant de l'acteur, rôle effectif et permission utilisée ;
+- type d'action, ressource cible et périmètre concerné ;
+- résultat : autorisé, refusé, réussi, échoué ou résultat indéterminé ;
+- motif obligatoire pour les décisions sensibles, notamment suspension, délégation et clôture d'alerte ;
+- référence de corrélation de la requête et identifiant de session/appareil lorsque nécessaire ;
+- référence à l'événement précédent ou à l'objet de décision, sans recopier les contenus privés ;
+- pour une modification, empreintes ou références des valeurs avant/après lorsque cela est utile et sûr, plutôt que des secrets ou des données personnelles en clair.
+
+Le journal doit notamment tracer les créations, changements, suspensions et retraits de délégations ; les tentatives d'élévation ou d'accès refusées ; les changements de permissions ; les consultations administratives sensibles ; les vérifications et décisions de clôture ; les notifications administratives et leurs échecs ; ainsi que les changements de configuration de sécurité.
+
+Ne jamais écrire dans ces journaux : mots de passe, OTP, jetons de session, clés privées, secrets de récupération, contenu intégral de messages privés ou positions GPS précises. Les éléments de vérification d'une alerte doivent être référencés de manière minimale et protégée, sans transformer le journal en copie du dossier privé.
+
+### 4. Intégrité, accès et conservation
+
+L'accès au journal est en lecture seule pour les profils explicitement autorisés et limité au besoin d'en connaître. Un administrateur ne peut pas effacer ou masquer ses propres actions. Les consultations du journal et les exports doivent eux-mêmes être audités.
+
+Une protection contre l'altération doit être conçue et testée : contrôle d'intégrité, détection des ruptures/suppressions et sauvegarde séparée avec droits restreints. Un chaînage cryptographique ou un stockage à rétention verrouillée peut être évalué, mais ne doit pas être déclaré inviolable sans preuve et revue indépendante. Le mécanisme exact ne sera choisi qu'après étude des capacités réelles de D1 et des solutions de conservation disponibles.
+
+La durée de conservation, les obligations légales, la purge éventuelle et la séparation entre journal de sécurité et dossier métier restent à arbitrer. Aucune durée arbitraire n'est fixée ici. Une suppression de compte ne doit pas effacer les traces minimales dont la conservation est légalement et opérationnellement justifiée ; leur base, durée et accès doivent être documentés.
+
+### 5. Renforcement des actions critiques — proposition à valider
+
+À étudier avant implémentation : réauthentification ou confirmation OTP e-mail récente pour les opérations les plus sensibles (création/retrait d'une délégation, attribution d'une permission de clôture, clôture administrative d'une alerte, export massif). Cette mesure est une recommandation de sécurité, pas encore une décision produit validée. Elle ne doit jamais remplacer le contrôle d'autorisation serveur.
+
+La durée et le renouvellement des sessions administratives, la protection contre le vol de session et les exigences de poste/appareil doivent faire l'objet d'une politique dédiée. Les limites utilisateur déjà validées (30 jours d'inactivité et 90 jours maximum) ne suffisent pas à elles seules à définir un niveau de sécurité adapté à l'administration.
+
+### 6. Portée et portes avant réalisation
+
+Ce cadre formalise les exigences et les points de conception. Il ne crée aucun rôle opérationnel, endpoint, middleware, journal D1, table, permission active, ressource Cloudflare ou écran d'administration. Avant toute implémentation : modèle de permissions formalisé, schéma d'audit revu, stratégie d'intégrité et de conservation arbitrée, tests d'accès négatifs et concurrence, puis revue de sécurité. Toute migration et tout changement de code exigent une autorisation distincte.
+
+
 ## 8. État de ce document
 
 - **GO :** conception, audit, consolidation et préparation de tests isolés.
