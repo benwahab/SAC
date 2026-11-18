@@ -299,3 +299,20 @@ La décision de clôture, son motif, l'identité de l'administrateur et l'horoda
 - Définir les garde-fous applicables si le compte est suspendu pour abus lié précisément à l'alerte en cours ; la capacité ne doit pas devenir un moyen de supprimer les preuves ou d'empêcher l'assistance.
 
 **Principe validé :** une capacité d'urgence distincte, limitée à l'alerte existante, doit préserver la possibilité pour le titulaire de confirmer sa sécurité et de demander une clôture à l'administration SAC sans récupérer l'accès au compte. Seule l'administration SAC peut clôturer l'alerte ; aucun proche ni titulaire suspendu ne peut le faire. Les rappels continuent vers les seuls destinataires initiaux, toutes les 5 minutes, sans ajout automatique de contacts. Les permissions détaillées, les contrôles anti-abus et le protocole cryptographique restent à spécifier et à faire valider. Cette décision n'autorise ni code, ni route API, ni migration D1, ni changement de session.
+
+
+## Procédure administrative de vérification avant clôture — décision validée le 18 novembre 2026
+
+Dans le scénario précis d'un compte suspendu avec une alerte SOS déjà transmise et un risque d'abus associé, l'administration SAC suit cette procédure avant toute clôture :
+
+1. Identifier l'alerte, sa référence, son statut et son appareil d'origine.
+2. Examiner le signalement du responsable principal, les accusés de réception, les prises en charge et les dernières mises à jour des contacts.
+3. Lorsque cela est possible, tenter de joindre directement le titulaire de l'alerte par un canal disponible. Cette tentative ne lui confère aucun pouvoir de clôture.
+4. Comparer les informations reçues et rechercher tout indice récent de danger persistant ou toute contradiction.
+5. Si les informations sont contradictoires, insuffisantes ou ne permettent pas de vérifier la fin du danger, maintenir l'alerte active et les rappels vers les seuls destinataires initiaux.
+6. Ne jamais interpréter l'absence de réponse d'un proche ou du titulaire comme une confirmation de sécurité.
+7. Après vérification suffisante, un seul administrateur SAC habilité peut décider et exécuter la clôture dans ce scénario ; aucune double validation n'est obligatoire.
+
+La déclaration du titulaire indiquant qu'il est en sécurité est une information à examiner, pas une clôture automatique. Ni le titulaire suspendu ni un proche, y compris le responsable principal, ne clôture cette alerte. Un proche peut signaler la fin supposée de la situation et demander une clôture administrative.
+
+Cette procédure est une règle produit/documentaire. Elle n'implémente aucune route, permission, notification, session spéciale ou migration D1.
