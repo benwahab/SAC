@@ -247,6 +247,25 @@ export async function verifyLocationKeyBundle(
       return false;
     }
 
+    // Valider aussi le point ECDH lui-même : le contrôle regex JWK
+    // vérifie la forme des coordonnées, pas leur appartenance à P-256.
+    // WebCrypto doit refuser les points hors courbe / non valides avant
+    // que cette clé puisse être utilisée dans un accord ECDH.
+    const exchangeKey = await cryptoProvider.subtle.importKey(
+      "jwk",
+      bundle.exchangePublicKey,
+      { name: "ECDH", namedCurve: "P-256" },
+      false,
+      [],
+    );
+    if (
+      exchangeKey.type !== "public" ||
+      exchangeKey.algorithm.name !== "ECDH" ||
+      (exchangeKey.algorithm as EcKeyAlgorithm).namedCurve !== "P-256"
+    ) {
+      return false;
+    }
+
     const identityKey = await cryptoProvider.subtle.importKey(
       "jwk",
       bundle.identityPublicKey,
