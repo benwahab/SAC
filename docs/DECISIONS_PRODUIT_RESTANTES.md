@@ -343,3 +343,9 @@ Il ne crée aucune nouvelle décision produit. Les propositions (dont expiration
 La [consolidation appareils, sessions et récupération](CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md) établit la matrice des scénarios et les frontières de confiance. Elle rappelle les durées de session validées (30 jours d'inactivité, 90 jours maximum), distingue récupération d'accès, enrôlement d'appareil et récupération de racine, et maintient le remplacement de racine hors V1.
 
 Arbitrages encore ouverts : facteurs de récupération d'accès, perte de tous les facteurs, révocation urgente d'un appareil racine perdu/volé, refresh token ou non, protocole canonique d'enrôlement secondaire et disponibilité du SOS non-GPS pendant récupération. Aucun de ces points n'est décidé par la consolidation.
+
+## 22. Sécurité des connexions et sessions — 18 novembre 2026
+
+La [proposition de sécurité des connexions et sessions](PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md) couvre les tentatives frauduleuses, le vol/rejeu de jeton, les connexions multi-appareils, la gestion des sessions, les changements de mot de passe et les notifications.
+
+Restent à arbitrer : seuils anti-brute-force, transport PWA/natif, renouvellement ou non par refresh token, réaction au rejeu, révocation globale, effets d'un changement de mot de passe, événements/canal de notification et rétention des journaux. Les recommandations du document ne sont pas des décisions validées et n'autorisent aucune implémentation.
