@@ -255,3 +255,24 @@ Restent à arbitrer : le comportement lorsqu'aucun contact éligible n'est confi
 - Aucun délai d'abandon automatique ni présence temps réel n'est prévu dans la V1.
 
 **Statut :** proposition de conception, pas encore décision produit validée. Voir `docs/PARCOURS_DECLENCHEMENT_SOS_V1.md` et `docs/CONTRATS_OPERATIONS_ATOMIQUES_D1.md`.
+
+
+### 7.2 Interventions simultanées de plusieurs contacts — proposition à valider
+
+Les règles suivantes complètent les décisions déjà actées (un seul responsable principal à la fois, rappels maintenus après prise en charge, clôture réservée à l'auteur). Elles ne deviennent pas des décisions produit tant qu'elles ne sont pas explicitement approuvées.
+
+- Plusieurs contacts peuvent candidater. Le serveur attribue une séquence monotone aux candidatures acceptées ; une seule transition atomique peut créer le responsable principal. Les autres candidatures sont conservées comme non retenues et reçoivent un état explicite.
+- Plusieurs proches peuvent déclarer leur arrivée sur place. Cette déclaration reste informative et ne donne pas automatiquement la responsabilité.
+- Un contact peut signaler qu'il estime la situation résolue. Ce signalement ne clôture pas l'alerte, ne stoppe pas les rappels et ne bloque pas l'escalade SMS.
+- Le responsable principal peut transmettre un compte rendu ou se retirer, mais ne peut pas clôturer à la place de l'auteur.
+- La clôture par l'auteur et les commandes des contacts sont arbitrées sur l'état serveur courant. Après commit de la clôture, toute nouvelle commande de coordination est refusée ; les événements validés avant restent dans l'historique.
+- Le journal métier est append-only, horodaté et séquencé côté serveur ; les commandes sont idempotentes. Les notifications de responsable sont émises uniquement après attribution confirmée.
+- Les autres contacts voient les informations de coordination nécessaires, sans exposition de numéros, e-mails ou coordonnées privées.
+
+**Arbitrages encore nécessaires avant implémentation :**
+1. Valider les libellés finaux et les informations visibles aux autres destinataires (notamment prénom/nom choisi et statut).
+2. Définir si un contact ayant signalé son arrivée peut également candidater immédiatement, ou si l'action « Je peux aider » reste séparée.
+3. Définir la durée de conservation des comptes rendus et déclarations de résolution, ainsi que les limites de texte et la possibilité d'ajouter une pièce jointe (aucune pièce jointe proposée en V1 à ce stade).
+4. Définir la règle d'admissibilité d'un volontaire lorsque sa relation est révoquée au même instant que sa candidature ou sa promotion.
+
+**Garde-fou non négociable :** aucun contact, volontaire ou responsable principal ne peut clôturer l'alerte à la place de son auteur. Une déclaration « situation résolue » reste une déclaration humaine, pas une preuve vérifiée par SAC.
