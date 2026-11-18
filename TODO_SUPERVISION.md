@@ -167,3 +167,18 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Faire vérifier la finalisation de suppression par tests D1 concurrents avant toute activation.
 - [ ] Définir la matrice finale d'effacement/anonymisation et les durées de conservation hors GPS avec validation juridique Niger.
 - [x] Vérifier la CI du contrat de compte : run 44262859615, commit d39a1f75 ; typecheck, 12 tests de compte, tests existants, build et audits réussis.
+
+
+## Arbitrages de sécurité et audit des dépendances — 18 novembre 2026
+
+- [x] Examiner les journaux de l'audit npm : les 11 occurrences élevées du run 44262859615 proviennent de la même vulnérabilité transitive picomatch GHSA-fc5q-39xc-vjpf ; audit production = 0 vulnérabilité.
+- [x] Vérifier que l'avis ne présente pas encore de version corrigée confirmée dans les sources consultées ; ne pas lancer `npm audit fix --force`.
+- [x] Documenter le risque de chaîne de build et l'absence de `package-lock.json` dans `docs/AUDIT_DEPENDANCES_ET_REPRODUCTIBILITE.md`.
+- [x] Documenter les options de révocation pendant alerte et les scénarios d'alerte orpheline dans `docs/ARBITRAGES_CONTACT_REVOQUE_ET_ALERTE_ORPHELINE.md`.
+- [ ] Valider l'accès au détail de l'alerte active après révocation : dossier minimal ou rappels opaques uniquement.
+- [ ] Valider les droits d'accusé de réception, volontariat et transfert de responsabilité après révocation.
+- [ ] Arbitrer le comportement des rappels si l'auteur ne revient jamais ; aucune suspension automatique ni clôture par contact n'est autorisée sans décision.
+- [ ] Définir une durée maximale explicite du partage de position indépendante de la clôture de l'alerte.
+- [ ] Générer et vérifier un `package-lock.json` dans un environnement Node/npm contrôlé, puis remplacer `npm install` par `npm ci`.
+- [ ] Revoir l'avis picomatch à chaque évolution amont et auditer les éventuels motifs glob contrôlables par utilisateur.
+- [ ] Ne pas créer d'API de révocation, d'effacement final ou de rappel durable avant validation des décisions produit et des tests D1 concurrents.
