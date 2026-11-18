@@ -328,3 +328,15 @@ La loi 2022-59 publiée sur l'ancien site HAPDP définit les données de localis
 **Point de vigilance SAC :** l'hébergement de données personnelles ou de clés hors du Niger peut soulever une question de transfert transfrontalier. Le choix d'un fournisseur Cloudflare, AWS, Google, Azure ou Fortanix ne doit pas être arrêté sur le seul critère cryptographique. Il faudra faire vérifier par un juriste nigérien le texte consolidé applicable, les dispositions de transfert encore en vigueur, les obligations du responsable et du sous-traitant, et les autorités désormais compétentes.
 
 Référence au texte historique consulté : https://www.hapdp.ne/uploads/files/Loi-N%C2%B02022-59HAPDP.pdf
+
+
+## 13. Recherche des publications officielles nigériennes — complément
+
+La recherche a été étendue aux domaines officiels consultables du ministère de la Justice, du ministère chargé des technologies de l'information et des sites gouvernementaux. Aucun exemplaire authentifié de l'ordonnance n° 2026-30 du 8 juin 2026 n'a été retrouvé dans les résultats consultés.
+
+Le ministère nigérien de la Justice rappelle lui-même que le Journal officiel de la République du Niger constitue la référence officielle attestant de l'entrée en vigueur des textes législatifs et réglementaires. Il indique également que des numéros spéciaux du Journal officiel ont été remis aux juridictions pour des ordonnances de 2026. Cette indication renforce la nécessité d'obtenir le numéro exact du Journal officiel plutôt que de s'appuyer sur une copie secondaire ou sur un préambule.
+
+Référence institutionnelle :
+- Ministère de la Justice, « Mission Ministérielle de visites des Juridictions du pays : Renforcement des capacités documentaires des Magistrats » : https://justice.gouv.ne/index.php/les-actualites-1/353-mission-ministerielle-de-visites-des-juridictions-du-pays-renforcement-des-capacites-documentaires-des-magistrats
+
+**Statut de recherche :** le texte officiel n'est toujours pas authentifié. La prochaine étape juridique est d'obtenir directement le numéro spécial du Journal officiel du 8 juin 2026 auprès du Secrétariat général du Gouvernement ou du ministère de la Justice, puis de faire analyser l'ordonnance article par article. Aucune hypothèse sur les articles supprimés ne doit être convertie en règle de conception SAC.
