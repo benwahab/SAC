@@ -1,0 +1,176 @@
+-- SAC — Comptes initiaux et défis de vérification e-mail
+-- Périmètre volontairement limité à l'inscription et à l'OTP e-mail.
+-- Horodatages stockés en millisecondes Unix UTC.
+
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE accounts (
+  id TEXT PRIMARY KEY NOT NULL,
+  status TEXT NOT NULL CHECK (status IN (
+    'pending_verification', 'active', 'suspended', 'deletion_pending', 'deleted'
+  )),
+  preferred_language TEXT NOT NULL CHECK (preferred_language IN ('fr', 'en', 'ar')),
+  password_hash TEXT NOT NULL,
+  created_at INTEGER NOT NULL CHECK (created_at > 0),
+  updated_at INTEGER NOT NULL CHECK (updated_at >= created_at)
+);
+
+CREATE TABLE account_identities (
+  id TEXT PRIMARY KEY NOT NULL,
+  account_id TEXT NOT NULL,
+  channel TEXT NOT NULL CHECK (channel IN ('email', 'phone')),
+  normalized_value TEXT NOT NULL,
+  verified_at INTEGER,
+  is_primary INTEGER NOT NULL DEFAULT 1 CHECK (is_primary IN (0, 1)),
+  created_at INTEGER NOT NULL CHECK (created_at > 0),
+  UNIQUE (channel, normalized_value),
+  UNIQUE (account_id, id),
+  FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE RESTRICT,
+  CHECK (verified_at IS NULL OR verified_at >= created_at)
+);
+
+CREATE UNIQUE INDEX account_identities_one_primary_channel
+  ON account_identities(account_id, channel)
+  WHERE is_primary = 1;
+
+CREATE INDEX account_identities_account_channel
+  ON account_identities(account_id, channel);
+
+CREATE TABLE email_otp_challenges (
+  id TEXT PRIMARY KEY NOT NULL,
+  account_id TEXT NOT NULL,
+  identity_id TEXT NOT NULL,
+  purpose TEXT NOT NULL CHECK (purpose = 'account_email_verification'),
+  digest TEXT NOT NULL CHECK (length(digest) = 64 AND digest NOT GLOB '*[^a-f0-9]*'),
+  attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count BETWEEN 0 AND 6),
+  max_attempts INTEGER NOT NULL DEFAULT 6 CHECK (max_attempts = 6),
+  created_at INTEGER NOT NULL CHECK (created_at > 0),
+  expires_at INTEGER NOT NULL CHECK (expires_at > created_at),
+  consumed_at INTEGER,
+  invalidated_at INTEGER,
+  UNIQUE (id, account_id),
+  FOREIGN KEY (account_id, identity_id)
+    REFERENCES account_identities(account_id, id) ON DELETE RESTRICT,
+  CHECK (consumed_at IS NULL OR invalidated_at IS NULL),
+  CHECK (consumed_at IS NULL OR consumed_at >= created_at),
+  CHECK (invalidated_at IS NULL OR invalidated_at >= created_at)
+);
+
+CREATE INDEX email_otp_challenges_identity_created
+  ON email_otp_challenges(identity_id, created_at DESC);
+
+CREATE INDEX email_otp_challenges_account_created
+  ON email_otp_challenges(account_id, created_at DESC);
+
+-- Refuse un défi qui ne concerne pas l'adresse e-mail principale d'un compte
+-- encore en attente de vérification.
+CREATE TRIGGER email_otp_challenge_validate_insert
+BEFORE INSERT ON email_otp_challenges
+BEGIN
+  SELECT CASE WHEN NOT EXISTS (
+    SELECT 1
+    FROM accounts a
+    JOIN account_identities i ON i.account_id = a.id
+    WHERE a.id = NEW.account_id
+      AND a.status = 'pending_verification'
+      AND i.id = NEW.identity_id
+      AND i.channel = 'email'
+      AND i.is_primary = 1
+      AND i.verified_at IS NULL
+  ) THEN RAISE(ABORT, 'otp_account_or_identity_not_eligible') END;
+
+  SELECT CASE WHEN EXISTS (
+    SELECT 1
+    FROM email_otp_challenges previous
+    WHERE previous.identity_id = NEW.identity_id
+      AND previous.created_at > NEW.created_at - 60000
+  ) THEN RAISE(ABORT, 'otp_resend_cooldown') END;
+END;
+
+-- L'insertion réussie d'un nouveau défi invalide l'ancien dans la même
+-- transaction SQLite. Si l'insertion échoue, l'invalidation est annulée.
+CREATE TRIGGER email_otp_challenge_invalidate_previous
+AFTER INSERT ON email_otp_challenges
+BEGIN
+  UPDATE email_otp_challenges
+  SET invalidated_at = NEW.created_at
+  WHERE identity_id = NEW.identity_id
+    AND id <> NEW.id
+    AND consumed_at IS NULL
+    AND invalidated_at IS NULL;
+END;
+
+-- Les données d'identité du défi et son empreinte sont immuables.
+-- Chaque tentative admissible consomme exactement une unité.
+CREATE TRIGGER email_otp_challenge_guard_update
+BEFORE UPDATE ON email_otp_challenges
+BEGIN
+  SELECT CASE WHEN
+    NEW.id <> OLD.id
+    OR NEW.account_id <> OLD.account_id
+    OR NEW.identity_id <> OLD.identity_id
+    OR NEW.purpose <> OLD.purpose
+    OR NEW.digest <> OLD.digest
+    OR NEW.max_attempts <> OLD.max_attempts
+    OR NEW.created_at <> OLD.created_at
+    OR NEW.expires_at <> OLD.expires_at
+  THEN RAISE(ABORT, 'otp_challenge_immutable_fields') END;
+
+  SELECT CASE WHEN
+    OLD.consumed_at IS NOT NULL
+    OR OLD.invalidated_at IS NOT NULL
+    OR OLD.attempt_count >= OLD.max_attempts
+  THEN RAISE(ABORT, 'otp_challenge_terminal') END;
+
+  SELECT CASE WHEN NEW.attempt_count <> OLD.attempt_count + 1
+    THEN RAISE(ABORT, 'otp_attempt_must_increment_once') END;
+
+  SELECT CASE WHEN NEW.consumed_at IS NOT NULL AND (
+    NEW.invalidated_at IS NOT NULL
+    OR NEW.consumed_at < OLD.created_at
+  ) THEN RAISE(ABORT, 'otp_invalid_consumption') END;
+
+  SELECT CASE WHEN NEW.consumed_at IS NULL AND
+    NEW.invalidated_at IS NOT NULL AND
+    NEW.attempt_count <> OLD.max_attempts
+  THEN RAISE(ABORT, 'otp_invalid_exhaustion') END;
+
+  SELECT CASE WHEN NEW.consumed_at IS NOT NULL AND NOT EXISTS (
+    SELECT 1
+    FROM accounts a
+    JOIN account_identities i ON i.account_id = a.id
+    WHERE a.id = OLD.account_id
+      AND a.status = 'pending_verification'
+      AND i.id = OLD.identity_id
+      AND i.channel = 'email'
+      AND i.verified_at IS NULL
+  ) THEN RAISE(ABORT, 'otp_account_no_longer_pending') END;
+END;
+
+-- La vérification réussie consomme le défi, vérifie l'identité e-mail
+-- et active le compte dans la même transaction SQLite.
+CREATE TRIGGER email_otp_challenge_activate_account
+AFTER UPDATE OF consumed_at ON email_otp_challenges
+WHEN OLD.consumed_at IS NULL AND NEW.consumed_at IS NOT NULL
+BEGIN
+  UPDATE account_identities
+  SET verified_at = NEW.consumed_at
+  WHERE id = NEW.identity_id
+    AND account_id = NEW.account_id
+    AND channel = 'email'
+    AND verified_at IS NULL;
+
+  UPDATE accounts
+  SET status = 'active',
+      updated_at = NEW.consumed_at
+  WHERE id = NEW.account_id
+    AND status = 'pending_verification'
+    AND EXISTS (
+      SELECT 1
+      FROM account_identities i
+      WHERE i.id = NEW.identity_id
+        AND i.account_id = NEW.account_id
+        AND i.channel = 'email'
+        AND i.verified_at = NEW.consumed_at
+    );
+END;
