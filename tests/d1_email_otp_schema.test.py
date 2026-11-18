@@ -222,5 +222,21 @@ class EmailOtpD1SchemaTests(unittest.TestCase):
         self.assertIsNone(orphan)
 
 
+    def test_database_rejects_consumption_at_or_after_expiration(self):
+        self.create_challenge("otp-expiry-guard", self.now)
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "otp_invalid_challenge_transition"):
+            self.db.execute(
+                """UPDATE email_otp_challenges
+                   SET attempt_count=1, consumed_at=?
+                   WHERE id='otp-expiry-guard'""",
+                (self.now + 600_000,),
+            )
+        state = self.db.execute(
+            "SELECT attempt_count, consumed_at FROM email_otp_challenges WHERE id='otp-expiry-guard'"
+        ).fetchone()
+        self.assertEqual(state["attempt_count"], 0)
+        self.assertIsNone(state["consumed_at"])
+
+
 if __name__ == "__main__":
     unittest.main()
