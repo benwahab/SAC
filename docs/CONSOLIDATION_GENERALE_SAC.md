@@ -380,6 +380,10 @@ Le document `MODELE_GLOBAL_DONNEES_SAC.md` relie les domaines comptes, identité
 
 Le document `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` consolide les cinq états validés, la matrice de transitions, les divergences de `account-lifecycle.ts` et la séparation entre coordonnée, preuve de destination et consentement. La règle d'activation par e-mail vérifié est désormais obligatoire pour tous les comptes. Le document `CONTRAT_CYCLE_VIE_PROCHES_ET_INVITATIONS.md` rassemble le parcours de bout en bout : invitation, acceptation, refus, expiration, retrait, révocation, réinvitation, contrôles anti-abus et tests. Les valeurs et comportements recommandés mais non approuvés sont détaillés dans `PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md` : durée/relances, anti-abus, révocation symétrique et droits pendant une alerte active.
 
+## Clôture exceptionnelle administrative SOS
+
+La règle générale de clôture par l'auteur comporte une exception étroite déjà validée pour le titulaire suspendu dans le scénario spécifique de suspicion d'abus ou de perte/compromission du téléphone. Seul le Super Admin ou un Administrateur sécurité doté de la permission nominative attribuée par le Super Admin peut clôturer après vérifications consignées. Le contrat de référence est `CONTRAT_CLOTURE_EXCEPTIONNELLE_ADMINISTRATIVE_SOS.md`. Le contrat pur actuel `src/domain/alert-lifecycle.ts` ne représente pas encore cette exception ; aucune API, permission opérationnelle ou migration n'est autorisée par la documentation.
+
 ## Conservation des alertes et suppression GPS — décision confirmée du 18 novembre 2026
 
 > **Clarification de priorité :** toute mention d'une archive GPS locale chiffrée pendant 30 jours dans les notes historiques ou études candidates est non approuvée et ne s'applique jamais aux positions d'une alerte après clôture. Les positions GPS liées à une alerte, y compris les copies locales gérées par SAC, doivent être supprimées dès la clôture. Pour les trajets indépendants d'une alerte, aucune durée de conservation n'est validée et aucune collecte persistante n'est autorisée avant arbitrage distinct et GO technique.
