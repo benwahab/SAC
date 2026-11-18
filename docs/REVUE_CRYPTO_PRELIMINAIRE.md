@@ -186,3 +186,56 @@ Références :
 - Rapport d'interopérabilité Deno #37031, 15 octobre 2026 : https://github.com/denoland/deno/issues/37031
 
 **Limite :** le test CI sur Node ne démontre pas encore l'interopérabilité de chaque navigateur Android/iOS ni de Cloudflare Workers. Des essais sur les moteurs effectivement ciblés restent requis avant toute intégration.
+
+
+## 14. Revue de sécurité ciblée — récupération après perte de la racine
+
+**Date :** 18 novembre 2026  
+**Statut :** analyse interne de conception, non indépendante ; aucune implémentation ni certification.
+
+### 14.1 Confusion d'autorité à éviter
+
+La récupération d'accès au compte et la récupération de l'identité cryptographique ne sont pas interchangeables. Un facteur d'authentification peut prouver qu'une personne a accès au compte selon la politique choisie ; il ne prouve pas qu'elle possède l'ancienne clé privée racine. Une session secondaire ne peut pas davantage fabriquer cette preuve.
+
+En conséquence, aucune opération de récupération de mot de passe, OTP, lien e-mail, assistance ou session secondaire ne doit :
+- réactiver un certificat racine révoqué ;
+- remplacer la clé publique racine sans procédure de transition distincte ;
+- signer un certificat d'appareil à la place de la racine ;
+- rétablir un partage GPS ;
+- restaurer une ancienne clé GPS ou une archive supprimée.
+
+### 14.2 Nouvelle racine et ancrage indépendant
+
+Quand l'ancienne clé est inaccessible, la nouvelle identité doit être générée sur le nouvel appareil. La preuve de possession de la nouvelle clé établit que ce terminal détient la clé privée correspondante ; elle ne prouve pas à elle seule que les contacts reconnaissent cette identité comme celle de leur proche.
+
+Chaque contact concerné doit comparer la nouvelle empreinte par un canal indépendant de SAC, puis enregistrer sa propre confirmation. Une empreinte reçue uniquement dans l'application, par push, SMS ou e-mail orchestré par le même serveur ne constitue pas une vérification indépendante.
+
+La nouvelle racine peut être établie au niveau du compte avant que tous les contacts aient terminé leur vérification, mais l'autorisation de partage GPS doit rester bloquée séparément pour chaque contact non vérifié. Cette séparation doit être confirmée par une revue cryptographique indépendante.
+
+### 14.3 Révocation, appareil hors ligne et retour de l'ancienne racine
+
+La révocation serveur invalide les autorisations futures, mais n'efface pas les clés ni les données locales d'un téléphone hors ligne. L'interface ne doit jamais promettre un effacement à distance.
+
+Après commit de révocation, une ancienne racine qui revient en ligne ne peut pas annuler son statut ni signer une nouvelle cérémonie. Toute requête doit relire le statut courant côté serveur, même si le jeton n'a pas expiré. Une demande de récupération en attente doit également empêcher une signature tardive de l'ancienne racine de gagner une course non arbitrée.
+
+### 14.4 Concurrence et intégrité des transitions
+
+Le modèle proposé exige :
+- un numéro d'époque racine monotone et une seule transition gagnante par époque ;
+- une demande active par compte et par époque, avec clé d'idempotence ;
+- une vérification atomique de l'appareil, de la racine courante, du défi, de l'expiration et de la révocation au commit ;
+- un ordre serveur explicite entre révocation, approbation, création de nouvelle racine et confirmation de contact ;
+- un journal append-only sans secret, jeton, OTP, QR complet, transcript sensible ni GPS ;
+- des notifications émises après commit, sans les confondre avec une preuve de livraison ou de vérification.
+
+Un résultat réseau incertain doit être résolu par lecture de l'état de la demande. Le client ne doit jamais générer ou enregistrer une deuxième racine uniquement parce qu'il n'a pas reçu la réponse d'une première opération.
+
+### 14.5 Tests à confier à la revue indépendante
+
+La revue devra notamment vérifier : récupération du mot de passe sans changement de racine ; impossibilité de promouvoir un secondaire ; ancienne racine reconnectée après révocation ; deux récupérations simultanées ; révocation pendant cérémonie ; secondaire révoqué pendant récupération ; nouvelle empreinte non vérifiée ; vérification partielle par contact ; restauration de sauvegarde ; absence de restauration des clés GPS J+30 ; rejeu, idempotence et timeout après commit.
+
+### 14.6 Limites et décisions manquantes
+
+Le mécanisme d'authentification forte, les facteurs de récupération, la période d'attente éventuelle, la politique d'approbation des contacts, les délais d'expiration, l'annulation et la liste précise des fonctions secondaires pendant root_recovery_required ne sont pas choisis. Ils doivent être arbitrés avant toute route ou migration.
+
+**Conclusion :** cette section ne réduit pas le verrou existant. Les primitives ECDSA/ECDH restent expérimentales ; aucune récupération racine n'est implémentée ; la revue cryptographique indépendante et la preuve de destruction GPS J+30 restent obligatoires avant tout GPS réel.
