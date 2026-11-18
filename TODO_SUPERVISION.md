@@ -36,6 +36,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Ajouter manifeste PWA et service worker minimal, sans prétendre à une protection hors-ligne des alertes.
 - [x] Ajouter les interfaces d'adaptateurs Web pour géolocalisation, notifications et partage, sans demander de permission automatiquement.
 - [x] Ajouter les types TypeScript partagés pour les six catégories d'alerte, les niveaux, les états, les durées de partage et les limites d'offre.
+- [x] Rédiger la proposition UX du parcours de déclenchement SOS dans `docs/PARCOURS_DECLENCHEMENT_SOS_V1.md` ; les choix du bouton principal, de la modification ponctuelle des destinataires et du cas sans contact restent à valider.
 - [x] Ajouter une route de santé API vérifiant réellement l'accès D1.
 - [x] Ajouter un workflow CI de typecheck et build.
 - [x] Préparer une proposition de schéma relationnel D1 sans migration ni stockage GPS dans docs/SCHEMA_RELATIONNEL_D1_PROPOSITION.md.
