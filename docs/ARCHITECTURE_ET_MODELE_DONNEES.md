@@ -78,7 +78,7 @@ Le modèle relationnel devra au minimum couvrir les entités suivantes. Les noms
 
 ### 3.1 Identité et appareils
 
-- `users` : compte, coordonnées vérifiées, langue, état du compte, dates de création et mise à jour.
+- `accounts` : identité canonique, adresse e-mail obligatoire et vérifiée par OTP avant activation, téléphone obligatoire mais déclaré non vérifié, langue, état du compte et dates. Aucun compte ne peut être activé par téléphone seul.
 - `user_devices` : appareils enregistrés, type, jeton push protégé, dernière activité, révocation et compteur `auth_version` monotone pour invalider toutes les sessions de cet appareil.
 - `user_sessions` : sessions et révocations si le fournisseur d'authentification ne couvre pas entièrement ce besoin.
 - `user_settings` : préférences de notification, confidentialité et sécurité.
@@ -86,7 +86,7 @@ Le modèle relationnel devra au minimum couvrir les entités suivantes. Les noms
 ### 3.2 Contacts et groupes
 
 - `trusted_contacts` : relation entre utilisateur propriétaire et contact invité, catégorie, statut et dates.
-- `contact_invitations` : jeton d'invitation à usage limité, expiration, état, canal et destinataire. Une invitation en attente ne donne aucun accès aux alertes, au compte ou à la localisation ; le contact devient actif seulement après acceptation et vérification du téléphone ou de l'e-mail.
+- `contact_invitations` : jeton d'invitation à usage limité, expiration, état, canal et destinataire. Une invitation en attente ne donne aucun accès aux alertes, au compte ou à la localisation. Un contact de confiance actif doit être rattaché à un compte SAC actif ; ce compte exige une adresse e-mail vérifiée par OTP. L'acceptation explicite et la vérification de la destination de l'invitation sont requises. Le téléphone déclaré seul ne permet ni l'activation du compte ni celle de la relation.
 - `contact_alert_preferences` : autorisation par catégorie et éventuellement niveau.
 - `groups` : groupes privés créés par un utilisateur.
 - `group_members` : membres, rôles et états d'adhésion.
