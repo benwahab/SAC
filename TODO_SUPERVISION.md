@@ -640,3 +640,19 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Définir pseudonymisation, masquage et contrôles d'export.
 - [ ] Faire vérifier la classification et les obligations légales avant implémentation.
 - [ ] Ne créer aucun accès opérationnel ou migration D1 sans autorisation distincte.
+
+
+## Gouvernance et cycle de vie des missions administratives — 18 novembre 2026
+
+- [x] Décrire les états et transitions d'une mission, de la préparation à la terminaison.
+- [x] Définir les champs obligatoires d'une mission et l'absence de droits actifs avant activation.
+- [x] Définir suspension d'urgence, révocation immédiate côté serveur et invalidation des autorisations différées/en cache.
+- [x] Définir les règles de non-cumul permissif, de conflits et de demande d'extension au Super Admin.
+- [x] Définir les contrôles spécifiques des exports, accès exceptionnels et sessions administratives.
+- [x] Établir les critères et tests de sécurité avant implémentation.
+- [ ] Valider les durées proposées des missions standard/sensibles et les alertes d'échéance.
+- [ ] Valider la politique de sessions administratives et les opérations exigeant un OTP e-mail récent.
+- [ ] Définir les protections techniques et la durée de vie des exports.
+- [ ] Définir la conservation, la purge et la preuve d'intégrité du journal d'audit.
+- [ ] Faire réaliser une revue indépendante de sécurité et conformité.
+- [ ] Ne créer aucun rôle, permission, mission active, endpoint, session administrative ou migration D1 sans autorisation distincte.
