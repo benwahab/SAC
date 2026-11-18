@@ -29,3 +29,8 @@ Ce fichier est le point d'entrée architectural du dépôt. Le détail du modèl
 - Branche unique : `main`.
 - Tout travail directement sur GitHub.
 - Claude et Qwen doivent lire `AGENTS.md` et respecter strictement la stack et les consignes.
+
+
+## Modèle de données administratif
+
+Lire également [docs/MODELE_DONNEES_ADMIN_ET_INTEGRATION_SAC.md](docs/MODELE_DONNEES_ADMIN_ET_INTEGRATION_SAC.md) avant tout travail sur les comptes administratifs, missions, permissions, sessions, audits, clôtures et exports. Ce modèle est conceptuel et ne constitue pas un schéma SQL approuvé.
