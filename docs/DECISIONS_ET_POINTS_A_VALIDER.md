@@ -231,3 +231,10 @@ La proposition détaillée est consignée dans [PROTOCOLE_MULTI_APPAREILS.md](PR
 La proposition de contrôle transactionnel est détaillée dans [PROTOCOLE_MULTI_APPAREILS.md, section 19](PROTOCOLE_MULTI_APPAREILS.md). La révocation doit invalider les sessions, jetons de rafraîchissement, push, défis de jumelage et partages GPS liés à l'appareil, avec contrôle de statut courant à chaque requête protégée. La révocation du root bloque les nouvelles approbations et les partages GPS jusqu'à une nouvelle identité racine et la revérification indépendante des contacts.
 
 **État :** exigences de sécurité consignées ; aucun endpoint, schéma D1, mécanisme de session ou tâche de notification n'est encore implémenté. Les appareils hors ligne ne peuvent pas être effacés à distance.
+
+
+## 7. Parcours de déclenchement SOS — proposition UX
+
+La proposition détaillée est consignée dans [PARCOURS_DECLENCHEMENT_SOS_V1.md](PARCOURS_DECLENCHEMENT_SOS_V1.md). Elle reprend les catégories, niveaux, préférences de contacts, l'autorisation de localisation facultative et le réglage validé de 1 à 5 rappels (2 par défaut).
+
+**Le document est une spécification UX de travail, pas une validation de tous les écrans.** Restent à arbitrer avant de figer le parcours : comportement du bouton SOS principal (formulaire compact ou SOS critique direct), possibilité de modifier les destinataires pour une alerte ponctuelle et comportement lorsqu'aucun contact éligible n'est configuré. Le blocage GPS J+30 reste absolu ; aucune position réelle ne doit être collectée ou persistée avant preuve de destruction irréversible.
