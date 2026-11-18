@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { ArrowUpRight, HeartHandshake, LockKeyhole, MapPin, ShieldCheck, UsersRound, Wifi } from "lucide-react";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
 
@@ -112,7 +112,7 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
     }
   }
 
-  async function submitRegistration(event: React.FormEvent<HTMLFormElement>) {
+  async function submitRegistration(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setError("");
