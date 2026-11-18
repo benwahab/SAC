@@ -1137,3 +1137,28 @@ Le kit est un secret de récupération à haute sensibilité. Il est généré l
 - Stratégie PWA réaliste qui explique les limites sans donner un faux sentiment de sécurité.
 
 **NO-GO :** aucun écran, génération, stockage, API, intégration Android ou protection native n'est implémenté.
+
+## Conservation hors ligne du kit de récupération — règle pratique (18 novembre 2026)
+
+**Décision recommandée :** proposer le papier comme méthode par défaut, sans imposer un support unique. Le kit reste un secret unique, hors ligne, conservé séparément du téléphone.
+
+- **Option conseillée :** recopier ou imprimer le kit sur papier, vérifier chaque groupe, puis le placer dans une enveloppe fermée et dans un endroit privé et verrouillé, distinct du téléphone.
+- Ne pas le garder dans le portefeuille ou la coque du téléphone ; ne pas le laisser visible au domicile ou au bureau.
+- Ne pas photographier, scanner, envoyer par e-mail/SMS/messagerie, saisir dans une note, un document, un formulaire ou un stockage cloud.
+- Ne pas le déposer dans une galerie photo, un espace partagé, une imprimante publique ou un ordinateur partagé.
+- Une clé USB ou un support numérique n'est pas la méthode par défaut : perte, malware, copie involontaire et dépendance au chiffrement/logiciel rendent la sécurité difficile à vérifier. Une option chiffrée ne pourra être proposée qu'après analyse séparée du chiffrement, du mot de passe et de la récupération du support.
+- Un gestionnaire de mots de passe synchronisé peut être chiffré, mais dépend de son fournisseur et de la récupération de son propre compte ; ne pas le présenter comme stockage recommandé par défaut.
+- Une seule copie principale limite les expositions. Si l'utilisateur décide volontairement d'avoir un duplicata papier, les deux copies doivent être protégées séparément et chaque copie supplémentaire augmente le risque de divulgation.
+- Le kit ne doit jamais être conservé avec le téléphone auquel il sert de secours.
+- L'application peut afficher ces conseils et demander une confirmation de lecture ; elle ne peut pas vérifier où ni comment le kit est conservé.
+
+### Perte, suspicion de copie et destruction
+- Si le support est perdu, volé, photographié ou potentiellement consulté, remplacer le kit depuis un appareil approuvé sûr.
+- Après remplacement, détruire les anciennes copies papier de façon à rendre le texte illisible ; supprimer aussi toute copie numérique connue, sans prétendre effacer les copies inconnues.
+- Le remplacement invalide le kit précédent côté serveur ; la destruction physique réduit le risque de divulgation mais ne remplace pas l'invalidation.
+- Ne jamais demander à l'utilisateur de transmettre le kit au support SAC ou à un contact de confiance.
+
+### Décision UX proposée
+Écran court : « Écrivez ce kit sur papier. Gardez-le dans un endroit privé et verrouillé, séparé de votre téléphone. Ne le photographiez pas et ne le partagez jamais. » Puis affichage unique et confirmation utilisateur. Pas de questionnaire, pas d'envoi externe, pas de copie automatique.
+
+**À valider :** conserver le papier comme méthode recommandée par défaut et autoriser ou non un duplicata volontaire. Aucun stockage, génération ou écran n'est implémenté.
