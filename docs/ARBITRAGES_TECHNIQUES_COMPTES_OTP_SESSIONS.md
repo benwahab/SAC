@@ -20,9 +20,9 @@ L'adresse e-mail est obligatoire pour toute inscription SAC et constitue une con
 |---|---|---|
 | Canal de vérification initiale | Décision confirmée le 18-11-2026 | Adresse e-mail obligatoire ; activation uniquement après OTP e-mail valide. Aucun compte sans e-mail, aucune activation par téléphone seul et aucun SMS OTP de compte. SMS réservé aux usages SOS déjà prévus. |
 | Révélation d'un compte existant | Recommandation | Réponse publique identique pour inscription et connexion, sans confirmer l'existence d'une adresse. |
-| Durée OTP | Recommandation | 10 minutes maximum, calculées par l'heure serveur. |
-| Essais OTP | Recommandation | 6 essais maximum par défi ; consommation atomique au premier succès ; aucun rejeu. |
-| Renvoi OTP | Recommandation | Délai minimal de 60 secondes ; nouveau défi invalide immédiatement le précédent pour la même finalité et identité. |
+| Durée OTP | **Validé le 18-11-2026** | **10 minutes maximum**, calculées par l'heure serveur. |
+| Essais OTP | **Validé le 18-11-2026** | **6 tentatives maximum par défi** ; consommation atomique au premier succès ; aucun rejeu. |
+| Renvoi OTP | **Validé le 18-11-2026** | **60 secondes minimum** entre deux demandes ; tout nouveau défi invalide immédiatement le précédent pour la même finalité et identité. |
 | Limites d'envoi | Recommandation | Limites combinées par identité, compte, appareil et fenêtres temporelles ; ne jamais dépendre uniquement de l'IP, qui change fréquemment sur les réseaux mobiles. Seuils précis à calibrer avec le fournisseur et les abus observés. |
 | OTP en base | Déjà validé | Jamais de code brut. Un simple hash non salé d'un code court est insuffisant. |
 | État d'envoi | Recommandation | Distinguer créé, envoi demandé, accepté par fournisseur, échec certain, résultat ambigu, consommé, expiré et invalidé. Un timeout fournisseur ne signifie pas que le message n'a pas été envoyé. |
@@ -33,7 +33,7 @@ L'adresse e-mail est obligatoire pour toute inscription SAC et constitue une con
 | Révocation | Déjà validé | Vérifier l'état de la session, du compte, de l'appareil et sa auth_version côté serveur ; une révocation doit être effective à la requête suivante. |
 | Réseau/IP | Déjà validé | Un changement d'adresse IP ou de réseau ne bloque jamais à lui seul un utilisateur. |
 | Capacitor | Bloquant avant natif | Spécification séparée du stockage sécurisé natif, des jetons et de leur rotation. Ne pas réutiliser automatiquement le modèle cookie web. |
-| Fournisseur e-mail | Bloquant | Aucun fournisseur n'est choisi. Aucun envoi réel ni secret fournisseur avant validation distincte. |
+| Fournisseur e-mail | Choisi, configuration bloquée | Resend est le fournisseur retenu ; domaine vérifié, compte fournisseur et secret restent à configurer avant tout envoi réel. |
 | Mode de connexion | Validé le 18-11-2026 | Option A : adresse e-mail + mot de passe. L'OTP e-mail vérifie l'adresse à l'inscription, sécurise certaines opérations et permet la réinitialisation du mot de passe ; il n'est pas requis à chaque connexion par défaut. |
 | Appareil racine | Bloquant | Le certificat secondaire actuel est expérimental et ne lie pas encore défi serveur, nonce, identifiant de cérémonie et expiration dans un transcript signé canonique. |
 | Kit de récupération | Bloquant | Le secret est généré localement, affiché une seule fois et à usage unique. Le protocole de preuve doit faire l'objet d'une spécification cryptographique et d'une revue indépendante avant code. |
@@ -140,8 +140,8 @@ Autres contraintes :
 Les points suivants restent à confirmer explicitement :
 1. **Clos :** connexion par adresse e-mail + mot de passe (option A). OTP e-mail pour vérification initiale, opérations sensibles définies et réinitialisation ; pas d'OTP systématique à chaque connexion.
 2. **Clos :** durée des sessions : déconnexion après 30 jours consécutifs sans activité et réauthentification obligatoire au plus tard à 90 jours, même si le compte est utilisé régulièrement (validation utilisateur du 18-11-2026).
-3. Seuils définitifs de renvoi et de limitation OTP après choix du fournisseur.
-4. Choix du fournisseur e-mail et autorisation de le configurer.
+3. **Clos le 18-11-2026 :** durée 10 minutes, maximum 6 tentatives, renvoi après 60 secondes et invalidation immédiate de l'ancien défi.
+4. Configuration effective de Resend après disponibilité d'un domaine d'envoi vérifié et autorisation de configurer les secrets.
 5. Validation du parcours de changement d'adresse e-mail.
 6. Validation du protocole cryptographique de récupération après revue indépendante.
 7. Validation d'un protocole multi-appareils corrigé après revue indépendante.
@@ -406,3 +406,21 @@ Aucune implémentation n'est créée par ce document : aucun rôle actif, compte
 Le cycle de vie, les transitions autorisées, la suspension d'urgence, la révocation immédiate côté serveur, les conflits de missions, les contrôles d'export et les tests de sécurité sont spécifiés dans [GOUVERNANCE_MISSIONS_ADMIN_ET_CYCLE_DE_VIE.md](GOUVERNANCE_MISSIONS_ADMIN_ET_CYCLE_DE_VIE.md).
 
 Les durées maximales proposées (30 jours standard, 7 jours sensible), la revue mensuelle, les alertes d'échéance et l'OTP e-mail récent pour opérations critiques restent explicitement à valider. La règle de session générale 30 jours d'inactivité / 90 jours maximum reste inchangée. Aucun code ou schéma n'est créé.
+
+
+## 16. Politique OTP e-mail — décisions validées le 18 novembre 2026
+
+Les paramètres suivants sont des décisions utilisateur validées et remplacent les recommandations antérieures :
+
+- **Validité :** 10 minutes maximum à partir de la création du défi, selon l'horloge UTC du serveur.
+- **Tentatives :** 6 tentatives de vérification maximum pour un défi. À la sixième tentative échouée, le défi est épuisé et ne peut plus être présenté.
+- **Renvoi :** attendre au moins 60 secondes entre deux demandes d'envoi pour la même identité et la même finalité.
+- **Remplacement :** dès qu'un nouveau défi est créé pour la même identité et la même finalité, le précédent est immédiatement invalidé ; il ne peut plus être accepté, même s'il n'a pas expiré.
+
+Les quatre règles sont indépendantes des quotas anti-abus globaux. Les seuils supplémentaires par compte, adresse IP, appareil et fenêtre temporelle ne sont pas définis par cette validation et ne doivent pas être inventés.
+
+La validation doit utiliser l'heure serveur. L'épuisement, l'expiration, la consommation et l'invalidation sont des états terminaux pour un défi. Une vérification réussie et sa consommation doivent être atomiques afin d'empêcher deux succès concurrents.
+
+Le contrat pur `src/domain/email-otp-policy.ts` encode les durées, le nombre d'essais, les états consommé/invalide/expiré et le délai de renvoi. Les tests correspondants sont dans `tests/email-otp-policy.test.ts` et exécutés par la CI. Ce contrat pur ne constitue pas encore une persistance D1, un endpoint, un générateur de code, un mécanisme de hachage/HMAC, un envoi réel ni une activation de compte.
+
+**Statut : paramètres métier validés et contrat pur testé ; parcours OTP serveur complet encore à construire et à auditer.**
