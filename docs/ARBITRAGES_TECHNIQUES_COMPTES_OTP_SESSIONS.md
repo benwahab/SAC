@@ -327,3 +327,14 @@ Chaque tentative est journalisée avec date/heure, canal, résultat objectif et 
 La séquence d'appels représente environ dix minutes entre la première et la troisième tentative ; ce n'est ni un délai maximal de danger ni une échéance de clôture. L'absence de réponse ne prouve jamais la sécurité et ne permet jamais une clôture automatique. Si la fin du danger demeure insuffisamment vérifiée ou si les informations sont contradictoires, l'alerte reste active et les rappels continuent aux seuls destinataires initiaux. Une réponse du titulaire reste un élément à examiner ; seul l'administrateur habilité décide de la clôture selon la procédure validée.
 
 Cette règle ne présume pas qu'un numéro soit collecté, ne crée aucun canal ni envoi effectif et n'autorise aucune implémentation ou migration D1.
+
+
+## Numéro de téléphone obligatoire à l'inscription — décision validée le 18 novembre 2026
+
+Chaque utilisateur doit obligatoirement fournir un numéro de téléphone lors de la création de son compte SAC ; le compte ne peut pas être créé si ce champ est absent. Le numéro est conservé avec son indicatif international.
+
+La collecte obligatoire ne vaut pas vérification du numéro. La méthode de vérification, ainsi que les règles de changement et de mise à jour, restent à définir. La décision déjà prise de ne pas utiliser de SMS OTP pour l'authentification des comptes reste en vigueur : aucun SMS OTP ni mécanisme de vérification par SMS n'est autorisé implicitement.
+
+Le numéro ne peut être utilisé comme moyen de contact fiable dans la procédure administrative de clôture que lorsque son caractère vérifié et son accessibilité sont établis. Si ce n'est pas le cas, l'administration consigne cette limite et poursuit les vérifications sans assimiler le silence à une preuve de sécurité. Aucun compte n'est clôturé automatiquement pour absence de réponse.
+
+Décision documentaire uniquement : aucun champ, validation, envoi SMS, service externe, endpoint ou migration D1 n'est implémenté ici.
