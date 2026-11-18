@@ -35,7 +35,7 @@ L'article 29 prévoit une formalité préalable auprès de la HAPDP, sauf except
 - les mesures de sécurité ;
 - les sous-traitants et les transferts vers des pays tiers.
 
-Le dossier de conformité de SAC devra donc être préparé avant l'activation du traitement réel. Il faut demander à la HAPDP quelle formalité précise s'applique à chaque traitement de SAC et si plusieurs finalités peuvent être déclarées ensemble.
+Le texte de base prévoyait une formalité préalable auprès de la HAPDP. Après l'ordonnance 2026-30, il faut d'abord authentifier les dispositions encore en vigueur et identifier le service ministériel désormais compétent. Le dossier de conformité de SAC devra être préparé avant l'activation du traitement réel ; aucune formalité historique ne doit être présumée encore applicable à l'identique.
 
 ### 2.3 Traitements nécessitant une autorisation préalable selon le texte de base
 
@@ -46,7 +46,7 @@ L'article 31 du texte de base énumère notamment :
 - les transferts de données vers un pays tiers ;
 - certains traitements de profilage et catégories sensibles.
 
-SAC prévoit l'utilisation de numéros de téléphone pour les invitations et les contacts de confiance, ainsi qu'une catégorie d'urgence médicale. Il faut donc obtenir une position écrite de la HAPDP sur la qualification exacte de ces traitements, les formalités applicables et les éventuelles autorisations préalables. Ne pas déduire qu'un simple consentement utilisateur remplace ces formalités.
+SAC prévoit l'utilisation de numéros de téléphone pour les invitations et les contacts de confiance, ainsi qu'une catégorie d'urgence médicale. Il faut donc obtenir une position écrite du ou des services ministériels officiellement désignés, après clarification de la répartition de compétences, sur la qualification exacte de ces traitements, les formalités applicables et les éventuelles autorisations préalables. Ne pas déduire qu'un simple consentement utilisateur remplace ces formalités.
 
 ### 2.4 Hébergement et transferts internationaux
 
@@ -122,4 +122,4 @@ SAC devra donc tenir un registre des fournisseurs, contrats de sous-traitance, a
 - Ce document ne remplace pas un avis juridique nigérien ni une réponse écrite des services ministériels désormais compétents, une fois ceux-ci officiellement identifiés.
 - Aucune durée de conservation hors GPS n'est validée ici.
 
-**Conclusion :** le chantier de conservation hors GPS ne doit plus être traité comme une simple décision de produit. Il dépend d'une cartographie de traitement, de la version consolidée du droit nigérien et des formalités à confirmer auprès de la HAPDP.
+**Conclusion :** le chantier de conservation hors GPS ne doit plus être traité comme une simple décision de produit. Il dépend d'une cartographie de traitement, de l'authentification des textes postérieurs à juin 2026 et des formalités à confirmer auprès des services ministériels officiellement désignés. L'ancienne HAPDP ne doit plus être présentée comme interlocuteur opérationnel actuel.
