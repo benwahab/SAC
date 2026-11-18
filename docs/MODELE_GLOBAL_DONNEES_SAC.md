@@ -433,3 +433,7 @@ Le SOS programmé reste distinct d'une alerte déjà déclenchée ; annulation a
 ## Politique générale de conservation — complément du 18 novembre 2026
 
 Lire également [PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md](PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md) avant toute évolution des comptes, identités, appareils, sessions, invitations, relations, groupes, notifications, journaux, support, exports ou données administratives/financières. Cette matrice est une proposition documentaire : ses durées restent non approuvées, aucune durée légale n'est affirmée et aucune purge ne doit être implémentée sans validation. Le contrat spécialisé de conservation des alertes et GPS prévaut pour ce domaine.
+
+## Contrat de suppression du compte — complément du 18 novembre 2026
+
+Avant de concevoir les contraintes de suppression, cascades, anonymisation ou restauration, lire [CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md](CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md). Les cinq états et les invariants confirmés y sont séparés des propositions encore à arbitrer. Aucun SQL ni mécanisme de suppression n'est approuvé par ce contrat documentaire.
