@@ -28,7 +28,7 @@ L'adresse e-mail est obligatoire pour toute inscription SAC et constitue une con
 | État d'envoi | Recommandation | Distinguer créé, envoi demandé, accepté par fournisseur, échec certain, résultat ambigu, consommé, expiré et invalidé. Un timeout fournisseur ne signifie pas que le message n'a pas été envoyé. |
 | Sessions PWA | Recommandation | Identifiant opaque aléatoire d'au moins 256 bits ; cookie Secure, HttpOnly, SameSite=Lax ou Strict selon le parcours ; protection CSRF et vérification Origin sur les mutations. |
 | Stockage session | Déjà validé | Jamais de jeton brut en D1, localStorage, URL, logs ou erreurs. Conserver uniquement une empreinte cryptographique adaptée. |
-| Durée session | Recommandation | 30 jours consécutifs sans activité entraînent la déconnexion automatique ; 90 jours constituent la durée absolue maximale, même en cas d'utilisation régulière. Réauthentification renforcée pour les actions sensibles. Durées validées par l'utilisateur le 18 novembre 2026. |
+| Durée session | **Validé le 18-11-2026** | **30 jours consécutifs sans activité** entraînent la déconnexion automatique ; **90 jours constituent la durée absolue maximale**, même en cas d'utilisation régulière. Réauthentification renforcée pour les actions sensibles. |
 | Rotation | Recommandation | Rotation du jeton de renouvellement à chaque renouvellement ; détection de réutilisation d'un ancien jeton et révocation de la famille concernée. |
 | Révocation | Déjà validé | Vérifier l'état de la session, du compte, de l'appareil et sa auth_version côté serveur ; une révocation doit être effective à la requête suivante. |
 | Réseau/IP | Déjà validé | Un changement d'adresse IP ou de réseau ne bloque jamais à lui seul un utilisateur. |
