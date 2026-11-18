@@ -679,3 +679,29 @@ Le titulaire a perdu son téléphone, ne peut plus accéder à son ancienne adre
 
 **Validation utilisateur requise :** confirmer ou modifier le seuil de preuve, le délai candidat de 24 h, la notification/contestation, les droits de session limitée et la politique de révocation. Tant que cette validation n'est pas obtenue, toutes ces orientations restent des propositions et le NO-GO implémentation est maintenu.
 
+
+
+## 3.10 Périmètre candidat de la session limitée après récupération (18 novembre 2026)
+
+**Statut : proposition à valider.** La session limitée ne doit pas être un compte complet déguisé.
+
+| Fonction | Proposition |
+|---|---|
+| Consulter l'état de récupération et les consignes de sécurité | Autorisé |
+| Se déconnecter et fermer la session | Autorisé |
+| Définir un nouveau mot de passe après succès du parcours | Autorisé, avec preuve fraîche liée à la session |
+| Confirmer la nouvelle adresse déjà vérifiée | Autorisé ; ne pas permettre de la remplacer à nouveau sans procédure renforcée |
+| Demander la cérémonie de création d'une nouvelle racine | Autorisé ; la demande n'approuve pas l'appareil |
+| Créer immédiatement une nouvelle clé de récupération | Non, tant que l'appareil n'a pas passé la cérémonie de confiance requise |
+| Voir alertes privées, historique, détails des incidents | Interdit |
+| Voir coordonnées privées ou listes complètes des contacts | Interdit |
+| Voir ou partager GPS précis | Interdit |
+| Modifier contacts, groupes ou relations de confiance | Interdit |
+| Approuver un appareil secondaire ou modifier l'autorité racine | Interdit |
+| Modifier abonnement, paiements ou paramètres à fort impact | Interdit jusqu'à réauthentification sur appareil approuvé |
+| Déclencher un SOS depuis cette session | À arbitrer séparément ; ne pas le considérer comme automatiquement autorisé ou interdit |
+
+**Arbitrage SOS :** préserver l'accès à l'urgence est important, mais une session récupérée peut être détenue par un attaquant. Il faut définir si un SOS sans GPS est possible depuis cette session, quelles limites anti-abus s'appliquent et comment les contacts sont informés de l'état de confiance du terminal, sans retarder un SOS depuis une session déjà autorisée.
+
+**Verrou :** cette matrice est une proposition de moindre privilège ; aucune permission n'est encore implémentée ou activée.
+
