@@ -168,6 +168,18 @@ test("un contact qui s'est retiré ne peut pas reprendre la même candidature", 
   assert.deepEqual(again, { ok: false, error: "already_withdrawn" });
 });
 
+test("un retrait antérieur à la candidature est refusé", () => {
+  const first = transitionAlertResponder(makeState(), {
+    type: "volunteer", actorAccountId: "contact-a", at: t2, serverSequence: 1,
+  });
+  assert.equal(first.ok, true);
+  if (!first.ok) return;
+  const result = transitionAlertResponder(first.state, {
+    type: "withdraw", actorAccountId: "contact-a", at: t1,
+  });
+  assert.deepEqual(result, { ok: false, error: "event_before_volunteer" });
+});
+
 test("une alerte clôturée ne reçoit plus de réponses", () => {
   const state = makeState({
     alert: {
