@@ -340,3 +340,34 @@ Aucune de ces propositions ne modifie l'instantané historique, les règles SMS 
 4. Définir les fonctions exactes bloquées pendant root_recovery_required, au-delà des approbations et du partage GPS.
 
 Aucune décision ici ne permet d'effacer les données locales à distance, de contourner la racine ou de restaurer les anciennes clés GPS par une simple récupération de mot de passe.
+
+
+### 3.11 Perte, vol et remplacement de l'appareil racine — proposition à arbitrer
+
+**Décision déjà acquise :** la récupération de l'accès au compte ne restaure jamais l'ancienne identité cryptographique. Le premier appareil approuvé reste l'unique racine dans la première version ; un secondaire ne peut pas se promouvoir.
+
+**Parcours proposé, non encore validé dans tous ses détails :**
+- distinguer perte temporaire, vol/suspicion de compromission, panne/destruction et remplacement volontaire ;
+- séparer récupération d'accès au compte et récupération cryptographique de la racine ;
+- permettre à un secondaire actif d'initier une demande, sans auto-promotion, signature racine ni reprise GPS ;
+- générer une nouvelle racine localement sur le nouvel appareil ; ne jamais restaurer ou transférer l'ancienne clé privée ;
+- révoquer l'ancienne racine côté serveur lorsque la révocation est demandée et autorisée ; son retour en ligne ne peut pas annuler une révocation commitée ;
+- demander aux contacts concernés de vérifier indépendamment la nouvelle empreinte avant toute reprise de partage GPS avec chacun ;
+- conserver le compte, les contacts, les alertes, l'abonnement et l'historique ; ne pas révoquer automatiquement les sessions secondaires actives ;
+- ne jamais prétendre effacer à distance les données d'un téléphone hors ligne ;
+- préserver strictement la règle GPS J+30 : aucune récupération de compte ou de racine ne restaure une clé ou une archive GPS expirée.
+
+**États proposés :** recovery_requested, recovery_pending_review, root_reestablished, recovery_refused, recovery_expired, recovery_cancelled. root_reestablished ne signifie pas que tous les contacts ont vérifié la nouvelle empreinte ; l'autorisation GPS reste distincte pour chaque relation.
+
+**Courses proposées :** sérialisation par compte et époque racine ; une demande active par époque ; idempotence ; contrôle final de l'appareil et de la révocation dans la transaction ; une ancienne racine révoquée reste révoquée ; un secondaire révoqué pendant la procédure perd ses droits futurs ; notifications seulement après commit ; journal append-only sans secrets ni GPS.
+
+**Arbitrages à prendre avant implémentation :**
+1. Quels facteurs d'authentification renforcée autorisent la récupération d'accès et la demande de révocation urgente ? Aucun fournisseur ni facteur n'est choisi dans cette proposition.
+2. La demande de récupération exige-t-elle une période d'attente, une validation humaine ou une combinaison ? Définir les délais et les protections anti-hameçonnage.
+3. Quels contacts doivent confirmer la nouvelle empreinte : tous les contacts actifs, uniquement ceux avec lesquels le partage GPS doit reprendre, ou une règle par relation ? La proposition privilégie une vérification par contact et un GPS bloqué pour chaque contact non vérifié.
+4. Que peut encore faire un appareil secondaire pendant root_recovery_required ? La proposition maintient les fonctions ordinaires indépendantes de la racine, mais bloque approbations et GPS.
+5. Comment annuler une demande avant révocation, et que faire si la racine est déjà révoquée ? Une racine révoquée ne doit jamais être réactivée automatiquement.
+6. Quelle durée d'expiration appliquer aux demandes et cérémonies ? Aucune durée n'est fixée sans validation.
+7. Quelle procédure s'applique si tous les contacts concernés sont injoignables ou refusent la nouvelle empreinte ? Aucun contournement par support ou OTP n'est proposé.
+
+**Verrou non négociable :** mot de passe, OTP, e-mail, session secondaire ou support ne peuvent pas se substituer à une signature de l'ancienne racine ni valider seuls la nouvelle identité. Aucune route API, migration D1, ressource Cloudflare ou intégration GPS/SMS n'est autorisée par cette section.
