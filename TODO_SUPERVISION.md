@@ -371,3 +371,12 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Consigner que la décision produit n'est pas validée et que l'historique GPS reste NO-GO.
 - [ ] Obtenir l'arbitrage explicite du propriétaire produit avant de concevoir une fonctionnalité d'historique GPS.
 - [ ] Après arbitrage, mettre à jour les machines à états, contrats de données, matrice de conservation et parcours UI sans créer de stockage réel avant validation sécurité.
+
+## Journal officiel Niger — vérification institutionnelle complémentaire — 18 novembre 2026
+
+- [x] Vérifier sur le site du Ministère de la Justice que le Journal officiel est la référence officielle d'entrée en vigueur des textes.
+- [x] Rechercher le numéro spécial du 8 juin 2026 sur les domaines institutionnels accessibles du Ministère de la Justice, du Ministère des Finances et du SGG.
+- [x] Consigner que la recherche en ligne n'a pas retrouvé le numéro spécial contenant l'ordonnance 2026-30 ; ne pas en déduire qu'il n'existe pas.
+- [ ] Demander au service du Journal officiel / Ministère de la Justice une copie authentifiée du numéro spécial du 8 juin 2026.
+- [ ] Vérifier les articles abrogatoires et transitoires de l'ordonnance 2026-30 sur l'exemplaire authentique.
+- [ ] Obtenir le décret de suppression de la HAPDP authentifié afin de résoudre la divergence OCR 2026-310 / 2026-340.
