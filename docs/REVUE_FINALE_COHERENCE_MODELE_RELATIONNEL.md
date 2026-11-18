@@ -257,3 +257,8 @@ Aucun schéma ne sera déclaré prêt tant que :
 Travail documentaire uniquement. Aucun fichier applicatif, test, API, migration, base D1, ressource Cloudflare ou déploiement n'a été modifié. Les recommandations de cette revue ne constituent pas des décisions produit nouvelles.
 
 **Verdict : le modèle est suffisamment cartographié pour fermer les arbitrages, mais pas prêt pour migration D1.**
+
+
+## 11. Détail du premier blocage P0
+
+Le document `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` détaille les transitions de compte, l'écart TypeScript, les invariants d'OTP, le modèle logique des invitations et la preuve de consentement. Le blocage reste ouvert tant que les transitions non arbitrées et le parcours des proches ne sont pas décidés et que le contrat de domaine n'est pas aligné dans une intervention de code autorisée.
