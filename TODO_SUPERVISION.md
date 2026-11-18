@@ -623,3 +623,9 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Transformer le modèle en matrice de permissions exhaustive et en tests positifs/négatifs avant toute implémentation.
 - [ ] Ne créer aucun rôle actif, compte administratif, permission, mission, écran, endpoint, middleware ou migration D1 sans autorisation distincte.
 
+
+- [x] Établir un catalogue de référence des ressources SAC et une matrice de permissions par rôle.
+- [x] Définir les restrictions transversales et les tests d'autorisation négatifs obligatoires.
+- [ ] Arbitrer les périmètres, données Support, vues/exports Auditeur, révocation des appareils/sessions, durée des missions et authentification renforcée.
+- [ ] Faire relire la matrice par une revue de sécurité avant toute implémentation.
+- [ ] Ne créer aucun rôle actif, permission, mission, endpoint ou migration D1 sans autorisation explicite.
