@@ -20,7 +20,8 @@
     "test:accounts": "node --experimental-strip-types --test tests/account-lifecycle.test.ts",
     "test:auth-policy": "node --experimental-strip-types --test tests/auth-policy.test.ts",
     "test:email": "node --experimental-strip-types --test tests/resend-email.test.ts",
-    "test:otp-policy": "node --experimental-strip-types --test tests/email-otp-policy.test.ts"
+    "test:otp-policy": "node --experimental-strip-types --test tests/email-otp-policy.test.ts",
+    "test:registration-policy": "node --experimental-strip-types --test tests/registration-policy.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
