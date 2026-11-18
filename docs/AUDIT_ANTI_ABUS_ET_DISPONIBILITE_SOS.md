@@ -469,3 +469,28 @@ Cette section est documentaire. Elle ne crée aucun fournisseur, endpoint, quota
 - Vérification qu'aucun secret, canal complet ou donnée GPS n'apparaît dans logs et réponses.
 
 **NO-GO :** aucun flux de changement de coordonnées ne peut être déclaré sûr tant que le facteur indépendant, la politique de session, la contestation et les tests de concurrence ne sont pas approuvés.
+
+
+## Annexe — Contrôles anti-abus de la politique OTP e-mail (18 novembre 2026)
+
+**Décision produit :** l'e-mail est le canal standard des OTP SAC. Le SMS n'est pas utilisé comme canal OTP de secours automatique ; il reste réservé à l'escalade SOS.
+
+### Menaces et contrôles à conserver
+
+- Compromission de boîte e-mail : un OTP ou lien e-mail ne vaut pas preuve d'identité historique ni preuve de possession de la racine ; les changements sensibles exigent une preuve de continuité indépendante.
+- Perte de l'ancienne boîte : ne jamais envoyer automatiquement un OTP à une nouvelle adresse pour prendre le contrôle du compte ; appliquer la récupération forte validée.
+- Énumération : réponses publiques uniformes, qu'une adresse soit connue ou non ; ne pas exposer l'existence d'un compte, l'état de livraison ou les détails du fournisseur.
+- Épuisement : limites distinctes par compte, destination, finalité, appareil et signaux réseau ; ne pas verrouiller globalement un réseau mobile partagé.
+- Rejeu/concurrence : challenge lié au compte, à la finalité, à la destination et à la demande ; usage unique, expiration et consommation atomique.
+- OTP faible entropie : vérificateur protégé par secret serveur/HMAC ou mécanisme équivalent, jamais hash rapide seul ni stockage en clair.
+- Fournisseur ambigu : ne pas renvoyer aveuglément un code ni considérer l'envoi comme réussi ; réconcilier l'état selon les preuves disponibles.
+
+### Disponibilité et séparation du SOS
+
+- Aucun basculement silencieux vers SMS si le service e-mail est indisponible.
+- L'absence de réception d'un OTP ne doit pas bloquer une alerte SOS valide déjà autorisée par une session active.
+- Le déclenchement SOS ne doit pas attendre un code e-mail ; les vérifications OTP de compte ne sont pas un prérequis ajouté au moment critique.
+- Les SMS d'escalade SOS restent indépendants des OTP et suivent leur propre outbox, leur propre suivi de livraison et les règles de prise en charge.
+- Aucun SMS OTP réel, fournisseur e-mail, endpoint, quota chiffré ou ressource Cloudflare n'est créé par cette annexe.
+
+**À tester avant mise en production :** boîte compromise, ancienne adresse inaccessible, nouvel e-mail contrôlé par un tiers, renvois concurrents, résultat fournisseur ambigu, énumération, épuisement ciblé, panne e-mail pendant une urgence et preuve qu'aucun SMS OTP de secours n'est déclenché automatiquement.
