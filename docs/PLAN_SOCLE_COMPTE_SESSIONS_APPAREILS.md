@@ -556,3 +556,7 @@ La matrice de référence et le catalogue des ressources sont détaillés dans [
 Le cycle complet des missions (brouillon, activation, suspension, reprise, expiration, révocation et terminaison), les effets immédiats d'une suspension, les conflits, les durées proposées, les contrôles d'export, les sessions administratives et les tests d'acceptation sont détaillés dans [docs/GOUVERNANCE_MISSIONS_ADMIN_ET_CYCLE_DE_VIE.md](GOUVERNANCE_MISSIONS_ADMIN_ET_CYCLE_DE_VIE.md).
 
 Les durées de 30 jours pour une mission standard et 7 jours pour une mission sensible, les règles de réauthentification renforcée et les revues périodiques sont des propositions à valider, non des décisions déjà approuvées. Aucune implémentation n'est autorisée par ce lien documentaire.
+
+## Référence de consolidation — 18 novembre 2026
+
+Avant toute fermeture du socle, lire également [CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md](CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md). Ce document rassemble les scénarios de perte/changement d'appareil, les durées de session validées, la séparation des trois couches de récupération, les contradictions du transcript multi-appareils et les blocages V1. Il ne lève aucune condition de revue cryptographique et n'autorise aucune migration, API ou modification Cloudflare.
