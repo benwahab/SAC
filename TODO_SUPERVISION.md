@@ -908,3 +908,19 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases
 - [ ] Maintenir le GPS réel NO-GO ; aucune permission terminal, collecte, API, stockage ou ressource Cloudflare ne doit être activé par la seule documentation.
 
 **Statut :** documentation uniquement ; aucune collecte GPS ni partage réel activé.
+
+
+## Sécurité des comptes et appareils en situation d'urgence — 18 novembre 2026
+
+- [x] Auditer la consolidation appareils/sessions/récupération, les règles OTP, le multi-appareils, la suppression de compte, SOS, communications et accès internes.
+- [x] Formaliser les incidents de perte/vol, compromission, e-mail perdu, SIM swap, changement de téléphone et perte de tous les appareils dans `docs/CONTRAT_SECURITE_COMPTES_ET_APPAREILS_EN_URGENCE.md`.
+- [x] Préserver la séparation entre accès au compte, appareil approuvé et racine cryptographique ; aucune récupération par OTP/SMS/support.
+- [ ] Arbitrer la procédure de réinitialisation renforcée du mot de passe et la récupération de compte sans appareil fiable.
+- [ ] Définir la procédure de confinement d'urgence et l'autorité de preuve pour la révocation d'une racine volée/compromise.
+- [ ] Spécifier la commande éventuelle de révocation de toutes les sessions et ses effets sur les appareils.
+- [ ] Définir le changement d'e-mail en cas de compromission et les notifications de sécurité fiables.
+- [ ] Arbitrer la clôture de secours d'une alerte si l'auteur perd tous ses appareils, sans donner implicitement ce droit aux proches.
+- [ ] Homologuer indépendamment le protocole multi-appareils et le kit de récupération avant toute route d'enrôlement.
+- [ ] Maintenir le NO-GO pour récupération cryptographique, remplacement de racine et parcours d'urgence non homologués.
+
+**Statut :** documentation uniquement ; aucune authentification, récupération, révocation réelle, route ou migration ajoutée.
