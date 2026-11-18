@@ -62,11 +62,13 @@ Pour « Alerte personnalisée », une description peut être saisie. Elle reste 
 
 Afficher les contacts préconfigurés pour la catégorie choisie. Chaque contact est identifiable par son nom et un moyen de contact masqué ou partiellement masqué.
 
-- Les contacts affichés sont ceux autorisés pour cette catégorie.
-- Le lanceur peut vérifier la sélection et, si la règle de sélection par alerte est confirmée, ajuster les destinataires pour cette alerte seulement.
-- Les invitations en attente, contacts révoqués ou contacts non vérifiés ne sont jamais proposés comme destinataires.
-- L'écran indique le nombre de contacts qui recevront l'alerte.
-- Aucun destinataire supplémentaire n'est ajouté automatiquement.
+- La sélection initiale reprend les contacts préconfigurés pour la catégorie choisie.
+- **Décision validée :** dans le parcours SOS principal guidé, le lanceur peut, avant l'envoi, retirer un contact préselectionné et ajouter un autre contact parmi ses relations de confiance actives, ayant accepté l'invitation et vérifié leur moyen de contact. Cette sélection ponctuelle peut donc déroger à ses préférences habituelles de catégorie pour cette seule alerte.
+- Cette modification ne change jamais les préférences permanentes ni la configuration des autres catégories ou alertes.
+- Les invitations en attente, relations révoquées ou contacts non vérifiés ne sont jamais proposés ; les limites de l'offre (2 contacts gratuits, jusqu'à 10 en Premium) restent applicables.
+- Le raccourci SOS critique immédiat n'ouvre pas cet écran de modification : il utilise exactement sa liste de destinataires préconfigurée et vérifiée, afin de rester immédiat.
+- Avant l'envoi, l'écran affiche la liste finale et le nombre de contacts retenus. Le lanceur doit pouvoir vérifier cette liste.
+- Aucun destinataire n'est ajouté automatiquement par SAC. Après création, la liste est figée côté serveur ; toute modification ultérieure des contacts ou préférences n'altère pas cette alerte.
 
 **Réglage des rappels SMS, validé :** afficher cinq boutons larges et accessibles :
 
@@ -156,8 +158,7 @@ Le raccourci critique immédiat suppose une configuration préalable valide (cat
 
 ### Points restant à arbitrer
 
-1. **Destinataires à la volée :** l'utilisateur peut-il modifier pour une alerte précise la sélection préconfigurée pour sa catégorie, sans changer les préférences permanentes ? Recommandation : oui, modification ponctuelle avant l'envoi.
-2. **Aucun contact éligible :** faut-il bloquer la création de l'alerte, permettre une alerte locale non transmise ou proposer une autre solution ? Aucun comportement n'est choisi ; ne jamais afficher une fausse confirmation d'envoi.
+1. **Aucun contact éligible :** faut-il bloquer la création de l'alerte, permettre une alerte locale non transmise ou proposer une autre solution ? Aucun comportement n'est choisi ; ne jamais afficher une fausse confirmation d'envoi.
 3. **Seuil SMS sans fournisseur opérationnel :** le choix 1–5 reste enregistré dans la commande, mais l'interface doit expliquer que le canal SMS n'est pas disponible. Le comportement de lancement avant sélection du fournisseur reste à valider.
 
 ## 8. Limites d'implémentation actuelles
