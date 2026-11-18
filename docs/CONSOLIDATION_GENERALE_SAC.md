@@ -408,3 +408,8 @@ Le document `PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md` formalise les menac
 ## Sécurité du cycle SOS — complément du 18 novembre 2026
 
 `docs/CONTRAT_SECURITE_CYCLE_SOS_ET_INTEGRITE_ALERTES.md` complète le parcours de déclenchement, la matrice d'autorisation, les machines à états, les contrats transactionnels et le contrat de conservation. Il regroupe les menaces d'usurpation, de rejeu, de concurrence, de fuite entre destinataires, d'abus, de confusion entre états métier et transport, ainsi que les tests de restauration. Les décisions validées sont reprises sans modification ; les nouvelles options restent à arbitrer. Aucun code, fournisseur, mécanisme GPS ou service SOS réel n'est activé.
+
+
+## Sécurité des notifications et communications — complément du 18 novembre 2026
+
+`docs/CONTRAT_SECURITE_NOTIFICATIONS_ET_COMMUNICATIONS.md` complète les contrats SOS, invitations, sessions, confidentialité et conservation. Il formalise les frontières de confiance des canaux push/e-mail/SMS, la protection des abonnements, les webhooks, la distinction entre acceptation et livraison, les révocations, les pannes et la prévention des fuites. Le téléphone déclaré reste non vérifié et ne peut être considéré comme destination SMS fiable sans arbitrage/proof adaptée. Aucun fournisseur ou canal réel n'est activé.
