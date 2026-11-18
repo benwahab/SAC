@@ -533,3 +533,50 @@ Les proches peuvent reconnaître une personne, mais une relation sociale n'est p
 4. Une procédure de récupération d'accès sans aucun appareil approuvé doit-elle reposer sur un facteur de récupération préenregistré ou une autre méthode indépendante, à définir et tester ?
 
 **NO-GO :** aucune récupération de compte, changement de coordonnées, approbation d'appareil ou restauration racine ne peut être autorisée par un vote, un quorum ou une simple déclaration des contacts. Aucun quorum chiffré n'est adopté à ce stade.
+
+
+## 3.12 Facteur indépendant préenregistré — kit de récupération hors ligne (18 novembre 2026)
+
+**Statut :** proposition de conception à valider ; aucune génération, API, migration, interface ou récupération réelle n'est implémentée ou autorisée.
+
+### Proposition recommandée
+
+Prévoir un kit de récupération personnel créé pendant que le titulaire dispose encore d'un accès normal et vérifié à son compte. Le kit contient un secret aléatoire à forte entropie, généré avec un générateur cryptographiquement sûr sur l'appareil, présenté une seule fois et conservé hors de SAC. Il ne dépend ni du numéro de téléphone, ni de l'adresse e-mail, ni d'un appareil encore connecté.
+
+- Le secret doit être généré localement ; il ne doit jamais être envoyé par e-mail/SMS, affiché de nouveau par le serveur ou conservé en clair dans la base.
+- La représentation destinée à l'utilisateur doit être copiables et imprimable, avec checksum/détection d'erreur ; format et longueur restent à spécifier et à tester avec les utilisateurs.
+- Recommander une conservation hors ligne dans un endroit privé et sûr, distinct du téléphone et de la boîte e-mail habituels. Une copie dans un gestionnaire de mots de passe indépendant peut être une option, mais ne doit pas être l'unique conseil.
+- Le titulaire doit pouvoir régénérer le kit depuis une session et un appareil encore autorisés ; la régénération invalide atomiquement l'ancien secret et ne doit jamais être proposée pendant une récupération non authentifiée.
+- Le serveur ne conserve qu'un vérificateur robuste du secret, jamais le secret brut. La méthode de dérivation/stockage, les paramètres et la protection des secrets serveur doivent être validés par revue sécurité avant implémentation.
+- Le secret est à usage unique. Sa consommation doit être atomique, liée à une demande et à une version du compte, avec protection contre rejeu et demandes concurrentes.
+- Après usage, le kit est invalidé ; le titulaire doit en créer un nouveau après avoir repris le contrôle du compte.
+
+### Portée exacte
+
+Le kit pourrait autoriser uniquement une procédure de récupération d'accès au compte : établir une nouvelle adresse e-mail par OTP, définir un nouveau mot de passe et appliquer une politique de révocation/réauthentification des sessions qui reste à arbitrer. Il ne doit jamais :
+
+- restaurer l'ancienne racine cryptographique ou une clé privée perdue ;
+- approuver un appareil ou promouvoir un appareil en racine ;
+- annuler une révocation d'appareil ou de racine ;
+- rétablir le partage GPS, accéder aux anciennes archives GPS ou contourner la destruction J+30 ;
+- permettre à un contact, au support ou à un autre utilisateur d'utiliser le secret à la place du titulaire.
+
+Si la racine est perdue, la procédure séparée de nouvelle identité demeure obligatoire. Chaque relation GPS concernée reste bloquée jusqu'à vérification indépendante de la nouvelle empreinte par le contact correspondant.
+
+### Menaces et limites
+
+Le kit est un facteur de possession : toute personne qui obtient une copie lisible peut tenter de l'utiliser. Un secret hors ligne réduit la dépendance aux canaux perdus, mais ne prouve pas à lui seul l'identité civile du titulaire et n'est pas résistant au vol, à la photographie ou à la coercition. Le chiffrement du téléphone, la sécurité du stockage, la confidentialité de l'impression et la non-divulgation à un tiers sont essentiels.
+
+Contrôles proposés : secret à forte entropie, affichage unique, vérificateur serveur sans secret brut, consommation unique atomique, limitation stricte des tentatives, détection d'abus, réponses anti-énumération, journal sans secret ni nouvelle coordonnée, notification de sécurité aux anciens canaux encore sûrs et aux contacts ayant accepté ces alertes, et invalidation de l'ancien kit après usage ou régénération. Une notification n'est ni une preuve ni un veto des contacts.
+
+### Arbitrages à valider avant implémentation
+
+1. Valider le principe du kit hors ligne comme facteur indépendant préenregistré.
+2. Choisir le format : une clé unique de forte entropie ou plusieurs codes à usage unique ; tester lisibilité, copie, saisie mobile et risque de perte.
+3. Définir le délai de sécurité après présentation du kit et les possibilités de contestation depuis un appareil qui serait encore sûr ; le délai ne doit pas être présenté comme un facteur d'identité.
+4. Définir les notifications possibles si l'ancien e-mail est inaccessible, sans révéler de nouvelle coordonnée ni déléguer une décision aux contacts.
+5. Définir la révocation des sessions, jetons et appareils après récupération et la procédure de création d'un nouveau kit.
+6. Définir les limites de tentatives, les délais de blocage et la récupération après perte du kit lui-même.
+7. Faire examiner le format, l'entropie, le stockage du vérificateur et les scénarios de vol/copie par une revue sécurité indépendante.
+
+**NO-GO :** aucun facteur n'est encore adopté ; aucune récupération complète ne doit être activée sur cette proposition seule. Sans appareil approuvé, e-mail accessible ou facteur indépendant validé, SAC doit refuser la récupération plutôt que promettre une solution non vérifiable. La récupération du compte ne rétablit jamais la racine cryptographique.
