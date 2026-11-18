@@ -223,3 +223,28 @@ https://developers.cloudflare.com/d1/worker-api/d1-database/
 8. Garder le GPS hors D1 et hors du backend tant que la destruction irréversible J+30 n'est pas prouvée.
 
 **Cette revue ne valide pas encore le schéma pour migration.**
+
+
+## 2.10 Droits d'un destinataire après révocation
+
+La relation de confiance et l'instantané initial d'une alerte sont bien séparés, mais la proposition ne doit pas utiliser la seule présence dans `alert_recipients` comme autorisation universelle.
+
+Il faut représenter séparément les droits de rappel, de lecture du détail, de réception de nouvelles positions et de réponse/prise en charge. Le rappel initial reste régi par l'instantané et l'état actif de l'alerte ; la révocation ne doit pas l'annuler. Toute émission de position doit cependant revalider une autorisation active au dernier point d'envoi.
+
+**Point non résolu :** la politique d'accès au détail après révocation et les droits de réponse n'ont pas été validés. La table conceptuelle proposée en section 8 de `SCHEMA_RELATIONNEL_D1_PROPOSITION.md` reste donc un emplacement d'architecture, pas un schéma prêt à migrer.
+
+## 2.11 Suppression de compte et alerte orpheline
+
+Le modèle doit inclure l'état terminal logique `deleted` et les dates de demande/finalisation. La suppression finale doit vérifier l'absence d'alertes et de trajets actifs dans la transaction finale, sans faire confiance à un compteur fourni par le client.
+
+Le cas d'un auteur qui ne revient jamais est toujours ouvert. Tant qu'il ne l'est pas :
+- pas de clôture automatique ;
+- pas de clôture par un contact ;
+- pas de suppression en cascade de l'alerte ;
+- pas d'expiration implicite de l'alerte par simple expiration d'un partage de position.
+
+Une expiration du partage de position peut arrêter les nouvelles positions sans déclarer l'alerte résolue ; la durée maximale reste à valider.
+
+## 5. Conclusion actualisée
+
+Les amendements conceptuels sur les droits par destinataire, la suppression et les alertes orphelines sont ajoutés à la proposition. Le schéma demeure non validé : les arbitrages produit, la matrice de conservation et la preuve J+30 restent des prérequis absolus avant toute migration D1.
