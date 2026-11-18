@@ -31,11 +31,15 @@ L’API CryptoKit P-256 expose deux représentations explicites pour \`ECDSASign
 
 Il faut sélectionner et vérifier explicitement la représentation utilisée par le pont natif iOS. Les documentations Apple décrivent les deux formes, mais aucun test sur un appareil iOS réel n’a encore été exécuté pour SAC.
 
+Pour les clés publiques, CryptoKit expose plusieurs formes distinctes : représentation complète `rawRepresentation`, représentation ANSI X9.63, DER, PEM, compressée et compacte. Il faut sélectionner explicitement la forme utilisée par le pont natif iOS et ne pas confondre la représentation complète avec X9.63.
+
 ### 2.3 Android Keystore / Java Signature
 
 La documentation Android montre l’usage de \`Signature.getInstance("SHA256withECDSA")\` avec Android Keystore. L’API Java précise toutefois que le format des octets dépend du schéma et du fournisseur cryptographique ; la documentation Android ne fixe pas à elle seule une représentation binaire universelle.
 
 Le format ASN.1 ECDSA couramment utilisé dans les environnements Java/X.509 est une séquence DER contenant deux entiers \`r\` et \`s\`. Il ne faut donc pas supposer que les octets retournés par chaque fournisseur Android sont déjà au format brut 64 octets. Cela doit être mesuré sur les versions et fournisseurs réellement ciblés.
+
+Pour les clés publiques, l’API Android `Key.getEncoded()` expose le format primaire de la clé et peut retourner une représentation X.509 `SubjectPublicKeyInfo` ; elle peut aussi retourner `null` si la clé n’est pas exportable sous cette forme. Ce n’est pas directement un JWK `{x,y}`.
 
 ### 2.4 Formats à ne jamais confondre
 
