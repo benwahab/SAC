@@ -3,20 +3,28 @@
 **Statut : étude technique, aucun fournisseur ni mécanisme de production validé.**  
 **Objectif impératif :** à l'expiration des 30 jours suivant la fin du partage (ou la collecte pour une position ponctuelle), aucune restauration de D1, d'un export, d'une sauvegarde ou du service de clés ne doit pouvoir rendre les coordonnées GPS lisibles.
 
-## 1. Conclusion provisoire
+## 1. Direction d'architecture retenue pour SAC
 
-La solution ne doit pas reposer sur la suppression des lignes GPS dans D1, ni sur une clé stockée dans un autre stockage Cloudflare qui possède lui-même une restauration temporelle.
+**Décision de conception retenue : aucune conservation GPS précise durable côté serveur.** Les positions sont chiffrées sur le téléphone, partagées en direct aux contacts autorisés par un relais éphémère, puis l'historique conservé par SAC reste uniquement sur l'appareil de l'auteur pendant 30 jours après la fin du partage. À l'échéance, la clé locale dédiée doit être détruite et l'archive chiffrée supprimée.
 
-La piste à approfondir est un **chiffrement enveloppe** :
-1. Chaque groupe de positions ayant la même échéance reçoit une clé de données aléatoire (DEK).
-2. Les coordonnées sont chiffrées côté serveur avant toute écriture dans D1 ou R2.
-3. La DEK est chiffrée (enveloppée) par une clé de chiffrement gérée par un KMS indépendant de D1.
-4. Seul le texte chiffré de la DEK, jamais la DEK en clair, peut être conservé avec les données SAC.
-5. À l'échéance, le KMS doit rendre la clé d'enveloppement définitivement inutilisable et non restaurable par le client. Les anciennes copies de D1 ne contiennent alors que du texte chiffré inutilisable.
+Cette direction remplace les anciennes pistes d'archivage GPS serveur décrites dans les sections historiques qui suivent. Elle ne signifie pas que la garantie technique J+30 est déjà prouvée ou implémentée.
 
-Le regroupement par date d'expiration peut réduire le nombre de clés, mais il faut impérativement détruire une clé seulement lorsque toutes les positions qu'elle protège ont atteint leur échéance. Une clé par partage offre une séparation plus fine, au prix d'un volume et d'un coût KMS potentiellement supérieurs.
+Règles non négociables :
+1. Aucune coordonnée GPS précise ni aucun payload GPS ne doit être persisté dans D1, R2, KV, Durable Objects, files, journaux, traces, analytics, exports ou sauvegardes serveur.
+2. Le téléphone chiffre les positions avant leur transmission. Le serveur authentifie, vérifie les droits et relaie les paquets chiffrés sans les déchiffrer ni créer d'historique GPS durable.
+3. Le relais est éphémère : les paquets ne sont conservés que le temps technique nécessaire à la livraison et ne sont jamais utilisés comme archive.
+4. L'archive de 30 jours est locale au téléphone de l'auteur, chiffrée avec une clé propre à chaque session de partage ou trajet. Aucune synchronisation automatique vers un autre appareil ou vers le compte SAC ne doit copier l'archive ou sa clé privée.
+5. À J+30, l'accès doit être refusé dès la première instruction exécutée, même si le téléphone était éteint à l'échéance ; le nettoyage des fichiers et la suppression de clé sont relancés à chaque reprise. Cette protection d'accès n'est pas encore une preuve que l'OS a détruit le matériel de clé exactement à J+30.
+6. La PWA seule ne peut pas être présentée comme preuve de destruction matérielle irréversible. Les garanties Android Keystore/TEE/StrongBox et iOS Keychain doivent être testées sur les appareils compatibles.
+7. Si la clé locale est perdue, l'archive devient irrécupérable avant J+30 : la confidentialité prime sur la récupération de l'historique. La récupération de compte ou l'ajout d'un appareil ne restaure jamais les anciennes clés GPS.
 
-## 2. Solutions examinées
+**État réel :** direction de conception actée ; aucun GPS réel connecté, aucun mécanisme local de production implémenté, aucune preuve de destruction J+30 validée. Les tests sur appareils natifs, la résistance aux sauvegardes/restaurations locales et la gestion des téléphones éteints restent des bloqueurs.
+
+## 2. Pistes KMS historiques — non retenues pour l'architecture actuelle
+
+Les sections 2 à 10 ci-dessous documentent des alternatives étudiées lorsque l'architecture envisageait un stockage GPS chiffré côté serveur. Elles sont conservées comme historique de recherche et ne constituent plus la cible de SAC. Aucun KMS ne doit être intégré pour archiver des positions GPS côté serveur tant que la décision « aucune persistance GPS serveur » reste en vigueur.
+
+## 2.1 Solutions examinées
 
 ### 2.1 Cloudflare D1 — non adapté comme coffre de clés
 
@@ -57,7 +65,9 @@ Sources :
 - [AWS KMS — Suppression des clés](https://docs.aws.amazon.com/kms/latest/developerguide/deleting-keys.html)
 - [AWS KMS — Détails de la suppression des clés](https://docs.aws.amazon.com/kms/latest/cryptographic-details/key-deletion.html)
 
-## 3. Contrat technique cible, indépendant du fournisseur
+## 3. Ancien contrat KMS exploratoire — hors cible actuelle
+
+Le contrat ci-dessous décrit uniquement une hypothèse historique de chiffrement GPS serveur. Il ne doit pas être implémenté dans SAC tant que l'architecture sans persistance GPS serveur est la direction retenue.
 
 L'application ne doit pas appeler directement un SDK KMS depuis les écrans ou les règles métier. Une interface serveur isolée devra exposer au minimum les opérations suivantes :
 
@@ -70,7 +80,7 @@ L'application ne doit pas appeler directement un SDK KMS depuis les écrans ou l
 
 Le contrôle de l'échéance doit être appliqué côté serveur avant chaque tentative de déchiffrement. Une panne, un timeout, une indisponibilité du KMS ou un état de clé inconnu doit provoquer un refus de lecture GPS (échec fermé), jamais un recours à une copie locale ou à une clé de secours restaurable.
 
-## 4. Conditions obligatoires avant de choisir un KMS
+## 4. Conditions historiques d'évaluation d'un KMS serveur
 
 Aucun fournisseur ne sera retenu avant d'avoir prouvé les points suivants :
 
@@ -85,7 +95,7 @@ Aucun fournisseur ne sera retenu avant d'avoir prouvé les points suivants :
 9. Les quotas, coûts, latences, limites de débit et procédures de reprise sont compatibles avec le volume réel de SAC.
 10. Des tests adverses automatisés démontrent la non-récupérabilité à J+30, y compris avec une copie de D1 prise avant la purge.
 
-## 5. Scénarios de test obligatoires
+## 5. Scénarios historiques de test d'un KMS serveur
 
 - Chiffrer une position, sauvegarder/restaurer D1 avant J+30, puis vérifier qu'après échéance le KMS refuse définitivement le déchiffrement.
 - Restaurer une sauvegarde contenant une ancienne DEK enveloppée : la DEK doit rester inutilisable après destruction de la clé KMS.
@@ -251,9 +261,9 @@ Sources officielles :
 **Décision : aucun de ces produits n'est approuvé pour stocker les clés GPS SAC.** Le travail suivant doit chercher une solution qui offre nativement une destruction individualisée, vérifiable et non restaurable de chaque clé, y compris dans les sauvegardes, les répliques et les plans de reprise. Il faut également établir que sa disponibilité est compatible avec une application d'urgence et que la redondance ne recrée pas une copie de clé après destruction.
 
 
-## 11. Nouvelle piste : absence de persistance GPS côté serveur et conservation locale contrôlée
+## 11. Architecture retenue : absence de persistance GPS côté serveur et conservation locale contrôlée
 
-Cette piste change le modèle au lieu de chercher uniquement un KMS externe. Elle reste une **proposition d'étude, pas une décision d'architecture validée**.
+Cette direction est retenue pour la conception SAC. Elle n'est pas encore implémentée et les garanties de suppression locale à J+30 restent à démontrer.
 
 ### 11.1 Principe
 
@@ -294,21 +304,20 @@ Sources :
 
 Ces mécanismes sont des protections de stockage local, pas encore une preuve universelle de destruction physique de toutes les copies internes du terminal. Il faudra tester suppression de clé, restauration complète, migration de téléphone, réinstallation, sauvegarde locale/cloud, changement de code et appareils sans TEE/StrongBox.
 
-### 11.5 Conditions qui restent à résoudre
+### 11.5 Conditions techniques qui restent à résoudre
 
-1. Confirmer si les 30 jours de conservation concernent exclusivement les données sous contrôle de SAC, ou si l'exigence prétend aussi effacer les copies déjà reçues par les contacts. Ces deux garanties ne sont pas équivalentes.
-2. Définir si l'archive GPS de 30 jours peut rester uniquement sur le téléphone de l'auteur, sans accès historique depuis un autre appareil ou depuis les comptes des contacts.
-3. Définir le comportement lors d'une perte, panne, casse ou réinitialisation du téléphone : la perte de la clé locale rendrait l'archive irrécupérable avant J+30, ce qui protège la confidentialité mais réduit la disponibilité.
-4. Tester les limites de fonctionnement en arrière-plan et de livraison en réseau faible. Un relais sans persistance ne peut pas garantir la livraison si l'émetteur et les destinataires sont simultanément hors ligne.
-5. Garantir que les notifications push ne contiennent jamais de coordonnées précises ; elles doivent seulement inviter le contact à ouvrir SAC.
-6. Empêcher toute journalisation des coordonnées, y compris dans les erreurs, analytics, outils de diagnostic et rapports de crash.
+1. Implémenter l'archive locale exclusivement sur l'appareil de l'auteur ; aucune synchronisation automatique de l'historique GPS ou des clés privées vers un autre appareil.
+2. Définir et tester le comportement lors d'une perte, panne, casse ou réinitialisation du téléphone : la perte de la clé locale rend l'archive irrécupérable avant J+30, ce qui protège la confidentialité mais réduit la disponibilité.
+3. Tester les limites de fonctionnement en arrière-plan et de livraison en réseau faible. Un relais sans persistance ne peut pas garantir la livraison si l'émetteur et les destinataires sont simultanément hors ligne.
+4. Garantir que les notifications push ne contiennent jamais de coordonnées précises ; elles doivent seulement inviter le contact à ouvrir SAC.
+5. Empêcher toute journalisation des coordonnées, y compris dans les erreurs, analytics, outils de diagnostic et rapports de crash.
 
-**Décision provisoire :** approfondir en priorité le relais chiffré sans persistance GPS serveur, associé à une conservation locale. Ne pas activer cette conception en production et ne pas déclarer la règle J+30 satisfaite avant les tests natifs, la clarification de la portée de la rétention et l'analyse des copies côté destinataires. Aucun stockage GPS serveur n'est autorisé entre-temps.
+**Décision de conception :** poursuivre le relais chiffré sans persistance GPS serveur, associé à une conservation locale de 30 jours sur l'appareil de l'auteur. Ne pas activer cette conception en production et ne pas déclarer la règle J+30 satisfaite avant les tests natifs, les essais de restauration locale et la preuve de suppression de clé. Aucun stockage GPS serveur n'est autorisé.
 
 
 ## 12. Conception native : chiffrement local, suppression de clé et limites temporelles
 
-Cette section approfondit la piste sans persistance GPS serveur. Elle s'appuie sur les documentations Android et Apple consultées le 17 novembre 2026. C'est une proposition d'architecture à prototyper, pas une fonctionnalité déjà implémentée.
+Cette section approfondit l'architecture retenue sans persistance GPS serveur. Elle s'appuie sur les documentations Android et Apple consultées le 17 novembre 2026. C'est une cible technique à prototyper, pas une fonctionnalité déjà implémentée.
 
 ### 12.1 Modèle de protection proposé
 
