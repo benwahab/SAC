@@ -569,3 +569,15 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Définir les règles de changement et de mise à jour du numéro déclaré.
 - [ ] Spécifier les protections d'accès et la conservation du numéro.
 - [ ] Ne créer aucun champ, validation opérationnelle, SMS, service externe, endpoint ou migration D1 sans autorisation distincte.
+
+
+## Notification après clôture administrative — spécification
+
+- [x] Décider que chaque destinataire initial est informé individuellement après clôture administrative, via les canaux SAC disponibles et activés.
+- [x] Limiter le message à la confirmation de clôture administrative et à sa date/heure ; ne pas exposer les notes internes, éléments d'enquête, échanges privés ou coordonnées tierces.
+- [x] Arrêter les rappels de cette alerte pour tous les destinataires initiaux à la clôture.
+- [x] Conserver intégralement les accusés de réception, interventions, mises à jour et événements antérieurs.
+- [x] Journaliser les notifications envoyées et les échecs ; un échec n'entraîne pas de réouverture automatique.
+- [x] Préciser que la notification ne donne aucun droit de clôture aux proches.
+- [ ] Définir les événements et statuts techniques de livraison des notifications avant implémentation.
+- [ ] Ne créer aucun service push, e-mail, SMS, endpoint ou migration D1 sans autorisation distincte.
