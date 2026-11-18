@@ -162,7 +162,7 @@ Ne jamais journaliser les codes, OTP, secrets, jetons d'accès ou coordonnées d
 ## 4. Relations et contraintes essentielles
 
 - Un utilisateur possède plusieurs contacts de confiance, dans la limite de son offre.
-- Un contact ne devient actif qu'après acceptation et vérification du téléphone ou de l'e-mail ; une invitation en attente n'accorde aucun accès.
+- Un contact SAC actif doit être rattaché à un compte SAC actif dont l'adresse e-mail a été vérifiée par OTP ; l'acceptation explicite reste obligatoire. Le téléphone déclaré seul et les SMS ne suffisent jamais ; une invitation en attente n'accorde aucun accès.
 - Un utilisateur définit les catégories pour lesquelles chaque contact est destinataire.
 - Une alerte appartient à un seul auteur.
 - Une alerte possède un instantané de destinataires créé dans la même transaction que l'alerte.
