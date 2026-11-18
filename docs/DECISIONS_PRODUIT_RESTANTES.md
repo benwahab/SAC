@@ -403,3 +403,12 @@ Le contrat `CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md` formalise
 Les invariants restent : comptes distincts ; relation directionnelle et consentie ; groupe sans droit SOS/GPS ; destinataires d'alerte explicitement figés ; autorisations séparées par ressource/action ; contrôle côté serveur ; GPS NO-GO et règles de purge déjà validées.
 
 Restent à arbitrer : matrice des champs visibles par acteur d'une alerte, verrouillage local, isolation des caches, aperçus de notifications, téléchargements/exports, droits après révocation, détails de confidentialité des groupes et cas de mineurs/tutelle. Aucun accès familial ou nouveau rôle n'est approuvé par ce contrat.
+
+
+## 29. Prévention des abus, usurpations et saturation — 18 novembre 2026
+
+Le contrat `CONTRAT_PREVENTION_ABUS_USURPATION_ET_SATURATION.md` consolide les menaces liées aux faux comptes, à l'usurpation, au harcèlement, aux invitations, aux fausses alertes, aux attaques automatisées, à la saturation et aux abus internes.
+
+Invariant critique : la défense anti-abus ne doit pas punir le SOS. Une répétition technique identique est traitée par idempotence ; une nouvelle urgence explicite ne doit pas être supprimée par une limite aveugle. Aucun blocage automatique fondé uniquement sur le nombre de SOS, aucune CAPTCHA/paiement obligatoire par défaut dans le parcours critique, et aucune dépendance fournisseur ne doit empêcher la création d'alerte lorsque le service SOS est disponible.
+
+Restent à arbitrer : seuils de débit, capacité réservée au SOS, anti-automatisation, traitement des plaintes, revue humaine, recours, mesures anti-harcèlement, conservation des preuves et contrôle indépendant. Les seuils d'invitation du document de propositions restent non approuvés. Aucun mécanisme n'est implémenté.
