@@ -17,7 +17,7 @@ jobs:
       - name: Pin npm version
         run: npm install --global npm@10.9.9
       - run: npm ci
-      - name: Test RFC 8785 JSON canonicalization
+      - name: Test RFC 8785 canonicalization and Appendix B number vectors
         run: npm run test:jcs
       - run: npm run typecheck
       - name: Test experimental location encryption primitive
