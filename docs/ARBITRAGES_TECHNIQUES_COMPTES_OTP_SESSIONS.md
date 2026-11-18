@@ -2,7 +2,7 @@
 
 **Date :** 18 novembre 2026  
 **Dépôt :** `benwahab/SAC`, branche unique `main`  
-**Statut :** mode de connexion A validé par l'utilisateur le 18 novembre 2026 ; les valeurs techniques et fournisseurs encore ouverts restent des recommandations ou des points bloquants.  
+**Statut :** mode de connexion A et durées de session validés par l'utilisateur le 18 novembre 2026 ; les valeurs techniques et fournisseurs encore ouverts restent des recommandations ou des points bloquants.  
 **Portée :** inscription, connexion, vérification e-mail, sessions web PWA et préparation des appareils natifs.
 
 ## 1. Règle de lecture
@@ -28,7 +28,7 @@ Le canal OTP du compte est l'e-mail. Aucun SMS OTP ni mécanisme de secours SMS 
 | État d'envoi | Recommandation | Distinguer créé, envoi demandé, accepté par fournisseur, échec certain, résultat ambigu, consommé, expiré et invalidé. Un timeout fournisseur ne signifie pas que le message n'a pas été envoyé. |
 | Sessions PWA | Recommandation | Identifiant opaque aléatoire d'au moins 256 bits ; cookie Secure, HttpOnly, SameSite=Lax ou Strict selon le parcours ; protection CSRF et vérification Origin sur les mutations. |
 | Stockage session | Déjà validé | Jamais de jeton brut en D1, localStorage, URL, logs ou erreurs. Conserver uniquement une empreinte cryptographique adaptée. |
-| Durée session | Recommandation | 30 jours d'inactivité et 90 jours de durée absolue au maximum ; réauthentification renforcée pour les actions sensibles. Ces durées restent à confirmer. |
+| Durée session | Recommandation | 30 jours consécutifs sans activité entraînent la déconnexion automatique ; 90 jours constituent la durée absolue maximale, même en cas d'utilisation régulière. Réauthentification renforcée pour les actions sensibles. Durées validées par l'utilisateur le 18 novembre 2026. |
 | Rotation | Recommandation | Rotation du jeton de renouvellement à chaque renouvellement ; détection de réutilisation d'un ancien jeton et révocation de la famille concernée. |
 | Révocation | Déjà validé | Vérifier l'état de la session, du compte, de l'appareil et sa auth_version côté serveur ; une révocation doit être effective à la requête suivante. |
 | Réseau/IP | Déjà validé | Un changement d'adresse IP ou de réseau ne bloque jamais à lui seul un utilisateur. |
@@ -80,7 +80,7 @@ La recommandation est une session opaque gérée côté serveur plutôt qu'un JW
 - Ne pas lier rigidement la session à l'IP ou à une empreinte navigateur fragile.
 - Ne jamais placer un secret de session dans le JavaScript accessible, les paramètres URL ou le stockage local persistant.
 
-Les durées proposées (30 jours d'inactivité, 90 jours absolus) sont des valeurs de départ à confirmer, pas des décisions déjà validées.
+Les durées validées sont de 30 jours consécutifs sans activité et de 90 jours absolus au maximum, même en cas d'utilisation régulière.
 
 ## 5. OTP : garanties minimales
 
@@ -139,7 +139,7 @@ Autres contraintes :
 
 Les points suivants restent à confirmer explicitement :
 1. **Clos :** connexion par adresse e-mail + mot de passe (option A). OTP e-mail pour vérification initiale, opérations sensibles définies et réinitialisation ; pas d'OTP systématique à chaque connexion.
-2. Durées proposées des sessions : 30 jours d'inactivité / 90 jours absolus.
+2. **Clos :** durée des sessions : déconnexion après 30 jours consécutifs sans activité et réauthentification obligatoire au plus tard à 90 jours, même si le compte est utilisé régulièrement (validation utilisateur du 18-11-2026).
 3. Seuils définitifs de renvoi et de limitation OTP après choix du fournisseur.
 4. Choix du fournisseur e-mail et autorisation de le configurer.
 5. Validation du parcours de changement d'adresse e-mail.
@@ -150,7 +150,7 @@ Aucun SQL, code d'authentification, secret, fournisseur, ressource Cloudflare ou
 
 ## 10. Prochaine séquence contrôlée
 
-1. Faire valider les choix utilisateur listés ci-dessus.
+1. Conserver les décisions utilisateur validées ; faire arbitrer les choix encore ouverts.
 2. Écrire une spécification cryptographique indépendante pour le kit de récupération et le jumelage.
 3. Corriger les contrats purs et leurs tests pour refléter les états de compte retenus.
 4. Produire un schéma D1 minimal avec contraintes et opérations atomiques documentées.
@@ -190,12 +190,12 @@ Pour le mode de connexion e-mail + mot de passe validé :
 
 ## 12. Sessions PWA — proposition de paramètres
 
-**Statut : recommandations à valider.**
+**Statut : durées validées par l'utilisateur le 18 novembre 2026 ; les autres paramètres restent des recommandations à valider.**
 
-| Paramètre | Proposition |
+| Paramètre | Règle validée / proposition |
 |---|---|
-| Inactivité maximale | 30 jours |
-| Durée absolue maximale | 90 jours |
+| Inactivité maximale | **30 jours consécutifs sans activité : déconnexion automatique** |
+| Durée absolue maximale | **90 jours : reconnexion obligatoire, même avec une utilisation régulière** |
 | Cookie | `Secure; HttpOnly; SameSite=Lax`, chemin `/`, sans `Domain` si possible |
 | Transport | HTTPS uniquement ; HSTS après vérification du domaine |
 | CSRF | Jeton lié à la session et contrôle strict de `Origin` sur les mutations |
