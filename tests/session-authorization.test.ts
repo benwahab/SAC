@@ -14,6 +14,7 @@ function makeSession(overrides: Partial<DeviceSessionRecord> = {}): DeviceSessio
     status: "active",
     authVersion: 3,
     createdAt: "2026-11-17T11:00:00.000Z",
+    lastActivityAt: "2026-11-17T11:00:00.000Z",
     expiresAt: sessionExpiry,
     revokedAt: null,
     ...overrides,
@@ -107,4 +108,34 @@ test("refuse un contexte incomplet", () => {
   assert.deepEqual(authorizeDeviceSession(makeSession(), makeContext({
     currentDeviceAuthVersion: -1,
   })), { ok: false, error: "invalid_authorization_context" });
+});
+
+
+test("refuse une session après 30 jours consécutifs sans activité", () => {
+  const session = makeSession({
+    createdAt: "2026-01-01T00:00:00.000Z",
+    lastActivityAt: "2026-01-01T00:00:00.000Z",
+    expiresAt: "2026-04-01T00:00:00.000Z",
+  });
+  assert.deepEqual(authorizeDeviceSession(session, makeContext({
+    now: "2026-01-31T00:00:00.000Z",
+  })), { ok: false, error: "session_expired" });
+});
+
+test("refuse une session après 90 jours absolus même si elle est récemment active", () => {
+  const session = makeSession({
+    createdAt: "2026-01-01T00:00:00.000Z",
+    lastActivityAt: "2026-03-30T23:59:00.000Z",
+    expiresAt: "2026-04-01T00:00:00.000Z",
+  });
+  assert.deepEqual(authorizeDeviceSession(session, makeContext({
+    now: "2026-04-01T00:00:00.000Z",
+  })), { ok: false, error: "session_expired" });
+});
+
+test("refuse une dernière activité postérieure à l'heure serveur", () => {
+  const session = makeSession({ lastActivityAt: "2026-11-17T12:01:00.000Z" });
+  assert.deepEqual(authorizeDeviceSession(session, makeContext()), {
+    ok: false, error: "invalid_session_record",
+  });
 });
