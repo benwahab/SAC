@@ -115,7 +115,7 @@ Règles :
 - la sélection des destinataires d'une alerte est toujours explicite et validée par le serveur ;
 - les limites de l'offre s'appliquent au nombre de proches autorisés.
 
-**Blocage à résoudre :** le cahier des charges prévoit la vérification du téléphone ou de l'e-mail d'un contact, tandis que la décision actuelle du compte impose téléphone déclaré sans vérification indépendante et OTP e-mail comme seule vérification initiale. Le parcours d'acceptation doit préciser quel moyen peut réellement être prouvé ; ne pas inventer de vérification SMS.
+**Règle désormais établie :** tout proche qui devient un contact SAC actif doit disposer d'un compte SAC actif. Ce compte exige une adresse e-mail vérifiée par OTP ; le téléphone déclaré seul ne peut ni activer le compte ni la relation. Les anciennes formulations du cahier des charges qui autorisaient le téléphone seul sont remplacées. Restent à spécifier : canal de remise de l'invitation, correspondance entre destination invitée et e-mail vérifié, durée/jeton et preuve du consentement. Aucun SMS OTP ne doit être ajouté.
 
 Les groupes privés figurent au cahier des charges, mais ils ne figurent pas dans la première proposition relationnelle D1. Leur cardinalité, limites, invitations, retrait, rôle de gestion et règles de suppression restent à spécifier. Aucun droit d'alerte ne doit être hérité d'un groupe.
 
@@ -344,7 +344,7 @@ Une table générique d'événements peut être utilisée uniquement si elle con
 - Conclusion : décider si les motifs de fin sont des états distincts ou un état terminal avec raison ; harmoniser code, contrats et schéma avant SQL.
 
 ### 7.9 Vérification du contact
-- Le parcours d'invitation mentionne vérification téléphone ou e-mail.
+- Un contact SAC actif doit être rattaché à un compte SAC actif, dont l'adresse e-mail a été vérifiée par OTP ; le téléphone déclaré et les SMS ne suffisent pas.
 - La règle actuelle du compte ne prévoit pas de vérification indépendante du téléphone.
 - Conclusion : spécifier une preuve e-mail ou un autre moyen explicitement approuvé ; aucun SMS OTP de compte ne doit être introduit par défaut.
 
@@ -416,4 +416,4 @@ La revue détaillée des cardinalités, FK composites, politiques de suppression
 
 ## 12. Arbitrage détaillé du cycle compte et preuve des proches
 
-Voir `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` pour la matrice des transitions, les attributs d'identité/vérification, le contrat logique des invitations et les tests d'acceptation. Le téléphone reste déclaré non vérifié ; l'e-mail vérifié est recommandé comme preuve d'acceptation, sans être encore une décision approuvée.
+Voir `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` pour la matrice des transitions, les attributs d'identité/vérification, le contrat logique des invitations et les tests d'acceptation. Tout compte, y compris celui d'un proche, exige un e-mail vérifié par OTP avant activation. Le téléphone reste déclaré non vérifié ; les détails de correspondance de l'invitation et de consentement restent à spécifier.
