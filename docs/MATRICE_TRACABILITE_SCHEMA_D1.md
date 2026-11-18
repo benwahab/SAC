@@ -119,3 +119,7 @@ Lire `MODELE_GLOBAL_DONNEES_SAC.md` pour les domaines absents de la première ma
 ## 8. Revue finale de cohérence — 18 novembre 2026
 
 La revue `REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md` consolide les cardinalités, contraintes référentielles, règles de suppression, courses concurrentes et blocages P0/P1/P2. Cette matrice ne constitue pas encore une couverture exhaustive des domaines ajoutés au modèle global. Toute conversion SQL doit attendre la fermeture des blocages P0 et la spécification des sous-domaines P1 concernés.
+
+## Référence de conservation générale — complément du 18 novembre 2026
+
+La proposition `PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md` complète cette matrice pour les comptes, identités, appareils, sessions, invitations, relations, groupes, notifications, journaux, support et exports. Ses durées ne sont pas approuvées et ne doivent pas être codées. Le contrat `CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md` reste la référence normative pour la suppression immédiate du GPS à la clôture et la suppression définitive de l'alerte à J+30.
