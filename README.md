@@ -94,6 +94,7 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 
 - [Proposition de politique générale de conservation des données](docs/PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md) — matrice proposée pour comptes, appareils, invitations, groupes, notifications, journaux, support et sauvegardes ; durées à valider, sans modifier le contrat déjà approuvé des alertes/GPS.
 
+- [Recommandations d'arbitrage final — suppression des comptes](docs/RECOMMANDATIONS_ARBITRAGE_FINAL_SUPPRESSION_COMPTES.md) — recommandations proposées, non approuvées, pour les comptes non vérifiés/suspendus, SOS programmés, activités orphelines et courses concurrentes.
 - [Contrat proposé de suppression du compte et cas particuliers](docs/CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md) — cinq états, demande/finalisation, comptes non vérifiés ou suspendus, alertes/trajets actifs, courses concurrentes et arbitrages ouverts.
 
 - [Consolidation appareils, sessions et récupération](docs/CONSOLIDATION_APPAREILS_SESSIONS_ET_RECUPERATION.md) — matrice des pertes/changements d'appareil, sessions 30/90 jours, séparation récupération du compte/racine et blocages V1.
