@@ -258,3 +258,10 @@ Trois orientations restent à arbitrer :
 Aucune option n'est réputée approuvée par cette note. L'historique GPS reste NO-GO. Aucun GPS réel, stockage d'historique, service de clés ou ressource cloud ne doit être activé avant arbitrage produit, tests complets et revue cryptographique indépendante.
 
 Références de travail : docs/PLAN_VALIDATION_DESTRUCTION_GPS_J30.md, docs/SECURITE_GPS_DESTRUCTION_CRYPTO.md et docs/RECHERCHE_COMPLEMENTAIRE_GPS_J30_ET_TEXTES_NIGER.md.
+
+
+## 12. Seuil de rappels push avant escalade SMS
+
+**Décision déjà validée :** le lanceur choisit pour chaque alerte le nombre de rappels push avant SMS. Le push initial ne compte pas ; les rappels sont espacés de cinq minutes ; l'escalade est bloquée dès qu'un responsable principal est attribué. Un accusé de réception seul ne bloque pas l'escalade. Voir `docs/DECISION_NOTIFICATIONS_PUSH_ET_ESCALADE_SMS.md`.
+
+**Proposition UX à valider :** choix de 1 à 5 rappels (soit 5 à 25 minutes), avec 2 rappels / 10 minutes présélectionnés. Utiliser cinq boutons de choix accessibles plutôt qu'un curseur, et afficher systématiquement le délai correspondant. Cette proposition n'est pas encore une décision utilisateur : ne pas figer les limites ni la valeur par défaut dans le code ou le schéma avant confirmation.
