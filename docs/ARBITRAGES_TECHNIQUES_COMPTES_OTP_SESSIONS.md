@@ -2,7 +2,7 @@
 
 **Date :** 18 novembre 2026  
 **Dépôt :** `benwahab/SAC`, branche unique `main`  
-**Statut :** recommandations techniques à valider — aucune décision produit nouvelle n'est réputée approuvée par ce document.  
+**Statut :** mode de connexion A validé par l'utilisateur le 18 novembre 2026 ; les valeurs techniques et fournisseurs encore ouverts restent des recommandations ou des points bloquants.  
 **Portée :** inscription, connexion, vérification e-mail, sessions web PWA et préparation des appareils natifs.
 
 ## 1. Règle de lecture
@@ -34,7 +34,7 @@ Le canal OTP du compte est l'e-mail. Aucun SMS OTP ni mécanisme de secours SMS 
 | Réseau/IP | Déjà validé | Un changement d'adresse IP ou de réseau ne bloque jamais à lui seul un utilisateur. |
 | Capacitor | Bloquant avant natif | Spécification séparée du stockage sécurisé natif, des jetons et de leur rotation. Ne pas réutiliser automatiquement le modèle cookie web. |
 | Fournisseur e-mail | Bloquant | Aucun fournisseur n'est choisi. Aucun envoi réel ni secret fournisseur avant validation distincte. |
-| Mot de passe | Bloquant | Les documents ne fixent pas encore clairement si le compte utilise un mot de passe en plus de l'OTP. Ne pas inventer ce choix. |
+| Mode de connexion | Validé le 18-11-2026 | Option A : adresse e-mail + mot de passe. L'OTP e-mail vérifie l'adresse à l'inscription, sécurise certaines opérations et permet la réinitialisation du mot de passe ; il n'est pas requis à chaque connexion par défaut. |
 | Appareil racine | Bloquant | Le certificat secondaire actuel est expérimental et ne lie pas encore défi serveur, nonce, identifiant de cérémonie et expiration dans un transcript signé canonique. |
 | Kit de récupération | Bloquant | Le secret est généré localement, affiché une seule fois et à usage unique. Le protocole de preuve doit faire l'objet d'une spécification cryptographique et d'une revue indépendante avant code. |
 
@@ -52,7 +52,7 @@ Le canal OTP du compte est l'e-mail. Aucun SMS OTP ni mécanisme de secours SMS 
 
 ### 3.2 Connexion
 
-Le mode de preuve principal (mot de passe, lien magique ou OTP à chaque connexion) reste à arbitrer. Quel que soit le choix :
+Le mode de preuve principal validé est l'adresse e-mail + mot de passe. L'OTP e-mail n'est pas demandé à chaque connexion par défaut. Quel que soit le parcours :
 - les réponses ne révèlent pas si l'adresse existe ;
 - les tentatives et envois sont limités ;
 - le serveur vérifie le compte et l'appareil avant d'émettre une session ;
@@ -138,7 +138,7 @@ Autres contraintes :
 ## 9. Décisions utilisateur encore nécessaires
 
 Les points suivants restent à confirmer explicitement :
-1. Connexion avec mot de passe + OTP ponctuel, ou autre mode de preuve principal.
+1. **Clos :** connexion par adresse e-mail + mot de passe (option A). OTP e-mail pour vérification initiale, opérations sensibles définies et réinitialisation ; pas d'OTP systématique à chaque connexion.
 2. Durées proposées des sessions : 30 jours d'inactivité / 90 jours absolus.
 3. Seuils définitifs de renvoi et de limitation OTP après choix du fournisseur.
 4. Choix du fournisseur e-mail et autorisation de le configurer.
@@ -158,4 +158,4 @@ Aucun SQL, code d'authentification, secret, fournisseur, ressource Cloudflare ou
 6. Demander une autorisation distincte avant toute migration ou route métier.
 
 ---
-**Conclusion :** le socle compte/session peut être conçu sans fournisseur e-mail et sans activer la racine. En revanche, le SQL définitif et les parcours réels doivent attendre la clôture des décisions bloquantes ci-dessus.
+**Conclusion :** le mode de connexion e-mail + mot de passe est validé. Le socle compte/session peut être conçu sans fournisseur e-mail et sans activer la racine. En revanche, le SQL définitif et les parcours réels doivent attendre la clôture des décisions bloquantes ci-dessus.
