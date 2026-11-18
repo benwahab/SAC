@@ -242,7 +242,18 @@ Règles actées :
 - la prise en charge ne clôture pas l'alerte et ne stoppe pas les rappels ;
 - seul l'auteur clôture l'alerte.
 
+Règles de transfert et de continuité proposées (à valider) :
+- une perte de connexion, un téléphone éteint, une PWA suspendue ou un silence ne provoquent jamais à eux seuls le retrait automatique du responsable ;
+- SAC ne déduit pas un état « hors ligne » d'une simple absence d'événement ; il expose seulement la dernière activité confirmée par le serveur et son horodatage ;
+- le retrait est une commande explicite du responsable courant ;
+- dans la même opération atomique, le serveur termine sa période et attribue la responsabilité au volontaire admissible le plus ancien selon la séquence serveur ;
+- si aucun volontaire admissible n'existe, l'alerte reste active avec l'état conceptuel unassigned ; les rappels continuent vers l'instantané initial ;
+- si le responsable précédent revient, il ne récupère pas automatiquement son rôle ;
+- aucun compteur de présence temps réel ni délai automatique d'abandon n'est prévu dans la V1.
+
 La règle exacte en cas de retrait simultané et de plusieurs volontaires déjà présents doit être déterministe : priorité au premier volontariat accepté côté serveur, puis ordre monotone serveur (séquence/horodatage + identifiant comme départage). Un simple horodatage client n'est jamais utilisé.
+
+Le détail UX et la proposition de continuité sont consignés dans docs/PARCOURS_DECLENCHEMENT_SOS_V1.md.
 
 ### 5.5 Annulation et clôture
 
