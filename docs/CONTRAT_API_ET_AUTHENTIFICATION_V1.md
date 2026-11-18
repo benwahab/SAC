@@ -929,3 +929,18 @@ La suspension invaliderait les sessions, jetons et abonnements push de la racine
 La clé privée racine ne doit jamais être exportée. Android Keystore et StrongBox peuvent être évalués, mais la disponibilité matérielle et les garanties de protection varient selon appareils. Le code de déverrouillage connu peut compromettre les mécanismes reposant sur le même facteur ; biométrie et code système ne doivent pas être présentés comme une protection absolue.
 
 Les décisions de suspension par secondaire, de gel des opérations, de contestation et de niveau matériel minimal restent à arbitrer. Aucun fournisseur, endpoint, champ, migration D1 ou flux n'est créé.
+
+
+## Récupération par kit hors ligne sans appareil approuvé — contrat conceptuel (18 novembre 2026)
+
+Cette annexe ne crée aucun endpoint, champ de base de données ou mécanisme d'authentification.
+
+Le kit unique hors ligne peut être présenté depuis un nouvel appareil lorsqu'aucun appareil approuvé n'est disponible. Il doit être vérifié par un challenge lié au compte, à la demande, à la version du kit et à la finalité ; le secret brut ne transite ni ne persiste côté serveur. L'adresse e-mail nouvelle est vérifiée par OTP, qui prouve seulement le contrôle ponctuel de cette boîte.
+
+La réussite des deux vérifications ouvre une demande en attente, pas une session complète. Un délai de 24 heures est proposé à l'arbitrage, sans être considéré comme une preuve d'identité. À l'issue, une session temporaire limitée pourrait être délivrée si aucun signal de compromission ou conflit n'empêche la finalisation.
+
+La session limitée n'accède pas aux données privées, contacts, GPS, anciennes alertes, conversations ou coordonnées. Elle ne peut pas modifier les relations, clôturer une alerte, approuver un appareil, approuver/restaurer une racine, ni rétablir le partage GPS. L'état agrégé du SOS de secours reste consultable dans les limites déjà validées.
+
+Au succès final, recommandation d'invalider toutes les sessions et tous les jetons antérieurs et abonnements push associés. Cette invalidation côté serveur ne constitue pas un effacement à distance des données locales. Les alertes actives, leurs instantanés et leurs tâches de notification restent intacts.
+
+Le kit ne restaure jamais l'ancienne identité cryptographique. Une nouvelle racine et toute approbation d'appareil suivent leurs cérémonies distinctes. La consommation atomique du kit, le délai, les contestations, les droits exacts et la durée de session restent à arbitrer. Aucun code, fournisseur, endpoint, migration D1 ou session réelle n'est créé.
