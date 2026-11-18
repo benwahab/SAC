@@ -179,5 +179,15 @@ class EmailOtpD1SchemaTests(unittest.TestCase):
             )
 
 
+    def test_new_account_cannot_be_inserted_as_active(self):
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "account_must_start_pending_verification"):
+            self.db.execute(
+                """INSERT INTO accounts
+                   (id, status, preferred_language, password_hash, created_at, updated_at)
+                   VALUES ('active-direct', 'active', 'fr', 'hash', ?, ?)""",
+                (self.now, self.now),
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
