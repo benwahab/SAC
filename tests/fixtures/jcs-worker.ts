@@ -1,5 +1,6 @@
 import { canonicalizeStrictJson } from "../../src/services/crypto/strict-json.ts";
 
+// This fixture is executed by Wrangler locally; it never deploys or binds remote resources.
 const input = String.raw`{"numbers":[333333333.33333329,1E30,4.50,2e-3,0.000000000000000000000000001],"string":"\u20ac$\u000F\u000aA'\u0042\u0022\u005c\\\"\/","literals":[null,true,false]}`;
 
 export default {
