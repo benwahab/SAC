@@ -593,3 +593,21 @@ Contrôles proposés : secret à forte entropie, affichage unique, vérificateur
 - Cette décision choisit le format à clé unique ; elle ne valide pas encore l'algorithme, l'entropie exacte, la durée d'attente, la politique de sessions, ni l'activation du parcours.
 
 **Rappel de portée :** la clé ne récupère que l'accès au compte selon une procédure restant à spécifier. Elle ne restaure jamais l'ancienne racine, n'approuve aucun appareil, ne réactive aucune révocation et ne déverrouille pas le GPS.
+
+
+### Proposition technique — représentation de la clé unique (18 novembre 2026)
+
+**Statut : proposition à tester, pas une validation cryptographique définitive.**
+
+- Cible proposée : 256 bits d'entropie, soit 32 octets tirés localement d'un générateur cryptographiquement sûr fourni par la plateforme.
+- Représentation candidate : Base32 Crockford, sans séparateurs dans la valeur canonique. 256 bits nécessitent 52 caractères Base32 ; le dernier symbole ne transporte que les bits utiles et doit être encodé/décodé de façon canonique.
+- Affichage : groupes visuels réguliers pour faciliter lecture, copie et impression. Les espaces et séparateurs sont ignorés lors de la normalisation ; aucune conversion approximative d'un caractère inconnu n'est acceptée silencieusement.
+- Le checksum n'est pas encore retenu. Il pourra être ajouté uniquement selon une spécification standard et après tests de saisie ; il ne remplace jamais la vérification cryptographique.
+- L'application doit expliquer que la clé est montrée une seule fois, ne peut pas être récupérée par e-mail/SMS et doit être conservée hors ligne. Une confirmation locale de copie ou de transcription peut être étudiée sans réafficher la clé depuis le serveur.
+- Ne pas promettre qu'une capture d'écran ou une photographie peut être empêchée. Prévenir l'utilisateur qu'une copie lisible équivaut à la possession du facteur.
+
+**Vérification serveur — orientation à faire auditer :** comme la clé serait uniformément aléatoire sur 256 bits, un SHA-256 correctement domain-separé du secret normalisé et lié à l'identifiant immuable du compte offre déjà une résistance théorique considérable à une attaque hors ligne après fuite du vérificateur. Un HMAC-SHA-256 avec secret serveur séparé peut ajouter une défense en profondeur, mais introduit une dépendance de gestion/rotation du secret serveur. Le choix final doit être examiné par un spécialiste ; ne pas appliquer une KDF de mot de passe à faible entropie comme substitut à une génération aléatoire forte.
+
+**Contrôles obligatoires à spécifier avant code :** normalisation canonique, validation stricte des 52 caractères et des bits de bourrage, liaison au compte et à la version du kit, consommation atomique unique, limites anti-essais distribuées, réponses uniformes, absence du secret dans logs/analytics/crash reports, et tests sur claviers Android réels.
+
+Cette proposition ne modifie pas la décision utilisateur déjà actée (une seule clé hors ligne). Elle ne fixe pas encore définitivement l'encodage, le checksum, le vérificateur, les limites chiffrées ou les délais, et n'autorise aucun code, endpoint ni schéma D1.
