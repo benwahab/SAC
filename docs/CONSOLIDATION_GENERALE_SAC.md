@@ -382,6 +382,9 @@ Le document `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` consolide les cinq 
 
 ## Conservation des alertes et suppression GPS — décision confirmée du 18 novembre 2026
 
+> **Clarification de priorité :** toute mention d'une archive GPS locale chiffrée pendant 30 jours dans les notes historiques ou études candidates est non approuvée et ne s'applique jamais aux positions d'une alerte après clôture. Les positions GPS liées à une alerte, y compris les copies locales gérées par SAC, doivent être supprimées dès la clôture. Pour les trajets indépendants d'une alerte, aucune durée de conservation n'est validée et aucune collecte persistante n'est autorisée avant arbitrage distinct et GO technique.
+
+
 Le contrat de référence est docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md et prévaut sur les formulations plus anciennes de ce document concernant le GPS J+30 :
 
 - à la clôture effective d'une alerte, ses positions GPS sont supprimées immédiatement ;
