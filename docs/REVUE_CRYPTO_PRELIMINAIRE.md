@@ -127,9 +127,11 @@ Cette section prévaut sur les formulations historiques devenues obsolètes des 
 
 ### 12.1 Validation du bundle ECDH : test complémentaire requis
 
-La fonction `verifyLocationKeyBundle` vérifie la forme JWK de la clé ECDH incluse et la signature qui lie cette clé à la clé d'identité. Le contrôle de forme vérifie notamment le type EC, la courbe P-256 et le format des coordonnées ; il ne réalise pas lui-même l'import cryptographique de cette clé ECDH.
+La fonction `verifyLocationKeyBundle` vérifie la forme JWK de la clé ECDH incluse, tente son import comme clé publique P-256, puis effectue un accord ECDH éphémère local pour forcer la validation du point lors de l'opération cryptographique. Cette précaution est nécessaire : même si WebCrypto spécifie le rejet d'un point invalide à l'import, un problème d'implémentation Deno documenté en octobre 2026 montre qu'un fournisseur peut accepter l'import puis échouer seulement lors de l'accord ECDH. Ne pas supposer que l'import seul est suffisant sur toutes les plateformes.
 
-Avant toute utilisation de ce bundle en production, ajouter un test et un contrôle explicite qui tentent d'importer la clé ECDH comme clé publique P-256 et rejettent un point invalide, même si les chaînes x/y ont la longueur attendue et que le bundle est correctement signé. La validation de la clé d'identité importée pour vérifier la signature ne remplace pas la validation de la clé ECDH transportée.
+Le test adversarial construit un bundle correctement signé avec une clé d'identité P-256 mais contenant le point (0,0) dans des coordonnées syntaxiquement valides. Le vérificateur doit le rejeter. Le même contrôle par accord ECDH éphémère est appelé par le vérificateur des certificats secondaires.
+
+La validation de la clé d'identité importée pour vérifier la signature ne remplace pas la validation de la clé ECDH transportée. La compatibilité et le comportement exact doivent encore être vérifiés sur les moteurs WebCrypto réellement supportés par SAC (navigateurs Android/iOS et runtime Cloudflare).
 
 ### 12.2 Empreinte et enrôlement
 
@@ -165,3 +167,22 @@ Fichiers concernés :
 - `tests/location-crypto.test.ts`
 
 **État :** code et test enregistrés sur `main`. Le succès CI de ce changement doit être confirmé avant de considérer le contrôle comme validé. Même après CI verte, ce résultat ne constitue ni une certification cryptographique ni une revue indépendante ; le prototype demeure non connecté aux données GPS.
+
+### 13.1 Contrôle renforcé après revue de compatibilité WebCrypto
+
+Une vérification documentaire complémentaire a révélé une nuance interopérabilité importante : la spécification WebCrypto exige le rejet d'un point EC invalide à l'import, mais un rapport Deno publié en octobre 2026 décrit un fournisseur qui accepte l'import JWK hors courbe et ne rejette le point qu'au moment de `deriveBits`.
+
+Le contrôle partagé `validateLocationExchangePublicKey` effectue donc désormais :
+1. validation structurelle du JWK P-256 ;
+2. import comme clé publique ECDH ;
+3. génération d'une paire ECDH éphémère locale ;
+4. tentative d'accord ECDH de 256 bits avec la clé reçue ;
+5. rejet si l'une de ces étapes échoue.
+
+Le secret de contrôle n'est ni persisté ni transmis. Le contrôle est utilisé à la fois par le bundle signé et le certificat secondaire. Un nouveau test construit un certificat correctement signé par la racine, mais contenant le point (0,0) ; il doit être rejeté indépendamment de la validité de la signature.
+
+Références :
+- W3C Web Cryptography, validation normative des points EC à l'import et pendant ECDH : https://www.w3.org/TR/webcrypto/
+- Rapport d'interopérabilité Deno #37031, 15 octobre 2026 : https://github.com/denoland/deno/issues/37031
+
+**Limite :** le test CI sur Node ne démontre pas encore l'interopérabilité de chaque navigateur Android/iOS ni de Cloudflare Workers. Des essais sur les moteurs effectivement ciblés restent requis avant toute intégration.
