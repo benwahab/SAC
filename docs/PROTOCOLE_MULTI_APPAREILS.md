@@ -403,3 +403,11 @@ Les routes de lecture doivent filtrer par session et appareil actifs dans la req
 ### Limites et décisions différées
 
 Le prototype est un évaluateur pur : il ne génère pas les jetons, ne vérifie pas le canal OTP, ne stocke rien, ne définit pas le transport du cookie/jeton et ne fournit aucune route. Le fournisseur OTP, le transport de session, le schéma D1 et les garanties transactionnelles finales restent à valider. Aucun secret ou jeton réel n'est utilisé dans les tests. Aucune migration ni modification distante de D1 n'a été effectuée.
+
+## 22. Validation cryptographique du point ECDH des bundles
+
+Le vérificateur expérimental `verifyLocationKeyBundle` ne se limite plus à vérifier la forme des champs JWK de la clé ECDH. Il tente aussi d'importer cette clé comme clé publique ECDH P-256 avec WebCrypto. Un point hors courbe ou invalide doit ainsi faire échouer la vérification, même si les coordonnées ont une longueur et un encodage syntaxiquement plausibles.
+
+Un test adversarial construit un transcript de bundle correctement signé par une clé d'identité P-256, mais contenant le point (0,0) encodé dans des coordonnées de 32 octets. Le vérificateur doit le refuser.
+
+**Limites inchangées :** cela ne valide pas l'identité du propriétaire, n'ancre pas la clé racine, ne constitue pas une cérémonie d'enrôlement, ne gère pas la révocation et ne prouve pas la destruction GPS J+30. Le code reste expérimental et non raccordé aux positions réelles. Le résultat CI doit être contrôlé avant de déclarer ce test réussi.
