@@ -556,3 +556,16 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Définir les règles de changement, de mise à jour et de nouvelle vérification du numéro.
 - [ ] Spécifier les protections d'accès et la conservation du numéro.
 - [ ] Ne créer aucun champ, validation opérationnelle, envoi SMS, service externe, endpoint ou migration D1 sans autorisation distincte.
+
+
+## Vérification du compte : OTP e-mail uniquement — 18 novembre 2026
+
+- [x] Confirmer que l'OTP envoyé à l'adresse e-mail est la seule vérification initiale requise pour le compte.
+- [x] Confirmer que la saisie correcte de l'OTP valide l'adresse e-mail et suffit à la vérification initiale du compte.
+- [x] Maintenir le numéro de téléphone obligatoire à la création du compte, sans vérification indépendante.
+- [x] Exclure SMS OTP, appel automatisé de validation et toute procédure supplémentaire de preuve de propriété du numéro.
+- [x] Autoriser l'utilisation du numéro déclaré comme coordonnée de contact ; une réponse depuis ce numéro ne prouve pas seule l'identité de l'interlocuteur.
+- [x] Remplacer les anciennes tâches prévoyant une vérification du numéro par la présente décision.
+- [ ] Définir les règles de changement et de mise à jour du numéro déclaré.
+- [ ] Spécifier les protections d'accès et la conservation du numéro.
+- [ ] Ne créer aucun champ, validation opérationnelle, SMS, service externe, endpoint ou migration D1 sans autorisation distincte.
