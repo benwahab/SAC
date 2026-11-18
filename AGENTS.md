@@ -154,3 +154,6 @@ Avant toute modification du projet, lire `docs/AUDIT_TRANSVERSAL_COHERENCE_ET_MA
 
 
 Avant toute conception ou évolution de la clôture exceptionnelle d'une alerte SOS, lire `docs/CONTRAT_CLOTURE_EXCEPTIONNELLE_ADMINISTRATIVE_SOS.md`. Préserver la règle générale de clôture par l'auteur et l'exception étroite déjà validée pour un auteur suspendu dans le scénario de suspicion d'abus ou de perte/compromission du téléphone. Aucun administrateur sans permission nominative attribuée par le Super Admin ne peut clôturer ; le délégataire ne peut jamais transmettre cette permission. Ne pas élargir cette exception et ne pas considérer le contrat pur `src/domain/alert-lifecycle.ts` comme une autorisation serveur.
+
+
+Pour tout travail sur le cycle de suppression, lire `docs/RECOMMANDATIONS_ARBITRAGE_FINAL_SUPPRESSION_COMPTES.md` avec `docs/CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md`. Les recommandations restent non approuvées : ne pas les coder, ne pas créer de sixième état et ne pas modifier D1 sans arbitrage et autorisation distincte. Préserver les cinq états validés, la suspension sans session générale, la non-clôture automatique des alertes/trajets et la règle de purge GPS.
