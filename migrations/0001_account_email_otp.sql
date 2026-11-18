@@ -243,3 +243,11 @@ BEGIN
     OR NEW.created_at <> OLD.created_at
   THEN RAISE(ABORT, 'account_identity_immutable_fields') END;
 END;
+
+-- Toute création de compte commence obligatoirement en attente de vérification.
+CREATE TRIGGER accounts_initial_state_guard
+BEFORE INSERT ON accounts
+WHEN NEW.status <> 'pending_verification'
+BEGIN
+  SELECT RAISE(ABORT, 'account_must_start_pending_verification');
+END;
