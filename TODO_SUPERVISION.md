@@ -396,7 +396,10 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Corriger la chronologie de la revue crypto : le contexte HKDF v4 inclut désormais compte et cérémonie ; les anciennes mentions v3 sont historiques.
 - [x] Consigner la distinction entre signature auto-incluse d'un bundle et identité réellement ancrée par un canal indépendant.
 - [x] Ajouter validation cryptographique/import de la clé publique ECDH incluse dans un bundle signé ; rejeter un point P-256 invalide même si les champs JWK ont le bon format.
-- [ ] Confirmer la CI du changement ECDH (code + test) avant de considérer le contrôle automatisé validé.
+- [x] Renforcer la validation par un accord ECDH éphémère après import, afin de couvrir les moteurs WebCrypto qui ne rejettent pas le point invalide au stade import.
+- [x] Réutiliser ce contrôle dans le vérificateur des certificats secondaires et ajouter un test de certificat correctement signé contenant un point hors courbe.
+- [ ] Confirmer la CI du changement ECDH renforcé (code + deux tests adversariaux) avant de considérer le contrôle automatisé validé.
+- [ ] Tester les moteurs WebCrypto des navigateurs Android/iOS et Cloudflare Workers ; la CI Node ne prouve pas cette interopérabilité.
 - [ ] Tester l'empreinte indépendante, la substitution de racine, le changement de clé, la récupération après perte d'appareil et l'interopérabilité Android/iOS.
 - [ ] Définir le transcript canonique complet et la confirmation de clé, puis faire examiner le protocole par un spécialiste indépendant.
 - [ ] Vérifier l'orchestration serveur : certificat validé avant dérivation, révocation vérifiée avant chaque partage, et protection contre les courses entre révocation et envoi.
