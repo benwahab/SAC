@@ -983,3 +983,11 @@ L'affichage exige une action explicite et un écran dédié. Pas de copie automa
 La protection contre les captures et l'aperçu multitâche doit être étudiée pour Android natif. Une PWA ne peut pas garantir le blocage des captures d'écran, enregistrements, extensions ou outils système. Toute protection est une réduction de risque, jamais une garantie contre appareil compromis ou logiciel espion.
 
 Aucun bouton de copie par défaut. Toute future fonction de copie nécessitera un arbitrage séparé ; l'effacement du presse-papiers ne peut être garanti. Aucun kit n'est envoyé par e-mail ou SMS. Ces exigences sont conceptuelles et ne créent aucun endpoint, champ ou mécanisme technique dans le dépôt.
+
+## Conservation hors ligne du kit — exigences UX et confidentialité (18 novembre 2026)
+
+La recommandation UX par défaut est une copie papier conservée dans une enveloppe fermée, dans un endroit privé et verrouillé, séparé du téléphone. L'utilisateur ne doit pas photographier, numériser, envoyer, saisir dans une note ou un document, ni placer le kit dans galerie, messagerie, e-mail, cloud ou stockage partagé. Une clé USB ou un gestionnaire synchronisé n'est pas recommandé par défaut ; ces supports exigent une analyse distincte de leur chiffrement, de leurs sauvegardes et de la récupération du compte fournisseur.
+
+L'application ne peut pas vérifier le lieu de conservation. La confirmation de l'utilisateur est déclarative. Si le support est perdu ou compromis, l'utilisateur remplace le kit depuis un appareil approuvé sûr ; les copies papier précédentes doivent être détruites et le vérificateur précédent est déjà invalidé au commit. Le kit ne doit jamais être envoyé au support ou aux contacts.
+
+Aucun service de stockage, transfert, génération ou endpoint n'est ajouté.
