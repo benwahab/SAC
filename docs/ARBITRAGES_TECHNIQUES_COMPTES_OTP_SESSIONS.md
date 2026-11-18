@@ -457,6 +457,7 @@ Le module serveur `functions/lib/security/email-otp-code.ts` :
 - génère le code avec `crypto.getRandomValues` ;
 - utilise un échantillonnage par rejet pour éviter le biais de modulo ;
 - calcule une empreinte HMAC-SHA-256 liée à l'identifiant unique du défi et à son usage ;
+- vérifie le code avec `SubtleCrypto.verify` plutôt qu'une comparaison applicative de chaînes ;
 - refuse de calculer l'empreinte si le secret serveur n'est pas configuré ou trop court ;
 - ne persiste ni ne journalise le code brut.
 
