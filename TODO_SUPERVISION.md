@@ -696,3 +696,23 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Réconcilier les contrats historiques et les états TypeScript avant le schéma D1.
 - [ ] Faire relire le modèle par une personne indépendante en sécurité et données.
 - [ ] Autoriser séparément toute création de migration ou modification du code.
+
+
+## Modèle global des données — 18 novembre 2026
+
+- [x] Consolider les domaines comptes, identités, appareils, contacts, groupes, alertes, interventions, trajets, notifications, abonnements/paiements et administration dans un référentiel unique.
+- [x] Fixer `accounts` comme identité canonique pour les domaines citoyens et administratifs.
+- [x] Identifier les entités absentes de la première proposition D1 : groupes, alertes programmées, SOS discret, abonnements/paiements.
+- [x] Comparer les états compte/alerte/trajet entre décisions, contrats, code et proposition relationnelle.
+- [x] Préserver le NO-GO GPS J+30 et l'absence de coordonnées précises en D1/R2.
+- [ ] Arbitrer la preuve d'identité d'un proche invité (téléphone déclaré non vérifié vs vérification du moyen de contact).
+- [ ] Finaliser les droits d'un contact révoqué pendant une alerte active.
+- [ ] Définir le traitement d'une alerte orpheline hors scénario administratif déjà validé.
+- [ ] Spécifier groupes privés, alertes programmées et SOS discret.
+- [ ] Concevoir le sous-modèle abonnements/paiements et choisir les règles de cycle financier.
+- [ ] Harmoniser les cinq états du compte dans les contrats TypeScript et les futurs états SQL.
+- [ ] Harmoniser les états et motifs de clôture des alertes et trajets.
+- [ ] Définir les durées de conservation hors GPS et les politiques de suppression/anonymisation.
+- [ ] Compléter la matrice D1 avec les nouveaux domaines et leurs tests.
+- [ ] Faire relire le modèle complet indépendamment avant toute migration.
+- [ ] Obtenir une autorisation explicite distincte avant toute migration ou implémentation.
