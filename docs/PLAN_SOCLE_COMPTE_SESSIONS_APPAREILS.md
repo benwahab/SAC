@@ -355,8 +355,19 @@ Cette séquence est une règle produit documentaire. Elle ne suppose pas qu'un n
 
 Chaque utilisateur SAC doit obligatoirement renseigner un numéro de téléphone lors de la création de son compte. Ce champ est requis : la création du compte ne peut pas être finalisée sans numéro. Le numéro doit être enregistré avec son indicatif international afin de permettre son identification et son utilisation correcte, notamment si l'utilisateur change de pays.
 
-Cette obligation de collecte ne signifie pas à elle seule que le numéro est vérifié. La méthode de vérification du numéro, les règles de changement et de mise à jour restent à spécifier. La décision antérieure de ne pas utiliser de SMS OTP pour l'authentification des comptes reste inchangée : aucune vérification par SMS ni aucun SMS OTP n'est implicitement autorisé par cette décision.
+Cette obligation de collecte ne signifie pas à elle seule que le numéro est vérifié. Les règles de changement et de mise à jour du numéro restent à spécifier. La vérification initiale du compte repose uniquement sur l'OTP e-mail.
 
 Pour la procédure administrative de vérification d'une alerte suspendue, le numéro obligatoire pourra servir de moyen de contact uniquement lorsque son caractère vérifié et son accessibilité auront été établis. Si le numéro n'est pas vérifié ou ne permet pas de joindre le titulaire, cette limite est consignée ; l'absence de réponse ne prouve jamais la sécurité et ne permet pas de clôture automatique.
 
 Cette décision est documentaire et n'implémente aucun champ, validation, SMS, service externe, endpoint ou migration D1.
+
+
+## Vérification du compte par OTP e-mail uniquement — clarification validée le 18 novembre 2026
+
+La vérification du compte SAC se fait par OTP envoyé à l'adresse e-mail. Lorsque l'utilisateur saisit correctement l'OTP e-mail, son adresse e-mail est considérée comme vérifiée et le processus de création du compte peut être validé selon le parcours d'inscription.
+
+Le numéro de téléphone reste obligatoire à la création du compte, mais SAC ne demande aucune vérification indépendante de ce numéro : pas de SMS OTP, pas d'appel automatisé de validation, pas de procédure supplémentaire destinée à prouver que l'utilisateur en est propriétaire. La vérification de l'e-mail suffit pour la vérification initiale du compte.
+
+Le numéro fourni peut être utilisé comme coordonnée de contact déclarée, notamment pour les tentatives d'appel administratif. Toutefois, une réponse provenant de ce numéro ne prouve pas à elle seule l'identité de l'interlocuteur : l'administrateur doit apprécier les éléments de réponse et les recouper avec le contexte de l'alerte. Les tentatives sans réponse ne prouvent jamais que le titulaire est en sécurité.
+
+Cette décision remplace toute formulation antérieure qui laissait entendre qu'une vérification du numéro de téléphone serait nécessaire avant son utilisation comme coordonnée de contact. Elle ne modifie pas la vérification OTP par e-mail et n'autorise aucun SMS OTP.
