@@ -185,20 +185,19 @@ Les règles exactes de sélection, notamment le cas où aucun contact n'est acti
 
 ### 5.1 États métier
 
-États proposés :
+États proposés pour une alerte déjà déclenchée :
 - `active`
-- `cancelled`
 - `closed`
 
 L'état `active` signifie que l'alerte est ouverte, pas que tous les messages ont été livrés ni qu'un proche a pris en charge.
 
 Transitions :
 - absence → `active` : action volontaire de l'auteur, validation des paramètres et création atomique de l'alerte, instantané des destinataires, événement initial et notifications à envoyer ;
-- `active → cancelled` : annulation explicite par l'auteur, avec motif facultatif non sensible et événement immuable ;
-- `active → closed` : clôture explicite par l'auteur ;
-- `cancelled` et `closed` sont terminaux dans le modèle courant. Une nouvelle urgence crée une nouvelle alerte.
+- `active → closed` : action explicite de l'auteur. Elle peut être présentée dans l'interface comme « Clôturer » ou « Annuler l'alerte » selon le contexte, mais dans les deux cas elle clôt l'alerte et conserve le motif/événement correspondant.
 
-Seul l'auteur peut annuler ou clôturer. Les contacts ne peuvent jamais fermer l'alerte de l'auteur. Un contact qui se retire de la prise en charge ne modifie pas l'état de l'alerte.
+L'annulation d'un SOS programmé avant son déclenchement est un état distinct du programme planifié : elle empêche la création de l'alerte. Après déclenchement, une annulation demandée par l'auteur est une clôture avec motif « annulée », pas un état qui maintient l'alerte ouverte.
+
+Seul l'auteur peut mettre fin à l'alerte. Les contacts ne peuvent jamais fermer l'alerte de l'auteur. Un contact qui se retire de la prise en charge ne modifie pas l'état de l'alerte.
 
 Les événements distinguent au minimum déclenchement, transmission tentée, annulation, clôture et horodatage. L'annulation ne supprime jamais l'historique. L'interface doit distinguer clairement « demande reçue par SAC », « notification acceptée par fournisseur » et « accusé de réception du proche ».
 
@@ -210,7 +209,7 @@ Au déclenchement :
 3. crée la liste des destinataires dans la même opération métier que l'alerte ;
 4. fige cette liste pour toute la durée de cette alerte.
 
-Les rappels toutes les cinq minutes vont aux destinataires initiaux jusqu'à l'annulation ou la clôture par l'auteur, selon la décision produit. Une relation révoquée après déclenchement ne réécrit pas l'instantané. L'accès aux contenus et la livraison après révocation restent à spécifier explicitement avant API.
+Les rappels toutes les cinq minutes vont aux destinataires initiaux jusqu'à la clôture explicite par l'auteur. Si l'auteur choisit « Annuler l'alerte » après son déclenchement, cette action constitue une clôture avec motif « annulée ». Une relation révoquée après déclenchement ne réécrit pas l'instantané. L'accès aux contenus et la livraison après révocation restent à spécifier explicitement avant API.
 
 ### 5.3 Réponse des proches
 
@@ -240,7 +239,7 @@ La règle exacte en cas de retrait simultané et de plusieurs volontaires déjà
 
 ### 5.5 Annulation et clôture
 
-À l'annulation ou clôture par l'auteur :
+À la clôture explicite par l'auteur (y compris une clôture dont le motif est « annulée ») :
 - l'état change conditionnellement uniquement si l'alerte est encore active ;
 - aucun nouveau rappel ne peut être planifié ;
 - les rappels non envoyés sont annulés ;
