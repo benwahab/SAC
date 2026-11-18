@@ -198,3 +198,19 @@ La présence historique d'un contact dans l'instantané initial ne doit pas êtr
 Le contrôle doit être appliqué côté serveur à chaque route et worker ; masquer un bouton dans l'interface ne constitue pas une révocation d'accès. Le comportement des tâches déjà en file et la portée des notifications push sont à aligner avec le contrat outbox avant implémentation.
 
 La révocation par le propriétaire et le retrait d'acceptation par le contact sont deux causes métier distinctes, mais la proposition est qu'elles produisent le même effet immédiat sur les autorisations futures. L'événement conserve la cause et l'acteur exacts.
+
+### 4.5 Révocation d'un appareil et portée des droits — proposition à valider
+
+La révocation d'un appareil doit être évaluée au niveau de l'appareil, jamais interprétée comme une révocation du compte.
+
+- Appareil secondaire révoqué : ses sessions, jetons et abonnements push deviennent invalides ; les autres appareils actifs du compte conservent leurs propres droits.
+- Appareil révoqué : aucune nouvelle action sur une alerte n'est acceptée depuis cet appareil. Les alertes, contacts, relations et historiques du compte ne sont pas supprimés.
+- Les notifications logiquement destinées au compte restent éligibles sur ses autres appareils actifs ; seul l'abonnement de l'appareil révoqué est exclu.
+- Une notification déjà acceptée par le fournisseur pour l'appareil révoqué peut encore arriver. L'ouverture exige une nouvelle autorisation serveur.
+- Les clés et données locales de l'appareil révoqué ne sont pas réputées effacées à distance.
+
+**Cas particulier du root :** sa révocation bloque les opérations qui dépendent de son autorité (approbation de nouveaux appareils et partage GPS), place le compte en récupération de racine et ne permet pas à un secondaire de prendre sa place automatiquement. Les fonctions du compte indépendantes de la racine peuvent rester disponibles sur les secondaires actifs. La révocation du root ne supprime ni compte, ni contacts, ni alertes.
+
+Le contrôle est toujours réalisé sur la session et l'appareil exacts côté serveur. Un identifiant d'appareil ou rôle fourni par le client ne suffit pas à établir l'autorisation.
+
+**Statut : proposition à valider ;** les détails de récupération de racine et de réinscription d'un appareil révoqué restent à spécifier.
