@@ -925,3 +925,31 @@ Cette décision autorise uniquement la visibilité minimale décrite. Elle n'act
 - Vérifier qu'aucune opération de récupération ne restaure une clé GPS expirée ou une archive détruite.
 
 **NO-GO :** ces tests ne sont pas exécutés. Aucun mécanisme réel de récupération ou de révocation n'est activé.
+
+
+## Audit — kit volé avec ancienne adresse e-mail encore accessible (18 novembre 2026)
+
+| Scénario | Risque | Contrôle attendu |
+|---|---|---|
+| Kit volé, appareil approuvé encore sûr | Attaquant utilise le kit avant son propriétaire | Invalidation depuis session de confiance, demandes concurrentes refusées |
+| Kit volé, aucun appareil, ancienne boîte accessible | OTP e-mail utilisé comme récupération complète | Refuser récupération historique ; e-mail ne prouve que contrôle de boîte |
+| Attaquant possède kit mais pas ancienne boîte | Tentative de demande avec nouvelle adresse | Notification neutre et contestation négative possible ; aucune session complète |
+| Attaquant contrôle aussi ancienne boîte | Deux facteurs de récupération potentiellement compromis | Ne pas considérer l'e-mail comme facteur indépendant suffisant ; refuser sans preuve indépendante |
+| Lien de contestation volé ou transféré | Pause non autorisée d'une demande | Lien à usage unique, lié à une demande, durée courte, privilège négatif uniquement |
+| Contestations répétées | Déni de service contre le titulaire | Limitation de fréquence, journalisation et pause bornée |
+| E-mail révèle nouvelle adresse | Divulgation et ciblage | Ne jamais inclure la nouvelle adresse ou coordonnées sensibles |
+| Kit remplacé mais ancien kit encore accepté | Rejeu et récupération concurrente | Version de kit, invalidation atomique et contrôle anti-rejeu |
+| Support/contact intervient | Contournement de la preuve | Aucun pouvoir de récupération manuelle |
+
+### Tests obligatoires avant implémentation
+- Depuis appareil approuvé valide, invalider un kit compromis ; vérifier que l'ancien kit ne peut plus ouvrir de demande.
+- Vérifier que le remplacement du kit exige une session de confiance et que le nouveau secret n'est affiché qu'une fois.
+- Sans appareil approuvé, présenter kit compromis + OTP ancienne boîte : aucune récupération complète.
+- Vérifier que l'e-mail de contestation ne permet que de suspendre la demande visée et n'accorde aucune session ni changement de compte.
+- Réutiliser, transférer, rejouer et expirer le lien de contestation.
+- Saturer les contestations : les limites anti-abus ne doivent pas bloquer durablement le titulaire.
+- Contrôler les fuites dans les messages : aucune nouvelle adresse, position, contact, alerte ou secret.
+- Vérifier qu'une demande suspendue ne reprend pas automatiquement sans preuve indépendante.
+- Vérifier absence de contournement par support, contact, SMS ou formulaire manuel.
+
+**NO-GO :** aucun test n'est exécuté ; aucun lien de contestation, OTP, invalidation ou remplacement réel du kit n'est activé.
