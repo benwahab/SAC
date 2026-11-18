@@ -203,23 +203,32 @@ La sélection finale est figée dans l'instantané atomique de l'alerte. Une mod
 
 Le contrat TypeScript pur de clôture et d'éligibilité des rappels est prototypé dans `src/domain/alert-lifecycle.ts` avec tests dans `tests/alert-lifecycle.test.ts`. Il ne persiste rien, n'authentifie pas l'acteur et ne remplace pas les conditions SQL atomiques décrites dans les contrats D1.
 
-### 5.1 États métier
+### 5.1 États métier et autorités de clôture
 
-États proposés pour une alerte déjà déclenchée :
+Le contrat TypeScript actuel `src/domain/alert-lifecycle.ts` représente une alerte déclenchée avec les états :
 - `active`
-- `closed`
+- `closed_by_author`
 
-L'état `active` signifie que l'alerte est ouverte, pas que tous les messages ont été livrés ni qu'un proche a pris en charge.
+Le terme générique `closed` utilisé dans des versions antérieures de cette documentation ne doit pas être interprété comme une valeur de statut TypeScript.
+
+**Règle ordinaire validée :** l'auteur clôture sa propre alerte déclenchée. Une annulation après déclenchement est une clôture avec motif `cancelled`, pas un statut métier distinct.
+
+**Exception administrative déjà validée, strictement limitée :** lorsqu'un compte auteur est suspendu dans le scénario spécifique de perte du téléphone ou de suspicion d'abus lié à l'alerte, l'auteur suspendu et les contacts ne clôturent pas l'alerte. Seul :
+- le Super Admin ; ou
+- l'Administrateur sécurité disposant de la permission nominative de clôture explicitement attribuée par le Super Admin,
+
+peut décider et exécuter la clôture après les vérifications prévues dans les contrats administratifs. Un seul administrateur habilité suffit. Support et Auditeur ne disposent pas de ce droit. Cette exception ne confère aucun pouvoir général de clôture à l'administration.
+
+Le contrat TypeScript actuel ne représente pas encore cette exception. Avant implémentation, il faudra distinguer explicitement l'autorité et le motif de clôture, par exemple au moyen d'un événement de clôture typé et audité, sans permettre une clôture administrative hors du scénario autorisé. Le nom définitif du statut persistant reste à fixer dans le contrat consolidé ; ne pas ajouter une valeur SQL sur la seule base de cet exemple.
+
+La capacité d'urgence du titulaire suspendu reste limitée à une alerte existante et à l'appareil d'origine : lecture minimale, mise à jour de sécurité et demande de clôture. Dans ce scénario, elle ne permet jamais de clôturer directement. Une mise à jour « je suis en sécurité » ne clôture pas l'alerte.
 
 Transitions :
 - absence → `active` : action volontaire de l'auteur, validation des paramètres et création atomique de l'alerte, instantané des destinataires, événement initial et notifications à envoyer ;
-- `active → closed` : action explicite de l'auteur. Elle peut être présentée dans l'interface comme « Clôturer » ou « Annuler l'alerte » selon le contexte, mais dans les deux cas elle clôt l'alerte et conserve le motif/événement correspondant.
+- `active → closed_by_author` : clôture ordinaire par l'auteur, avec motif `completed` ou `cancelled` ;
+- `active → clôture administrative exceptionnelle` : uniquement selon le scénario suspendu ci-dessus, après contrôle et autorisation serveur dédiés.
 
-L'annulation d'un SOS programmé avant son déclenchement est un état distinct du programme planifié : elle empêche la création de l'alerte. Après déclenchement, une annulation demandée par l'auteur est une clôture avec motif « annulée », pas un état qui maintient l'alerte ouverte.
-
-Seul l'auteur peut mettre fin à l'alerte. Les contacts ne peuvent jamais fermer l'alerte de l'auteur. Un contact qui se retire de la prise en charge ne modifie pas l'état de l'alerte.
-
-Les événements distinguent au minimum déclenchement, transmission tentée, annulation, clôture et horodatage. L'annulation ne supprime jamais l'historique. L'interface doit distinguer clairement « demande reçue par SAC », « notification acceptée par fournisseur » et « accusé de réception du proche ».
+Aucune clôture automatique sur silence, absence de réponse, perte de connexion ou expiration de session n'est autorisée. Les événements antérieurs ne sont ni supprimés ni réécrits. La clôture n'efface pas l'historique.
 
 ### 5.2 Destinataires figés
 
@@ -330,36 +339,40 @@ L'abonnement appartient à un appareil précis. Un abonnement invalide ou lié �
 
 ## 7. Protection des trajets et arrivée
 
-Modes produit regroupés :
+Modes produit :
 - `arrival_check` : vérification d'arrivée ;
 - `accompaniment` : accompagnement ;
 - `full_protection` : protection complète.
 
-États de trajet proposés :
-- `active`
-- `completed`
-- `cancelled`
-- `expired`
+**Écart à résoudre — ne pas confondre les états du trajet et le motif de clôture.**
 
-Transitions :
-- création → `active` après consentement explicite ;
-- `active → completed` : auteur termine le trajet ou le parcours défini est terminé ;
-- `active → cancelled` : auteur annule ;
-- `active → expired` : échéance métier atteinte et traitée côté serveur.
+Le contrat TypeScript actuel `src/domain/trip-protection.ts` utilise :
+- état du trajet : `active` ou `closed_by_author` ;
+- état d'arrivée séparé : `not_applicable`, `pending`, `confirmed`, `unconfirmed` ;
+- événement de clôture contenant un motif `completed` ou `cancelled`.
+
+Une ancienne proposition documentaire utilisait `active`, `completed`, `cancelled`, `expired` comme états du trajet. Elle n'est pas alignée sur le contrat actuel et ne doit pas être considérée comme un choix produit final. En particulier, `completed` et `cancelled` peuvent être des motifs de clôture plutôt que des états persistants ; `expired` n'est pas représenté par le contrat TypeScript actuel.
+
+**Aucune normalisation définitive n'est décidée par cette note.** Avant migration, il faut arbitrer si :
+1. le statut persistant reste un cycle binaire `active / closed_by_author`, avec un motif de clôture et un événement d'expiration distinct ; ou
+2. le domaine adopte plusieurs états terminaux (`completed`, `cancelled`, `expired`) et adapte en conséquence le contrat TypeScript, les tests, les requêtes et les contrats atomiques D1.
+
+Ne pas coder ni migrer une valeur `expired` tant que sa sémantique n'est pas fixée : moment exact de l'expiration, autorité qui la constate, effets sur le partage, les rappels et les destinataires.
 
 États d'un contrôle d'arrivée :
+- `not_applicable`
 - `pending`
 - `confirmed`
-- `not_confirmed`
-- `cancelled`
+- `unconfirmed`
 
-Règles :
+Règles déjà présentes dans le contrat :
 - l'auteur peut confirmer son arrivée ;
-- à l'échéance sans confirmation, SAC notifie « arrivée non confirmée » ;
-- cette absence n'est jamais présentée comme une preuve d'accident ou de danger ;
+- le système ne marque l'arrivée « non confirmée » qu'après l'échéance et le délai de grâce configurés ;
+- l'absence de confirmation n'est jamais présentée comme une preuve d'accident ou de danger ;
+- le trajet peut être clôturé par son auteur avec un motif `completed` ou `cancelled` ;
 - les contacts peuvent intervenir selon le mode choisi, sans s'approprier le compte ni clôturer une alerte SOS ;
 - les relances et leurs délais restent à finaliser ;
-- aucune coordonnée GPS n'est incluse dans ces états ou événements D1 tant que la solution J+30 n'est pas démontrée.
+- aucune coordonnée GPS précise n'est incluse dans ces états ou événements D1 tant que la solution J+30 n'est pas démontrée.
 
 Les détails des trois modes (déclencheurs, destinataires, fréquence de contrôle, fin et annulation) nécessitent encore une spécification produit avant endpoints.
 
