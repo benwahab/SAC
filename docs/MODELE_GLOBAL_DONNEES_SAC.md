@@ -145,6 +145,9 @@ Invariants :
 
 #### Clôture et exception administrative
 
+Le détail normatif de l'exception, de la permission nominative, des vérifications et des tests est défini dans `CONTRAT_CLOTURE_EXCEPTIONNELLE_ADMINISTRATIVE_SOS.md`.
+
+
 La règle générale reste la clôture par l'auteur. Une exception étroite est validée pour le scénario du titulaire suspendu et d'une suspicion d'abus/perte de téléphone : seul le Super Admin ou l'Administrateur sécurité muni de la permission nominative dédiée peut clôturer après vérification. Les contacts peuvent signaler la fin du danger et demander une clôture, mais ne la décident pas. Un seul administrateur habilité suffit. Le silence n'est jamais une preuve de sécurité. Cette exception ne devient pas un droit général de clôture administrative.
 
 ### 4.4 Notifications, push, SMS et rappels
