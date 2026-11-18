@@ -95,3 +95,72 @@ Sources de contexte, à ne pas substituer au Journal officiel :
 - Arbitrer explicitement la compatibilité entre historique GPS consultable hors ligne et expiration stricte J+30.
 - Ne pas connecter de GPS réel, ne créer aucune migration D1, aucune API GPS et aucune ressource cloud avant validation des critères.
 - Maintenir le statut **NON PRÊT POUR PRODUCTION** pour l'historique GPS tant que la preuve de destruction n'existe pas.
+
+
+## 7. Comparaison de mécanismes KMS documentés — aucun validé pour SAC
+
+La recherche a identifié deux mécanismes de destruction planifiée réels. Ils sont plus sérieux qu'une expiration KV, mais aucun ne démontre à lui seul la garantie SAC complète.
+
+### 7.1 Google Cloud KMS — destruction différée des versions de clé
+
+La documentation Google indique :
+- la destruction d'une version de clé est planifiée avec une période de restauration ;
+- la période par défaut est de 30 jours et peut être configurée à la création de la clé, de 24 heures à 120 jours ;
+- pendant l'état « scheduled for destruction », la clé ne peut plus être utilisée pour les opérations cryptographiques, mais elle peut être restaurée en état désactivé par un acteur autorisé ;
+- une fois l'état « destroyed » atteint, la matière cryptographique n'est plus conservée dans les systèmes actifs ;
+- Google indique que la suppression de la matière de clé de toute son infrastructure, y compris les sauvegardes de centres de données, intervient dans les 45 jours suivant l'heure de destruction planifiée.
+
+Documentation officielle :
+- https://docs.cloud.google.com/kms/docs/destroy-restore
+- https://docs.cloud.google.com/kms/docs/key-states
+
+**Évaluation SAC :**
+- Si la destruction est planifiée dès la collecte, la clé devient immédiatement inutilisable : l'historique ne reste pas consultable pendant les 30 jours.
+- Si la destruction est planifiée à J+30, la clé devient immédiatement inutilisable à cette date, mais la période de restauration crée une possibilité de réactivation par un acteur autorisé.
+- La documentation prévoit jusqu'à 45 jours après l'heure planifiée pour la suppression de la matière de clé de toute l'infrastructure, y compris les sauvegardes. Cela ne prouve donc pas une purge physique/infra de toutes les copies exactement à J+30.
+- Une politique IAM restrictive peut réduire le risque de restauration, mais ne doit pas être confondue avec une preuve indépendante de destruction irréversible.
+
+Conclusion : piste de recherche utile pour une coupure d'accès à J+30, mais **non conforme en l'état à l'exigence stricte de non-récupérabilité à J+30**.
+
+### 7.2 AWS KMS — suppression planifiée d'une clé gérée par le client
+
+La documentation AWS indique :
+- la période d'attente est obligatoire et comprise entre 7 et 30 jours ;
+- une clé en état « Pending deletion » ne peut pas être utilisée pour des opérations cryptographiques ;
+- la suppression peut être annulée avant la fin de la période d'attente ;
+- après expiration de cette période, la clé et sa matière cryptographique sont supprimées de façon irréversible ;
+- la date réelle de suppression peut être jusqu'à 24 heures plus tard que la période programmée ;
+- les clés d'External Key Store et de CloudHSM ont des limites particulières : la suppression de la clé KMS ne supprime pas nécessairement la clé externe, et les sauvegardes CloudHSM peuvent contenir encore la matière de clé.
+
+Documentation officielle :
+- https://docs.aws.amazon.com/kms/latest/developerguide/deleting-keys.html
+- https://docs.aws.amazon.com/kms/latest/developerguide/deleting-keys-scheduling-key-deletion.html
+
+**Évaluation SAC :**
+- La clé devient inutilisable dès la programmation de la suppression, et non à la fin de la période d'attente.
+- La suppression planifiée est annulable pendant 7 à 30 jours : une gouvernance IAM sans droit de récupération pour les opérateurs SAC serait indispensable, mais ne prouve pas à elle seule l'absence de toute voie de restauration.
+- La suppression finale survient après le délai d'attente, avec une marge pouvant atteindre 24 heures ; elle ne constitue donc pas une destruction finale exactement à J+30 si elle est déclenchée à cette date.
+- Les variantes CloudHSM et External Key Store introduisent des copies ou clés externes qui doivent être traitées séparément.
+
+Conclusion : piste de recherche utile, mais **non conforme en l'état à la double exigence de disponibilité pendant 30 jours et de destruction irréversible exactement à J+30**.
+
+### 7.3 Comparaison
+
+| Critère SAC | Google Cloud KMS | AWS KMS |
+|---|---|---|
+| Coupure d'usage dès la programmation | Oui | Oui |
+| Restauration pendant une période d'attente | Oui | Oui, annulation possible |
+| Suppression finale exactement à J+30 | Non démontrée | Non, délai 7–30 jours et marge possible de 24 h |
+| Traitement des sauvegardes | Suppression de toute l'infrastructure annoncée sous 45 jours après l'heure planifiée | Cas particuliers CloudHSM / External Key Store ; autres copies à vérifier contractuellement |
+| Lecture historique hors ligne sans clé locale | Non | Non |
+| Validé pour SAC | **Non** | **Non** |
+
+### 7.4 Décision technique provisoire
+
+Aucun des mécanismes étudiés (clé locale, Cloudflare KV, Google Cloud KMS, AWS KMS) n'est approuvé pour promettre simultanément :
+1. la lecture hors ligne de l'historique GPS jusqu'à la fin des 30 jours ;
+2. l'impossibilité de restaurer ou de rendre lisible cet historique après J+30, même par restauration d'une sauvegarde ou d'un système de clés.
+
+Le seul comportement qui peut être retenu sans cette preuve est l'absence d'archive GPS historique persistante : position transmise en direct uniquement pendant la durée autorisée, sans conservation ultérieure sous contrôle de SAC.
+
+Cette décision provisoire ne supprime pas l'objectif produit de J+30 ; elle interdit seulement de prétendre que l'objectif est déjà techniquement garanti. Une nouvelle proposition devra être évaluée par un spécialiste indépendant en cryptographie appliquée et testée sur les copies de clés et les chemins de restauration réels.
