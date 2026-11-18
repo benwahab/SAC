@@ -506,3 +506,8 @@ Ce contrat ne décide pas encore si le destinataire révoqué conserve un accès
 - retrait d'acceptation par le contact et révocation par le propriétaire : causes distinguées, mêmes contrôles futurs si cette politique est approuvée.
 
 **Statut : proposition de contrat à valider.** La politique d'accès post-révocation doit être validée avant de figer les clauses SQL et les états outbox.
+
+
+## Document complémentaire — opérations administratives
+
+Les contrats spécifiques aux missions, permissions, suspension de compte, clôture administrative du scénario titulaire suspendu, consultations sensibles et exports sont détaillés dans [CONTRATS_OPERATIONS_ADMIN_ATOMIQUES.md](CONTRATS_OPERATIONS_ADMIN_ATOMIQUES.md). En cas de divergence, ne pas fusionner silencieusement les règles : signaler le conflit et faire valider l'arbitrage. Les règles générales D1 du présent document restent applicables.
