@@ -202,3 +202,46 @@ La CI verte valide les contrôles automatisés exécutés ; elle ne vaut pas hom
 - **Code applicatif modifié :** non.
 - **Base Cloudflare modifiée :** non.
 - **Branche créée :** non.
+
+
+## 9. Cycle de vie du compte — décision validée le 18 novembre 2026
+
+Le cycle de vie fonctionnel du compte comprend cinq états distincts :
+
+| État | Signification | Accès et effets |
+|---|---|---|
+| `pending_verification` — En attente de vérification | Inscription créée, adresse e-mail principale pas encore vérifiée | Aucun accès aux fonctions privées ni création de session utilisateur. La vérification e-mail est une condition d'activation, pas une preuve de confiance cryptographique. |
+| `active` — Actif | Adresse e-mail vérifiée et compte utilisable | Accès selon les permissions, l'état de l'appareil et la session. |
+| `suspended` — Suspendu | Compte temporairement ou administrativement suspendu | Connexion et nouvelles activités bloquées ; sessions révoquées ; données conservées. Réactivation uniquement par une décision autorisée. |
+| `deletion_pending` — Suppression en attente | Demande de suppression enregistrée | Aucune nouvelle activité ; les opérations déjà engagées et les alertes/trajets en cours doivent être traités selon les règles de clôture avant suppression définitive. |
+| `deleted` — Supprimé | Suppression définitive terminée | État terminal : aucune connexion, restauration ou réactivation du compte supprimé. Les obligations de conservation de preuves minimales doivent être traitées séparément et documentées. |
+
+### Séparation entre compte et identité e-mail
+
+L'état de vérification de chaque identité e-mail est un attribut distinct. Une adresse peut être en attente de vérification sans que cela crée un sixième état du compte. Le compte ne passe à `active` qu'après confirmation serveur de l'adresse principale requise.
+
+### Suspension et autorité
+
+- Une suspension administrative ne peut être décidée que par le Super Admin.
+- Un mécanisme de sécurité peut imposer un blocage technique temporaire d'une tentative ou d'une session à risque ; ce blocage n'est pas automatiquement une suspension administrative du compte.
+- La suspension administrative doit conserver une trace : auteur, motif, date, éventuelle échéance et décision de réactivation.
+- La suspension révoque les sessions existantes et interdit l'ouverture de nouvelles sessions ainsi que toute nouvelle activité métier.
+- Les données du compte ne sont pas supprimées par la suspension.
+
+### Point de sécurité encore bloquant : alertes déjà actives
+
+Une suspension ne doit pas être interprétée comme une clôture ou une annulation automatique d'une alerte SOS déjà transmise. Le comportement précis permettant au titulaire suspendu de consulter, compléter ou clôturer une alerte existante reste à arbitrer. Les alertes déjà engagées doivent conserver leur continuité de traitement par les contacts et le système selon le contrat SOS. Aucun contournement de suspension ni session générale ne doit être ajouté pour résoudre ce cas sans décision explicite.
+
+### Suppression en attente et suppression définitive
+
+- L'entrée en suppression en attente bloque les nouvelles activités.
+- Une alerte ou un trajet déjà engagé ne doit pas être abandonné par une suppression prématurée ; les conditions exactes de clôture doivent être vérifiées côté serveur.
+- La suppression définitive n'est autorisée qu'après satisfaction des préconditions métier et de rétention applicables.
+- `deleted` est terminal. Une éventuelle nouvelle inscription est un nouveau compte, jamais la restauration de l'ancien.
+
+### Conséquences pour la suite technique
+
+- Les cinq états sont validés au niveau produit et documentaire.
+- Le contrat pur `src/domain/account-lifecycle.ts` n'est pas encore aligné : il n'accepte actuellement que `active`, `deletion_pending` et `deleted`. Son évolution et ses tests restent à faire dans une étape de code autorisée distinctement.
+- La migration D1 doit attendre l'alignement des contrats, les règles de transition, les contraintes atomiques et la revue de sécurité.
+- Cette décision documentaire n'autorise ni modification du code, ni migration D1, ni activation d'une route d'authentification.
