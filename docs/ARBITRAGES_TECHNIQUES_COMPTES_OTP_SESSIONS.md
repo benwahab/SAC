@@ -347,3 +347,12 @@ La vérification initiale du compte est effectuée par OTP envoyé à l'adresse 
 Le numéro de téléphone demeure obligatoire à l'inscription, mais ne fait l'objet d'aucune vérification indépendante : aucun SMS OTP, appel automatisé de validation ou autre procédure de preuve de propriété. Le numéro déclaré peut être utilisé comme coordonnée de contact, y compris pour les tentatives d'appel de l'administration. Une réponse reçue depuis ce numéro ne prouve cependant pas à elle seule l'identité de l'interlocuteur et doit être appréciée et recoupée dans le contexte de l'alerte. Le silence ne constitue jamais une preuve de sécurité.
 
 Cette clarification remplace toute exigence antérieure de vérification du numéro avant son utilisation comme coordonnée de contact. Aucun SMS OTP n'est autorisé.
+
+
+## Notification des destinataires après clôture administrative
+
+Après la clôture par un administrateur SAC habilité, chaque destinataire initial reçoit une notification individuelle via les canaux SAC disponibles et activés. Le message indique que l'alerte concernée a été clôturée par l'administration, avec date et heure, sans divulguer les échanges privés, les éléments d'enquête, les notes internes ou les coordonnées d'autres personnes.
+
+La clôture arrête les rappels de cette alerte pour tous les destinataires initiaux. L'historique des accusés de réception, interventions, mises à jour et autres événements est conservé sans suppression ni réécriture. Les échecs de notification sont journalisés et visibles de l'administration ; ils ne réouvrent pas automatiquement l'alerte. La notification n'accorde aucun droit de clôture aux proches.
+
+Règle documentaire uniquement : aucun service de notification, push, e-mail, SMS, endpoint ou migration D1 n'est implémenté.
