@@ -95,3 +95,21 @@ La règle J+30 est une exigence de sécurité produit. Elle ne doit pas être in
 - Reprendre la matrice de conservation hors GPS après confirmation du texte applicable.
 
 **Conclusion :** la conformité SAC ne peut plus être finalisée en se référant uniquement à la page historique de la HAPDP ou à la version consolidée antérieure à juin 2026. La loi de protection des données reste la base d'analyse, mais l'ordonnance 2026-30 et le transfert des missions doivent être vérifiés avant de figer les formalités et le circuit de conformité.
+
+## 8. Recherche complémentaire du Journal officiel — vérification du 18 novembre 2026
+
+Une nouvelle recherche ciblée a été menée sur les domaines institutionnels accessibles du Ministère de la Justice, du Ministère des Finances et du Secrétariat général du Gouvernement.
+
+Résultat utile :
+- Une publication du Ministère de la Justice indique expressément que le Journal officiel de la République du Niger est la référence officielle attestant de l'entrée en vigueur des textes législatifs et réglementaires.
+- Cette même publication mentionne que des numéros spéciaux du Journal officiel sont remis aux juridictions pour assurer une documentation juridique actualisée.
+- Le site du Ministère des Finances référence plusieurs anciens numéros spéciaux du Journal officiel, ce qui confirme qu'une partie des éditions peut être distribuée via des pages de téléchargement ministérielles.
+- La recherche ciblée n'a pas permis de retrouver un PDF authentifié du numéro spécial contenant l'ordonnance n° 2026-30 du 8 juin 2026 ni le décret de suppression de la HAPDP.
+
+Sources institutionnelles :
+- Ministère de la Justice, « Renforcement des capacités documentaires des Magistrats », publication consultée le 18 novembre 2026 : https://justice.gouv.ne/index.php/les-actualites-1/353-mission-ministerielle-de-visites-des-juridictions-du-pays-renforcement-des-capacites-documentaires-des-magistrats
+- Ministère des Finances, page de publication d'un ancien Journal officiel spécial : https://www.efjn.justice.gouv.ne/index.php/budget-1/reglementations-budgetaires/textes-portant-elaboration/file/251-journal-officiel-special-jos-n-08-du-20-mars-2013
+
+Cette recherche ne permet pas de conclure que le numéro spécial de juin 2026 n'existe pas ou n'est pas publié ; elle établit seulement qu'il n'a pas été retrouvé dans les sources numériques institutionnelles consultées. La prochaine démarche fiable est une demande documentaire au service du Journal officiel / Ministère de la Justice, ou la consultation d'un exemplaire papier authentifié conservé dans une juridiction ou une administration.
+
+**Conséquence SAC :** conserver le blocage juridique. Ne pas déduire le contenu exact de l'ordonnance à partir d'un OCR ou d'une reproduction secondaire ; obtenir l'exemplaire officiel avant d'actualiser les articles et les formalités.
