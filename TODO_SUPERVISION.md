@@ -44,6 +44,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Formaliser les machines à états métier et la matrice de conservation/suppression (durées hors GPS explicitement laissées ouvertes) dans docs/MACHINES_ETATS_ET_CONSERVATION.md.
 - [x] Définir les contrats des opérations D1 atomiques (création d'alerte, prise en charge, clôture, révocation appareil, consommation OTP/jumelage, outbox et accès) dans docs/CONTRATS_OPERATIONS_ATOMIQUES_D1.md.
 - [x] Créer le registre des décisions produit restantes avec recommandations explicites et points à valider dans docs/DECISIONS_PRODUIT_RESTANTES.md.
+- [x] Formaliser la matrice d'autorisation par acteur, ressource et action dans docs/MATRICE_AUTORISATION_ROLES.md ; les accès après révocation/clôture restent explicitement à valider.
 - [x] Ajouter le contrat TypeScript pur de clôture d'alerte et d'éligibilité des rappels, avec 11 tests dédiés ; CI complète réussie (run 44260895045, commit a9ec56f4). Le contrôle ne remplace pas les autorisations serveur ni les transactions D1.
 - [x] Ajouter le contrat TypeScript pur des accusés de réception, candidatures volontaires, attribution du responsable principal et transfert après retrait ; CI complète réussie (run 44261164219, commit ff32ef9a). Le séquencement devra être généré et appliqué atomiquement côté serveur/D1.
 - [ ] Faire valider les règles encore ouvertes : accès après révocation d'un contact, suppression de compte, durées de conservation hors GPS et détails des trois modes de Protection des trajets.
