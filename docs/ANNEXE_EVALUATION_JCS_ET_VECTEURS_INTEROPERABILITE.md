@@ -59,7 +59,7 @@ Entrée JSON (forme lisible) :
 Sortie canonique exacte :
 
 ```json
-{"literals":[null,true,false],"numbers":[333333333.3333333,1e+30,4.5,0.002,1e-27],"string":"€$\\u000f\\nA'B\\\"\\\\\\\\\"/"}
+{"literals":[null,true,false],"numbers":[333333333.3333333,1e+30,4.5,0.002,1e-27],"string":"€$\u000f\nA'B\"\\\\\"/"}
 ```
 
 Contrôles attendus :
