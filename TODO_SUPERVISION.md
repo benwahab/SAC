@@ -182,3 +182,13 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Générer et vérifier un `package-lock.json` dans un environnement Node/npm contrôlé, puis remplacer `npm install` par `npm ci`.
 - [ ] Revoir l'avis picomatch à chaque évolution amont et auditer les éventuels motifs glob contrôlables par utilisateur.
 - [ ] Ne pas créer d'API de révocation, d'effacement final ou de rappel durable avant validation des décisions produit et des tests D1 concurrents.
+
+
+## Préparation du schéma — droits destinataires et alerte orpheline
+
+- [x] Ajouter au schéma conceptuel la séparation entre instantané de destinataire, rappels initiaux, accès au détail, partage de position et droits de réponse.
+- [x] Ajouter au schéma l'état logique terminal `deleted` et les exigences de finalisation atomique.
+- [x] Compléter la revue critique avec le cas d'une alerte orpheline et l'expiration du partage GPS indépendante de la clôture.
+- [ ] Valider les valeurs d'accès par destinataire après révocation avant de figer les tables et contraintes.
+- [ ] Valider la règle de secours si l'auteur ne revient jamais ; aucune clôture automatique ou par contact avant arbitrage.
+- [ ] Réaliser une revue finale croisée de la proposition de schéma et des contrats D1 après ces décisions.
