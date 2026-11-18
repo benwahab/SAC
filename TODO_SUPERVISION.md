@@ -138,7 +138,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Réserver la clôture du trajet à son auteur dans le contrat métier pur.
 - [x] Ajouter 15 tests dédiés et les intégrer à la CI.
 - [x] Documenter les limites du prototype et les contrats D1 futurs.
-- [ ] Exécuter et vérifier la CI du commit intégrant ces changements.
+- [x] Vérifier la CI du contrat de trajets et des tests renforcés : run 44262515022, commit 2c9db536 ; typecheck, 15 tests de trajets, tests existants, build et audit bloquant des dépendances de production réussis.
 - [ ] Valider les délais de grâce, les rappels à l'auteur et aux contacts, la pause/reprise, la fraîcheur des positions et le comportement hors ligne.
 - [ ] Spécifier le traitement atomique des confirmations concurrentes avec le planificateur d'échéance.
 - [ ] Ne pas créer de migration D1 ni d'API de trajet avant validation des règles produit et de la matrice de conservation.
