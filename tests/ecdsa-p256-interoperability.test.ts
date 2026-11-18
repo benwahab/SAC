@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+// RFC 6979 vectors are verification fixtures; ECDSA signatures are not byte-deterministic by default.
 const P256_ORDER = BigInt(
   "0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
 );
