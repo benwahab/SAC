@@ -275,6 +275,16 @@ Pour le titulaire suspendu, le principe d'une capacité cryptographique d'urgenc
 
 Points encore ouverts : personne autorisée à clôturer si le titulaire a perdu son appareil ; conditions de clôture et notifications ; garde-fous et conservation des éléments de preuve en cas de suspension pour abus lié à l'alerte.
 
+### Garde-fou validé contre l'abus de clôture
+
+La distinction suivante est validée :
+
+- Le titulaire suspendu peut toujours transmettre une **mise à jour de sécurité** indiquant qu'il est en sécurité. Cette action est horodatée et auditée, mais ne clôture pas l'alerte et n'efface aucun événement antérieur.
+- Une **demande ou confirmation de clôture** du titulaire suspendu ne suffit pas, à elle seule, à clôturer automatiquement une alerte lorsque la suspension est liée à un abus potentiel sur cette alerte. Des contrôles supplémentaires côté serveur sont obligatoires avant toute clôture.
+- Aucun événement, accusé de réception, prise en charge ou élément d'audit ne peut être supprimé ou réécrit par cette capacité. La continuité de l'assistance des contacts doit être préservée.
+
+Les critères de déclenchement du contrôle renforcé, l'autorité finale de clôture et les notifications restent à spécifier. Cette décision ne crée aucune permission opérationnelle ni route API.
+
 Règles validées : la suspension ne ferme ni n'annule l'alerte ; les rappels continuent toutes les 5 minutes vers les seuls destinataires initiaux, sans ajout automatique ; les actions de réception et de prise en charge restent disponibles ; la capacité du titulaire est limitée à l'alerte concernée et ne rétablit aucun accès général. La révocation générale des sessions reste immédiate.
 
 Cette décision reste documentaire : aucune route API, permission serveur, capacité cryptographique opérationnelle, modification de session, migration D1 ou modification du code n'est autorisée à ce stade.
