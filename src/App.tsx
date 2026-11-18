@@ -1,51 +1,180 @@
-import {useEffect,useState} from "react";
-import {ArrowUpRight,HeartHandshake,LockKeyhole,MapPin,ShieldCheck,UsersRound,Wifi} from "lucide-react";
-type HealthState="checking"|"connected"|"unavailable";
-const pillars=[
- {icon:UsersRound,title:"Vos proches, votre choix",description:"Vous choisissez les personnes de confiance qui peuvent recevoir vos alertes. Aucun fil public, aucun partage automatique avec une institution."},
- {icon:MapPin,title:"Une position sous contrôle",description:"La localisation ne sera partagée qu'avec votre autorisation. Une position ancienne sera toujours signalée comme telle."},
- {icon:HeartHandshake,title:"Une aide qui s'organise",description:"Vos proches pourront accuser réception ou proposer leur aide. Vous gardez le contrôle de la clôture de votre alerte."}
-];
-export default function App(){
- const [health,setHealth]=useState<HealthState>("checking");
- useEffect(()=>{
-  const controller=new AbortController();
-  fetch("/api/health",{signal:controller.signal}).then(async response=>{
-   if(!response.ok)throw new Error("API unavailable");
-   const payload:{ok?:boolean;database?:string}=await response.json();
-   setHealth(payload.ok&&payload.database==="connected"?"connected":"unavailable");
-  }).catch((error:unknown)=>{
-   if(error instanceof DOMException&&error.name==="AbortError")return;
-   setHealth("unavailable");
+import { useEffect, useState } from "react";
+import { ArrowUpRight, HeartHandshake, LockKeyhole, MapPin, ShieldCheck, UsersRound, Wifi } from "lucide-react";
+import { isLanguage, languages, translations, type Language } from "./i18n/translations";
+
+type HealthState = "checking" | "connected" | "unavailable";
+
+export default function App() {
+  const [health, setHealth] = useState<HealthState>("checking");
+  const [language, setLanguage] = useState<Language>(() => {
+    try {
+      const saved = window.localStorage.getItem("sac-language");
+      return isLanguage(saved) ? saved : "fr";
+    } catch {
+      return "fr";
+    }
   });
-  return()=>controller.abort();
- },[]);
- const statusDot=health==="connected"?"bg-sac-green":health==="unavailable"?"bg-amber-500":"animate-pulse bg-slate-300";
- return <div className="min-h-screen overflow-hidden bg-[#F5F7FA] text-slate-900">
-  <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
-   <a href="/" aria-label="SAC, accueil" className="flex flex-col"><span className="text-xl font-black tracking-[0.2em] text-sac-navy">SAC</span><span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">Sécurité · Alerte · Citoyenne</span></a>
-   <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-600 sm:flex"><LockKeyhole size={14} className="text-sac-green"/>Application privée</div>
-  </header>
-  <main>
-   <section className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-8 sm:px-8 sm:pb-24 sm:pt-14 lg:grid-cols-[1.08fr_0.92fr]">
-    <div className="pointer-events-none absolute -right-40 -top-24 h-[28rem] w-[28rem] rounded-full bg-sky-100/70 blur-3xl"/>
-    <div className="relative">
-     <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 shadow-sm"><span className="h-2 w-2 rounded-full bg-sac-green"/>Votre cercle de confiance, toujours au centre</div>
-     <h1 className="max-w-2xl text-4xl font-black leading-[1.08] tracking-tight text-sac-navy sm:text-5xl lg:text-[3.7rem]">Votre sécurité.<span className="block text-slate-500">Vos proches.</span><span className="block">Votre décision.</span></h1>
-     <p className="mt-6 max-w-xl text-base leading-8 text-slate-600 sm:text-lg">SAC vous aidera à prévenir les personnes qui comptent pour vous en cas de danger et à sécuriser vos déplacements, tout en gardant le contrôle de vos informations.</p>
-     <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"><button type="button" disabled aria-describedby="sos-status" className="inline-flex min-h-14 cursor-not-allowed items-center justify-center gap-3 rounded-2xl bg-slate-300 px-7 text-base font-extrabold text-slate-600 shadow-sm"><ShieldCheck size={20}/>SOS<span className="rounded-full bg-white/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide">En préparation</span></button><span className="text-sm leading-6 text-slate-500" id="sos-status">Le déclenchement sera activé après validation des envois réels et des protections.</span></div>
-     <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-slate-600"><span className="inline-flex items-center gap-2"><LockKeyhole size={16} className="text-sac-green"/>Données protégées</span><span className="inline-flex items-center gap-2"><UsersRound size={16} className="text-sac-green"/>Contacts choisis</span></div>
+  const t = translations[language];
+  const isRtl = language === "ar";
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+    document.documentElement.dir = isRtl ? "rtl" : "ltr";
+    try {
+      window.localStorage.setItem("sac-language", language);
+    } catch {
+      // Language selection remains available for the current session.
+    }
+  }, [language, isRtl]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/health", { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("API unavailable");
+        const payload: { ok?: boolean; database?: string } = await response.json();
+        setHealth(payload.ok && payload.database === "connected" ? "connected" : "unavailable");
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setHealth("unavailable");
+      });
+    return () => controller.abort();
+  }, []);
+
+  const statusDot =
+    health === "connected" ? "bg-sac-confirm" :
+    health === "unavailable" ? "bg-sac-alert" : "animate-pulse bg-sac-primary-strong";
+
+  const pillars = [
+    { icon: UsersRound, title: t.contactTitle, description: t.contactDescription },
+    { icon: MapPin, title: t.locationTitle, description: t.locationDescription },
+    { icon: HeartHandshake, title: t.helpTitle, description: t.helpDescription },
+  ];
+
+  return (
+    <div className="sac-shell min-h-screen overflow-hidden text-sac-ink" dir={isRtl ? "rtl" : "ltr"}>
+      <header className="sac-header relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-5 sm:px-8">
+        <a href="/" aria-label="SAC" className="flex min-w-0 flex-col">
+          <span className="text-xl font-black tracking-[0.2em] text-sac-ink">SAC</span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-sac-muted">{t.appName}</span>
+        </a>
+        <div className="flex items-center gap-3">
+          <div className="hidden items-center gap-2 rounded-full border border-white/80 bg-white/55 px-3 py-2 text-xs font-semibold text-sac-ink shadow-glass sm:flex">
+            <LockKeyhole size={14} className="text-sac-confirm" />{t.privateApp}
+          </div>
+          <div className="sac-language-switch flex items-center gap-1 rounded-full border border-white/90 bg-white/65 p-1 shadow-glass" role="group" aria-label={t.languageLabel} dir="ltr">
+            {languages.map((item) => (
+              <button
+                key={item.code}
+                type="button"
+                onClick={() => setLanguage(item.code)}
+                aria-pressed={language === item.code}
+                aria-label={item.label}
+                title={item.label}
+                className={"min-h-9 min-w-9 rounded-full px-2 text-xs font-extrabold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sac-confirm " + (language === item.code ? "bg-sac-primary-strong text-white shadow-sm" : "text-sac-muted hover:bg-sac-primary/60")}
+              >{item.nativeLabel}</button>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section className="sac-hero-layout relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-8 sm:px-8 sm:pb-24 sm:pt-14 lg:grid-cols-[1.08fr_0.92fr]">
+          <div className="pointer-events-none absolute -right-40 -top-24 h-[28rem] w-[28rem] rounded-full bg-sac-primary/70 blur-3xl" />
+          <div className="sac-copy relative">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/90 bg-white/65 px-3 py-2 text-xs font-bold text-sac-ink shadow-glass backdrop-blur-xl">
+              <span className="h-2 w-2 rounded-full bg-sac-confirm" />{t.trustEyebrow}
+            </div>
+            <h1 className="max-w-2xl text-4xl font-black leading-[1.08] tracking-tight text-sac-ink sm:text-5xl lg:text-[3.7rem]">
+              {t.heroTitle}<span className="block text-sac-primary-strong">{t.heroSecond}</span><span className="block">{t.heroThird}</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-base leading-8 text-sac-muted sm:text-lg">{t.heroDescription}</p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <button type="button" disabled aria-describedby="sos-status" className="inline-flex min-h-14 cursor-not-allowed items-center justify-center gap-3 rounded-2xl border border-sac-alert/20 bg-sac-alert/10 px-7 text-base font-extrabold text-sac-alert opacity-80">
+                <ShieldCheck size={20} />{t.sosLabel}
+                <span className="rounded-full bg-white/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide">{t.preparing}</span>
+              </button>
+              <span className="text-sm leading-6 text-sac-muted" id="sos-status">{t.sosStatus}</span>
+            </div>
+            <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-sac-ink">
+              <span className="sac-inline-icon inline-flex items-center gap-2"><LockKeyhole size={16} className="text-sac-confirm" />{t.protectedData}</span>
+              <span className="sac-inline-icon inline-flex items-center gap-2"><UsersRound size={16} className="text-sac-confirm" />{t.chosenContacts}</span>
+            </div>
+          </div>
+
+          <div className="relative mx-auto w-full max-w-md">
+            <div className="absolute -inset-5 rounded-[2.5rem] bg-gradient-to-br from-sac-primary/80 via-white/70 to-sac-confirm/10 blur-xl" />
+            <div className="sac-glass-panel relative rounded-[2rem] p-6 sm:p-8">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-sac-muted">{t.personalSpace}</p>
+                  <h2 className="mt-1 text-xl font-extrabold text-sac-ink">{t.accompaniment}</h2>
+                </div>
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sac-primary/70 text-sac-confirm"><ShieldCheck size={25} /></span>
+              </div>
+              <div className="mt-7 rounded-2xl border border-white/90 bg-white/55 p-5 backdrop-blur-xl">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/80 text-sac-confirm shadow-sm"><Wifi size={19} /></span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-sac-ink">{t.serverStatus}</p>
+                    <p className="mt-0.5 text-xs text-sac-muted" aria-live="polite">
+                      {health === "checking" && t.checking}
+                      {health === "connected" && t.connected}
+                      {health === "unavailable" && t.unavailable}
+                    </p>
+                  </div>
+                  <span className={"ml-auto h-2.5 w-2.5 shrink-0 rounded-full " + statusDot} />
+                </div>
+              </div>
+              <div className="mt-5 space-y-3">
+                <div className="flex items-center justify-between gap-3 rounded-xl bg-white/55 px-4 py-3">
+                  <span className="text-sm font-semibold text-sac-muted">{t.freePlan}</span>
+                  <span className="text-sm font-extrabold text-sac-ink">2 {t.contacts}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-xl bg-white/55 px-4 py-3">
+                  <span className="text-sm font-semibold text-sac-muted">{t.premiumPlan}</span>
+                  <span className="text-sm font-extrabold text-sac-ink">5 000 FCFA {t.perMonth}</span>
+                </div>
+              </div>
+              <p className="mt-5 text-xs leading-5 text-sac-muted">{t.freeSafety}</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-y border-white/80 bg-white/45 backdrop-blur-xl">
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
+            <div className="sac-copy max-w-2xl">
+              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sac-confirm">{t.principles}</p>
+              <h2 className="mt-3 text-3xl font-black tracking-tight text-sac-ink sm:text-4xl">{t.principlesTitle}</h2>
+            </div>
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
+              {pillars.map(({ icon: Icon, title, description }) => (
+                <article key={title} className="sac-glass-card rounded-2xl p-6 transition-shadow hover:shadow-glass-hover">
+                  <span className="grid h-12 w-12 place-items-center rounded-2xl bg-sac-primary/75 text-sac-confirm"><Icon size={23} /></span>
+                  <h3 className="mt-5 text-lg font-extrabold text-sac-ink">{title}</h3>
+                  <p className="mt-2 text-sm leading-7 text-sac-muted">{description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8">
+          <div className="sac-responsible-panel flex flex-col gap-5 rounded-3xl px-6 py-8 text-sac-ink sm:flex-row sm:items-center sm:justify-between sm:px-9">
+            <div className="sac-copy max-w-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-sac-confirm">{t.responsibleEyebrow}</p>
+              <h2 className="mt-2 text-2xl font-extrabold">{t.emergencyTitle}</h2>
+              <p className="mt-2 text-sm leading-6 text-sac-muted">{t.emergencyDescription}</p>
+            </div>
+            <a href="https://github.com/benwahab/SAC" target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-2 self-start rounded-xl border border-white/90 bg-white/80 px-4 py-3 text-sm font-bold text-sac-ink shadow-glass transition hover:bg-white">
+              {t.followProject}<ArrowUpRight size={16} />
+            </a>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-white/80 bg-white/45 px-5 py-7 text-center text-xs text-sac-muted backdrop-blur-xl">{t.footer}</footer>
     </div>
-    <div className="relative mx-auto w-full max-w-md"><div className="absolute -inset-5 rounded-[2.5rem] bg-gradient-to-br from-sky-100 via-white to-rose-100 blur-xl"/><div className="relative rounded-[2rem] border border-white bg-white p-6 shadow-soft sm:p-8">
-     <div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Espace personnel</p><h2 className="mt-1 text-xl font-extrabold text-sac-navy">SAC vous accompagne</h2></div><span className="grid h-12 w-12 place-items-center rounded-2xl bg-slate-100 text-sac-navy"><ShieldCheck size={25}/></span></div>
-     <div className="mt-7 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5"><div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-slate-500 shadow-sm"><Wifi size={19}/></span><div className="min-w-0"><p className="text-sm font-bold text-slate-800">État du serveur</p><p className="mt-0.5 text-xs text-slate-500" aria-live="polite">{health==="checking"&&"Vérification de la connexion…"}{health==="connected"&&"API et base de données accessibles"}{health==="unavailable"&&"Connexion serveur à vérifier"}</p></div><span className={"ml-auto h-2.5 w-2.5 shrink-0 rounded-full "+statusDot}/></div></div>
-     <div className="mt-5 space-y-3"><div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3"><span className="text-sm font-semibold text-slate-600">Formule gratuite</span><span className="text-sm font-extrabold text-sac-navy">2 contacts</span></div><div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3"><span className="text-sm font-semibold text-slate-600">Formule Premium</span><span className="text-sm font-extrabold text-sac-navy">5 000 F / mois</span></div></div>
-     <p className="mt-5 text-xs leading-5 text-slate-400">Les fonctions de sécurité essentielles, dont le SOS, resteront accessibles gratuitement.</p>
-    </div></div>
-   </section>
-   <section className="border-y border-slate-200/80 bg-white"><div className="mx-auto max-w-6xl px-5 py-16 sm:px-8"><div className="max-w-2xl"><p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sac-green">Les principes SAC</p><h2 className="mt-3 text-3xl font-black tracking-tight text-sac-navy sm:text-4xl">La confiance commence par le contrôle.</h2></div><div className="mt-10 grid gap-5 md:grid-cols-3">{pillars.map(({icon:Icon,title,description})=><article key={title} className="rounded-2xl border border-slate-200 bg-white p-6 transition-shadow hover:shadow-soft"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-slate-100 text-sac-navy"><Icon size={23}/></span><h3 className="mt-5 text-lg font-extrabold text-sac-navy">{title}</h3><p className="mt-2 text-sm leading-7 text-slate-600">{description}</p></article>)}</div></div></section>
-   <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8"><div className="flex flex-col gap-5 rounded-3xl bg-sac-navy px-6 py-8 text-white sm:flex-row sm:items-center sm:justify-between sm:px-9"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[0.16em] text-sky-200">Une application responsable</p><h2 className="mt-2 text-2xl font-extrabold">SAC ne remplace pas les services d'urgence.</h2><p className="mt-2 text-sm leading-6 text-slate-300">SAC est conçu pour prévenir vos proches de confiance. Il ne garantit pas une intervention des secours.</p></div><a href="https://github.com/benwahab/SAC" target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-2 self-start rounded-xl bg-white px-4 py-3 text-sm font-bold text-sac-navy transition hover:bg-slate-100">Suivre le projet <ArrowUpRight size={16}/></a></div></section>
-  </main>
-  <footer className="border-t border-slate-200 bg-white px-5 py-7 text-center text-xs text-slate-500">SAC — Sécurité, Alerte, Citoyenne · Votre sécurité, votre décision.</footer>
- </div>;
+  );
 }
