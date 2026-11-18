@@ -446,3 +446,19 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Arbitrer le comportement du seuil SMS tant qu'aucun fournisseur opérationnel n'est sélectionné.
 - [ ] Concevoir les écrans détaillés des deux parcours après clôture des points ouverts.
 - [ ] Ne pas activer le SOS, créer d'API ou de migration D1, ni collecter de GPS réel dans le cadre de cette mise à jour documentaire.
+
+## Audit de l'état réel du code — 18 novembre 2026
+
+- [x] Réaliser un audit en lecture seule du code, de la configuration PWA, de l'API D1, des contrats métier, des tests et du workflow CI ; rapport : `docs/AUDIT_ETAT_REEL_CODE_2026-11-18.md`.
+- [x] Confirmer que le socle React/Vite/TypeScript, la page de présentation, la PWA minimale, la route de santé D1, les contrats métier purs et plusieurs suites de tests existent.
+- [x] Confirmer que le SOS reste désactivé et que les contrats métier ne constituent pas encore des endpoints ni une persistance D1.
+- [x] Identifier l'écart d'identité visuelle : le code utilise encore bleu nuit/bleu ciel/gris au lieu du vert clair effet verre dépoli validé.
+- [x] Identifier l'écart langues : l'interface examinée reste en français ; anglais et arabe RTL ne sont pas encore démontrés.
+- [x] Vérifier un run CI antérieur `44261699221` réussi pour typecheck, six suites de tests, build et audits ; ce run ne prouve pas l'exécution des tests trajets et suppression de compte ajoutés au workflow actuel.
+- [ ] Versionner `package-lock.json` après installation contrôlée et rendre l'installation CI reproductible.
+- [ ] Appliquer l'identité visuelle vert clair Glassmorphism dans l'application et ses métadonnées PWA.
+- [ ] Mettre en place français/anglais/arabe RTL.
+- [ ] Finaliser le schéma et les migrations D1 métier après validation des permissions et contrats.
+- [ ] Implémenter et tester les endpoints métier côté serveur avant toute activation du SOS.
+- [ ] Obtenir la preuve irréversible GPS J+30 avant toute collecte GPS précise.
+- [ ] Refaire une vérification CI complète sur le code récent, y compris Protection des trajets et suppression de compte.
