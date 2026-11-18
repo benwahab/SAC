@@ -974,3 +974,22 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases
 - [ ] Effectuer un exercice complet de panne/restauration et conserver ses preuves.
 
 **Statut :** contrat documentaire uniquement ; aucun mécanisme de sauvegarde, bascule, reprise ou service SOS réel activé.
+
+
+## Gouvernance juridique et conformité — 18 novembre 2026
+
+- [x] Auditer la pré-analyse juridique Niger et la mise à jour postérieure à juin 2026.
+- [x] Consolider les responsabilités, finalités, données sensibles, mineurs, droits, fournisseurs, transferts, incidents et pays additionnels dans `docs/CONTRAT_GOUVERNANCE_JURIDIQUE_ET_CONFORMITE.md`.
+- [x] Maintenir la suppression de la HAPDP comme fait rapporté par l'ANP, sans supposer que les anciennes formalités restent opérationnelles.
+- [ ] Obtenir les exemplaires authentiques au Journal officiel de l'ordonnance 2026-30 et du décret de suppression/transfert.
+- [ ] Obtenir la confirmation écrite des services ministériels compétents et de leurs circuits de formalités, avis, plaintes et violations.
+- [ ] Identifier l'entité juridique porteuse de SAC et le responsable du traitement.
+- [ ] Obtenir un avis juridique nigérien sur les formalités et les données de santé, téléphones, GPS, transferts et conservation.
+- [ ] Valider les conditions d'utilisation, la politique de confidentialité et les parcours de consentement.
+- [ ] Définir juridiquement le périmètre d'âge V1 ; aucun parcours mineur/tutelle n'est autorisé sans analyse distincte.
+- [ ] Cartographier les fournisseurs, sous-traitants, pays, régions, sauvegardes et accès support avant sélection/activation.
+- [ ] Faire valider la matrice de conservation hors GPS et la procédure de violation de données.
+- [ ] Créer une fiche de conformité pour chaque pays additionnel avant toute ouverture.
+- [ ] Obtenir une revue juridique et une revue indépendante sécurité/confidentialité avant lancement.
+
+**Statut :** documentation de cadrage uniquement ; aucune formalité administrative, collecte réelle, contractualisation ou activation fournisseur effectuée.
