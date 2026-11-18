@@ -110,3 +110,5 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 - [Contrat de confidentialité familiale et d'isolation des données](docs/CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md) — séparation des comptes familiaux, droits limités des proches/groupes, téléphones partagés, notifications discrètes, accès aux alertes et copies locales.
 
 - [Contrat de prévention des abus, de l'usurpation et de la saturation](docs/CONTRAT_PREVENTION_ABUS_USURPATION_ET_SATURATION.md) — protections anti-harcèlement, anti-automatisation, intégrité SOS, plaintes, abus internes et disponibilité du chemin d'urgence.
+
+- [Contrat de résilience, continuité et reprise après incident](docs/CONTRAT_RESILIENCE_CONTINUITE_ET_REPRISE_INCIDENT.md) — réseau faible, pannes API/D1/fournisseurs, outbox, sauvegardes, restauration, non-résurrection et tests de continuité SOS.
