@@ -368,3 +368,8 @@ Le document `MODELE_GLOBAL_DONNEES_SAC.md` relie les domaines comptes, identité
 ## Revue finale de cohérence relationnelle — 18 novembre 2026
 
 `docs/REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md` examine les cardinalités, clés étrangères composites, suppressions, courses concurrentes, machines à états et domaines non spécifiés. Il classe les blocages P0/P1/P2 et confirme que le modèle n'est pas prêt pour migration D1.
+
+
+## Arbitrage P0 — compte et preuve des proches
+
+Le document `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` consolide les cinq états validés, la matrice de transitions (avec les cas encore ouverts), les divergences de `account-lifecycle.ts`, ainsi que la distinction entre coordonnées déclarées, preuve de destination et consentement du proche. Le parcours par e-mail vérifié est une recommandation, pas une décision produit approuvée.
