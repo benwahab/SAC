@@ -775,3 +775,14 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Implémenter ultérieurement le parcours uniquement après autorisation distincte, fournisseur e-mail choisi, conception OTP validée et tests de sécurité.
 
 **Portée de cette décision :** règle produit/documentaire uniquement. Aucun code d'authentification, fournisseur, SMS, endpoint, schéma ou migration D1 n'est créé par cette mise à jour.
+
+## Décision de conservation des alertes — 18 novembre 2026
+
+- [x] Valider : suppression immédiate des positions GPS liées à une alerte dès sa clôture.
+- [x] Valider : conservation pendant 30 jours après clôture de la seule nature/catégorie de l'alerte dans l'historique.
+- [x] Valider : suppression définitive de l'alerte et de sa catégorie à l'expiration des 30 jours.
+- [x] Valider : interdiction de toute résurrection par sauvegarde, snapshot, réplication, Time Travel, export ou restauration.
+- [ ] Concevoir, implémenter et tester les purges réelles, l'ordre atomique clôture/suppression, la purge de rattrapage et la restauration « forward-only » avant toute activation GPS.
+- [ ] Prouver par tests synthétiques qu'une sauvegarde antérieure à la clôture ou à J+30 ne réintroduit jamais les données supprimées.
+
+Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases validées ci-dessus concernent uniquement les décisions produit/documentaires, pas une implémentation technique.
