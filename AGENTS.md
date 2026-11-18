@@ -74,3 +74,21 @@ Claude, Qwen et les autres assistants autorisés travaillent sur les mêmes réf
 - Toute nouvelle page ou tout nouveau composant doit utiliser les traductions et respecter `dir="rtl"` sans casser les parcours LTR.
 - Conserver le vert clair effet verre dépoli, le blanc, le rouge d'alerte et un vert de confirmation distinct. Aucun violet ni bleu nuit comme couleur principale.
 - Les codes hexadécimaux présents dans le thème sont des valeurs initiales de mise en œuvre ; ils ne doivent pas être présentés comme une charte définitive validée.
+
+
+## Gouvernance administrative SAC — lecture obligatoire avant tout travail concerné
+
+Avant de concevoir ou modifier des rôles, permissions, missions, comptes administratifs, sessions administratives, exports, journaux d'audit ou clôtures administratives, lire les documents suivants :
+
+- `docs/PLAN_SOCLE_COMPTE_SESSIONS_APPAREILS.md`
+- `docs/ARBITRAGES_TECHNIQUES_COMPTES_OTP_SESSIONS.md`
+- `docs/CATALOGUE_RESSOURCES_MATRICE_PERMISSIONS.md`
+- `docs/CLASSIFICATION_DONNEES_ET_ACCES_ADMIN.md`
+- `docs/GOUVERNANCE_MISSIONS_ADMIN_ET_CYCLE_DE_VIE.md`
+
+Règles pour les agents :
+- Ne jamais considérer une proposition marquée « à valider » comme une décision approuvée.
+- Ne pas créer de compte administratif, permission, mission, endpoint, middleware, table ou migration D1 sans autorisation explicite.
+- Ne pas élargir les droits pour contourner un point non arbitré ; appliquer le refus par défaut.
+- Toute implémentation future doit inclure des tests positifs et négatifs, une revue de sécurité et une vérification des effets de révocation côté serveur.
+- Ne jamais exposer ou journaliser OTP, mots de passe, clés privées, jetons bruts, secrets de récupération ou GPS précis.
