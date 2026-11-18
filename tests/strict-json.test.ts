@@ -68,3 +68,21 @@ test("les limites manquantes ou incohérentes sont refusées", () => {
 test("la canonicalisation stricte rejette un JSON dupliqué avant JCS", () => {
   assert.throws(() => canonicalizeStrictJson('{"device":"root","device":"secondary"}', limits), /duplicate_property/);
 });
+
+
+test("le parseur strict reproduit exactement le vecteur de sérialisation RFC 8785", () => {
+  const source = String.raw`{"numbers":[333333333.33333329,1E30,4.50,2e-3,0.000000000000000000000000001],"string":"\u20ac$\u000F\u000aA'\u0042\u0022\u005c\\\"\/","literals":[null,true,false]}`;
+  const expected = String.raw`{"literals":[null,true,false],"numbers":[333333333.3333333,1e+30,4.5,0.002,1e-27],"string":"€$\u000f\nA'B\"\\\\\"/"}`;
+  assert.equal(canonicalizeStrictJson(source, limits), expected);
+});
+
+test("le parseur strict refuse un surrogate isolé brut dans le texte source", () => {
+  const source = '"' + String.fromCharCode(0xd800) + '"';
+  assert.throws(() => parseStrictJson(source, limits), /lone_surrogate/);
+});
+
+test("la canonicalisation ne normalise pas Unicode", () => {
+  const composed = canonicalizeStrictJson(String.raw`{"value":"\u00e9"}`, limits);
+  const decomposed = canonicalizeStrictJson(String.raw`{"value":"e\u0301"}`, limits);
+  assert.notEqual(composed, decomposed);
+});
