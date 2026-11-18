@@ -940,3 +940,20 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases
 - [ ] Maintenir le NO-GO GPS et valider la matrice d'autorisation avant tout stockage ou migration.
 
 **Statut :** documentation uniquement ; aucun accès familial, contrôle parental, cache, verrouillage, notification ou stockage supplémentaire implémenté.
+
+
+## Prévention des abus, usurpations et saturation — 18 novembre 2026
+
+- [x] Auditer les contrats SOS, notifications, comptes/appareils, invitations, accès internes et confidentialité.
+- [x] Formaliser les menaces et garde-fous dans `docs/CONTRAT_PREVENTION_ABUS_USURPATION_ET_SATURATION.md`.
+- [x] Réaffirmer que les répétitions réseau sont traitées par idempotence, mais qu'une nouvelle urgence explicite ne doit pas être supprimée comme doublon.
+- [x] Préserver le chemin critique SOS : pas de CAPTCHA/paiement obligatoire par défaut, pas de blocage automatique fondé uniquement sur la fréquence des alertes.
+- [ ] Arbitrer les seuils de débit par catégorie (inscription, login, OTP, invitations, lecture, recherche, médias).
+- [ ] Définir la capacité réservée et l'isolation des tâches SOS, puis exécuter les tests de charge et de panne.
+- [ ] Définir la procédure de plainte, de revue humaine, de contestation et de sanction proportionnée.
+- [ ] Confirmer ou modifier les seuils d'invitation proposés dans `PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md`.
+- [ ] Définir les protections contre le verrouillage de compte provoqué par un tiers et les faux positifs.
+- [ ] Arbitrer la conservation des preuves anti-abus et le scellement indépendant des journaux.
+- [ ] Réaliser une revue sécurité/confidentialité avant toute implémentation.
+
+**Statut :** documentation uniquement ; aucun seuil, WAF, anti-bot, modération, code, D1, fournisseur ou ressource Cloudflare activé.
