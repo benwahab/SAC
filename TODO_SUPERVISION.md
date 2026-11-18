@@ -716,3 +716,25 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Compléter la matrice D1 avec les nouveaux domaines et leurs tests.
 - [ ] Faire relire le modèle complet indépendamment avant toute migration.
 - [ ] Obtenir une autorisation explicite distincte avant toute migration ou implémentation.
+
+
+## Revue finale de cohérence du modèle relationnel — 18 novembre 2026
+
+- [x] Examiner les cardinalités et relations entre comptes, identités, appareils, sessions, contacts, alertes, trajets, notifications et administration.
+- [x] Définir les contraintes référentielles composites à exiger pour l'isolation inter-comptes.
+- [x] Examiner les politiques de suppression et interdire les cascades destructives par défaut.
+- [x] Recenser les opérations multi-tables et courses concurrentes à couvrir par contrats atomiques.
+- [x] Identifier les divergences entre les cinq états de compte validés et le contrat TypeScript à trois états.
+- [x] Identifier la divergence entre les états de trajet documentés et le contrat TypeScript.
+- [x] Distinguer clôture ordinaire par l'auteur et exception administrative limitée.
+- [x] Confirmer les lacunes de la première proposition : groupes, programmation SOS, SOS discret et sous-modèle paiements.
+- [x] Confirmer que migrations/ ne contient pas de schéma métier versionné.
+- [ ] Fermer les blocages P0 de `docs/REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md`.
+- [ ] Spécifier les sous-modèles P1 avant migration des domaines concernés.
+- [ ] Aligner contrats TypeScript, décisions produit, machines à états et modèle relationnel.
+- [ ] Finaliser la matrice de conservation hors GPS.
+- [ ] Faire une revue indépendante sécurité, cryptographie, confidentialité et paiements.
+- [ ] Vérifier Preview isolé de Production.
+- [ ] Obtenir une autorisation explicite distincte avant création/application de migrations D1.
+
+**Verdict actuel : NON PRÊT POUR MIGRATION.** Aucune modification applicative, API, D1, Cloudflare ou déploiement n'est autorisée par cette revue documentaire.
