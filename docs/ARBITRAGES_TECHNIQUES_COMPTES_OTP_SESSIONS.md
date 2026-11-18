@@ -421,9 +421,9 @@ Les quatre règles sont indépendantes des quotas anti-abus globaux. Les seuils 
 
 La validation doit utiliser l'heure serveur. L'épuisement, l'expiration, la consommation et l'invalidation sont des états terminaux pour un défi. Une vérification réussie et sa consommation doivent être atomiques afin d'empêcher deux succès concurrents.
 
-Le contrat pur `src/domain/email-otp-policy.ts` encode les durées, le nombre d'essais, les états consommé/invalide/expiré et le délai de renvoi. Les tests correspondants sont dans `tests/email-otp-policy.test.ts` et exécutés par la CI. Ce contrat pur ne constitue pas encore une persistance D1, un endpoint, un générateur de code, un mécanisme de hachage/HMAC, un envoi réel ni une activation de compte.
+Le contrat pur `src/domain/email-otp-policy.ts` encode les durées, le nombre d'essais, les états consommé/invalide/expiré et le délai de renvoi. Les tests correspondants sont dans `tests/email-otp-policy.test.ts` et exécutés par la CI. Le contrat pur est désormais complété par une persistance D1 versionnée, trois endpoints serveur, un générateur de code, une empreinte HMAC, un adaptateur d'envoi Resend et l'activation atomique du compte. Le fournisseur et les secrets ne sont toutefois pas configurés.
 
-**Statut :** paramètres métier validés ; contrat pur, schéma D1 versionné et premiers endpoints serveur implémentés. L'application distante et les tests sur le runtime D1 Cloudflare restent à faire.
+**Statut :** paramètres métier validés ; contrat pur, schéma D1 versionné et endpoints serveur implémentés. La migration a été appliquée à une base D1 locale isolée par Wrangler en CI ; elle n'a pas été appliquée à la base distante. Les tests de concurrence sur runtime D1 Cloudflare restent à faire.
 
 
 ## 17. Contrat de validation des données d'inscription
@@ -489,7 +489,8 @@ Les triggers de la migration :
 6. épuisent le défi à la sixième tentative échouée ;
 7. empêchent la modification silencieuse des identités et toute vérification téléphonique dans ce parcours ;
 8. imposent l'état `pending_verification` à toute création de compte et interdisent l'activation ou la vérification d'une adresse sans défi OTP consommé ;
-9. lors d'une consommation correcte, vérifient l'adresse et activent le compte dans les triggers de la même instruction SQLite.
+9. refusent au niveau du trigger toute consommation à partir de l'instant exact d'expiration ;
+10. lors d'une consommation correcte, vérifient l'adresse et activent le compte dans les triggers de la même instruction SQLite.
 
 Le endpoint de vérification réalise une seule instruction `UPDATE ... RETURNING` conditionnelle. Deux vérifications concurrentes du même défi ne peuvent donc pas le consommer deux fois. Les erreurs de code, d'expiration, de consommation et d'invalidation ne révèlent pas le code attendu.
 
@@ -509,9 +510,9 @@ Ce choix utilise WebCrypto natif des Workers et doit encore faire l'objet d'une 
 
 ### Tests et limites
 
-- `tests/d1_email_otp_schema.test.py` exécute la migration réelle avec SQLite et teste le cooldown, l'invalidation, l'épuisement, l'activation atomique et les contraintes d'identité.
+- `tests/d1_email_otp_schema.test.py` exécute la migration réelle avec SQLite et teste le cooldown, l'invalidation, l'épuisement, l'expiration à la borne exacte, le refus SQL d'une consommation après expiration, l'activation atomique et les contraintes d'identité.
 - Les tests unitaires du générateur OTP, du HMAC, du hachage et des politiques sont ajoutés à la CI.
-- Ces tests SQLite ne remplacent pas encore les tests d'intégration sur le runtime D1 Cloudflare ni les tests de concurrence Preview isolés.
+- Les derniers tests de schéma et de typecheck ont réussi dans les exécutions CI antérieures ; les exécutions déclenchées par les tout derniers commits restent à confirmer. Les tests SQLite ne remplacent pas les tests de concurrence sur le runtime D1 Cloudflare isolé.
 - Les limites globales anti-abus par IP, compte et appareil ne sont pas définies ; aucune valeur supplémentaire n'a été inventée.
 - Le secret `EMAIL_OTP_HMAC_SECRET`, `RESEND_API_KEY` et `RESEND_FROM_EMAIL` ne sont pas configurés. Sans eux, les routes échouent fermées et aucun e-mail n'est prétendu envoyé.
 - La migration est versionnée mais n'a pas été appliquée à la base distante `sac-db`.
