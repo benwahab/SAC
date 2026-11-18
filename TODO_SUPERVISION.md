@@ -786,3 +786,17 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Prouver par tests synthétiques qu'une sauvegarde antérieure à la clôture ou à J+30 ne réintroduit jamais les données supprimées.
 
 Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases validées ci-dessus concernent uniquement les décisions produit/documentaires, pas une implémentation technique.
+
+## Politique générale de conservation des données — 18 novembre 2026
+
+- [x] Auditer les règles existantes de conservation des alertes, des comptes, des appareils, des sessions, des proches, des groupes, des notifications et des journaux.
+- [x] Rédiger une proposition transversale non GPS dans `docs/PROPOSITION_POLITIQUE_GENERALE_CONSERVATION_DONNEES.md`, avec finalités, déclencheurs de délai, propositions de durée, suppression, pseudonymisation, sauvegardes et restauration.
+- [x] Préserver sans ambiguïté la règle validée des alertes : GPS supprimé à la clôture ; catégorie seule pendant 30 jours ; suppression définitive de l'alerte à J+30 ; aucune résurrection après restauration.
+- [ ] Faire valider les durées proposées par catégorie après revue juridique Niger et pays de déploiement.
+- [ ] Définir les preuves minimales conservées, leur durée et leurs champs exacts.
+- [ ] Arbitrer les cas de suppression de compte non vérifié/suspendu et les activités encore ouvertes.
+- [ ] Définir et tester le protocole de restauration forward-only pour toutes les données supprimées/révoquées.
+- [ ] Aligner modèle logique, matrice D1, machines à états et contrats avant toute migration.
+- [ ] Obtenir une autorisation distincte avant tout code, API, D1, Cloudflare, fournisseur ou déploiement.
+
+**Statut :** proposition documentaire enregistrée ; aucune durée nouvelle n'est approuvée et aucune purge technique n'est implémentée.
