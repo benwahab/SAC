@@ -148,11 +148,13 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 
 - [x] Consulter le texte de base de la loi n° 2022-59 et les informations officielles HAPDP sur les modifications 2023/2024.
 - [x] Rédiger une pré-analyse des formalités, numéros de téléphone, données de santé, localisation, transferts internationaux, conservation, droits et sous-traitants dans `docs/CONFORMITE_DONNEES_NIGER.md`.
-- [ ] Télécharger et examiner intégralement la version consolidée annoncée sur la page officielle HAPDP ; vérifier chaque article et sa numérotation.
-- [ ] Faire confirmer par la HAPDP les formalités précises applicables aux numéros de téléphone, urgences médicales, localisation et transferts transfrontaliers.
+- [ ] Obtenir la version consolidée annoncée par l'ancienne HAPDP et la confronter aux textes postérieurs à juin 2026 ; cette consolidation antérieure à juin ne suffit pas à elle seule.
+- [ ] Obtenir et examiner le texte officiel intégral de l'ordonnance n° 2026-30 du 8 juin 2026 ; identifier exactement les dispositions de la loi 2022-59 abrogées ou modifiées.
+- [ ] Obtenir le décret officiel de suppression de la HAPDP et les textes organisant le transfert de ses missions ; identifier les services opérationnels compétents au Ministère de la Justice et au Ministère de l'Intérieur.
+- [ ] Faire confirmer par les services ministériels désormais compétents les formalités applicables aux numéros de téléphone, urgences médicales, localisation, transferts transfrontaliers et notifications de violations.
 - [ ] Cartographier les fournisseurs, pays, régions, sous-traitants et flux de données avant toute activation.
 - [ ] Déterminer les obligations de désignation du correspondant à la protection des données pour la personne morale porteuse de SAC.
-- [ ] Faire valider la matrice finale de conservation hors GPS par conseil juridique local et, si nécessaire, par la HAPDP.
+- [ ] Faire valider la matrice finale de conservation hors GPS par un conseil juridique nigérien et par le service public actuellement compétent, après vérification des textes 2026.
 
 
 ## Suppression de compte et révocation d'un contact — 18 novembre 2026
@@ -211,3 +213,14 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Éviter de présenter les tests unitaires purs comme des preuves d'intégrité D1 ou de concurrence SQL.
 - [ ] Créer les tests d'intégration D1 seulement après arbitrages produit et validation du schéma.
 - [ ] Exécuter les tests D1 localement puis sur Preview isolé, avec vérification des identifiants de base.
+
+
+## Mise à jour juridique institutionnelle — 18 novembre 2026
+
+- [x] Vérifier auprès de l'Agence Nigérienne de Presse que la HAPDP a été supprimée le 8 juin 2026 et que ses missions sont transférées au Ministère de la Justice et au Ministère de l'Intérieur.
+- [x] Créer `docs/MISE_A_JOUR_JURIDIQUE_NIGER_NOV_2026.md` avec les constats, sources, limites et questions à résoudre.
+- [x] Ajouter un avertissement en tête de `docs/CONFORMITE_DONNEES_NIGER.md` pour empêcher l'utilisation des anciennes formalités HAPDP comme procédure actuelle confirmée.
+- [ ] Obtenir le texte officiel de l'ordonnance n° 2026-30 du 8 juin 2026 et vérifier les dispositions de la loi 2022-59 qu'elle abroge.
+- [ ] Obtenir les textes officiels de suppression/transfert des missions et identifier les services ministériels qui reçoivent effectivement les demandes.
+- [ ] Revalider les formalités, les délais de notification d'incident, les transferts internationaux et les droits des personnes sur la base des textes postérieurs à juin 2026.
+- [ ] Ne pas considérer la pré-analyse HAPDP antérieure comme une validation juridique actuelle.
