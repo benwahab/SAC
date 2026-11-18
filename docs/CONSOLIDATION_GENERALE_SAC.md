@@ -418,3 +418,8 @@ Le document `PROPOSITION_SECURITE_CONNEXIONS_ET_SESSIONS.md` formalise les menac
 ## Sécurité des trajets et de la localisation — complément du 18 novembre 2026
 
 `docs/CONTRAT_SECURITE_TRAJETS_ET_LOCALISATION.md` complète les propositions de trajets et les contrats SOS, GPS J+30, communications, invitations et confidentialité. Il formalise le consentement explicite, la sélection des proches, les trois modes, la révocation, la fraîcheur des positions, le réseau faible, les limites des copies externes et les tests de non-résurrection. Les valeurs de durée et la conservation GPS des trajets restent à arbitrer. Le GPS réel demeure NO-GO.
+
+
+## Sécurité des comptes et appareils en situation d'urgence — complément du 18 novembre 2026
+
+`docs/CONTRAT_SECURITE_COMPTES_ET_APPAREILS_EN_URGENCE.md` complète la consolidation comptes/sessions/appareils. Il formalise les scénarios de perte, vol, compromission, SIM swap, e-mail compromis et perte de tous les appareils. Il réaffirme la séparation stricte entre accès applicatif, appareil approuvé et racine cryptographique : en V1, aucune racine perdue ou compromise n'est remplaçable par OTP, mot de passe, SMS, support, Super Admin ou appareil secondaire. Les parcours d'urgence restent à arbitrer ; aucune implémentation n'est autorisée par ce document.
