@@ -415,3 +415,6 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Définir le traitement des pertes réseau avant/après commit sans permettre le rejeu d'un défi.
 - [ ] Ajouter les tests de rejeu, expiration, altération de chaque champ, concurrence et révocation pendant approbation.
 - [ ] Faire relire le transcript et le protocole par un spécialiste indépendant avant implémentation serveur.
+
+- [x] Rédiger une proposition candidate de transcript canonique : `docs/TRANSCRIPT_CEREMONIE_MULTI_APPAREILS.md`.
+- [ ] Faire arbitrer et relire indépendamment le format, les signatures doubles, les défis, la consommation atomique et l'idempotence avant toute implémentation.
