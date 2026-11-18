@@ -531,3 +531,34 @@ Aucun OTP SMS/e-mail, mot de passe réinitialisé ou intervention du support ne 
 Aucune durée arbitraire n'est fixée ici. Restent à arbitrer : facteur fort de continuité si l'ancien canal est perdu ; délai de sécurité ; période de contestation ; critères de risque ; portée de révocation des sessions ; nombre de coordonnées vérifiées ; ordre de priorité entre numéro et e-mail ; gestion d'un numéro recyclé ; traitement des changements pendant une alerte active ; et fonctions autorisées pendant une récupération racine.
 
 **NO-GO :** aucun parcours de changement de coordonnées ne doit être implémenté avant arbitrage de ces points, tests de concurrence et validation du contrat de récupération.
+
+
+## Annexe — Politique OTP à priorité e-mail (18 novembre 2026)
+
+**Statut :** décision produit validée ; politique documentaire uniquement. Aucun fournisseur, endpoint, secret, modèle D1 ou flux réel n'est créé.
+
+### Canal retenu
+
+- L'e-mail est le canal standard d'envoi des codes OTP SAC.
+- Cette règle couvre la vérification initiale de l'adresse, les vérifications supplémentaires à la connexion, la réinitialisation du mot de passe, les changements de coordonnées et les procédures de récupération d'accès au compte, lorsque le parcours concerné exige un OTP.
+- Pour un changement d'adresse e-mail, la preuve de contrôle de la nouvelle adresse peut être faite par un code envoyé à cette nouvelle adresse ; cette preuve ne suffit pas à autoriser le changement du compte. La demande doit aussi satisfaire la preuve de continuité exigée depuis une session/appareil déjà approuvé ou une procédure forte validée.
+- Aucun OTP standard n'est envoyé par SMS. Le SMS reste un canal distinct réservé à l'escalade d'une alerte SOS selon le contrat de notifications, et non un canal de remplacement des OTP.
+- Aucun basculement automatique vers SMS n'est permis en cas d'échec, retard, indisponibilité ou perte d'accès à l'e-mail. Une éventuelle voie exceptionnelle devra faire l'objet d'une décision explicite et d'une preuve indépendante.
+
+### Limites de preuve
+
+- Un OTP e-mail prouve uniquement le contrôle ponctuel de la boîte destinataire ; il ne prouve ni l'identité historique, ni la possession de l'ancienne racine, ni l'approbation d'un appareil.
+- La récupération d'accès au compte par e-mail ne rétablit jamais l'identité cryptographique racine, ne réactive aucun appareil révoqué et ne restaure aucune clé GPS.
+- La perte de l'adresse e-mail vérifiée ne peut pas être contournée en envoyant un code à une nouvelle adresse. Le nouveau canal doit être vérifié, mais la continuité du compte exige une preuve indépendante préalablement approuvée ou la procédure de récupération forte validée.
+- La perte simultanée des canaux ne se résout pas par deux OTP reçus sur de nouvelles coordonnées.
+- Le déclenchement d'un SOS ne doit pas dépendre de la réception d'un OTP par e-mail ; les contrôles de session et le parcours d'urgence restent séparés.
+
+### Exigences opérationnelles avant toute implémentation
+
+- Définir durée, tentatives, renvois, usage unique, invalidation et limites anti-abus propres à chaque finalité.
+- Protéger les OTP de faible entropie par un vérificateur adapté avec secret serveur/HMAC ou mécanisme équivalent ; ne jamais stocker les codes en clair.
+- Prévoir des réponses uniformes contre l'énumération, une délivrabilité vérifiable et un traitement des résultats fournisseur ambigus.
+- Définir une expérience explicite lorsque l'utilisateur n'a plus accès à sa boîte e-mail ; ne pas inventer de secours SMS.
+- Aucun fournisseur e-mail n'est choisi à ce stade. Coût, délivrabilité, disponibilité et protection des données devront être comparés avant intégration.
+
+**Verrou :** cette décision ne vaut pas autorisation d'implémenter un fournisseur ou un parcours OTP. Les facteurs de continuité, délais, limites, sessions et recours restent à spécifier ; aucune récupération racine ne peut reposer sur l'e-mail seul.
