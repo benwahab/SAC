@@ -629,3 +629,14 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Arbitrer les périmètres, données Support, vues/exports Auditeur, révocation des appareils/sessions, durée des missions et authentification renforcée.
 - [ ] Faire relire la matrice par une revue de sécurité avant toute implémentation.
 - [ ] Ne créer aucun rôle actif, permission, mission, endpoint ou migration D1 sans autorisation explicite.
+
+## Classification des données et limites d'accès administratif — 18 novembre 2026
+
+- [x] Proposer une classification de sensibilité C0 à C4 pour les ressources SAC.
+- [x] Définir les limites minimales recommandées pour Support et Auditeur.
+- [x] Poser les règles de minimisation, masquage, accès exceptionnel et traçabilité.
+- [ ] Valider les classes et les champs exacts par ressource.
+- [ ] Confirmer les vues minimales Support/Auditeur et le processus d'accès exceptionnel.
+- [ ] Définir pseudonymisation, masquage et contrôles d'export.
+- [ ] Faire vérifier la classification et les obligations légales avant implémentation.
+- [ ] Ne créer aucun accès opérationnel ou migration D1 sans autorisation distincte.
