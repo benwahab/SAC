@@ -755,3 +755,21 @@ Confirmer :
 
 **NO-GO :** aucune permission SOS depuis la session limitée n'est implémentée avant validation explicite de ces cinq points et tests de sécurité/disponibilité.
 
+
+
+### Décision utilisateur — visibilité des réponses au SOS de secours (18 novembre 2026)
+
+L'utilisateur valide que, depuis une session de récupération limitée, le titulaire peut consulter uniquement l'état de son propre SOS de secours et savoir si un proche l'a pris en charge.
+
+Cette visibilité est limitée à des états fonctionnels minimaux :
+- demande reçue/acceptée par SAC, si cet état est confirmé côté serveur ;
+- notification en attente, acceptée par le fournisseur, livrée ou échec, uniquement lorsque le niveau de preuve est disponible et clairement distingué ;
+- alerte reçue par un contact, seulement si un accusé humain explicite existe ;
+- prise en charge confirmée, si la transition du répondant principal a été validée côté serveur ;
+- alerte clôturée par son auteur, si cette transition a été confirmée.
+
+Aucune réponse libre, conversation, identité ou coordonnées des contacts, contenu privé, position, historique GPS ou détail d'une autre alerte ne devient accessible à travers cette session. Ne pas confondre notification acceptée par un fournisseur, livraison technique, lecture humaine et prise en charge.
+
+Les états visibles doivent être agrégés et limités à l'alerte concernée. Les horodatages affichés ne doivent pas révéler inutilement l'activité individuelle des contacts. Aucun accès aux données privées des contacts n'est accordé.
+
+Cette validation ne rend pas à elle seule le SOS de secours exécutable : les autres préconditions, permissions, délais et tests de sécurité documentés restent applicables. Aucun code ou endpoint n'est autorisé.
