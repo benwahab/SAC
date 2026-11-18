@@ -39,3 +39,8 @@ Lire également [docs/MODELE_DONNEES_ADMIN_ET_INTEGRATION_SAC.md](docs/MODELE_DO
 ## Référentiel global des données
 
 Le référentiel de cohérence entre les domaines est [docs/MODELE_GLOBAL_DONNEES_SAC.md](docs/MODELE_GLOBAL_DONNEES_SAC.md). Il complète la proposition D1, sa revue critique et la matrice de traçabilité. Son statut est conceptuel ; il n'autorise aucune migration.
+
+
+## Revue finale du modèle relationnel
+
+La revue de cohérence et ses conditions de passage au schéma SQL sont dans [docs/REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md](docs/REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md). Verdict actuel : NON PRÊT POUR MIGRATION.
