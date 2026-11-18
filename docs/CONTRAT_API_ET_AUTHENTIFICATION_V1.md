@@ -873,3 +873,16 @@ Ne jamais retourner dans cette projection : nom, téléphone, e-mail, identifian
 Les états de fournisseur ne doivent jamais être présentés comme une lecture humaine. Une notification acceptée n'est pas une livraison ; une livraison n'est pas une lecture ; un accusé de réception n'est pas une prise en charge.
 
 Le contrôle d'accès doit vérifier côté serveur que l'utilisateur est l'auteur de cette alerte, que la session limitée est encore valide et que l'alerte correspond au SOS de secours autorisé. Aucun identifiant fourni par le client ne doit permettre de lire une autre alerte. Aucun endpoint n'est défini ou créé par cette annexe.
+
+
+## Annexe — compte inaccessible et kit de récupération perdu (18 novembre 2026)
+
+**Statut :** règles de conception ; aucune route ni permission nouvelle n'est définie.
+
+1. **Appareil approuvé encore accessible :** exiger session valide et preuve cryptographique fraîche de la clé locale, revalider côté serveur l'état non révoqué au moment de la transaction, puis appliquer le parcours autorisé de changement d'e-mail. Le kit déclaré perdu est invalidé ; un nouveau kit ne peut être généré qu'après rétablissement d'une session de confiance.
+2. **Aucun appareil approuvé, facteur indépendant préenregistré :** refuser toute élévation automatique. Une future procédure devra vérifier un facteur configuré avant l'incident, lié au compte et à une version, avec expiration, anti-rejeu, consommation atomique, limites anti-abus et journalisation sans secret. Le type de facteur et le protocole restent non définis.
+3. **Aucun appareil approuvé, aucun facteur indépendant :** aucune session historique n'est créée. OTP e-mail/SMS, mot de passe seul, intervention support ou validation sociale ne peuvent remplacer la preuve absente. Un nouveau compte éventuel est une identité distincte, sans import automatique des données ou relations historiques.
+
+Les réponses externes doivent rester uniformes et ne pas permettre l'énumération. Les états internes doivent distinguer demande reçue, preuve insuffisante, expirée, refusée et terminée sans divulguer les facteurs présents. Aucun secret brut ne doit être retourné, journalisé ou transmis au support.
+
+La perte du kit n'autorise jamais la restauration de la racine cryptographique, l'approbation d'un nouvel appareil, l'accès GPS ni la lecture des données privées de l'ancien compte. Aucune API, migration D1 ou intégration n'est créée par cette annexe.
