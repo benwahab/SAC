@@ -298,3 +298,12 @@ Les critères de déclenchement du contrôle renforcé, la procédure administra
 Règles validées : la suspension ne ferme ni n'annule l'alerte ; les rappels continuent toutes les 5 minutes vers les seuls destinataires initiaux, sans ajout automatique ; les actions de réception et de prise en charge restent disponibles ; la capacité du titulaire est limitée à l'alerte concernée et ne rétablit aucun accès général. La révocation générale des sessions reste immédiate.
 
 Cette décision reste documentaire : aucune route API, permission serveur, capacité cryptographique opérationnelle, modification de session, migration D1 ou modification du code n'est autorisée à ce stade.
+
+
+## Procédure de vérification administrative d'une alerte suspendue — décision validée le 18 novembre 2026
+
+Pour une alerte SOS déjà transmise alors que le compte initiateur est suspendu, et lorsqu'un risque d'abus sur cette alerte est envisagé, la clôture est exclusivement administrative. Avant de décider, l'administration identifie l'alerte et son appareil d'origine, consulte les accusés de réception, interventions, mises à jour et signalements des contacts, puis tente si possible de joindre directement le titulaire. La réponse du titulaire est un élément à examiner, jamais une clôture automatique.
+
+Les informations contradictoires ou insuffisantes, tout indice récent de danger persistant, ou l'impossibilité de vérifier la fin du danger imposent le maintien de l'alerte et des rappels aux seuls destinataires initiaux. Le silence d'un proche ou du titulaire ne constitue jamais une preuve de sécurité. Un proche peut signaler que la situation semble terminée et demander une clôture, mais ne peut pas l'exécuter. Seul un administrateur SAC habilité clôture ; un seul administrateur suffit, sans double validation obligatoire.
+
+Cette décision ne vaut pas spécification technique ni autorisation de créer une API, une permission, une session spéciale ou une migration D1.
