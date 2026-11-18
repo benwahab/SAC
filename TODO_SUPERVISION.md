@@ -800,3 +800,20 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les cases
 - [ ] Obtenir une autorisation distincte avant tout code, API, D1, Cloudflare, fournisseur ou déploiement.
 
 **Statut :** proposition documentaire enregistrée ; aucune durée nouvelle n'est approuvée et aucune purge technique n'est implémentée.
+
+## Contrat de suppression de compte — 18 novembre 2026
+
+- [x] Auditer les règles déjà validées sur les cinq états, l'e-mail obligatoire, la suspension et la suppression en deux phases.
+- [x] Consolider les invariants et cas particuliers dans `docs/CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md`.
+- [x] Préserver l'interdiction de finaliser un compte avec une alerte ou un trajet actif.
+- [x] Distinguer l'exception étroite de clôture d'une alerte pour compte suspendu d'un droit général de clôture.
+- [ ] Arbitrer l'expiration des inscriptions non vérifiées et l'effacement avant vérification.
+- [ ] Arbitrer la demande de suppression depuis un compte suspendu et la suspension pendant `deletion_pending`.
+- [ ] Valider ou refuser le mode restreint de clôture et l'annulation des SOS programmés.
+- [ ] Définir la procédure de secours si l'auteur ne revient jamais, sans clôture automatique.
+- [ ] Arbitrer les effets sur les invitations, relations, groupes, appareils et abonnements.
+- [ ] Valider les durées de conservation non GPS et faire la revue juridique.
+- [ ] Réconcilier le contrat TypeScript sur les cinq états et préparer les tests, après autorisation de code.
+- [ ] Obtenir une autorisation distincte avant toute API, migration D1, ressource Cloudflare ou déploiement.
+
+**Statut :** contrat documentaire enregistré ; P0 non fermé ; aucune implémentation autorisée ou effectuée.
