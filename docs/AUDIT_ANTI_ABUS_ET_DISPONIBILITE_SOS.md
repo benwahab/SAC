@@ -601,3 +601,54 @@ Le choix de ce format ne valide pas encore l'entropie exacte, l'encodage, le sto
 Le fait que 256 bits aléatoires rendent une attaque exhaustive impraticable ne dispense pas des limites anti-abus : elles protègent aussi le service contre le déni de service et les essais distribués. Aucun nombre de tentatives, délai de blocage ou délai de sécurité n'est fixé dans cette annexe.
 
 **NO-GO maintenu :** aucune implémentation ni activation du kit avant revue cryptographique indépendante, tests de saisie sur appareils réels, validation de la politique de session/récupération et preuve que le secret n'est jamais journalisé ou transmis en clair.
+
+
+## Annexe — Audit anti-abus : téléphone perdu, e-mail historique inaccessible, clé hors ligne disponible (18 novembre 2026)
+
+**Statut :** analyse de menace du parcours candidat ; aucune récupération réelle activée.
+
+| Menace | Risque | Contrôle exigé ou point à arbitrer |
+|---|---|---|
+| Clé photographiée, copiée ou volée | Un tiers possède le facteur hors ligne | Usage unique, affichage unique, vérification protégée, consommation atomique ; déterminer si une preuve indépendante supplémentaire est nécessaire |
+| Clé et nouvel e-mail compromis ensemble | Prise de contrôle du compte historique | Ne pas assimiler l'OTP de la nouvelle boîte à une identité ; délai et facteurs complémentaires à arbitrer |
+| Faux nouvel e-mail | L'attaquant redirige les communications du compte | Vérification OTP liée à la demande et à la destination ; aucune notification sensible ni transfert automatique |
+| Ancien téléphone encore en ligne | L'attaquant continue d'utiliser une session volée | Définir révocation ciblée ou globale au commit ; vérifier atomiquement les sessions et appareils |
+| Autres appareils légitimes | Une révocation globale déconnecte des proches appareils du titulaire | Arbitrer la portée ; ne pas supposer conservation ou révocation générale sans décision explicite |
+| Demandes concurrentes | Deux récupérations ou deux sessions gagnantes | Une seule consommation atomique de la version de clé ; invalidation des demandes concurrentes |
+| Réponse réseau perdue après commit | Le titulaire répète l'opération ou croit à un échec | Idempotence et consultation de l'état par identifiant opaque ; jamais renvoyer ou redemander la clé en clair |
+| Demande en attente | Accès privé accordé trop tôt | Aucun privilège complet avant la fin de la procédure ; états d'attente distincts d'un succès |
+| Support ou contact manipulé | Contournement de la preuve | Aucun pouvoir de validation manuelle, quorum ou veto ; support sans accès à la clé |
+| Récupération utilisée pour rétablir GPS | Reprise d'un partage avec une identité non vérifiée | Racine et appareil séparés ; GPS bloqué jusqu'à nouvelle cérémonie et vérification indépendante par relation |
+| Épuisement / déni de service | Le titulaire légitime ne peut plus essayer | Limites atomiques par compte, version de clé, appareil et signaux réseau ; ne pas verrouiller globalement le SOS |
+| Énumération de comptes | Un attaquant découvre les comptes SAC | Réponses uniformes, identifiants opaques, absence de confirmation d'existence ou de validité partielle |
+
+### Règles de notification et de contestation
+- Une notification à l'ancienne adresse inaccessible n'est pas considérée comme délivrée ni comme un moyen de contestation fiable.
+- Si un ancien canal est suspecté compromis, aucune donnée sensible ni secret ne doit y être envoyé.
+- Une notification informative aux anciens canaux ou contacts ne doit pas divulguer la nouvelle adresse, la clé, les facteurs validés ou les détails privés.
+- Aucun contact ne peut approuver, bloquer ou récupérer le compte par vote ou simple reconnaissance humaine.
+- Le délai de sécurité et le mécanisme de contestation restent à définir ; un veto indéfini d'une ancienne boîte potentiellement compromise est à proscrire.
+
+### Politique de session à décider
+Évaluer explicitement au moins ces options avant implémentation :
+1. révoquer toutes les sessions/jetons existants au succès ;
+2. révoquer uniquement l'appareil déclaré perdu et les sessions présentant des signaux de risque ;
+3. révoquer toutes les sessions sauf une session de récupération à privilèges strictement limités.
+
+Pour chaque option, tester le cas où un appareil secondaire légitime est encore détenu par le titulaire, celui où l'ancien téléphone est utilisé par un attaquant, et celui où la demande est interrompue. Aucune option n'est actée dans cette annexe.
+
+### Tests adversariaux obligatoires
+- clé correcte + nouvel OTP correct, avant, pendant et après la période de sécurité ;
+- clé copiée/volée + nouvelle boîte contrôlée par un attaquant ;
+- clé erronée, expirée, consommée, régénérée ou liée à une autre version ;
+- deux demandes simultanées et deux validations concurrentes ;
+- révocation du téléphone perdu juste avant et pendant le commit ;
+- appareil secondaire légitime encore actif ;
+- réponse réseau perdue avant ou après le commit ;
+- contestation simultanée, ancienne boîte compromise et notification non délivrée ;
+- tentative d'utiliser la session récupérée pour approuver un appareil ou consulter/partager le GPS ;
+- preuve que la clé, ses fragments, les OTP et les coordonnées ne sont jamais présents dans logs, analytics, crash reports ou tickets ;
+- SOS valide depuis une session encore autorisée pendant une récupération ou une panne e-mail.
+
+**NO-GO :** pas de mise en production avant décision sur le seuil de preuve, le délai, la contestation, les droits temporaires, la politique de session et la validation des tests de concurrence et d'abus.
+
