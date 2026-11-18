@@ -34,7 +34,7 @@ Les éléments explicitement marqués « proposition », « à arbitrer » ou «
 
 **Risque :** modèle SQL et autorisations futurs pourraient être construits autour d'une machine d'états différente de la règle produit. L'absence d'un état dans le type ne doit jamais être compensée par un statut générique ou une permission implicite.
 
-**Action requise :** établir une table canonique des états et transitions, acteur autorisé, préconditions, effets sur sessions/appareils/activités et événements d'audit ; aligner le contrat TypeScript et ses tests après arbitrage des transitions encore ouvertes. Aucun changement de code n'est autorisé par cet audit.
+**Référence documentaire :** `ARBITRAGE_P0_CYCLE_COMPTE_ET_PREUVE_PROCHES.md` contient déjà la définition canonique des cinq états et la matrice des transitions, en séparant règles validées et cas ouverts. Le décalage restant est dans le code (`src/domain/account-lifecycle.ts`) et les tests : l'alignement nécessite une autorisation de modification applicative distincte. Les transitions encore ouvertes ne doivent pas être inventées.
 
 ### P0-02 — Portée de la conservation GPS : archive locale de 30 jours à isoler
 
@@ -58,7 +58,7 @@ Les éléments explicitement marqués « proposition », « à arbitrer » ou «
 
 **Risque :** une implémentation pourrait soit supprimer l'exception déjà décidée, soit l'élargir à une capacité générale de clôture administrative.
 
-**Action requise :** créer une matrice normative unique : scénario déclencheur, état du compte, autorité exacte, permission nominative, vérifications, motif, trace obligatoire, effet sur destinataires/rappels/GPS et interdictions. Le modèle métier devra représenter distinctement clôture par auteur et clôture exceptionnelle autorisée. Aucun droit général de clôture ne doit être créé.
+**État après recoupement :** la matrice normative et les limites de l'exception sont désormais consolidées dans `CONTRAT_CLOTURE_EXCEPTIONNELLE_ADMINISTRATIVE_SOS.md` et référencées par le contrat SOS, le modèle global, README et AGENTS. Le critère métier exact de suffisance des preuves reste ouvert et ne doit pas être inventé. Le contrat TypeScript `src/domain/alert-lifecycle.ts` ne représente toujours pas cette exception ; son alignement est un travail de code distinct qui nécessite une autorisation explicite. Aucun droit général de clôture ne doit être créé.
 
 ### P0-04 — Contradictions et transitions de suppression de compte
 
