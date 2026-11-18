@@ -72,3 +72,6 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 
 
 - [Modèle de données administratif et intégration au modèle général](docs/MODELE_DONNEES_ADMIN_ET_INTEGRATION_SAC.md)
+
+
+- [Modèle global des données SAC](docs/MODELE_GLOBAL_DONNEES_SAC.md) — référentiel de cohérence des domaines citoyens, alertes, trajets, notifications, offres/paiements et administration.
