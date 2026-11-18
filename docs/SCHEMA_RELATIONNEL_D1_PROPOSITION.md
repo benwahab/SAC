@@ -385,3 +385,10 @@ Une alerte orpheline reste un objet métier distinct du compte qui l'a créée. 
 - aucune confusion entre expiration du partage de position et clôture de l'alerte.
 
 La matrice finale devra prévoir la minimisation ou pseudonymisation des données d'auteur et de destinataires, sous réserve des obligations légales et des preuves strictement nécessaires.
+
+
+## 10. Matrice de traçabilité
+
+La matrice détaillée table par table est désormais consignée dans `docs/MATRICE_TRACABILITE_SCHEMA_D1.md`. Elle relie les 21 tables conceptuelles aux invariants, contraintes/index, tests D1 et questions de conservation.
+
+La matrice conclut explicitement que le schéma n'est **pas prêt pour migration**. Elle ne constitue ni une validation du modèle ni une autorisation d'écrire du SQL.
