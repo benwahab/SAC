@@ -503,3 +503,19 @@ La révocation prend effet à l'instant de son commit serveur. Une lecture préa
 - Une révocation ne doit pas effacer les preuves de notifications déjà acceptées par un fournisseur.
 
 **Statut : proposition de sécurité à valider.** Elle ne tranche pas à elle seule le maintien de l'accès en lecture ni la livraison des rappels à un destinataire révoqué.
+
+
+### 4.2.2 Portée de la révocation sur les lectures et notifications — proposition à valider
+
+Ne pas confondre trois éléments : l'instantané historique, l'autorisation d'accès courante et une notification déjà confiée au transport.
+
+- L'instantané initial reste immuable : une révocation ne supprime pas le destinataire de l'historique de l'alerte.
+- L'autorisation est dynamique : l'appartenance à l'instantané ne suffit plus après révocation pour lire les détails ou envoyer une nouvelle action.
+- Une tâche de notification non encore acceptée par le transport peut être supprimée ou marquée supprimée pour cause de révocation, après contrôle transactionnel de la relation.
+- Une notification déjà acceptée par le fournisseur peut encore être livrée ; SAC ne peut pas garantir son rappel.
+- Les payloads push doivent rester minimaux et ne jamais contenir de détails sensibles de l'alerte ou de coordonnées GPS. L'ouverture de la notification doit refaire un contrôle d'accès serveur.
+- Les événements antérieurs à la révocation restent visibles dans l'historique de l'auteur. Le contact révoqué ne reçoit pas les événements postérieurs si la politique de coupure immédiate est validée.
+
+**Causes de fin de relation :** distinguer au minimum la révocation par le propriétaire et le retrait d'acceptation par le contact. La proposition est que les deux invalident immédiatement les autorisations futures, tout en conservant leur cause distincte dans le journal. Une réinvitation ultérieure crée une nouvelle relation/version ; elle ne réactive pas rétroactivement l'ancienne relation ni ne donne accès à une ancienne alerte.
+
+**Statut : proposition de confidentialité et de livraison à valider.** Les règles de transport déjà acceptées et les limites techniques du fournisseur doivent être documentées ; aucune promesse de suppression d'une notification déjà distribuée.
