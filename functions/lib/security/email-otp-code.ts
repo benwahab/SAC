@@ -11,11 +11,6 @@ const OTP_SPACE = 1_000_000;
 const UINT32_RANGE = 0x1_0000_0000;
 const ACCEPTED_UINT32_LIMIT = Math.floor(UINT32_RANGE / OTP_SPACE) * OTP_SPACE;
 
-export interface OtpCrypto {
-  getRandomValues<T extends ArrayBufferView | null>(array: T): T;
-  readonly subtle: SubtleCrypto;
-}
-
 /** Génère uniformément un code décimal de six chiffres, zéros initiaux inclus. */
 export function generateEmailOtpCode(random: Pick<Crypto, "getRandomValues">): string {
   const value = new Uint32Array(1);
