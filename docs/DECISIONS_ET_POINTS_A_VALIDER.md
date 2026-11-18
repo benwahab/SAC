@@ -81,7 +81,7 @@ Aucun fournisseur, compte externe, coût, intégration ou calendrier de destruct
 3. **Premium :** liste précise des options supplémentaires incluses dans les 5 000 FCFA/mois.
 4. **Groupes :** nombre maximal de groupes, membres, rôles et règles d'invitation.
 5. **Paiement :** prestataire(s) acceptés au Niger, frais, renouvellement, remboursement et gestion des paiements échoués.
-6. **SMS :** prestataire, coût et disponibilité. La règle de bascule est actée : après le seuil de rappels push choisi par le lanceur ; la plage et la valeur par défaut proposées (1 à 5, défaut 2) restent à valider.
+6. **SMS :** prestataire, coût et disponibilité restent à valider. La règle de bascule est actée : après le seuil de rappels push choisi par le lanceur. **Plage validée le 18 novembre 2026 : 1 à 5 rappels, avec 2 rappels (10 minutes) par défaut.**
 7. **Données GPS :** fréquence d'échantillonnage et conception du chiffrement/destruction indépendante des clés ; la règle est décidée : aucune restauration ne doit rendre les positions expirées lisibles après 30 jours.
 8. **Compte :** récupération après perte du téléphone, changement de numéro/e-mail et suppression du compte.
 9. **SOS discret :** scénarios techniquement réalisables sur Android, iOS et PWA ; limites de permissions et de fonctionnement en arrière-plan.
@@ -113,6 +113,7 @@ Aucun fournisseur, compte externe, coût, intégration ou calendrier de destruct
 | 1.4 | Catégories d'alerte, vérification des contacts invités et fenêtres de partage de localisation harmonisées avec les décisions récupérées. |
 | 1.5 | Conservation des positions GPS précises validée à 30 jours après la fin du partage, avec purge automatique définitive des données actives. |
 | 1.6 | Exigence ferme : après 30 jours, aucune restauration de sauvegarde, D1 Time Travel, snapshot, export ou réplication ne doit permettre de récupérer ou rendre lisibles les coordonnées GPS expirées ; destruction cryptographique indépendante et non restaurable obligatoire. |
+| 1.7 | Seuil d'escalade SMS validé : le lanceur choisit de 1 à 5 rappels push par alerte ; 2 rappels (10 minutes) sont présélectionnés. |
 
 Mettre à jour ce tableau à chaque nouvelle validation importante.
 
