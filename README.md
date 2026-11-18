@@ -4,6 +4,7 @@ SAC est une application de sécurité personnelle et familiale. Elle permet à u
 
 ## Références obligatoires
 
+- [Audit transversal de cohérence de l'architecture — 18 novembre 2026](docs/AUDIT_TRANSVERSAL_COHERENCE_ARCHITECTURE_2026-11-18.md) — écarts P0/P1, hiérarchie des décisions et ordre de résolution avant migration/lancement.
 - [Consolidation générale de l'architecture](docs/CONSOLIDATION_GENERALE_SAC.md)
 - [Décisions complémentaires du 18 novembre 2026](docs/DECISIONS_COMPLEMENTAIRES_2026-11-18.md)
 - [Console professionnelle et services](docs/CONSOLE_PROFESSIONNELLE_ET_SERVICES.md)
