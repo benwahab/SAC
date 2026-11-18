@@ -75,3 +75,6 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 
 
 - [Modèle global des données SAC](docs/MODELE_GLOBAL_DONNEES_SAC.md) — référentiel de cohérence des domaines citoyens, alertes, trajets, notifications, offres/paiements et administration.
+
+
+- [Revue finale de cohérence du modèle relationnel](docs/REVUE_FINALE_COHERENCE_MODELE_RELATIONNEL.md) — verdict, cardinalités, FK, suppressions, concurrence et blocages avant migration.
