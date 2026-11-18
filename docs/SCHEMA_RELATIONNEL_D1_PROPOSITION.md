@@ -150,7 +150,8 @@ Une ligne par relation et catégorie ; l'instantané de sélection est calculé 
 - `id`, `author_account_id`
 - `category`, `urgency`
 - `description` (taille limitée, validation serveur)
-- `status` : active, cancelled, closed
+- `status` : active, closed
+- `closure_reason` : completed, cancelled (motif de clôture, non un état distinct)
 - `triggered_at`, `cancelled_at`, `closed_at`
 
 Les états doivent être affinés avec la machine à états métier avant migration. Une annulation ne supprime jamais l'alerte ni son historique.
