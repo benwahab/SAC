@@ -22,6 +22,15 @@ test("rejects a declared body larger than the limit without reading it", async (
   assert.deepEqual(result, { ok: false, reason: "too_large" });
 });
 
+test("accepts a valid decimal Content-Length", async () => {
+  const body = '{"ok":true}';
+  const result = await readJsonRequestBody(
+    request(body, { "Content-Length": String(new TextEncoder().encode(body).byteLength) }),
+    32,
+  );
+  assert.deepEqual(result, { ok: true, value: { ok: true } });
+});
+
 test("rejects malformed Content-Length values", async () => {
   for (const value of ["", "-1", "1.5", "NaN", "1e3", "9007199254740992"]) {
     const result = await readJsonRequestBody(
