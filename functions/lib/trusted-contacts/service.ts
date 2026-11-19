@@ -369,3 +369,62 @@ export async function cancelPendingContactInvitation(
     return fail("storage_unavailable");
   }
 }
+
+
+/** Declines an invitation after checking the same active, verified destination identity. */
+export async function declineContactInvitation(
+  db: InvitationDatabase,
+  cryptoProvider: Crypto,
+  input: {
+    readonly authenticatedAccountId: string;
+    readonly invitationId: string;
+    readonly token: string;
+    readonly now?: number;
+  },
+): Promise<ContactInvitationServiceResult<{ readonly declined: true }>> {
+  const now = input.now ?? Date.now();
+  if (
+    !input.authenticatedAccountId.trim() ||
+    !input.invitationId.trim() ||
+    !isSafeToken(input.token) ||
+    !Number.isSafeInteger(now) ||
+    now < 0
+  ) return fail("invalid_input");
+
+  try {
+    const digest = await digestContactInvitationToken(cryptoProvider, input.token);
+    const result = await db.prepare(
+      `UPDATE contact_invitations
+       SET status = 'declined', recipient_account_id = ?, decided_at = ?
+       WHERE id = ?
+         AND status = 'pending'
+         AND token_digest = ?
+         AND expires_at > ?
+         AND inviter_account_id <> ?
+         AND EXISTS (
+           SELECT 1
+           FROM accounts a
+           JOIN account_identities i ON i.account_id = a.id
+           WHERE a.id = ?
+             AND a.status = 'active'
+             AND i.channel = 'email'
+             AND i.is_primary = 1
+             AND i.verified_at IS NOT NULL
+             AND i.normalized_value = contact_invitations.destination_email
+         )`,
+    ).bind(
+      input.authenticatedAccountId,
+      now,
+      input.invitationId,
+      digest,
+      now,
+      input.authenticatedAccountId,
+      input.authenticatedAccountId,
+    ).run();
+
+    if (!result.success || result.meta.changes !== 1) return fail("invalid_or_expired_invitation");
+    return { ok: true, value: { declined: true } };
+  } catch {
+    return fail("invalid_or_expired_invitation");
+  }
+}
