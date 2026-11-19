@@ -35,6 +35,23 @@ export default {
 
     if (url.pathname === "/health") return json({ ok: true });
 
+    if (url.pathname === "/state" && request.method === "GET") {
+      const ceremonyId = url.searchParams.get("ceremonyId");
+      if (!ceremonyId) return json({ error: "missing_ceremony_id" }, 400);
+
+      const ceremony = await env.DB.prepare(
+        "SELECT id, status, approved_at FROM test_enrollment_ceremonies WHERE id = ?",
+      ).bind(ceremonyId).first();
+      const challenge = await env.DB.prepare(
+        "SELECT id, consumed_at, expires_at FROM test_enrollment_challenges WHERE ceremony_id = ?",
+      ).bind(ceremonyId).first();
+      const guard = await env.DB.prepare(
+        "SELECT COUNT(*) AS count FROM test_enrollment_commit_guard WHERE ceremony_id = ?",
+      ).bind(ceremonyId).first<{ count: number }>();
+
+      return json({ ceremony, challenge, commitCount: guard?.count ?? 0 });
+    }
+
     if (request.method !== "POST") return json({ error: "not_found" }, 404);
 
     if (url.pathname === "/seed") {
@@ -178,23 +195,6 @@ export default {
         challengeConsumptionRolledBack: challenge?.consumed_at === null,
         ceremonyStillPending: ceremony?.status === "pending",
       });
-    }
-
-    if (url.pathname === "/state") {
-      const ceremonyId = url.searchParams.get("ceremonyId");
-      if (!ceremonyId) return json({ error: "missing_ceremony_id" }, 400);
-
-      const ceremony = await env.DB.prepare(
-        "SELECT id, status, approved_at FROM test_enrollment_ceremonies WHERE id = ?",
-      ).bind(ceremonyId).first();
-      const challenge = await env.DB.prepare(
-        "SELECT id, consumed_at, expires_at FROM test_enrollment_challenges WHERE ceremony_id = ?",
-      ).bind(ceremonyId).first();
-      const guard = await env.DB.prepare(
-        "SELECT COUNT(*) AS count FROM test_enrollment_commit_guard WHERE ceremony_id = ?",
-      ).bind(ceremonyId).first<{ count: number }>();
-
-      return json({ ceremony, challenge, commitCount: guard?.count ?? 0 });
     }
 
     return json({ error: "not_found" }, 404);
