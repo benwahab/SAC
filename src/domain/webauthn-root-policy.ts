@@ -21,15 +21,16 @@ export function evaluateWebAuthnRootCredentialPolicy(
   }
 
   const candidate = input as Record<string, unknown>;
-  if (candidate.userVerified !== true) {
-    return { accepted: false, reason: "user_verification_missing" };
-  }
   if (
     candidate.credentialDeviceType !== "singleDevice" &&
     candidate.credentialDeviceType !== "multiDevice" &&
     candidate.credentialDeviceType !== "unknown"
   ) {
     return { accepted: false, reason: "credential_not_single_device" };
+  }
+
+  if (candidate.userVerified !== true) {
+    return { accepted: false, reason: "user_verification_missing" };
   }
 
   if (candidate.credentialDeviceType !== "singleDevice") {
