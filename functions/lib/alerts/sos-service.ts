@@ -184,8 +184,11 @@ export async function closeSosAlertByAuthor(
          FROM alerts
          WHERE id = ? AND author_account_id = ?
            AND status = 'closed_by_author' AND closed_at = ?
-           AND changes() = 1`,
-      ).bind(cryptoProvider.randomUUID(), now, input.alertId, input.authenticatedAccountId, now),
+           AND NOT EXISTS (
+             SELECT 1 FROM alert_events
+             WHERE alert_id = ? AND event_type = 'closed_by_author'
+           )`,
+      ).bind(cryptoProvider.randomUUID(), now, input.alertId, input.authenticatedAccountId, now, input.alertId),
       db.prepare(
         `UPDATE alert_responsibility_periods
          SET ended_at = ?, end_reason = 'alert_closed'
