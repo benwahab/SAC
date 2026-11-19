@@ -247,7 +247,7 @@ Effets qui doivent réussir ensemble :
 
 Si une précondition échoue, aucun effet partiel ne doit être conservé. La création de session ne doit pas être effectuée avant le commit. La réponse réseau perdue après commit doit pouvoir être reprise sans créer une seconde activation.
 
-**Aucune garantie d'atomicité D1 n'est affirmée ici.** Il faudra choisir et démontrer une stratégie compatible avec D1/SQLite, y compris les courses avec révocation et les écritures conditionnelles qui touchent zéro ligne. `DB.batch()` seul n'est pas considéré comme preuve suffisante.
+**État de la preuve D1 : partiel.** Une expérience isolée dans le runtime Workers local a démontré le rollback d'un `D1.batch()`, la consommation unique sous huit requêtes concurrentes et le rejet d'un défi expiré ou dont le digest ne correspond pas. Voir `docs/ETUDE_ATOMICITE_CHALLENGES_D1_V1.md`. Cette expérience ne couvre pas encore la transaction finale avec les vraies tables account/root/device/ceremony/proof ni la course avec révocation. Il faudra démontrer ces propriétés dans le schéma final. `DB.batch()` seul n'est pas considéré comme preuve suffisante : chaque écriture conditionnelle qui peut toucher zéro ligne doit déclencher un échec dans le même batch.
 
 ## 6. Révocation et ordre des opérations concurrentes
 
