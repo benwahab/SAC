@@ -13,6 +13,18 @@ Les migrations sont versionnées dans ce dossier et doivent être testées avant
 
 Les autres domaines SAC (appareils, sessions, contacts, alertes, trajets, groupes, outbox) ne sont pas créés par cette migration.
 
+## 0006 — état de livraison OTP
+
+`0006_email_otp_delivery_state.sql` ajoute un état de livraison aux défis OTP :
+- les défis historiques sont conservés comme déjà acceptés ;
+- les nouveaux défis sont créés en `pending` ;
+- un échec fournisseur les marque `failed` sans invalider le code précédemment livré ;
+- seule l'acceptation du nouveau courriel le rend vérifiable et invalide l'ancien défi ;
+- le parcours de vérification ne sélectionne que les défis acceptés ;
+- les tentatives ne peuvent pas être consommées sur un défi en attente ou non livré.
+
+Le délai minimal de 60 secondes continue de s'appliquer à toute création de défi, y compris une tentative de livraison échouée.
+
 ## Vérification locale
 
 1. Exécuter `python3 tests/d1_email_otp_schema.test.py` pour tester le schéma et ses triggers SQLite.
