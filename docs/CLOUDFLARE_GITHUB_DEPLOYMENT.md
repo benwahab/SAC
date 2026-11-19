@@ -81,3 +81,20 @@ En attendant cette preuve, il est interdit de stocker des coordonnées GPS en cl
 
 GitHub `benwahab/SAC`, branche `main`, reste la source de vérité. Claude et Qwen peuvent contribuer au même dépôt, après lecture de `AGENTS.md` et des documents de référence. Ils ne peuvent modifier le langage, la stack, l'architecture ou les règles métier sans validation explicite.
 
+
+
+## Mise à jour de l'environnement réel — 19 novembre 2026
+
+Le projet Cloudflare Pages a maintenant été créé et relu dans le compte Cloudflare connecté. Les constats historiques de la section 3 décrivent l'état du 17 novembre et ne représentent plus l'état actuel.
+
+- Projet Pages : `sac` ; sous-domaine réservé : `sac-3xh.pages.dev`.
+- Source : dépôt GitHub `benwahab/SAC`, branche `main`.
+- Build : `npm run build`, sortie `dist`, racine `/`.
+- Binding D1 de production : `DB` vers `sac-db` (UUID `892ce876-f279-409c-8f9e-06b1dca66e9d`).
+- Variables de production : `WEBAUTHN_RP_ID=sac-3xh.pages.dev`, `WEBAUTHN_RP_NAME=SAC`, `WEBAUTHN_ALLOWED_ORIGINS=["https://sac-3xh.pages.dev"]`, `WEBAUTHN_ROOT_ENROLLMENT_ENABLED=false`, `APP_BASE_URL=https://sac-3xh.pages.dev`.
+- `EMAIL_OTP_HMAC_SECRET` a été envoyé avec succès à Cloudflare comme variable `secret_text`. Sa valeur est masquée par l'API et n'est pas présente dans GitHub.
+- Les déploiements de production automatiques sont désactivés ; les déploiements Preview sont désactivés ; aucun déploiement n'a été lancé.
+
+La base distante est toujours sans tables au dernier contrôle. Les migrations ne sont pas appliquées. Aucun secret Resend, expéditeur e-mail SAC, fournisseur push ou SMS n'est configuré. La durée de vie des invitations est encore en arbitrage produit ; aucune valeur n'a été inventée. Le projet Pages et ses bindings sont configurés, mais le service n'est pas publié ni prêt pour les utilisateurs.
+
+La configuration de la variable secrète a reçu une réponse de succès Cloudflare, mais sa valeur n'est volontairement pas lisible après écriture. Pour confirmer le fonctionnement de bout en bout, il faudra effectuer un test contrôlé de l'API d'inscription après initialisation D1 et configuration Resend, sans jamais exposer le secret ni un OTP.
