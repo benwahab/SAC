@@ -41,9 +41,14 @@ test("rejects malformed Content-Length values", async () => {
   }
 });
 
-test("rejects a declared body larger than the limit", async () => {
-  const result = await readJsonRequestBody(request("{}", { "Content-Length": "100" }), 8);
-  assert.deepEqual(result, { ok: false, reason: "too_large" });
+test("rejects a Content-Length smaller than the streamed body", async () => {
+  const result = await readJsonRequestBody(request("{}", { "Content-Length": "1" }), 16);
+  assert.deepEqual(result, { ok: false, reason: "invalid_content_length" });
+});
+
+test("rejects a Content-Length larger than the streamed body", async () => {
+  const result = await readJsonRequestBody(request("{}", { "Content-Length": "3" }), 16);
+  assert.deepEqual(result, { ok: false, reason: "invalid_content_length" });
 });
 
 test("enforces the byte limit while streaming even without Content-Length", async () => {
