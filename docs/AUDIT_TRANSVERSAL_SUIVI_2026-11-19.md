@@ -212,3 +212,21 @@ Une lecture complémentaire des objets GitHub Actions a permis de préciser le c
 - **Autres domaines, D1 distante, notifications réelles, GPS et déploiement : inchangés et non certifiés.**
 
 Cette section complète les constats précédents ; les sections historiques restent conservées pour la traçabilité.
+
+
+## 12. Continuité de connexion — lacune prioritaire confirmée
+
+Lecture complémentaire de `src/App.tsx`, `src/services/device/root-enrollment.ts`, des routes `functions/api/auth/*` et de l'état WebAuthn :
+
+- Le parcours client raccordé prépare puis termine l'enrôlement de la première clé racine.
+- `POST /api/auth/complete-root-enrollment` crée l'appareil racine et la première session dans le même batch D1.
+- `GET /api/auth/session` vérifie une session déjà présentée ; il ne crée pas une nouvelle session.
+- `POST /api/auth/logout` révoque la session courante.
+- Aucun parcours client/endpoint d'assertion WebAuthn (`navigator.credentials.get`) pour une connexion ultérieure n'a été trouvé dans l'arborescence examinée.
+- Le service client expose la vérification de session et la déconnexion, mais pas une opération d'authentification par assertion.
+
+**Conséquence :** l'enrôlement initial et la première session ne constituent pas un cycle de connexion réutilisable. Après expiration, révocation, déconnexion ou changement d'appareil, le parcours de reconnexion n'est pas complet. La page de connexion ne doit pas être présentée comme une authentification déjà opérationnelle pour un appareil enrôlé.
+
+**Priorité P0 avant toute ouverture à des utilisateurs :** définir et implémenter la connexion WebAuthn par assertion sur appareil déjà enrôlé, avec challenge serveur à usage unique, vérification cryptographique côté serveur, origine/RP ID, contrôle du compte et de l'appareil, anti-rejeu, limites de tentatives et création de session atomique. Le parcours d'un nouvel appareil et la récupération de compte restent des parcours distincts à spécifier. Ne pas inventer un refresh token ni contourner la racine matérielle avec un mot de passe seul.
+
+Cette lacune n'a pas été modifiée dans cette passe : le protocole d'assertion doit être conçu et audité avant implémentation. Aucune migration distante ni activation de l'enrôlement n'a été effectuée.
