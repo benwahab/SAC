@@ -345,7 +345,6 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
   );
 }
 
-type HealthState = "checking" | "connected" | "schema_incomplete" | "unavailable";
 
 interface InstallPromptEvent extends Event {
   prompt: () => Promise<void>;
