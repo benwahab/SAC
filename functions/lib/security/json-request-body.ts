@@ -16,6 +16,7 @@ export async function readJsonRequestBody(
   }
 
   const declaredLength = request.headers.get("Content-Length");
+  let declaredByteLength: number | null = null;
   if (declaredLength !== null) {
     // Content-Length doit être un entier décimal sûr. Une valeur mal formée
     // ne doit jamais être traitée comme une absence d'en-tête.
@@ -29,6 +30,7 @@ export async function readJsonRequestBody(
     if (parsedLength > maxBytes) {
       return { ok: false, reason: "too_large" };
     }
+    declaredByteLength = parsedLength;
   }
 
   if (!request.body) return { ok: false, reason: "invalid_json" };
@@ -52,6 +54,11 @@ export async function readJsonRequestBody(
     return { ok: false, reason: "invalid_json" };
   } finally {
     reader.releaseLock();
+  }
+
+  // Si Content-Length est fourni, il doit correspondre exactement au flux lu.
+  if (declaredByteLength !== null && totalBytes !== declaredByteLength) {
+    return { ok: false, reason: "invalid_content_length" };
   }
 
   const bytes = new Uint8Array(totalBytes);
