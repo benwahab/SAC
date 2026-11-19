@@ -17,6 +17,10 @@ jobs:
       - name: Pin npm version
         run: npm install --global npm@10.9.9
       - run: npm ci
+      - name: Install pinned SimpleWebAuthn runtime-smoke dependency (test only)
+        run: npm install --no-save --package-lock=false @simplewebauthn/server@14.1.0
+      - name: Test SimpleWebAuthn inside local Cloudflare Workers runtime
+        run: npm run test:webauthn-workers
       - name: Test full RFC 8785 Appendix B numeric vector set
         run: npm run test:jcs
       - name: Test strict JSON boundary parser and duplicate-key rejection
