@@ -54,7 +54,7 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   assert.equal(snapshottedAfterRevocation.data.isAuthor, false);
 
   const revokedContactCannotJoinNewAlert = await post<{ error: string }>("/create", {
-    owner, recipients: [contact2], reminders: 0, now: now + 2,
+    owner, recipients: [contact2], reminders: 1, now: now + 2,
   });
   assert.equal(revokedContactCannotJoinNewAlert.status, 409);
 
@@ -88,6 +88,18 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   assert.equal(events.status, 200);
   assert.deepEqual(events.data.map(x => x.type), ["triggered", "acknowledged", "volunteered", "volunteered", "withdrew"]);
 
+  const initialPushes = await post<Array<{ id: string; leaseToken: string; reminderNumber: number }>>("/claim", { now });
+  assert.equal(initialPushes.status, 200);
+  assert.equal(initialPushes.data.length, 2);
+  assert.ok(initialPushes.data.every(item => item.reminderNumber === 0));
+  for (const initial of initialPushes.data) {
+    const accepted = await post<{ updated: boolean }>("/complete", {
+      reminderId: initial.id, leaseToken: initial.leaseToken, outcome: "sent", now: now + 1,
+    });
+    assert.equal(accepted.status, 200);
+    assert.equal(accepted.data.updated, true);
+  }
+
   const dueEarly = await post<unknown[]>("/claim", { now: now + 299_999 });
   assert.equal(dueEarly.status, 200);
   assert.equal(dueEarly.data.length, 0);
@@ -100,6 +112,7 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   const due = { status: 200, data: parallelClaims.flatMap(x => x.data) };
   assert.equal(due.data.length, 2);
   assert.ok(due.data.every(item => item.attemptCount === 1));
+  assert.ok(due.data.every(item => item.reminderNumber === 1));
   const duplicateClaim = await post<unknown[]>("/claim", { now: now + 300_001 });
   assert.equal(duplicateClaim.status, 200);
   assert.equal(duplicateClaim.data.length, 0);
@@ -143,6 +156,10 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     owner, recipients: [contact], reminders: 1, now: now + 500_000,
   });
   assert.equal(followup.status, 200);
+  const initialFollowup = await post<{ claimed: number; providerAccepted: number; retryScheduled: number; terminalFailures: number; completionErrors: number }>("/dispatch", {
+    now: now + 500_000,
+  });
+  assert.deepEqual(initialFollowup.data, { claimed: 1, providerAccepted: 1, retryScheduled: 0, terminalFailures: 0, completionErrors: 0 });
   const failedDelivery = await post<{ claimed: number; providerAccepted: number; retryScheduled: number; completionErrors: number }>("/dispatch", {
     now: now + 800_000, failRecipient: contact,
   });
@@ -159,6 +176,10 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     owner, recipients: [contact], reminders: 1, now: exhaustionBase,
   });
   assert.equal(exhaustionAlert.status, 200);
+  const initialExhaustion = await post<{ claimed: number; providerAccepted: number; terminalFailures: number }>("/dispatch", {
+    now: exhaustionBase,
+  });
+  assert.deepEqual(initialExhaustion.data, { claimed: 1, providerAccepted: 1, terminalFailures: 0 });
   const firstFailure = await post<{ claimed: number; retryScheduled: number; terminalFailures: number }>("/dispatch", {
     now: exhaustionBase + 300_000, throwRecipient: contact,
   });
