@@ -770,6 +770,9 @@ export interface SosReminderDispatchSummary {
   readonly retryScheduled: number;
   readonly terminalFailures: number;
   readonly completionErrors: number;
+  readonly smsEvaluationsCreated: number;
+  readonly smsEvaluationsSuppressed: number;
+  readonly smsTasksCreated: number;
 }
 
 /**
@@ -827,6 +830,9 @@ export async function dispatchDueSosReminders(
     else retryScheduled += 1;
   }
 
+  const sms = await scheduleDueSosSmsEscalations(db, cryptoProvider, { now: input.now });
+  if (!sms.ok) return sms;
+
   return {
     ok: true,
     value: {
@@ -835,6 +841,9 @@ export async function dispatchDueSosReminders(
       retryScheduled,
       terminalFailures,
       completionErrors,
+      smsEvaluationsCreated: sms.value.evaluationsCreated,
+      smsEvaluationsSuppressed: sms.value.evaluationsSuppressed,
+      smsTasksCreated: sms.value.smsTasksCreated,
     },
   };
 }
