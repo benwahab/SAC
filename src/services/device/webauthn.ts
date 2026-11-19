@@ -103,16 +103,27 @@ export function normalizeRootCreationOptions(
     throw new Error("La taille du challenge ou de l'identifiant utilisateur WebAuthn est invalide.");
   }
 
-  const excludeCredentials = input.excludeCredentials?.map((descriptor, index) => {
-    const id = decodeBase64Url(descriptor.id, `excludeCredentials[${index}].id`);
-    if (id.byteLength < 1 || id.byteLength > 1024) {
-      throw new Error("Un identifiant de credential à exclure est invalide.");
-    }
-    return { ...descriptor, id: toArrayBuffer(id) };
-  });
+  const excludeCredentials: PublicKeyCredentialDescriptor[] | undefined =
+    input.excludeCredentials?.map((descriptor, index) => {
+      const id = decodeBase64Url(descriptor.id, `excludeCredentials[${index}].id`);
+      if (id.byteLength < 1 || id.byteLength > 1024) {
+        throw new Error("Un identifiant de credential à exclure est invalide.");
+      }
+      return {
+        ...descriptor,
+        id: toArrayBuffer(id),
+      };
+    });
+
+  const {
+    challenge: _encodedChallenge,
+    user: _encodedUser,
+    excludeCredentials: _encodedExcludedCredentials,
+    ...serverOptions
+  } = input;
 
   return {
-    ...input,
+    ...serverOptions,
     challenge: toArrayBuffer(challenge),
     user: { ...input.user, id: toArrayBuffer(userId) },
     ...(excludeCredentials ? { excludeCredentials } : {}),
@@ -161,9 +172,20 @@ export async function createRootWebAuthnCredential(
     throw new Error("La réponse WebAuthn ne contient pas de preuve d'enregistrement.");
   }
   const attestation = response as AuthenticatorAttestationResponse;
-  const transports = typeof attestation.getTransports === "function"
+  const allowedTransports = new Set<AuthenticatorTransport>([
+    "ble",
+    "hybrid",
+    "internal",
+    "nfc",
+    "usb",
+  ]);
+  const reportedTransports: string[] = typeof attestation.getTransports === "function"
     ? attestation.getTransports()
     : [];
+  const transports: AuthenticatorTransport[] = reportedTransports.filter(
+    (transport): transport is AuthenticatorTransport =>
+      allowedTransports.has(transport as AuthenticatorTransport),
+  );
 
   return {
     id: publicKeyCredential.id,
