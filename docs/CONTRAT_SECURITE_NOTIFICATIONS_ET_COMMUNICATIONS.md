@@ -76,6 +76,8 @@ Exigences cibles :
 - contrôler à chaque envoi que compte, appareil, abonnement, alerte et destinataire restent éligibles ;
 - ne jamais déduire qu'un terminal est actif ou que son propriétaire a lu le message d'un abonnement valide.
 
+Avant toute livraison, le Worker devra aussi appliquer une politique anti-SSRF stricte aux endpoints enregistrés : HTTPS, destinations de fournisseurs Web Push explicitement autorisées, aucune adresse privée/locale, et aucun redirect non validé. Le stockage actuel n'effectue aucun appel réseau vers l'endpoint.
+
 Les réponses 404/410 et autres erreurs fournisseur doivent être classées sans exposer l'endpoint. Les erreurs transitoires peuvent être réessayées avec une stratégie bornée et une déduplication ; les erreurs permanentes désactivent l'abonnement après vérification.
 
 **État d'implémentation — première tranche sur main :** la migration `0008_push_subscriptions.sql` et `POST /api/push/subscriptions` existent. L'API exige une session d'appareil active et same-origin, lie chaque enregistrement au compte/appareil issus de la session, chiffre l'endpoint et les clés par AES-256-GCM avec une clé dérivée HKDF, et ne renvoie jamais l'endpoint. L'empreinte HMAC sert à l'unicité. La révocation de l'appareil supprime les enregistrements via trigger D1. L'action `remove` supprime les abonnements du seul appareil courant. Une seule souscription active est autorisée par appareil enrôlé ; son remplacement est réalisé dans un batch D1 atomique.
