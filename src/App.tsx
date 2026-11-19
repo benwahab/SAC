@@ -184,7 +184,6 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
       setRootCeremony(ceremony);
       setPassword("");
       setMode("enroll");
-      setNotice(copy.rootReady);
     } catch (reason) {
       setError(errorMessage(reason instanceof Error ? reason.message : undefined));
     } finally {
