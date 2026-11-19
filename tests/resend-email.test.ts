@@ -247,3 +247,34 @@ test("une réponse fournisseur contenant du JSON UTF-8 invalide est refusée", a
     globalThis.fetch = originalFetch;
   }
 });
+
+test("does not wait for a stalled provider response cancellation", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () => {
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        controller.enqueue(new Uint8Array(5_000).fill(65));
+      },
+      cancel() {
+        return new Promise<void>(() => {
+          // Simule un fournisseur dont le flux ne termine jamais son nettoyage.
+        });
+      },
+    });
+    return new Response(body, { status: 200 });
+  }) as typeof fetch;
+
+  try {
+    assert.deepEqual(
+      await sendAccountVerificationCode(
+        { RESEND_API_KEY: "test-api-key", RESEND_FROM_EMAIL: "SAC <noreply@example.com>" },
+        "person@example.com",
+        "123456",
+        "fr",
+      ),
+      { ok: false, reason: "provider_rejected" },
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
