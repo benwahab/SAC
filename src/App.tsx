@@ -82,7 +82,7 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
     },
   }[language];
 
-  type Mode = "login" | "register" | "verify" | "complete";
+  type Mode = "login" | "register" | "verify" | "enroll" | "complete";
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -93,6 +93,7 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
   const [error, setError] = useState("");
   const [resendAt, setResendAt] = useState<number | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState(0);
+  const [rootCeremony, setRootCeremony] = useState<RootEnrollmentCeremony | null>(null);
   const rtl = language === "ar";
 
   useEffect(() => {
@@ -164,7 +165,7 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
         return;
       }
       setCode("");
-      setMode("complete");
+      setMode("login");
       setNotice(copy.success);
     } catch {
       setError(copy.requestError);
