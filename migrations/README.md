@@ -58,7 +58,7 @@ Le parcours HTTP est exposé par :
 - `GET /api/auth/session` : vérification D1 de la session et de l'état courant du compte/appareil ;
 - `POST /api/auth/logout` : révocation D1 et suppression du cookie.
 
-Configuration Worker requise : `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME` et `WEBAUTHN_ALLOWED_ORIGINS` (tableau JSON d'origines HTTPS exactes). En leur absence, le parcours échoue fermé. Aucun domaine de production n'est présumé dans le code.
+Configuration Worker requise : `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME` et `WEBAUTHN_ALLOWED_ORIGINS` (tableau JSON d'origines HTTPS exactes). En leur absence, le parcours échoue fermé. Aucun domaine de production n'est présumé dans le code. Les deux routes d'enrôlement exigent aussi `WEBAUTHN_ROOT_ENROLLMENT_ENABLED="true"` ; en son absence elles répondent 503 avant tout accès D1. Ce verrou reste désactivé tant que la revue cryptographique indépendante, le choix du profil racine et les essais physiques ne sont pas validés. Ne pas l'activer sur un environnement réel à ce stade.
 
 La vérification actuelle accepte exclusivement l'attestation WebAuthn `none`, la clé COSE EC2/P-256 ES256, UP=1, UV=1, BE=0 et BS=0. Les signatures d'attestation ne sont donc pas vérifiées (profil none) ; la possession de la clé privée sera prouvée lors de l'authentification WebAuthn ultérieure, qui reste une étape distincte à implémenter avant d'offrir la reconnexion par passkey.
 
