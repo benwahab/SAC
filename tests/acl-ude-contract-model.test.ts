@@ -21,8 +21,11 @@ type CommitResult = {
 };
 
 class ContractError extends Error {
-  constructor(readonly code: string) {
+  readonly code: string;
+
+  constructor(code: string) {
     super(code);
+    this.code = code;
   }
 }
 
