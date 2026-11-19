@@ -277,3 +277,10 @@ Le Worker traite une tâche de rappel par destinataire et envoie un push génér
 L'audit du contrat entre le service SOS et l'interface a révélé que le service classait un dépassement du nombre autorisé de destinataires comme une entrée génériquement invalide, alors que l'API et l'interface prévoyaient une erreur métier dédiée. Le service renvoie désormais `recipient_limit_exceeded` avant toute lecture ou écriture D1 ; la route traduit cette erreur en HTTP 409 et l'interface peut afficher son message explicite. La limite actuelle reste inchangée : 2 proches pour l'offre gratuite ; le plafond Premium de 10 nécessite toujours une décision d'abonnement côté serveur et n'est pas activé par cette correction.
 
 Un test D1 local dédié à cette réponse a été ajouté à la suite SOS existante. Aucun compte, destinataire ou alerte réelle n'a été créé ; aucun envoi n'a été effectué.
+
+
+### 5.8 Validation des abonnements avant stockage — 19 novembre 2026
+
+La validation des abonnements est maintenant centralisée dans `functions/lib/notifications/push-endpoint-policy.ts`. La route d'enregistrement refuse les endpoints hors liste des fournisseurs Web Push autorisés, les ports non standards et les URLs non HTTPS. Elle importe aussi la clé publique du navigateur comme vraie clé ECDH P-256 avant chiffrement et stockage ; une chaîne de 65 octets mal formée n'est plus acceptée comme abonnement valide. Le transport de livraison réutilise exactement la même politique, ce qui évite une divergence entre les destinations acceptées à l'inscription et celles contactables par le Worker.
+
+La suite `test:web-push-delivery` couvre les hôtes, ports et clés valides/invalides. Cette correction n'active pas les abonnements ni le transport réel et ne déclenche aucun appel réseau vers un endpoint de proche.
