@@ -28,10 +28,10 @@ export default {
     const now = Number(input.now ?? Date.now());
 
     if (url.pathname === "/seed") {
-      const owner = crypto.randomUUID(), contact = crypto.randomUUID(), outsider = crypto.randomUUID();
+      const owner = crypto.randomUUID(), contact = crypto.randomUUID(), contact2 = crypto.randomUUID(), outsider = crypto.randomUUID();
       const stamp = Date.now();
       const statements: D1PreparedStatement[] = [];
-      for (const [id, email] of [[owner, "owner"], [contact, "contact"], [outsider, "outsider"]] as const) {
+      for (const [id, email] of [[owner, "owner"], [contact, "contact"], [contact2, "contact2"], [outsider, "outsider"]] as const) {
         const identity = crypto.randomUUID();
         statements.push(
           env.DB.prepare("INSERT INTO accounts (id,status,preferred_language,password_hash,created_at,updated_at) VALUES (?,'pending_verification','fr','test-only',?,?)").bind(id, stamp, stamp),
@@ -39,13 +39,15 @@ export default {
           env.DB.prepare("UPDATE accounts SET status='active',updated_at=? WHERE id=?").bind(stamp, id),
         );
       }
-      const invitation = crypto.randomUUID();
-      statements.push(
-        env.DB.prepare("INSERT INTO contact_invitations (id,inviter_account_id,destination_email,token_digest,permission_version,status,created_at,expires_at) SELECT ?,?,?,?,'v1','pending',?,?").bind(invitation, owner, "contact-" + contact + "@example.ne", "a".repeat(64), stamp, stamp + 600000),
-        env.DB.prepare("UPDATE contact_invitations SET status='accepted',recipient_account_id=?,decided_at=? WHERE id=?").bind(contact, stamp + 1, invitation),
-        env.DB.prepare("INSERT INTO trusted_contacts (owner_account_id,contact_account_id,invitation_id,permission_version,status,created_at) VALUES (?, ?, ?, 'v1','active',?)").bind(owner, contact, invitation, stamp + 1),
-      );
-      try { await env.DB.batch(statements); return json({ owner, contact, outsider, stamp }); }
+      for (const [recipient, label] of [[contact, "contact"], [contact2, "contact2"]] as const) {
+        const invitation = crypto.randomUUID();
+        statements.push(
+          env.DB.prepare("INSERT INTO contact_invitations (id,inviter_account_id,destination_email,token_digest,permission_version,status,created_at,expires_at) VALUES (?,?,?,?,?,'pending',?,?)").bind(invitation, owner, label + "-" + recipient + "@example.ne", "a".repeat(63) + (label === "contact" ? "1" : "2"), "v1", stamp, stamp + 600000),
+          env.DB.prepare("UPDATE contact_invitations SET status='accepted',recipient_account_id=?,decided_at=? WHERE id=?").bind(recipient, stamp + 1, invitation),
+          env.DB.prepare("INSERT INTO trusted_contacts (owner_account_id,contact_account_id,invitation_id,permission_version,status,created_at) VALUES (?, ?, ?, 'v1','active',?)").bind(owner, recipient, invitation, stamp + 1),
+        );
+      }
+      try { await env.DB.batch(statements); return json({ owner, contact, contact2, outsider, stamp }); }
       catch (error) { return json({ error: "seed_failed", detail: String(error) }, 500); }
     }
 
