@@ -639,6 +639,38 @@ export async function claimDueSosReminders(
         attempt_count: number;
       }>();
     if (!result.success) return fail("storage_unavailable");
+
+    // Le seuil choisi ne termine pas les rappels : chaque dernier rappel
+    // connu programme le suivant, à cinq minutes minimum, tant que le SOS vit.
+    const nextReminderStatements = (result.results ?? [])
+      .filter((row) => row.reminder_number >= 1)
+      .map((row) => {
+        const nextNumber = row.reminder_number + 1;
+        return db.prepare(
+          `INSERT OR IGNORE INTO alert_reminder_outbox
+           (id, alert_id, recipient_account_id, reminder_number, scheduled_at, created_at)
+           SELECT ?, a.id, ?, ?, ?, ?
+           FROM alerts a
+           WHERE a.id = ? AND a.status = 'active'
+             AND NOT EXISTS (
+               SELECT 1 FROM alert_reminder_outbox existing
+               WHERE existing.alert_id = a.id
+                 AND existing.recipient_account_id = ?
+                 AND existing.reminder_number = ?
+             )`,
+        ).bind(
+          cryptoProvider.randomUUID(), row.recipient_account_id, nextNumber,
+          now + 300_000, now, row.alert_id, row.alert_id,
+          row.recipient_account_id, nextNumber,
+        );
+      });
+    if (nextReminderStatements.length > 0) {
+      const scheduled = await db.batch(nextReminderStatements);
+      if (scheduled.length !== nextReminderStatements.length || scheduled.some((item) => !item.success)) {
+        return fail("storage_unavailable");
+      }
+    }
+
     return {
       ok: true,
       value: (result.results ?? []).map((row) => ({
