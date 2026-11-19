@@ -23,7 +23,9 @@ export interface AccountActivityCounts {
 export type AccountLifecycleCommand =
   | { readonly type: "request_deletion"; readonly actorAccountId: string; readonly at: string }
   | { readonly type: "cancel_deletion"; readonly actorAccountId: string; readonly at: string }
-  | { readonly type: "finalize_deletion"; readonly actorAccountId: "system"; readonly at: string; readonly activity: AccountActivityCounts };
+  | { readonly type: "finalize_deletion"; readonly actorAccountId: "system"; readonly at: string; readonly activity: AccountActivityCounts }
+  | { readonly type: "suspend_account"; readonly actorAccountId: string; readonly actorRole: "super_admin"; readonly at: string }
+  | { readonly type: "reinstate_account"; readonly actorAccountId: string; readonly actorRole: "super_admin"; readonly at: string };
 
 export type AccountLifecycleError =
   | "invalid_account"
@@ -35,7 +37,10 @@ export type AccountLifecycleError =
   | "deletion_not_pending"
   | "active_alerts_remain"
   | "active_trips_remain"
-  | "invalid_activity_counts";
+  | "invalid_activity_counts"
+  | "actor_not_super_admin"
+  | "account_not_suspendable"
+  | "account_not_suspended";
 
 export type AccountLifecycleResult =
   | { readonly ok: true; readonly account: AccountLifecycleRecord; readonly allowNewActivity: boolean; readonly allowCloseExistingActivity: boolean }
@@ -95,6 +100,22 @@ export function transitionAccountLifecycle(
     if (account.status !== "deletion_pending") return { ok: false, error: "deletion_not_pending" };
     if (Date.parse(command.at) < Date.parse(account.deletionRequestedAt!)) return { ok: false, error: "invalid_timestamp" };
     return result({ ...account, status: "active", deletionRequestedAt: null });
+  }
+
+  if (command.type === "suspend_account") {
+    if (command.actorRole !== "super_admin" || !command.actorAccountId.trim()) {
+      return { ok: false, error: "actor_not_super_admin" };
+    }
+    if (account.status !== "active") return { ok: false, error: "account_not_suspendable" };
+    return result({ ...account, status: "suspended" });
+  }
+
+  if (command.type === "reinstate_account") {
+    if (command.actorRole !== "super_admin" || !command.actorAccountId.trim()) {
+      return { ok: false, error: "actor_not_super_admin" };
+    }
+    if (account.status !== "suspended") return { ok: false, error: "account_not_suspended" };
+    return result({ ...account, status: "active" });
   }
 
   if (command.type === "finalize_deletion") {
