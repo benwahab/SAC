@@ -179,28 +179,28 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   const initialExhaustion = await post<{ claimed: number; providerAccepted: number; terminalFailures: number }>("/dispatch", {
     now: exhaustionBase,
   });
-  assert.deepEqual(initialExhaustion.data, { claimed: 1, providerAccepted: 1, terminalFailures: 0 });
+  assert.deepEqual(initialExhaustion.data, { claimed: 1, providerAccepted: 1, retryScheduled: 0, terminalFailures: 0, completionErrors: 0 });
   const firstFailure = await post<{ claimed: number; retryScheduled: number; terminalFailures: number }>("/dispatch", {
     now: exhaustionBase + 300_000, throwRecipient: contact,
   });
   assert.equal(firstFailure.status, 200);
-  assert.deepEqual(firstFailure.data, { claimed: 1, retryScheduled: 1, terminalFailures: 0 });
+  assert.deepEqual(firstFailure.data, { claimed: 1, providerAccepted: 0, retryScheduled: 1, terminalFailures: 0, completionErrors: 0 });
   const secondFailure = await post<{ claimed: number; retryScheduled: number; terminalFailures: number }>("/dispatch", {
     now: exhaustionBase + 315_000, failRecipient: contact,
   });
-  assert.deepEqual(secondFailure.data, { claimed: 1, retryScheduled: 1, terminalFailures: 0 });
+  assert.deepEqual(secondFailure.data, { claimed: 1, providerAccepted: 0, retryScheduled: 1, terminalFailures: 0, completionErrors: 0 });
   const thirdFailure = await post<{ claimed: number; retryScheduled: number; terminalFailures: number }>("/dispatch", {
     now: exhaustionBase + 345_000, failRecipient: contact,
   });
-  assert.deepEqual(thirdFailure.data, { claimed: 1, retryScheduled: 1, terminalFailures: 0 });
+  assert.deepEqual(thirdFailure.data, { claimed: 1, providerAccepted: 0, retryScheduled: 1, terminalFailures: 0, completionErrors: 0 });
   const fourthFailure = await post<{ claimed: number; retryScheduled: number; terminalFailures: number }>("/dispatch", {
     now: exhaustionBase + 405_000, failRecipient: contact,
   });
-  assert.deepEqual(fourthFailure.data, { claimed: 1, retryScheduled: 1, terminalFailures: 0 });
+  assert.deepEqual(fourthFailure.data, { claimed: 1, providerAccepted: 0, retryScheduled: 1, terminalFailures: 0, completionErrors: 0 });
   const fifthFailure = await post<{ claimed: number; retryScheduled: number; terminalFailures: number }>("/dispatch", {
     now: exhaustionBase + 525_000, failRecipient: contact,
   });
-  assert.deepEqual(fifthFailure.data, { claimed: 1, retryScheduled: 0, terminalFailures: 1 });
+  assert.deepEqual(fifthFailure.data, { claimed: 1, providerAccepted: 0, retryScheduled: 0, terminalFailures: 1, completionErrors: 0 });
   const noSixthAttempt = await post<unknown[]>("/claim", { now: exhaustionBase + 1_000_000 });
   assert.equal(noSixthAttempt.status, 200);
   assert.equal(noSixthAttempt.data.length, 0);
