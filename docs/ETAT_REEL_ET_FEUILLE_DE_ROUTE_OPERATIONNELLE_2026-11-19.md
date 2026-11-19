@@ -35,7 +35,11 @@ Le dépôt contient beaucoup de conception ; le travail doit maintenant se dépl
 - `POST /api/contacts/revoke` : révoque une relation directionnelle dont le compte courant est propriétaire.
 - `POST /api/contacts/invitations` : crée une invitation à usage unique et déclenche l'e-mail via Resend lorsque les paramètres de durée, version de permission et fournisseur sont configurés.
 - `POST /api/contacts/invitations/accept` et `POST /api/contacts/invitations/decline` : acceptation/refus par le compte authentifié dont l'adresse e-mail vérifiée correspond à la destination.
-- Routes toujours absentes : connexion/émission de session, récupération/réinitialisation de compte, endpoints SOS, notifications, trajets, paiements et administration professionnelle.
+- `POST /api/alerts` : création authentifiée d'un SOS avec instantané de proches choisis et seuil de rappels push.
+- `GET /api/alerts/:alertId` : lecture du SOS réservée à son auteur ou à un destinataire de l'instantané initial.
+- `POST /api/alerts/:alertId/respond` : accusé de réception, volontariat ou retrait du volontariat pour un destinataire autorisé.
+- `POST /api/alerts/:alertId/close` : clôture réservée à l'auteur, avec motif validé.
+- Routes toujours absentes : connexion/émission de session, récupération/réinitialisation de compte, lecture de la chronologie d'événements, notifications push réellement livrées, SMS réellement livrés, trajets, paiements et administration professionnelle.
 
 La présence d'un adaptateur Resend et de routes d'inscription ne prouve pas qu'un compte fournisseur ou des secrets sont configurés, ni qu'un e-mail réel a été délivré.
 
@@ -186,3 +190,16 @@ Sur `main`, les changements suivants ont été ajoutés :
 - `tests/require-authenticated-device-session.test.ts` couvre l'absence de cookie, l'autorisation d'une session valide, le refus d'un compte suspendu et l'indisponibilité D1 ; commande dédiée `npm run test:session-guard`.
 
 **Limites explicites :** cette tranche ne crée pas encore les sessions et ne résout donc pas l'absence de route de connexion. Le parcours visuel `/invitation/accept` et son intégration dans l'interface ne sont pas encore livrés. Les routes refusent l'accès tant que les tables D1 et une session valide ne sont pas disponibles. La création d'invitation exige les variables `CONTACT_INVITATION_TTL_MS`, `CONTACT_PERMISSION_VERSION`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL` et `APP_BASE_URL` ; elles ne sont pas configurées ici. Les migrations distantes n'ont pas été appliquées et aucun projet Pages n'a été créé ou déployé. Aucun secret ni fournisseur n'a été configuré.
+
+
+## 10. Tranche SOS serveur ajoutée
+
+Les routes suivantes sont maintenant présentes dans `functions/api/alerts/` :
+- `POST /api/alerts` crée une alerte par le compte de la session, valide la liste des proches via le service SOS, fige les destinataires et crée les entrées de rappels dans la même opération D1.
+- `GET /api/alerts/:alertId` ne retourne le détail qu'à l'auteur ou à un destinataire figurant dans l'instantané immuable.
+- `POST /api/alerts/:alertId/respond` expose les actions `acknowledge`, `volunteer` et `withdraw` du service métier, sans accepter d'identité d'acteur depuis le client.
+- `POST /api/alerts/:alertId/close` applique la clôture par l'auteur uniquement ; le motif est limité à `completed` ou `cancelled`.
+
+Le nombre de rappels choisi est validé par le service existant (1 à 5) et les échéances restent espacées de cinq minutes. La création SOS ne demande aucune coordonnée GPS. La limite de destinataires appliquée par l'API est actuellement celle de l'offre gratuite (2), les droits Premium n'étant pas encore activés.
+
+**Limites :** ces routes exigent une session appareil authentifiée et les tables des migrations D1 0001 à 0007. Le compte Cloudflare connecté montre toujours `sac-db` avec 0 table et aucun projet Pages. Il n'existe pas encore de route de connexion pour émettre les sessions ; par conséquent ces API ne sont pas encore utilisables en production. Les files D1 de rappels et SMS ne constituent pas une livraison push/SMS : aucun adaptateur fournisseur ni worker de dispatch opérationnel n'est encore configuré. La chronologie des événements n'a pas encore son endpoint de lecture.
