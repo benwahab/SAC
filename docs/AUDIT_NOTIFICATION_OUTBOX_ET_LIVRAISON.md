@@ -198,17 +198,9 @@ Les constats précédents décrivent l'état avant la tranche SOS ajoutée sur `
 - La clôture par l'auteur annule les rappels push et tâches SMS encore en attente/en cours.
 - Les tests couvrent l'idempotence de l'évaluation concurrente, le seuil avant/après, les échecs push et reprises, la poursuite des rappels après le seuil, la suppression après prise en charge et l'annulation à la clôture.
 
-### 5.2 Toujours non réalisé
+### 5.2 État de référence antérieur
 
-- Aucun scheduler Cloudflare planifié n'est configuré.
-- Aucun abonnement Web Push par appareil n'est enregistré ou révoqué.
-- Aucun chiffrement Web Push/VAPID ni adaptateur réel de fournisseur push n'est connecté.
-- Aucun fournisseur SMS ni adaptateur d'envoi SMS n'est connecté.
-- Les tâches SMS sont persistées, mais **aucun SMS n'est envoyé**.
-- Les fonctions D1 et migrations sont vérifiées dans des bases locales de CI uniquement ; aucune migration distante Preview/Production n'est déclarée appliquée.
-- Les tests utilisent un adaptateur push simulé dans un Worker strictement réservé aux tests.
-
-**Conclusion mise à jour :** l'outbox et les règles de planification sont partiellement implémentées et testées localement. La livraison réelle, la planification périodique et les canaux push/SMS restent NO-GO jusqu'à l'intégration et aux essais des composants manquants.
+Les constats de cette section ont été dépassés par les tranches 5.3 à 5.6 ci-dessous. À la date de la présente mise à jour, un abonnement PWA et un transport Web Push sont présents dans le dépôt, mais le Worker planifié n'est pas déployé et aucune notification réelle n'est envoyée. Le SMS reste sans fournisseur ni adaptateur réel.
 
 
 ### 5.3 Abonnements Web Push — première tranche serveur
@@ -227,7 +219,7 @@ Commits ajoutés sur `main` après la mise à jour précédente :
 
 **Configuration effectuée le 19 novembre 2026 :** le secret Cloudflare `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` (32 octets base64url) a été généré et configuré comme secret du projet Pages `sac` pour l'environnement Production. Sa valeur reste masquée et n'est pas conservée dans Git ou D1. Les migrations D1 `0001` à `0008` ont été appliquées à `sac-db` après autorisation explicite ; leurs huit noms sont inscrits dans `d1_migrations`. Le schéma a été relu et `PRAGMA foreign_key_check` n'a retourné aucune anomalie. La configuration du secret n'active pas à elle seule les envois.
 
-**Limites actuelles :** l'interface PWA ne s'abonne pas encore au PushManager ; aucune clé VAPID ni aucun fournisseur/adaptateur de livraison n'est connecté ; aucun scheduler n'est déployé. Le stockage chiffré et son endpoint ne signifient donc pas que les notifications fonctionnent. La révocation d'appareil supprime les abonnements de ce dernier via trigger D1.
+**Limites à cette étape :** le client PWA, le Service Worker et le transport VAPID ont depuis été ajoutés (section 5.6). Le stockage chiffré et son endpoint ne signifient toujours pas que les notifications fonctionnent tant que les clés VAPID et les secrets propres au Worker ne sont pas configurés, puis que le Worker n'est pas déployé.
 
 
 ### 5.4 Intégrité des abonnements et limites de livraison
@@ -253,3 +245,28 @@ Après autorisation explicite du propriétaire :
 - le secret `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` a été généré avec 32 octets aléatoires et ajouté comme variable `secret_text` dans la configuration Production du projet Pages. Cloudflare masque sa valeur lors de la relecture.
 
 **Ce qui reste désactivé/non configuré :** l'enrôlement WebAuthn reste fermé (`WEBAUTHN_ROOT_ENROLLMENT_ENABLED=false`) ; les déploiements Production restent désactivés ; aucun VAPID, abonnement PWA, scheduler ni adaptateur de livraison n'est activé. Aucun push ou SMS réel n'a été envoyé. L'ajout du secret à la configuration ne signifie pas que la version actuellement servie a été redéployée ou utilise déjà ce secret.
+
+
+### 5.6 Abonnement PWA et transport Web Push — 19 novembre 2026
+
+Code ajouté directement sur `main` :
+
+- `src/services/notifications/push-subscription.ts` : demande d'autorisation uniquement après action explicite, création/récupération PushManager, sérialisation de l'abonnement et synchronisation authentifiée avec l'API SAC ; désactivation serveur avant désabonnement local.
+- `src/components/PushNotificationSettings.tsx` : panneau de gestion dans l'espace privé, avec états pris en charge / bloqué / non configuré / enregistré.
+- `src/PrivateSpacePage.tsx` : intégration du panneau dans l'espace privé.
+- `public/sw.js` : réception Push et notification système au contenu générique ; le clic ouvre SAC sans transporter de jeton ni de détail d'alerte.
+- `functions/api/push/vapid-public-key.ts` : exposition publique et sans cache de la seule clé VAPID publique, avec validation stricte de sa forme ; réponse 503 tant que la clé n'est pas configurée.
+- `functions/lib/notifications/web-push-delivery.ts` : construction VAPID ES256, chiffrement de contenu Web Push `aes128gcm`, refus des endpoints hors liste d'hôtes autorisés, HTTPS obligatoire et redirections non suivies ; réponses 404/410 classées comme abonnements expirés.
+- `workers/sos-notification-delivery/index.ts` et `workers/sos-notification-delivery/wrangler.toml` : Worker planifié distinct, conçu pour appeler le dispatcher SOS chaque minute sur l'outbox D1.
+- `tests/web-push-delivery.test.ts`, `tsconfig.workers.json`, scripts package et CI : tests cryptographiques/anti-SSRF et vérification TypeScript du Worker ajoutés.
+
+**Configuration manquante avant activation :**
+- aucune paire VAPID n'a été générée ou configurée ;
+- `PUSH_VAPID_PUBLIC_KEY` n'est pas encore renseignée dans Pages ;
+- `PUSH_VAPID_PRIVATE_JWK`, `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` et `PUSH_VAPID_SUBJECT` ne sont pas configurés dans le nouvel environnement du Worker ;
+- le Worker Cron n'a pas été créé/déployé sur Cloudflare ;
+- le déploiement de Production Pages reste désactivé ; aucun déploiement n'a été déclenché.
+
+Le Worker traite une tâche de rappel par destinataire et envoie un push générique à chaque abonnement actif de ses appareils enrôlés. Si un destinataire possède plusieurs appareils et qu'un fournisseur accepte certains envois mais qu'un autre échoue temporairement, une reprise peut répéter un envoi déjà accepté : Web Push ne fournit pas ici de garantie exactly-once. Cette limite est explicitement conservée ; elle ne doit pas être présentée comme une livraison garantie sans doublon.
+
+**État final de cette tranche :** fondation PWA et transport serveur écrits dans le dépôt ; aucune livraison active. Les tests ajoutés n'ont pas encore de résultat CI vérifié. Les envois réels, la planification Cloudflare et les clés VAPID restent NO-GO jusqu'à configuration, déploiement autorisé et validation.
