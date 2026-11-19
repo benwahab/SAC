@@ -734,6 +734,7 @@ export interface SosReminderDispatchSummary {
   readonly claimed: number;
   readonly providerAccepted: number;
   readonly retryScheduled: number;
+  readonly terminalFailures: number;
   readonly completionErrors: number;
 }
 
@@ -761,6 +762,7 @@ export async function dispatchDueSosReminders(
 
   let providerAccepted = 0;
   let retryScheduled = 0;
+  let terminalFailures = 0;
   let completionErrors = 0;
 
   for (const reminder of claimed.value) {
@@ -787,6 +789,7 @@ export async function dispatchDueSosReminders(
       continue;
     }
     if (accepted) providerAccepted += 1;
+    else if (completed.value.terminal) terminalFailures += 1;
     else retryScheduled += 1;
   }
 
@@ -796,6 +799,7 @@ export async function dispatchDueSosReminders(
       claimed: claimed.value.length,
       providerAccepted,
       retryScheduled,
+      terminalFailures,
       completionErrors,
     },
   };
