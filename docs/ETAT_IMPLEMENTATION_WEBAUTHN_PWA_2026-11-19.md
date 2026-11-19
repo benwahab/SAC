@@ -25,6 +25,8 @@ Fichier : `src/services/device/webauthn.ts`
 
 - Conversion stricte des champs Base64URL en `ArrayBuffer`.
 - Vérification côté client que les options imposent `authenticatorAttachment: platform` et `userVerification: required`.
+- Refus des profils d'options qui n'utilisent pas exclusivement ES256 (COSE `-7`) ou dont l'attestation n'est pas `none`, conformément au profil candidat SAC.
+- Vérification de la présence des champs RP et utilisateur nécessaires avant d'appeler l'API navigateur.
 - Respect du choix `residentKey` fourni par le serveur : l'adaptateur ne décide pas cette préférence.
 - Appel à `navigator.credentials.create()` uniquement en contexte sécurisé et si WebAuthn est disponible.
 - Sérialisation de l'identifiant, de `clientDataJSON`, de l'`attestationObject`, des transports et des extensions.
