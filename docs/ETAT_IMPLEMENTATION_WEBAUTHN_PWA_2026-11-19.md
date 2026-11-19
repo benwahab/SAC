@@ -3,99 +3,138 @@
 - **Date :** 19 novembre 2026
 - **Dépôt :** `benwahab/SAC`
 - **Branche :** `main`
-- **Statut :** socle de contrôle et adaptateur navigateur partiellement implémentés ; enrôlement réel NON opérationnel.
+- **Statut :** parcours serveur d'enrôlement racine et première session implémenté dans le code ; validation CI et essais physiques non confirmés ; pas encore autorisé pour la production.
 
-## 1. Implémenté dans le dépôt
+## 1. Parcours désormais raccordé
 
-### Politique de credential racine
-- Refus des credentials `multiDevice` et `unknown`.
-- Refus des credentials sauvegardées/synchronisées ou d'un état de sauvegarde incohérent.
-- Refus si le validateur ne confirme pas explicitement `userVerified === true`.
-- Le Worker de test refuse la credential avant de retourner un résultat positif si la politique racine échoue.
-- Tests unitaires des entrées absentes, nulles, mal formées et des indicateurs non conformes.
+### 1.1 Préparation authentifiée
+Endpoint : `POST /api/auth/root-enrollment-options`
 
-### Validation cryptographique en runtime Worker de test
-- Dépendance de test SimpleWebAuthn 14.1.0.
-- Fixtures synthétiques ES256/COSE/CBOR pour les scénarios positifs et négatifs.
-- Contrôles challenge, origine, RP ID, flags UP/UV/BE/BS et signature d'authentification.
-- Ces fixtures ne remplacent pas les essais avec authenticator physique.
+- Vérifie une adresse e-mail principale déjà vérifiée et un compte actif.
+- Vérifie le mot de passe avec le vérificateur PBKDF2-HMAC-SHA-256 existant.
+- Limite les tentatives à cinq par fenêtre de quinze minutes, via une empreinte HMAC de l'adresse.
+- Refuse une origine absente, HTTP, non canonique, hors RP ID ou non inscrite dans la liste blanche serveur.
+- Génère un challenge CSPRNG de 32 octets.
+- Crée une cérémonie de cinq minutes et conserve uniquement le SHA-256 du challenge.
+- Lie l'origine exacte à la cérémonie ; l'origine de la réponse doit être identique.
+- Retourne les options serveur : plateforme, UV obligatoire, ES256 unique, attestation none et residentKey discouraged.
+- Ne délivre aucune session à ce stade.
 
-### Adaptateur navigateur
-Fichier : `src/services/device/webauthn.ts`
+### 1.2 Réponse navigateur
+Fichiers :
+- `src/services/device/webauthn.ts`
+- `src/services/device/root-enrollment.ts`
 
-- Conversion stricte des champs Base64URL en `ArrayBuffer`.
-- Vérification côté client que les options imposent `authenticatorAttachment: platform` et `userVerification: required`.
-- Refus des profils d'options qui n'utilisent pas exclusivement ES256 (COSE `-7`) ou dont l'attestation n'est pas `none`, conformément au profil candidat SAC.
-- Vérification de la présence des champs RP et utilisateur nécessaires avant d'appeler l'API navigateur.
-- Respect du choix `residentKey` fourni par le serveur : l'adaptateur ne décide pas cette préférence.
-- Appel à `navigator.credentials.create()` uniquement en contexte sécurisé et si WebAuthn est disponible.
-- Sérialisation de l'identifiant, de `clientDataJSON`, de l'`attestationObject`, des transports et des extensions.
-- Gestion explicite de l'annulation et des réponses mal formées.
-- Aucun fallback vers Web Crypto, IndexedDB ou une clé logicielle.
+- La page de connexion demande le mot de passe puis prépare la cérémonie.
+- Un second clic déclenche `navigator.credentials.create()` directement depuis une action utilisateur, sans requête réseau préalable à l'ouverture de l'authenticator.
+- L'adaptateur refuse les contextes non HTTPS, les navigateurs non compatibles, les options non conformes et les réponses mal formées.
+- Le client transmet au serveur l'identifiant, clientDataJSON, attestationObject et authenticatorAttachment.
+- Le flux est raccordé à l'écran de connexion en français, anglais et arabe.
 
-Tests : `tests/webauthn-browser-adapter.test.ts`, commande `npm run test:webauthn-browser`.
+### 1.3 Vérification serveur
+Fichiers :
+- `functions/lib/security/webauthn-cbor.ts`
+- `functions/lib/security/webauthn-root-verifier.ts`
+- `functions/lib/security/webauthn-origin.ts`
+- `src/domain/webauthn-root-policy.ts`
 
-### Générateur serveur d'options d'enregistrement racine
+Endpoint : `POST /api/auth/complete-root-enrollment`
 
-Fichier : `functions/lib/security/webauthn-root-options.ts`
+Le serveur :
+- vérifie le type de credential, l'ID et le rawId ;
+- vérifie le type client `webauthn.create`, le challenge par empreinte SHA-256, l'origine exacte liée à la cérémonie et la liste blanche ;
+- vérifie le hash RP ID dans authenticatorData ;
+- exige UP=1 et UV=1 ;
+- exige AT=1 et refuse les extensions non prises en charge ;
+- refuse BE=1, BS=1 et les bits réservés ;
+- accepte uniquement une attestation `none` avec attStmt vide ;
+- décode le COSE et accepte uniquement EC2/P-256/ES256 avec coordonnées de 32 octets ;
+- importe la clé publique via WebCrypto pour vérifier sa validité ;
+- refuse les credentials non attachées à un authenticator de plateforme ;
+- applique la politique racine singleDevice, non sauvegardée et userVerified.
 
-- Génère un challenge CSPRNG de 32 octets et les options JSON WebAuthn.
-- Fixe le RP ID au format DNS, la plateforme, la vérification utilisateur obligatoire, ES256 uniquement et l'attestation `none`.
-- Accepte une politique `residentKey` explicite en configuration, sans trancher la compatibilité Android.
-- Valide la taille du user handle et des credentials exclues.
-- Ne persiste pas le challenge et n'est pas exposé par une route HTTP. L'appelant futur devra enregistrer le challenge à usage unique dans D1 avant toute remise au navigateur.
+Le décodeur CBOR est borné en taille/profondeur et refuse les longueurs non canoniques, les valeurs non prises en charge et les données résiduelles.
 
-Test ajouté : `tests/webauthn-root-options.test.ts`, commande `npm run test:webauthn-root-options`, incluse dans CI.
+**Limite du profil none :** l'attestation ne fournit pas de signature de fabricant ou de preuve matérielle d'authenticité. Le serveur valide la structure, le challenge, l'origine, le RP ID et la clé publique ; la preuve de possession de la clé privée doit être apportée lors d'une authentification WebAuthn ultérieure.
 
-### Contrôle d'origine et de RP ID
+### 1.4 Persistance D1 et première session
 
-Fichier : `functions/lib/security/webauthn-origin.ts`
+Migration : `migrations/0007_root_device_enrollment.sql`
 
-- Exige une origine HTTPS canonique, sans chemin, paramètres, fragment ni identifiants.
-- Vérifie l'appartenance du nom d'hôte au RP ID configuré.
-- Exige en plus une correspondance exacte avec une origine de la liste blanche serveur.
-- Refuse les domaines ressemblants et les origines non listées.
+Tables :
+- `root_enrollment_ceremonies`
+- `root_enrollment_challenges`
+- `root_enrollment_rate_limits`
+- `devices`
+- `device_root_credentials`
+- `device_sessions`
+- `device_enrollment_events`
 
-Test ajouté : `tests/webauthn-origin.test.ts`, commande `npm run test:webauthn-origin`, incluse dans CI.
+La validation et l'enregistrement s'effectuent dans un seul batch D1 :
+1. consommation conditionnelle du challenge ;
+2. création de l'appareil racine ;
+3. stockage de l'identifiant et de la clé publique ;
+4. création de la session et de son empreinte de jeton ;
+5. clôture de la cérémonie ;
+6. écriture de l'événement d'audit.
 
-## 2. Limites importantes
+Un trigger d'audit fait échouer le batch si le parcours n'est pas complet. La transaction D1 annule alors les écritures précédentes. Une seule racine est autorisée par compte. Le challenge expire après cinq minutes et cinq échecs de validation au maximum sont admis.
 
-L'adaptateur navigateur n'est pas encore raccordé à un endpoint d'enrôlement SAC. Il ne prouve pas à lui seul l'identité du compte, l'origine, le RP ID, la validité cryptographique de la réponse ni l'unicité de la racine. Ces vérifications appartiennent au serveur.
+Le jeton brut n'est jamais stocké dans D1. Il est remis dans le cookie `__Host-sac_session`, Secure, HttpOnly, SameSite=Strict, Path=/, sans Domain. Les sessions ont une limite d'inactivité de 30 jours et une limite absolue de 90 jours.
 
-À ce stade, il n'existe toujours pas de parcours de production complet pour :
-- créer et persister une cérémonie racine dans D1 ;
-- conserver puis consommer atomiquement un challenge à usage unique ;
-- vérifier la réponse réelle de l'appareil avec le validateur côté serveur ;
-- enregistrer le credential ID et la clé publique validée ;
-- lier une session authentifiée à l'appareil racine ;
-- tester la création et l'assertion sur un téléphone Android physique.
+### 1.5 Contrôle de session et déconnexion
 
-## 3. Décisions techniques non figées
+- `GET /api/auth/session` relit la session dans D1, vérifie l'état du compte et de l'appareil, le statut de révocation, la version d'autorisation, l'expiration absolue et l'inactivité. L'activité valide renouvelle l'échéance et le cookie.
+- `POST /api/auth/logout` révoque la session dans D1 et efface le cookie.
+- Les transitions des credentials, appareils, sessions et événements d'enrôlement sont protégées par des triggers D1.
 
-Ne pas transformer les propositions documentaires en paramètres de production sans validation :
-- `residentKey` final et compatibilité Android réelle ;
-- RP ID et liste exacte des origines par environnement ;
-- durée, quotas, limitation des tentatives et reprise des cérémonies ;
-- modèle D1 définitif et contraintes de concurrence ;
-- transaction atomique de création/consommation et idempotence ;
-- politique de rétention des cérémonies et preuves.
+## 2. Tests ajoutés
 
-La règle produit BE=0/BS=0 et la vérification utilisateur obligatoire restent impératives. Si le navigateur ne fournit pas une credential conforme, SAC refuse l'enrôlement.
+- `tests/webauthn-root-options.test.ts`
+- `tests/webauthn-origin.test.ts`
+- `tests/webauthn-root-verifier.test.ts`
+- `tests/root-enrollment-endpoints.test.ts`
+- `tests/root-enrollment-client.test.ts`
+- `tests/d1_root_device_enrollment_schema.test.py`
 
-## 4. CI et statut des tests
+Commandes ajoutées dans `package.json` et étapes correspondantes dans `.github/workflows/ci.yml` :
+- `npm run test:webauthn-root-options`
+- `npm run test:webauthn-origin`
+- `npm run test:webauthn-root-verifier`
+- `npm run test:root-enrollment-endpoints`
+- `npm run test:root-enrollment-client`
+- `npm run test:d1-root-device-enrollment`
 
-Le workflow `.github/workflows/ci.yml` inclut désormais le test de l'adaptateur navigateur. Les commandes de test sont enregistrées dans `package.json`.
+**Ces tests ont été écrits et raccordés, mais leur réussite n'est pas affirmée.** Aucune exécution locale de la suite ou compilation n'a été effectuée dans cet environnement. Le problème CI déjà signalé est laissé de côté à la demande du propriétaire.
 
-**Les tests n'ont pas été déclarés réussis.** Les dernières exécutions GitHub Actions observées échouent au niveau du job avant de publier des étapes ou des journaux (`steps: []`, `logs_url: null`). Il est donc impossible d'attribuer cet échec à une commande du projet ou de confirmer la compilation à distance. Une exécution CI exploitable reste nécessaire.
+## 3. Configuration requise avant tout essai réel
 
-## 5. Critère de sortie
+Variables d'environnement Cloudflare à définir par environnement :
+- `WEBAUTHN_RP_ID` : RP ID exact, en minuscules, sans schéma ni port ;
+- `WEBAUTHN_RP_NAME` : nom d'affichage SAC ;
+- `WEBAUTHN_ALLOWED_ORIGINS` : tableau JSON d'origines HTTPS canoniques exactes ;
+- `EMAIL_OTP_HMAC_SECRET` : secret serveur existant d'au moins 32 caractères.
 
-Le parcours ne sera considéré opérationnel qu'après :
-1. endpoint serveur authentifié et options générées côté serveur ;
-2. cérémonie/challenge D1 avec consommation unique démontrée sous concurrence ;
-3. validation cryptographique serveur et contrôle de la politique racine ;
-4. persistance atomique de la credential publique ;
-5. session liée à l'appareil et contrôles de révocation ;
-6. tests CI verts et essais physiques sur les appareils cibles.
+Aucune valeur de domaine de production n'est inventée ou inscrite dans le dépôt. Si ces variables ne sont pas configurées, les endpoints échouent fermé.
 
-Aucune mise en production ni phase de test utilisateur ne doit être annoncée avant ces critères.
+La migration 0007 est versionnée dans Git mais **n'a pas été appliquée à la base D1 distante**.
+
+## 4. Limites restantes — ne pas annoncer SAC comme terminé
+
+1. Essais physiques sur Android/Chrome : non réalisés ; compatibilité réelle de l'authenticator à confirmer.
+2. `residentKey: discouraged` est le choix provisoire conservant le profil du smoke test ; le choix final doit être confirmé sur les appareils cibles.
+3. L'authentification WebAuthn par assertion (`navigator.credentials.get`) pour les connexions suivantes n'est pas encore implémentée. Le présent lot crée uniquement la première credential racine et la première session.
+4. Le contrôle de session est disponible via l'endpoint dédié, mais les futurs endpoints privés de contacts, SOS, GPS et données personnelles doivent encore être raccordés à ce contrôle avant exposition.
+5. Les variables Cloudflare réelles ne sont pas configurées et la migration distante n'est pas appliquée.
+6. Tests CI et build non confirmés.
+
+## 5. Conditions avant test utilisateur ou production
+
+- Revue du code et exécution réussie des tests de l'enrôlement.
+- Configuration des origines et du RP ID réels.
+- Application contrôlée de la migration 0007 après validation de l'environnement D1.
+- Essais réels sur plusieurs téléphones Android/versions Chrome, y compris annulation, perte réseau et répétition.
+- Implémentation et tests du parcours d'assertion WebAuthn pour les connexions suivantes.
+- Intégration obligatoire du contrôle de session à chaque route privée avant l'ouverture des fonctions métier.
+
+Aucun déploiement, changement de ressources Cloudflare ou migration distante n'a été exécuté dans ce lot.
