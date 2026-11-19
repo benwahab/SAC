@@ -49,6 +49,8 @@ jobs:
         run: npm run test:ecdsa-der
       - name: Test canonical P-256 JWK coordinate encoding
         run: npm run test:p256-jwk
+      - name: Test API and D1 schema readiness endpoint
+        run: npm run test:health
       - run: npm run typecheck
       - name: Test experimental location encryption primitive
         run: npm run test:crypto
