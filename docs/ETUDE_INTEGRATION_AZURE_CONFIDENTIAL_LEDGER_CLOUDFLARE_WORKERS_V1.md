@@ -243,3 +243,53 @@ Un test local avec faux transport ou une simulation en mémoire ne peut pas remp
 - [Arbitrages techniques d'enrôlement des appareils](ARBITRAGES_TECHNIQUES_ENROLEMENT_APPAREILS_V1.md)
 
 **Conclusion :** ACL reste le candidat prioritaire à tester, mais aucun service externe n'est choisi. Le compare-and-append via UDF est une piste technique prometteuse, pas encore une garantie homologuée pour SAC. Aucun endpoint, dépendance de production, migration, secret ou infrastructure réelle n'est autorisé par cette étude.
+
+
+## 11. Correction de sécurité — UDF pré-hook contournable et piste UDE (19 novembre 2026)
+
+La première version de cette étude présentait le pré-hook UDF comme mécanisme compare-and-append potentiel, mais ne soulignait pas assez une condition de sécurité fondamentale.
+
+### 11.1 Un UDF hook n'est pas obligatoire par défaut
+
+La documentation Microsoft précise explicitement que les hooks doivent être nommés dans le corps de chaque requête `POST /app/transactions`. Ils ne sont pas automatiquement exécutés pour toutes les écritures. Un rôle qui peut appeler directement l'API d'écriture sans le hook peut donc contourner la validation et l'avancement de tête.
+
+Conséquence : **un UDF pré-hook seul n'est pas acceptable comme contrôle d'intégrité de SAC**. Il ne serait recevable que si les permissions prouvent qu'aucune identité non administrative ne peut effectuer une écriture sans le hook, et si un test négatif démontre ce refus. Ne pas supposer cette propriété.
+
+### 11.2 Piste UDE : API métier unique dans le TEE
+
+La documentation Microsoft actuelle décrit les User Defined Endpoints (UDE) comme du code applicatif exécuté dans le TEE, avec RBAC personnalisé. La version REST documentée est `2026-02-23` ou ultérieure. Les UDE et UDF simples sont mutuellement exclusifs.
+
+Cette piste pourrait être plus robuste :
+- déployer une application UDE qui expose uniquement une opération métier d'ajout d'événement SAC ;
+- faire le compare-and-append et la mise à jour de la tête dans le contexte transactionnel de l'application CCF ;
+- créer un rôle d'exécution limité à cette route métier ;
+- ne pas attribuer le rôle Contributor générique au service SAC si ce rôle autorise une écriture directe ;
+- tester explicitement que l'identité Worker/passerelle est refusée sur `POST /app/transactions`, sur les API d'administration, et sur toute route qui permettrait d'altérer le journal ou son état ;
+- réserver les opérations de déploiement du code et de RBAC à une identité administrateur distincte, protégée et rarement utilisée.
+
+La documentation indique que les UDE prennent en charge le RBAC personnalisé, mais cela ne suffit pas à prouver que toutes les routes natives d'écriture sont neutralisées pour le rôle applicatif. **Le test de non-contournement est bloquant.**
+
+### 11.3 État documentaire à clarifier
+
+Des pages Microsoft indexées plus anciennes décrivent les fonctions avancées sous le nom « advanced UDF » et l'API preview `2024-08-22-preview`, alors que la documentation UDE actuelle expose l'API `2026-02-23`. La disponibilité effective de la version actuelle dans les régions éligibles, les limites, la procédure de migration UDF/UDE et le niveau de support doivent être confirmés auprès de la documentation régionale et du fournisseur avant de sélectionner cette voie.
+
+### 11.4 Cloudflare VPC : correction de portée
+
+Workers VPC n'est pas un proxy générique vers l'Internet public. Les VPC Services acheminent vers un service accessible derrière un Cloudflare Tunnel ; les VPC Networks donnent accès aux destinations routées par Tunnel/Mesh/WAN on-ramp, et peuvent acheminer le trafic Internet public via Cloudflare Gateway si cette option est configurée. Ce n'est pas une solution directe et automatique pour joindre l'endpoint public ACL.
+
+Le support CA personnalisée + certificat client annoncé en novembre 2026 s'applique à la connexion TLS entre Workers VPC et le service d'origine configuré. Pour un endpoint ACL public, il ne résout pas à lui seul la validation de son certificat de service. Une architecture Worker → passerelle privée via Tunnel/VPC pourrait utiliser ce mécanisme pour la connexion Worker-passerelle, mais la passerelle devrait ensuite gérer correctement l'identité TLS d'ACL.
+
+### 11.5 Verdict révisé
+
+- UDF avec pré-hook : **NO-GO seul**, car le hook doit être explicitement demandé par chaque écriture.
+- UDE avec RBAC métier dédié : **piste prioritaire à tester**, pas encore prouvée ; vérifier que l'identité applicative ne peut pas appeler les écritures natives directes et que l'opération UDE effectue réellement l'append atomique dans le journal.
+- Worker direct vers ACL : non homologué tant que certificat de service ACL, authentification et runtime exact ne sont pas testés.
+- Worker vers passerelle privée puis ACL : option d'architecture candidate ; coûts, latence, tunnel, authentification et séparation d'administration à évaluer.
+- Aucun fournisseur, UDE, tunnel, compte, ressource, dépendance ou secret n'est choisi/créé. NO-GO production maintenu.
+
+Références officielles complémentaires :
+- UDF et hooks explicitement inclus dans chaque requête : https://learn.microsoft.com/en-us/azure/confidential-ledger/user-defined-functions
+- UDE et RBAC personnalisé : https://learn.microsoft.com/en-us/azure/confidential-ledger/user-defined-endpoints
+- Cloudflare VPC Networks et destinations routées : https://developers.cloudflare.com/workers-vpc/configuration/vpc-networks/
+- Cloudflare VPC Services et tunnel privé : https://developers.cloudflare.com/workers-vpc/configuration/vpc-services/
+- Cloudflare Tunnel : https://developers.cloudflare.com/workers-vpc/configuration/tunnel/
