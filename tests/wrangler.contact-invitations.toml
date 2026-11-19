@@ -1,0 +1,9 @@
+name = "sac-contact-invitations-test"
+main = "./workers/contact-invitations-worker.ts"
+compatibility_date = "2026-11-17"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sac-contact-invitations-test"
+database_id = "adfdba9d-4d8a-4f2d-aed6-3b3c8d3a0b77"
+migrations_dir = "../migrations"
