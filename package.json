@@ -37,7 +37,8 @@
     "test:contact-invitations": "node --experimental-strip-types --test tests/contact-invitations.test.ts",
     "test:contact-invitations-d1": "node --experimental-strip-types --test tests/d1-contact-invitations.integration.test.ts",
     "test:contact-invitation-email": "node --experimental-strip-types --test tests/contact-invitation-email.test.ts",
-    "test:sos-d1": "node --experimental-strip-types --test tests/d1-sos-service.integration.test.ts"
+    "test:sos-d1": "node --experimental-strip-types --test tests/d1-sos-service.integration.test.ts",
+    "test:http-request-guard": "node --experimental-strip-types --test tests/http-request-guard.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
