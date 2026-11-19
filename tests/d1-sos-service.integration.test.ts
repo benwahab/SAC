@@ -126,7 +126,7 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     post<{ closed?: boolean; error?: string }>("/close", { actor: owner, alertId, now: now + 400_000 }),
     post<{ closed?: boolean; error?: string }>("/close", { actor: owner, alertId, now: now + 400_000 }),
   ]);
-  assert.deepEqual(closeAttempts.map(x => x.status).sort(), [200, 409]);
+  assert.deepEqual(closeAttempts.map(x => x.status).sort(), [200, 409], JSON.stringify(closeAttempts.map(x => x.data)));
   assert.equal(closeAttempts.filter(x => x.data.closed === true).length, 1);
   const duplicateClose = await post<{ error: string }>("/close", { actor: owner, alertId, now: now + 400_001 });
   assert.equal(duplicateClose.status, 409);
