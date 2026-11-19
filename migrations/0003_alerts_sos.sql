@@ -15,7 +15,7 @@ CREATE TABLE alerts (
   custom_description TEXT,
   status TEXT NOT NULL DEFAULT 'active'
     CHECK (status IN ('active', 'closed_by_author')),
-  push_reminder_limit INTEGER NOT NULL CHECK (push_reminder_limit >= 0),
+  push_reminder_limit INTEGER NOT NULL CHECK (push_reminder_limit BETWEEN 1 AND 5),
   created_at INTEGER NOT NULL CHECK (created_at > 0),
   closed_at INTEGER,
   closure_reason TEXT CHECK (closure_reason IN ('completed', 'cancelled')),
@@ -95,7 +95,7 @@ CREATE TABLE alert_reminder_outbox (
   id TEXT PRIMARY KEY NOT NULL,
   alert_id TEXT NOT NULL,
   recipient_account_id TEXT NOT NULL,
-  reminder_number INTEGER NOT NULL CHECK (reminder_number > 0),
+  reminder_number INTEGER NOT NULL CHECK (reminder_number >= 0),
   scheduled_at INTEGER NOT NULL CHECK (scheduled_at > 0),
   status TEXT NOT NULL DEFAULT 'pending'
     CHECK (status IN ('pending', 'processing', 'sent', 'cancelled', 'failed')),
@@ -248,7 +248,12 @@ BEGIN
     WHERE a.id = NEW.alert_id
       AND a.status = 'active'
       AND NEW.reminder_number <= a.push_reminder_limit
-      AND NEW.scheduled_at >= a.created_at + (NEW.reminder_number * 300000)
+      AND (
+        (NEW.reminder_number = 0 AND NEW.scheduled_at = a.created_at)
+        OR
+        (NEW.reminder_number BETWEEN 1 AND a.push_reminder_limit
+          AND NEW.scheduled_at >= a.created_at + (NEW.reminder_number * 300000))
+      )
       AND NEW.created_at >= a.created_at
   ) THEN RAISE(ABORT, 'alert_reminder_not_eligible') END;
 END;
