@@ -73,13 +73,15 @@ export function decodeBase64Url(value: string, label: string): Uint8Array {
 export function normalizeRootCreationOptions(
   input: RootCredentialCreationOptionsJSON,
 ): PublicKeyCredentialCreationOptions {
+  const selection = input?.authenticatorSelection;
   if (
     typeof input !== "object" ||
     input === null ||
     typeof input.rp?.id !== "string" ||
     !input.rp.id ||
-    input.authenticatorSelection?.authenticatorAttachment !== "platform" ||
-    input.authenticatorSelection.userVerification !== "required" ||
+    !selection ||
+    selection.authenticatorAttachment !== "platform" ||
+    selection.userVerification !== "required" ||
     typeof input.user?.name !== "string" ||
     typeof input.user?.displayName !== "string"
   ) {
