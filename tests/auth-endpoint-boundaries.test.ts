@@ -179,3 +179,35 @@ test("all public authentication endpoints reject methods other than POST", async
     assert.equal(response.headers.get("Cache-Control"), "no-store", path);
   }
 });
+
+
+test("register returns the same generic response shape when an email or phone already exists", async () => {
+  const duplicateEnv = {
+    ...env,
+    DB: {
+      prepare() {
+        return {
+          bind() {
+            return {
+              first: async () => ({ present: 1 }),
+            };
+          },
+        };
+      },
+    } as never,
+  };
+  const request = jsonRequest("register", JSON.stringify({
+    email: "person@example.com",
+    phone: "+22790000000",
+    password: "une phrase de passe assez longue",
+    language: "fr",
+  }));
+  const response = await (register as never)({ request, env: duplicateEnv } as never);
+  assert.equal(response.status, 202);
+  assert.deepEqual(await response.json(), {
+    accepted: true,
+    message: "Si cette adresse est éligible, vous recevrez les instructions de vérification.",
+    retryAfterSeconds: 60,
+  });
+  assert.equal(response.headers.get("Cache-Control"), "no-store");
+});
