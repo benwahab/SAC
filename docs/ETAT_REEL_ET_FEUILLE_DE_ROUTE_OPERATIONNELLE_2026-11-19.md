@@ -270,3 +270,20 @@ Ajouts sur `main` :
 - aucun GPS n'est exigé pour déclencher l'alerte ; le plafond gratuit de deux destinataires reste imposé côté serveur et rappelé dans l'interface.
 
 Limites non résolues : la connexion WebAuthn pour les appareils existants n'est pas encore implémentée ; la création de session n'est disponible actuellement qu'à la fin de l'enrôlement racine ; les notifications push et SMS ne sont pas raccordées à un fournisseur. Le parcours SOS ne peut donc pas être déclaré opérationnel en production. D1 distante et Pages restent dans l'état constaté précédemment. Aucun déploiement, secret ni changement de base distante n'a été effectué.
+
+
+## Mise à jour — configuration Cloudflare Pages (19 novembre 2026)
+
+Configuration réellement créée dans le compte Cloudflare connecté et relue après écriture :
+
+- Projet Pages `sac`, relié au dépôt privé GitHub `benwahab/SAC`, branche `main`.
+- Commande de build `npm run build`, répertoire de sortie `dist`, racine `/`.
+- Binding D1 de production `DB` vers la base existante `sac-db` (UUID `892ce876-f279-409c-8f9e-06b1dca66e9d`).
+- Origine provisoire configurée : `https://sac-3xh.pages.dev`; RP ID `sac-3xh.pages.dev`, nom RP `SAC`.
+- Secret `EMAIL_OTP_HMAC_SECRET` enregistré comme variable secrète Cloudflare Pages ; sa valeur n'est pas inscrite dans Git ni dans cette documentation.
+- `WEBAUTHN_ROOT_ENROLLMENT_ENABLED` est explicitement défini à `false`. Il ne faut pas l'activer avant remplacement/revue indépendante du vérificateur WebAuthn actuel, ajout de la bibliothèque de production, implémentation de l'assertion de connexion et essais physiques.
+- Les déploiements automatiques de production sont désactivés et aucun déploiement n'a été lancé. Aucun domaine personnalisé n'est associé.
+
+**État restant :** le projet Pages n'a pas encore de déploiement ; la base distante `sac-db` était encore à zéro table au dernier contrôle. Les migrations 0001 à 0007 ne sont pas appliquées. Aucun fournisseur e-mail, push ou SMS n'est connecté par cette opération. La création des variables Cloudflare ne rend donc pas encore l'inscription, la connexion, les invitations ou le SOS opérationnels en production.
+
+**Point d'attention :** la clé secrète OTP a été générée côté outil et envoyée directement à Cloudflare comme secret. Elle n'est ni récupérable ni affichée dans les réponses de lecture Cloudflare. Si elle doit être remplacée ultérieurement, en générer une nouvelle et effectuer une rotation coordonnée.
