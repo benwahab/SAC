@@ -133,3 +133,14 @@ Pour chaque tranche fonctionnelle :
 Ne pas répéter les études déjà terminées. Ne pas créer des écrans factices. Ne pas transformer un test en mémoire en preuve d'intégration réelle. Ne pas ouvrir de service externe, déployer ou créer de dépense sans l'autorisation correspondante.
 
 **Priorité de reprise après cet audit :** terminer la tranche compte/appareils sans contourner WebAuthn, puis passer aux proches/invitations et au moteur SOS. L'anti-restauration reste un sous-chantier transversal et ne doit pas monopoliser la feuille de route.
+
+
+## 7. Tranches métier ajoutées après l'inventaire
+
+### 7.1 Suspension administrative du compte
+Le contrat `src/domain/account-lifecycle.ts` accepte maintenant les commandes de suspension et de rétablissement réservées au rôle `super_admin`. Les tests correspondants sont dans `tests/account-lifecycle.test.ts`. Le run `44480715548` a confirmé avec succès le test UDE corrigé, le typecheck, les tests du cycle de suppression de compte et le build pour le commit `665393b2`. Ce résultat ne valide pas encore une API ou une persistance de suspension.
+
+### 7.2 Invitations de proches
+Un contrat métier pur a été ajouté dans `src/domain/contact-invitations.ts`, avec tests dans `tests/contact-invitations.test.ts`. Il couvre l'acceptation explicite par un compte actif avec adresse vérifiée correspondant à la destination, la vérification du hash présenté, la version de permissions, le refus, le retrait par l'invitant, l'expiration et la direction unique de la relation.
+
+Les durées, quotas, relances, permissions concrètes, révocation symétrique et droits après révocation pendant un SOS actif restent ouverts. Le contrat ne crée pas d'invitation, n'envoie aucun e-mail, ne persiste aucune relation et ne remplace pas une transaction D1 atomique. Les API et migrations restent bloquées jusqu'à résolution des arbitrages produit et du modèle relationnel.
