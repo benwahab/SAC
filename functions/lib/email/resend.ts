@@ -26,8 +26,10 @@ async function readBoundedJsonResponse(response: Response): Promise<unknown | nu
       if (done) break;
       totalBytes += value.byteLength;
       if (totalBytes > MAX_PROVIDER_RESPONSE_BYTES) {
+        // Ne pas attendre cancel() : un flux fournisseur peut ne jamais
+        // terminer son nettoyage et bloquer la requête après réception des en-têtes.
         try {
-          await reader.cancel();
+          void reader.cancel().catch(() => undefined);
         } catch {
           // Le dépassement reste un refus même si l'annulation échoue.
         }
