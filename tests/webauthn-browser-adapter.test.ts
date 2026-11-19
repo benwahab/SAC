@@ -90,6 +90,23 @@ test("rejects root options that do not require platform authentication and user 
   assert.throws(() => normalizeRootCreationOptions(shortChallenge));
 });
 
+test("rejects non-SAC algorithms and attestation profiles", () => {
+  const wrongAlgorithm = options();
+  wrongAlgorithm.pubKeyCredParams = [{ type: "public-key", alg: -257 }];
+  assert.throws(() => normalizeRootCreationOptions(wrongAlgorithm));
+
+  const extraAlgorithm = options();
+  extraAlgorithm.pubKeyCredParams = [
+    { type: "public-key", alg: -7 },
+    { type: "public-key", alg: -257 },
+  ];
+  assert.throws(() => normalizeRootCreationOptions(extraAlgorithm));
+
+  const wrongAttestation = options();
+  wrongAttestation.attestation = "direct";
+  assert.throws(() => normalizeRootCreationOptions(wrongAttestation));
+});
+
 test("creates and serializes a platform credential while leaving verification to the server", async () => {
   let received: PublicKeyCredentialCreationOptions | undefined;
   const port: WebAuthnCreationPort = {
