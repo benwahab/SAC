@@ -47,7 +47,9 @@
     "test:health": "node --experimental-strip-types --test tests/health-endpoint.test.ts",
     "test:webauthn-browser": "node --experimental-strip-types --test tests/webauthn-browser-adapter.test.ts",
     "test:webauthn-root-options": "node --experimental-strip-types --test tests/webauthn-root-options.test.ts",
-    "test:webauthn-origin": "node --experimental-strip-types --test tests/webauthn-origin.test.ts"
+    "test:webauthn-origin": "node --experimental-strip-types --test tests/webauthn-origin.test.ts",
+    "test:webauthn-root-verifier": "node --experimental-strip-types --test tests/webauthn-root-verifier.test.ts",
+    "test:d1-root-device-enrollment": "python3 tests/d1_root_device_enrollment_schema.test.py"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
