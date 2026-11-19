@@ -259,8 +259,28 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
 
         {mode === "login" && (
           <div className="mt-8 space-y-4">
-            <p className="rounded-xl border border-sac-alert/20 bg-sac-alert/5 p-4 text-sm leading-6 text-sac-muted">{copy.loginUnavailable}</p>
-            <button type="button" className={primaryButton} onClick={() => { setMode("register"); setError(""); setNotice(""); }}>{copy.create}</button>
+            <p className="text-sm leading-6 text-sac-muted">{copy.loginUnavailable}</p>
+            <form className="space-y-4" onSubmit={submitRootOptions}>
+              <div>
+                <label className="mb-2 block text-sm font-bold" htmlFor="sac-login-email">{copy.email}</label>
+                <input id="sac-login-email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} className={inputClass} />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-bold" htmlFor="sac-login-password">{copy.password}</label>
+                <input id="sac-login-password" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} />
+              </div>
+              <button type="submit" disabled={busy || !email || !password} className={primaryButton}>{busy ? copy.rootPreparing : copy.prepareRoot}</button>
+            </form>
+            <button type="button" className="min-h-11 w-full rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 text-sm font-bold text-sac-ink" onClick={() => { setMode("register"); setError(""); setNotice(""); }}>{copy.create}</button>
+          </div>
+        )}
+
+        {mode === "enroll" && rootCeremony && (
+          <div className="mt-8 space-y-4">
+            <p className="rounded-xl border border-sac-confirm/25 bg-sac-confirm/10 p-4 text-sm leading-6 text-sac-ink">{copy.rootIntro}</p>
+            <p className="text-sm leading-6 text-sac-muted">{copy.rootReady}</p>
+            <button type="button" disabled={busy} onClick={confirmRootEnrollment} className={primaryButton}>{busy ? copy.rootCreating : copy.createRoot}</button>
+            <button type="button" disabled={busy} onClick={() => { setRootCeremony(null); setMode("login"); setError(""); setNotice(""); }} className="min-h-11 w-full rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 text-sm font-bold text-sac-ink">{copy.back}</button>
           </div>
         )}
 
