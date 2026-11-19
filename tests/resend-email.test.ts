@@ -57,6 +57,7 @@ test("envoie le code à Resend et ne considère le résultat réussi qu'avec un 
     assert.deepEqual(result, { ok: true, messageId: "resend-message-123" });
     assert.equal(requestUrl, "https://api.resend.com/emails");
     assert.equal(requestInit?.method, "POST");
+    assert.equal(requestInit?.redirect, "error");
     const headers = new Headers(requestInit?.headers);
     assert.equal(headers.get("Authorization"), "Bearer test-api-key");
     const body = JSON.parse(String(requestInit?.body)) as {
