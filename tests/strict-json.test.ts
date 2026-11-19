@@ -63,6 +63,8 @@ test("la limite de profondeur est explicite et appliquée", () => {
 test("les limites manquantes ou incohérentes sont refusées", () => {
   assert.throws(() => parseStrictJson("null", { maxBytes: 0, maxDepth: 1 }), /limits/);
   assert.throws(() => parseStrictJson("null", { maxBytes: 10, maxDepth: -1 }), /limits/);
+  assert.throws(() => parseStrictJson("null", { maxBytes: 1_048_577, maxDepth: 1 }), /limits/);
+  assert.throws(() => parseStrictJson("null", { maxBytes: 10, maxDepth: 129 }), /limits/);
   assert.throws(() => parseStrictJson("null", { maxBytes: 10, maxDepth: 129 }), /limits/);
 });
 
