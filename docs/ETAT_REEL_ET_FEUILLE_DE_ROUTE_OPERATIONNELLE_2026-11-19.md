@@ -259,3 +259,14 @@ Le parcours est volontairement limité aux capacités réellement exposées par 
 Fichiers concernés : `src/PrivateSpacePage.tsx`, `src/App.tsx`.
 
 Cette interface n'est pas considérée comme validée en production : D1 distante reste non initialisée (zéro table lors du dernier contrôle) et aucun projet Pages n'a été observé dans le compte Cloudflare connecté. Aucun déploiement ni changement distant n'a été effectué.
+
+## Mise à jour — parcours SOS privé (19 novembre 2026)
+
+Ajouts sur `main` :
+- `GET /api/alerts` expose au compte authentifié les 50 alertes les plus récentes dont il est auteur ou destinataire, avec une projection limitée (type, niveau, état, date, rôle) ;
+- la route partage le fichier `functions/api/alerts/index.ts` avec le POST existant, sans route de liste parallèle ;
+- `src/PrivateSpacePage.tsx` propose la sélection des proches vérifiés, le type et le niveau de l'alerte, le seuil de 1 à 5 rappels push, la description pour une alerte personnalisée, la confirmation avant déclenchement et l'historique des alertes ;
+- l'interface précise qu'une alerte enregistrée ne prouve pas que les notifications ont été envoyées ou reçues ;
+- aucun GPS n'est exigé pour déclencher l'alerte ; le plafond gratuit de deux destinataires reste imposé côté serveur et rappelé dans l'interface.
+
+Limites non résolues : la connexion WebAuthn pour les appareils existants n'est pas encore implémentée ; la création de session n'est disponible actuellement qu'à la fin de l'enrôlement racine ; les notifications push et SMS ne sont pas raccordées à un fournisseur. Le parcours SOS ne peut donc pas être déclaré opérationnel en production. D1 distante et Pages restent dans l'état constaté précédemment. Aucun déploiement, secret ni changement de base distante n'a été effectué.
