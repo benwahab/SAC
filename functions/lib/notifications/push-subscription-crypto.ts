@@ -71,12 +71,15 @@ export async function encryptPushSubscription(
 
   const iv = cryptoProvider.getRandomValues(new Uint8Array(12));
   const plaintext = encoder.encode(JSON.stringify(payload));
-  const [ciphertext, fingerprint] = await Promise.all([
-    cryptoProvider.subtle.encrypt({ name: "AES-GCM", iv }, keys.encryption, plaintext),
-    cryptoProvider.subtle.sign("HMAC", keys.fingerprint, encoder.encode(payload.endpoint)),
-  ]);
+  const fingerprint = await cryptoProvider.subtle.sign("HMAC", keys.fingerprint, encoder.encode(payload.endpoint));
+  const endpointHash = Array.from(new Uint8Array(fingerprint), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  const ciphertext = await cryptoProvider.subtle.encrypt(
+    { name: "AES-GCM", iv, additionalData: encoder.encode(endpointHash) },
+    keys.encryption,
+    plaintext,
+  );
   return {
-    endpointHash: Array.from(new Uint8Array(fingerprint), (byte) => byte.toString(16).padStart(2, "0")).join(""),
+    endpointHash,
     ciphertext: encodeBase64Url(new Uint8Array(ciphertext)),
     iv: encodeBase64Url(iv),
   };
@@ -87,19 +90,26 @@ export async function decryptPushSubscription(
   secret: string | undefined,
   cryptoProvider: Crypto = crypto,
 ): Promise<PushSubscriptionPayload | null> {
-  if (!secret) return null;
+  if (!secret || !/^[a-f0-9]{64}$/.test(encrypted.endpointHash)) return null;
   const keys = await deriveKeys(secret, cryptoProvider);
   const iv = decodeBase64Url(encrypted.iv);
   const ciphertext = decodeBase64Url(encrypted.ciphertext);
   if (!keys || !iv || iv.byteLength !== 12 || !ciphertext) return null;
   try {
-    const plaintext = await cryptoProvider.subtle.decrypt({ name: "AES-GCM", iv }, keys.encryption, ciphertext);
+    const plaintext = await cryptoProvider.subtle.decrypt(
+      { name: "AES-GCM", iv, additionalData: encoder.encode(encrypted.endpointHash) },
+      keys.encryption,
+      ciphertext,
+    );
     const value: unknown = JSON.parse(new TextDecoder().decode(plaintext));
     if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
     const record = value as Record<string, unknown>;
     if (typeof record.endpoint !== "string" || typeof record.keys !== "object" || record.keys === null) return null;
     const subscriptionKeys = record.keys as Record<string, unknown>;
     if (typeof subscriptionKeys.p256dh !== "string" || typeof subscriptionKeys.auth !== "string") return null;
+    const fingerprint = await cryptoProvider.subtle.sign("HMAC", keys.fingerprint, encoder.encode(record.endpoint));
+    const actualHash = Array.from(new Uint8Array(fingerprint), (byte) => byte.toString(16).padStart(2, "0")).join("");
+    if (actualHash !== encrypted.endpointHash) return null;
     return { endpoint: record.endpoint, keys: { p256dh: subscriptionKeys.p256dh, auth: subscriptionKeys.auth } };
   } catch {
     return null;
