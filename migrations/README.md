@@ -77,7 +77,8 @@ Cette migration n'a pas été appliquée à la base distante. Avant mise en prod
 - version de chiffrement explicite `v1` ;
 - route authentifiée `POST /api/push/subscriptions` avec actions `subscribe` et `remove` ;
 - aucune valeur d'endpoint ni clé de souscription renvoyée au navigateur après enregistrement ;
-- révocation d'un appareil : suppression immédiate de ses abonnements et des données chiffrées associées.
+- une seule souscription active par appareil ; remplacement atomique de l'endpoint par batch D1 ;
+- révocation d'un appareil : suppression immédiate de son abonnement et des données chiffrées associées.
 
 Le secret `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` doit contenir exactement 32 octets encodés en base64url. Il n'est pas encore configuré dans Cloudflare. Tant qu'il est absent, l'enregistrement répond 503 et échoue fermé. Ne pas réutiliser le secret OTP e-mail ni une clé partagée avec un autre environnement.
 
