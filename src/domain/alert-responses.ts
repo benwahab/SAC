@@ -270,10 +270,14 @@ export function closeAlertResponderState(
   closedAlert: TriggeredAlertRecord,
 ): AlertResponderResult {
   if (!isValidState(state)) return { ok: false, error: "invalid_state" };
-  if (state.alert.status !== "active" || closedAlert.status !== "closed_by_author" ||
-      closedAlert.closedAt === null || closedAlert.closureReason === null) {
-    return { ok: false, error: "invalid_event" };
-  }
+  if (
+    state.alert.status !== "active" ||
+    closedAlert.status !== "closed_by_author" ||
+    closedAlert.closedAt === null ||
+    !isUtc(closedAlert.closedAt) ||
+    Date.parse(closedAlert.closedAt) < Date.parse(closedAlert.createdAt) ||
+    (closedAlert.closureReason !== "completed" && closedAlert.closureReason !== "cancelled")
+  ) return { ok: false, error: "invalid_event" };
 
   const sameRecipients =
     state.alert.recipientSnapshot.length === closedAlert.recipientSnapshot.length &&
@@ -309,6 +313,6 @@ export function closeAlertResponderState(
     responsibilityHistory,
   };
 
-  if (!isValidState(nextState)) return { ok: false, error: "closed_alert_has_open_responsibility" };
+  if (!isValidState(nextState)) return { ok: false, error: "invalid_state" };
   return { ok: true, state: nextState };
 }
