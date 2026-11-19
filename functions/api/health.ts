@@ -20,6 +20,7 @@ const REQUIRED_TABLES = [
   "device_root_credentials",
   "device_sessions",
   "device_enrollment_events",
+  "push_subscriptions",
 ] as const;
 
 const HEADERS = {
