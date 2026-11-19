@@ -271,10 +271,11 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
   );
 }
 
-type HealthState = "checking" | "connected" | "unavailable";
+type HealthState = "checking" | "connected" | "schema_incomplete" | "unavailable";
 
 export default function App() {
   const [health, setHealth] = useState<HealthState>("checking");
+  const [healthRefresh, setHealthRefresh] = useState(0);
   const [networkOnline, setNetworkOnline] = useState(() => navigator.onLine);
   const [language, setLanguage] = useState<Language>(() => {
     try {
@@ -315,8 +316,12 @@ export default function App() {
       controller = new AbortController();
       fetch("/api/health", { signal: controller.signal, cache: "no-store" })
         .then(async (response) => {
-          if (!response.ok) throw new Error("API unavailable");
           const payload: { ok?: boolean; database?: string } = await response.json();
+          if (payload.database === "schema_incomplete") {
+            setHealth("schema_incomplete");
+            return;
+          }
+          if (!response.ok) throw new Error("API unavailable");
           setHealth(payload.ok && payload.database === "connected" ? "connected" : "unavailable");
         })
         .catch((error: unknown) => {
@@ -342,13 +347,13 @@ export default function App() {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, []);
+  }, [healthRefresh]);
 
   if (isLoginPage) return <LoginPage language={language} setLanguage={setLanguage} />;
 
   const statusDot =
     health === "connected" ? "bg-sac-confirm" :
-    health === "unavailable" ? "bg-sac-alert" : "animate-pulse bg-sac-primary-strong";
+    health === "schema_incomplete" || health === "unavailable" ? "bg-sac-alert" : "animate-pulse bg-sac-primary-strong";
 
   const pillars = [
     { icon: UsersRound, title: t.contactTitle, description: t.contactDescription },
@@ -427,8 +432,17 @@ export default function App() {
                       {!networkOnline && t.offline}
                       {networkOnline && health === "checking" && t.checking}
                       {networkOnline && health === "connected" && t.connected}
+                      {networkOnline && health === "schema_incomplete" && t.schemaIncomplete}
                       {networkOnline && health === "unavailable" && t.unavailable}
                     </p>
+                    {networkOnline && health !== "connected" && (
+                      <button
+                        type="button"
+                        onClick={() => setHealthRefresh((value) => value + 1)}
+                        disabled={health === "checking"}
+                        className="mt-2 min-h-9 rounded-lg border border-sac-primary-strong/25 bg-white/70 px-3 text-xs font-bold text-sac-ink disabled:opacity-50"
+                      >{health === "checking" ? t.checking : t.retry}</button>
+                    )}
                   </div>
                   <span className={"ml-auto h-2.5 w-2.5 shrink-0 rounded-full " + statusDot} />
                 </div>
