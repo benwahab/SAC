@@ -287,17 +287,24 @@ test("anchor outage fails closed for security-sensitive authorization", () => {
 });
 
 test("a D1 projection ahead of the authoritative anchor is not auto-reconciled", () => {
-  const anchor = new IndependentAnchorModel();
-  const d1 = new D1ProjectionModel();
-  appendThenProject(anchor, d1, "activate-device-F", {
+  const authoritativeAnchor = new IndependentAnchorModel();
+  const projectedD1 = new D1ProjectionModel();
+  const newerAnchor = new IndependentAnchorModel();
+  const newerD1 = new D1ProjectionModel();
+
+  appendThenProject(authoritativeAnchor, projectedD1, "event-1", {
     type: "DEVICE_ACTIVATED", deviceId: "device-F",
   });
+  appendThenProject(newerAnchor, newerD1, "event-1", {
+    type: "DEVICE_ACTIVATED", deviceId: "device-F",
+  });
+  appendThenProject(newerAnchor, newerD1, "event-2", {
+    type: "DEVICE_REVOKED", deviceId: "device-F",
+  });
 
-  const forgedAhead = d1.snapshot();
-  anchor.available = false;
-  const unavailable = isSynchronized(anchor, d1);
-  anchor.available = true;
-  d1.restore(forgedAhead);
-  assert.equal(unavailable, false);
-  assert.equal(reconcile(anchor, d1), true);
+  // Simulate a projection copied from a later timeline while the independent
+  // anchor only knows the earlier head. The model must not guess or roll back.
+  projectedD1.restore(newerD1.snapshot());
+  assert.equal(isSynchronized(authoritativeAnchor, projectedD1), false);
+  assert.equal(reconcile(authoritativeAnchor, projectedD1), false);
 });
