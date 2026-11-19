@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowUpRight, HeartHandshake, LockKeyhole, MapPin, ShieldCheck, UsersRound, Wifi } from "lucide-react";
+import { ArrowUpRight, Download, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, Wifi, X } from "lucide-react";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
 
 
@@ -273,9 +273,17 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
 
 type HealthState = "checking" | "connected" | "schema_incomplete" | "unavailable";
 
+interface InstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+}
+
 export default function App() {
   const [health, setHealth] = useState<HealthState>("checking");
   const [healthRefresh, setHealthRefresh] = useState(0);
+  const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
+  const [installHelp, setInstallHelp] = useState<"ios" | "android" | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
   const [networkOnline, setNetworkOnline] = useState(() => navigator.onLine);
   const [language, setLanguage] = useState<Language>(() => {
     try {
@@ -299,6 +307,45 @@ export default function App() {
       // Language selection remains available for the current session.
     }
   }, [language, isRtl]);
+
+  useEffect(() => {
+    const standalone = window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    setIsInstalled(standalone);
+
+    const isAppleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (!standalone && isAppleMobile) setInstallHelp("ios");
+
+    const handleBeforeInstall = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as InstallPromptEvent);
+    };
+    const handleInstalled = () => {
+      setIsInstalled(true);
+      setInstallPrompt(null);
+      setInstallHelp(null);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
+    window.addEventListener("appinstalled", handleInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+      window.removeEventListener("appinstalled", handleInstalled);
+    };
+  }, []);
+
+  const installApp = async () => {
+    if (!installPrompt) {
+      setInstallHelp((current) => current ? null : "android");
+      return;
+    }
+    await installPrompt.prompt();
+    const choice = await installPrompt.userChoice;
+    setInstallPrompt(null);
+    if (choice.outcome === "accepted") setIsInstalled(true);
+    else setInstallHelp("android");
+  };
 
   useEffect(() => {
     let controller: AbortController | null = null;
@@ -368,7 +415,12 @@ export default function App() {
           <span className="text-xl font-black tracking-[0.2em] text-sac-ink">SAC</span>
           <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-sac-muted">{t.appName}</span>
         </a>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {!isInstalled && (installPrompt || installHelp) && (
+            <button type="button" onClick={() => void installApp()} className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-sac-confirm/25 bg-white/75 px-3 py-2 text-xs font-extrabold text-sac-ink shadow-glass hover:bg-white">
+              <Download size={14} />{t.installApp}
+            </button>
+          )}
           <a href="/connexion" className="hidden rounded-full border border-white/90 bg-white/65 px-4 py-2 text-xs font-extrabold text-sac-ink shadow-glass hover:bg-white sm:inline-flex">{signInLabel}</a>
           <div className="hidden items-center gap-2 rounded-full border border-white/80 bg-white/55 px-3 py-2 text-xs font-semibold text-sac-ink shadow-glass sm:flex">
             <LockKeyhole size={14} className="text-sac-confirm" />{t.privateApp}
@@ -388,6 +440,15 @@ export default function App() {
           </div>
         </div>
       </header>
+      {installHelp && !isInstalled && (
+        <aside className="mx-auto -mt-2 mb-4 flex max-w-6xl items-start gap-3 px-5 sm:px-8" aria-live="polite">
+          <div className="sac-glass-card flex flex-1 items-start gap-3 rounded-2xl p-4 text-sm leading-6 text-sac-ink">
+            {installHelp === "ios" ? <Share2 size={19} className="mt-1 shrink-0 text-sac-confirm" /> : <Download size={19} className="mt-1 shrink-0 text-sac-confirm" />}
+            <p>{installHelp === "ios" ? t.installIosHelp : t.installAndroidHelp}</p>
+            <button type="button" onClick={() => setInstallHelp(null)} aria-label={t.close} className="ml-auto rounded-lg p-1 text-sac-muted hover:bg-white/70"><X size={16} /></button>
+          </div>
+        </aside>
+      )}
 
       <main>
         <section className="sac-hero-layout relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-8 sm:px-8 sm:pb-24 sm:pt-14 lg:grid-cols-[1.08fr_0.92fr]">
