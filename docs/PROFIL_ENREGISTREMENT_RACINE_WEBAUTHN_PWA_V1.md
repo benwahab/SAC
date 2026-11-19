@@ -133,3 +133,20 @@ Le choix de l'option A est validé par l'utilisateur ; ce profil est une traduct
 
 - W3C, Web Authentication: An API for accessing Public Key Credentials — Level 3, recommandation publiée le 25 août 2026 : https://www.w3.org/TR/2026/REC-webauthn-3-20260825/
 - W3C, WebAuthn Level 3, sections sur authenticator data, flags UP/UV/BE/BS, credential backup state et vérification d'enregistrement.
+
+
+## 11. Réexamen du choix residentKey — observation SimpleWebAuthn 14.1.x
+
+Le profil initial proposait `residentKey: "required"` pour créer une credential découvrable. La documentation actuelle de SimpleWebAuthn 14.1.x indique toutefois que les préférences `"preferred"` et `"required"` entraînent la création de passkeys synchronisées sur Android, tandis que `"discouraged"` évite ce comportement par défaut sur Android.
+
+Cette observation est importante pour SAC, dont la racine V1 doit être mono-appareil :
+- **candidat à tester :** `residentKey: "discouraged"` ;
+- conserver `authenticatorAttachment: "platform"` et `userVerification: "required"` ;
+- refuser côté serveur toute credential dont `BE !== 0` ou `BS !== 0), même si le navigateur a reçu `residentKey: "discouraged"` ;
+- ne jamais considérer `residentKey` comme une preuve de non-synchronisation.
+
+La préférence `"discouraged"` ne garantit pas à elle seule BE=0/BS=0. Le contrôle des flags reçus reste obligatoire et souverain.
+
+**Statut :** recommandation technique candidate, pas une nouvelle décision produit validée. Le profil initial `residentKey: "required"` est à considérer comme remis en question et ne doit pas être implémenté sans révision. La compatibilité réelle doit être mesurée sur les appareils Android ciblés.
+
+Source : documentation officielle SimpleWebAuthn 14.1.x, section `authenticatorSelection.residentKey` : https://simplewebauthn.dev/docs/packages/server/#guiding-use-of-authenticators-via-authenticatorselection
