@@ -1214,3 +1214,8 @@ L'étude [ETUDE_INTEGRATION_AZURE_CONFIDENTIAL_LEDGER_CLOUDFLARE_WORKERS_V1.md](
 ### Correction de sécurité — Azure Confidential Ledger (19 novembre 2026)
 
 L'étude ACL a été complétée par une réserve bloquante : un pré-hook UDF doit être explicitement nommé dans chaque requête d'écriture ; il n'est donc pas une protection suffisante si une identité peut écrire directement sans l'invoquer. La piste prioritaire à tester devient une application UDE avec RBAC métier dédié, à condition de démontrer qu'aucune route native d'écriture ne permet de contourner le contrôle. Workers VPC ne donne pas automatiquement un accès direct sécurisé à l'endpoint public ACL ; la voie directe et la voie passerelle restent non homologuées. Voir [l'étude d'intégration corrigée](ETUDE_INTEGRATION_AZURE_CONFIDENTIAL_LEDGER_CLOUDFLARE_WORKERS_V1.md), section 11. Aucun fournisseur ni service n'est choisi ; NO-GO production maintenu.
+
+
+### Exemple Microsoft UDE analysé — 19 novembre 2026
+
+Le dépôt public Microsoft `azureconfidentialledger-app-samples/code-transparency` montre une application UDE avec routes métier personnalisées, tables KV et compteur de séquence applicatif. L'étude SAC décrit le périmètre de ce précédent et les preuves encore manquantes : transaction ID/reçu pour une écriture UDE, reprise après réponse perdue, interdiction des écritures natives directes et append-only effectif des clés. Voir section 12 de l'étude. Cela justifie de poursuivre l'analyse UDE, sans déclarer ACL sélectionné ni autoriser un déploiement.
