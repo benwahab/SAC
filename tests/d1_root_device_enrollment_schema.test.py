@@ -60,7 +60,7 @@ class RootDeviceEnrollmentSchemaTests(unittest.TestCase):
         credential = "77777777-7777-4777-8777-777777777777"
         session = "88888888-8888-4888-8888-888888888888"
         self.db.execute(
-            "INSERT INTO root_enrollment_ceremonies VALUES (?,?,'pending',?,?,NULL)",
+            "INSERT INTO root_enrollment_ceremonies (id,account_id,origin,status,created_at,expires_at,completed_at) VALUES (?,?,'https://sac.example','pending',?,?,NULL)",
             (ceremony, self.account_id, now, now + 300000),
         )
         self.db.execute(
@@ -113,7 +113,7 @@ class RootDeviceEnrollmentSchemaTests(unittest.TestCase):
         ceremony = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
         challenge = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
         now = self.now + 100
-        self.db.execute("INSERT INTO root_enrollment_ceremonies VALUES (?,?,'pending',?,?,NULL)", (ceremony, self.account_id, now, now + 300000))
+        self.db.execute("INSERT INTO root_enrollment_ceremonies (id,account_id,origin,status,created_at,expires_at,completed_at) VALUES (?,?,'https://sac.example','pending',?,?,NULL)", (ceremony, self.account_id, now, now + 300000))
         self.db.execute("INSERT INTO root_enrollment_challenges (id,ceremony_id,account_id,challenge_digest,created_at,expires_at) VALUES (?,?,?,?,?,?)", (challenge, ceremony, self.account_id, "d" * 64, now, now + 300000))
         for expected in range(1, 6):
             self.db.execute("UPDATE root_enrollment_challenges SET attempt_count=attempt_count+1 WHERE id=?", (challenge,))
@@ -127,7 +127,7 @@ class RootDeviceEnrollmentSchemaTests(unittest.TestCase):
         challenge = "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
         created = self.now - 900000
         expires = self.now - 600000
-        self.db.execute("INSERT INTO root_enrollment_ceremonies VALUES (?,?,'pending',?,?,NULL)", (ceremony, self.account_id, created, expires))
+        self.db.execute("INSERT INTO root_enrollment_ceremonies (id,account_id,origin,status,created_at,expires_at,completed_at) VALUES (?,?,'https://sac.example','pending',?,?,NULL)", (ceremony, self.account_id, created, expires))
         self.db.execute("INSERT INTO root_enrollment_challenges (id,ceremony_id,account_id,challenge_digest,created_at,expires_at) VALUES (?,?,?,?,?,?)", (challenge, ceremony, self.account_id, "e" * 64, created + 1, expires))
         self.db.execute("UPDATE root_enrollment_ceremonies SET status='expired' WHERE id=?", (ceremony,))
         self.assertEqual(self.db.execute("SELECT status FROM root_enrollment_ceremonies WHERE id=?", (ceremony,)).fetchone()[0], "expired")
@@ -137,7 +137,7 @@ class RootDeviceEnrollmentSchemaTests(unittest.TestCase):
         now = self.now + 100
         self.db.execute("INSERT INTO accounts VALUES (?,'pending_verification','fr','hash',?,?)", (pending_id, now, now))
         with self.assertRaises(sqlite3.IntegrityError):
-            self.db.execute("INSERT INTO root_enrollment_ceremonies VALUES ('ffffffff-ffff-4fff-8fff-ffffffffffff',?,'pending',?,?,NULL)", (pending_id, now, now + 300000))
+            self.db.execute("INSERT INTO root_enrollment_ceremonies (id,account_id,origin,status,created_at,expires_at,completed_at) VALUES ('ffffffff-ffff-4fff-8fff-ffffffffffff',?,'https://sac.example','pending',?,?,NULL)", (pending_id, now, now + 300000))
 
 
 if __name__ == "__main__":
