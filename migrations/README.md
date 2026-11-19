@@ -31,15 +31,11 @@ Le délai minimal de 60 secondes continue de s'appliquer à toute création de d
 2. Exécuter `npx wrangler d1 migrations apply sac-db --local`.
 3. Vérifier le schéma local et exécuter les scénarios d'intégration avant toute demande de migration distante.
 
-La base distante `sac-db` ne doit pas être modifiée par une commande locale ou un déploiement implicite.
+La base distante `sac-db` ne doit jamais être modifiée par un déploiement implicite. Toute nouvelle migration distante exige une autorisation explicite et une vérification de l'environnement cible.
 
 ## Application distante
 
-Commande de référence, **non exécutée** :
-
-`npx wrangler d1 migrations apply sac-db --remote`
-
-Elle nécessite une revue dédiée, la confirmation de l'environnement cible et l'autorisation explicite du propriétaire. Ne jamais appliquer une migration distante depuis cette documentation seule.
+Les migrations `0001` à `0008` ont été appliquées le 19 novembre 2026 à la base Cloudflare D1 `sac-db` après autorisation explicite. Les huit noms ont été inscrits dans `d1_migrations`. Le schéma et `PRAGMA foreign_key_check` ont été relus après application. Pour les migrations futures, utiliser le mécanisme Wrangler de migration distante après revue et autorisation explicite ; ne pas rejouer les huit migrations déjà appliquées.
 
 ## 0007 — credential racine, appareils et sessions
 
@@ -66,7 +62,7 @@ Vérifications ajoutées :
 - `npm run test:webauthn-root-verifier`
 - `npm run test:d1-root-device-enrollment`
 
-Cette migration n'a pas été appliquée à la base distante. Avant mise en production, configurer les origines réelles, appliquer les migrations après revue, puis réaliser des essais physiques Android/Chrome et vérifier la compatibilité du profil residentKey retenu.
+Cette migration a été appliquée à `sac-db` le 19 novembre 2026. Cela ne valide pas le parcours d'enrôlement : `WEBAUTHN_ROOT_ENROLLMENT_ENABLED` reste désactivé. Avant toute activation, terminer la revue cryptographique et l'authentification WebAuthn de reconnexion.
 
 
 ## 0008 — abonnements Web Push chiffrés
@@ -80,10 +76,10 @@ Cette migration n'a pas été appliquée à la base distante. Avant mise en prod
 - une seule souscription active par appareil ; remplacement atomique de l'endpoint par batch D1 ;
 - révocation d'un appareil : suppression immédiate de son abonnement et des données chiffrées associées.
 
-Le secret `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` doit contenir exactement 32 octets encodés en base64url. Il n'est pas encore configuré dans Cloudflare. Tant qu'il est absent, l'enregistrement répond 503 et échoue fermé. Ne pas réutiliser le secret OTP e-mail ni une clé partagée avec un autre environnement.
+Le secret `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` (32 octets encodés en base64url) est configuré dans les variables secrètes Cloudflare du projet Pages `sac`, environnement Production. Sa valeur est masquée et n'est jamais inscrite dans Git ou D1. Ne pas réutiliser le secret OTP e-mail ni une clé partagée avec un autre environnement.
 
 Tests ajoutés :
 - `npm run test:push-subscriptions` ;
 - `python3 tests/d1_push_subscriptions_schema.test.py`.
 
-Cette migration n'a pas été appliquée à D1 distant. Le fournisseur Web Push/VAPID, le scheduler et l'adaptateur de livraison restent non configurés : cet ajout permet de stocker les abonnements de manière chiffrée, mais n'envoie encore aucune notification.
+Cette migration a été appliquée à `sac-db` le 19 novembre 2026. Le fournisseur Web Push/VAPID, l'abonnement `PushManager` dans la PWA, le scheduler et l'adaptateur de livraison restent non configurés : le stockage chiffré est prêt côté schéma et API, mais aucune notification n'est envoyée.
