@@ -34,3 +34,8 @@ BEGIN
       lease_token = NULL
   WHERE alert_id = NEW.id AND status IN ('pending', 'processing');
 END;
+
+-- Une seule confirmation par destinataire, même en cas de requêtes concurrentes.
+CREATE UNIQUE INDEX alert_acknowledgement_once
+  ON alert_events(alert_id, actor_account_id)
+  WHERE event_type = 'acknowledged';
