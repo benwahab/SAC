@@ -1,3 +1,4 @@
+import { guardSameOriginJsonPost } from "../../lib/security/http-request-guard.ts";
 import { normalizeRegistrationEmail } from "../../../src/domain/registration-policy.ts";
 import { verifyEmailOtpDigest } from "../../lib/security/email-otp-code.ts";
 
@@ -13,6 +14,8 @@ function json(body: unknown, status = 200): Response {
 }
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+  const requestGuard = guardSameOriginJsonPost(request);
+  if (requestGuard) return requestGuard;
   if (!env.DB || !env.EMAIL_OTP_HMAC_SECRET || env.EMAIL_OTP_HMAC_SECRET.length < 32) {
     return json({ error: "verification_service_not_configured" }, 503);
   }
