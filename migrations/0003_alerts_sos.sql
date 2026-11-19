@@ -239,7 +239,7 @@ BEGIN
   ) THEN RAISE(ABORT, 'alert_responsibility_withdrawal_missing') END;
 END;
 
--- Rappels limités au snapshot et au nombre choisi, toutes les 5 minutes.
+-- Push initial et rappels continus au snapshot, espacés d'au moins cinq minutes.
 CREATE TRIGGER alert_reminder_insert_guard
 BEFORE INSERT ON alert_reminder_outbox
 BEGIN
@@ -247,7 +247,6 @@ BEGIN
     SELECT 1 FROM alerts a
     WHERE a.id = NEW.alert_id
       AND a.status = 'active'
-      AND NEW.reminder_number <= a.push_reminder_limit
       AND (
         (NEW.reminder_number = 0 AND NEW.scheduled_at = a.created_at)
         OR
