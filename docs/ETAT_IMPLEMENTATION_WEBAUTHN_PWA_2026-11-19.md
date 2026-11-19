@@ -55,6 +55,8 @@ Le serveur :
 
 Le décodeur CBOR est borné en taille/profondeur et refuse les longueurs non canoniques, les valeurs non prises en charge et les données résiduelles.
 
+**Décision d'intégration documentée :** `docs/DECISION_INTEGRATION_SIMPLEWEBAUTHN_WORKERS_V1.md` fixe la migration vers `@simplewebauthn/server@14.1.0`, la validation du challenge sans stocker sa valeur brute, les données COSE à persister et le futur parcours d'assertion. La compatibilité Cloudflare Workers est déclarée par la documentation de la bibliothèque et un smoke test Worker existe dans le dépôt. La dépendance n'est toutefois pas encore intégrée au manifeste/lockfile de production : aucune substitution du vérificateur ni connexion par assertion n'est déclarée terminée.
+
 **Choix de vérificateur à revoir :** le smoke test SimpleWebAuthn 14.1.0 reste une dépendance installée uniquement dans le job CI. L'endpoint d'enrôlement utilise actuellement un vérificateur natif restreint au profil `none`/ES256, sans dépendance runtime supplémentaire. Cette implémentation n'est pas homologuée par une revue WebAuthn indépendante. Il faut comparer/remplacer cette voie par SimpleWebAuthn comme dépendance de production dès que le verrouillage package/lockfile et la compatibilité Workers sont résolus. Ne pas ouvrir le parcours en production avant cette revue.
 
 **Limite du profil none :** l'attestation ne fournit pas de signature de fabricant ou de preuve matérielle d'authenticité. Le serveur valide la structure, le challenge, l'origine, le RP ID et la clé publique ; la preuve de possession de la clé privée doit être apportée lors d'une authentification WebAuthn ultérieure.
