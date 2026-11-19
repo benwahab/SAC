@@ -7,6 +7,7 @@ test("accepts only a single-device credential that is not backed up", () => {
     evaluateWebAuthnRootCredentialPolicy({
       credentialDeviceType: "singleDevice",
       credentialBackedUp: false,
+      userVerified: true,
     }),
     { accepted: true },
   );
@@ -17,6 +18,7 @@ test("rejects a multi-device credential even when it is not currently backed up"
     evaluateWebAuthnRootCredentialPolicy({
       credentialDeviceType: "multiDevice",
       credentialBackedUp: false,
+      userVerified: true,
     }),
     { accepted: false, reason: "credential_not_single_device" },
   );
@@ -27,6 +29,7 @@ test("rejects the inconsistent BE=0/BS=1 state", () => {
     evaluateWebAuthnRootCredentialPolicy({
       credentialDeviceType: "singleDevice",
       credentialBackedUp: true,
+      userVerified: true,
     }),
     { accepted: false, reason: "backup_state_inconsistent" },
   );
@@ -37,6 +40,7 @@ test("fails closed when the validator cannot classify the credential", () => {
     evaluateWebAuthnRootCredentialPolicy({
       credentialDeviceType: "unknown",
       credentialBackedUp: false,
+      userVerified: true,
     }),
     { accepted: false, reason: "credential_not_single_device" },
   );
@@ -57,8 +61,22 @@ test("fails closed when backup state is not a boolean", () => {
       evaluateWebAuthnRootCredentialPolicy({
         credentialDeviceType: "singleDevice",
         credentialBackedUp,
+        userVerified: true,
       }),
       { accepted: false, reason: "backup_state_inconsistent" },
+    );
+  }
+});
+
+test("rejects a root credential unless user verification is explicitly true", () => {
+  for (const userVerified of [undefined, null, false, 0, "true"]) {
+    assert.deepEqual(
+      evaluateWebAuthnRootCredentialPolicy({
+        credentialDeviceType: "singleDevice",
+        credentialBackedUp: false,
+        userVerified,
+      }),
+      { accepted: false, reason: "user_verification_missing" },
     );
   }
 });
