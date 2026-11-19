@@ -46,6 +46,13 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   assert.equal(created.status, 200, JSON.stringify(created.data));
   const alertId = created.data.alertId;
 
+  const revokedAfterTrigger = await post<{ revoked: boolean }>("/revoke", { owner, contact: contact2, now: now + 1 });
+  assert.equal(revokedAfterTrigger.status, 200);
+  assert.equal(revokedAfterTrigger.data.revoked, true);
+  const snapshottedAfterRevocation = await post<{ isAuthor: boolean }>("/read", { actor: contact2, alertId });
+  assert.equal(snapshottedAfterRevocation.status, 200);
+  assert.equal(snapshottedAfterRevocation.data.isAuthor, false);
+
   const outsiderRead = await post<{ error: string }>("/read", { actor: outsider, alertId });
   assert.equal(outsiderRead.status, 404);
   const recipientRead = await post<{ isAuthor: boolean; alert: { recipientSnapshot: Array<{ contactUserId: string }> } }>("/read", { actor: contact, alertId });
