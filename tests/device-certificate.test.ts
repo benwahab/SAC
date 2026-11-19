@@ -141,3 +141,49 @@ test("un certificat correctement signé avec un point ECDH hors courbe est refus
 
   assert.equal(await verify({ ...unsigned, signature }, root.publicKey), false);
 });
+
+
+test("un certificat correctement signé avec une clé d'identité P-256 hors courbe est refusé", async () => {
+  const { root, certificate } = await issue();
+  const identityPublicKey = {
+    kty: "EC",
+    crv: "P-256",
+    x: "A".repeat(43),
+    y: "A".repeat(43),
+  } satisfies JsonWebKey;
+  const unsigned = {
+    version: certificate.version,
+    accountId: certificate.accountId,
+    deviceId: certificate.deviceId,
+    platform: certificate.platform,
+    createdAt: certificate.createdAt,
+    rootFingerprint: certificate.rootFingerprint,
+    identityPublicKey,
+    exchangePublicKey: certificate.exchangePublicKey,
+  };
+  const payload = new TextEncoder().encode(JSON.stringify([
+    "SAC:secondary-device-certificate:v1",
+    unsigned.version,
+    unsigned.accountId,
+    unsigned.deviceId,
+    unsigned.platform,
+    unsigned.createdAt,
+    unsigned.rootFingerprint,
+    unsigned.identityPublicKey.kty,
+    unsigned.identityPublicKey.crv,
+    unsigned.identityPublicKey.x,
+    unsigned.identityPublicKey.y,
+    unsigned.exchangePublicKey.kty,
+    unsigned.exchangePublicKey.crv,
+    unsigned.exchangePublicKey.x,
+    unsigned.exchangePublicKey.y,
+    ["location:send", "location:receive"],
+  ]));
+  const signature = new Uint8Array(await globalThis.crypto.subtle.sign(
+    { name: "ECDSA", hash: "SHA-256" },
+    root.privateKey,
+    payload,
+  ));
+
+  assert.equal(await verify({ ...unsigned, signature }, root.publicKey), false);
+});
