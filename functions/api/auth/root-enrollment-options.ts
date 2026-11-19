@@ -105,6 +105,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     await env.DB.prepare(
       "UPDATE root_enrollment_ceremonies SET status = 'expired' WHERE account_id = ? AND status = 'pending' AND expires_at <= ?",
     ).bind(account.id, now).run();
+    await env.DB.prepare(
+      "UPDATE root_enrollment_ceremonies SET status = 'cancelled' WHERE account_id = ? AND status = 'pending' AND EXISTS (SELECT 1 FROM root_enrollment_challenges WHERE ceremony_id = root_enrollment_ceremonies.id AND consumed_at IS NULL)",
+    ).bind(account.id).run();
 
     await env.DB.batch([
       env.DB.prepare(
