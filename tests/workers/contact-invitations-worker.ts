@@ -1,3 +1,4 @@
+import { createAndSendContactInvitation } from "../../functions/lib/trusted-contacts/invitation-delivery.ts";
 import {
   acceptContactInvitation,
   createContactInvitation,
@@ -87,6 +88,37 @@ export default {
         now: Number(body.now),
       });
       return result.ok ? json(result.value) : json({ error: result.error }, 400);
+    }
+
+    if (url.pathname === "/create-and-send") {
+      const result = await createAndSendContactInvitation(
+        env.DB,
+        crypto,
+        {
+          RESEND_API_KEY: "test-only",
+          RESEND_FROM_EMAIL: "SAC <test@example.ne>",
+          APP_BASE_URL: "https://sac.example.ne",
+        },
+        {
+          authenticatedAccountId: String(body.ownerId ?? ""),
+          destinationEmail: String(body.destinationEmail ?? ""),
+          permissionVersion: "permissions-v1",
+          expiresAt: Number(body.expiresAt),
+          language: "fr",
+          now: Number(body.now),
+        },
+        async () => body.failDelivery
+          ? new Response("provider failure", { status: 503 })
+          : Response.json({ id: "test-email-delivered" }),
+      );
+      return result.ok ? json(result.value) : json({ error: result.error }, 400);
+    }
+
+    if (url.pathname === "/invitation-status") {
+      const row = await env.DB.prepare(
+        "SELECT status FROM contact_invitations WHERE id = ?",
+      ).bind(String(body.invitationId ?? "")).first<{ status: string }>();
+      return row ? json(row) : json({ error: "not_found" }, 404);
     }
 
     if (url.pathname === "/accept") {
