@@ -22,7 +22,7 @@ function decodeBase64Url(value: unknown, maxBytes: number): Uint8Array {
   let bytes: Uint8Array;
   try { bytes = Uint8Array.from(atob(padded), (c) => c.charCodeAt(0)); }
   catch { throw new Error("webauthn_base64url_invalid"); }
-  const canonical = btoa(String.fromCharCode(...bytes)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const canonical = toBase64Url(bytes);
   if (bytes.length > maxBytes || canonical !== value) throw new Error("webauthn_base64url_invalid");
   return bytes;
 }
@@ -72,7 +72,7 @@ export async function verifyRootRegistrationResponse(input: {
     throw new Error("webauthn_response_invalid");
   }
   const response = input.response as Record<string, unknown>;
-  if (response.type !== "public-key" || typeof response.id !== "string") {
+  if (response.type !== "public-key" || response.authenticatorAttachment !== "platform" || typeof response.id !== "string") {
     throw new Error("webauthn_credential_type_invalid");
   }
   const rawId = decodeBase64Url(response.rawId, 1024);
@@ -110,7 +110,7 @@ export async function verifyRootRegistrationResponse(input: {
 
   const attestationBytes = decodeBase64Url(payload.attestationObject, 65_536);
   const attestation = decodeCbor(attestationBytes);
-  if (!(attestation instanceof Map) ||
+  if (!(attestation instanceof Map) || attestation.size !== 3 ||
       mapValue(attestation, "fmt") !== "none" ||
       !(mapValue(attestation, "attStmt") instanceof Map) ||
       (mapValue(attestation, "attStmt") as Map<CborValue, CborValue>).size !== 0) {
@@ -133,7 +133,7 @@ export async function verifyRootRegistrationResponse(input: {
   const backedUp = (flags & 0x10) !== 0;
   const attestedCredentialData = (flags & 0x40) !== 0;
   const hasExtensions = (flags & 0x80) !== 0;
-  if (!userPresent || !userVerified || !attestedCredentialData || hasExtensions || backupEligible || backedUp) {
+  if (!userPresent || !userVerified || !attestedCredentialData || hasExtensions || backupEligible || backedUp || (flags & 0x22) !== 0) {
     throw new Error("webauthn_root_authenticator_flags_rejected");
   }
 
