@@ -70,6 +70,8 @@ jobs:
         run: npm run test:push-subscriptions
       - name: Test D1 push subscription isolation and device revocation
         run: python3 tests/d1_push_subscriptions_schema.test.py
+      - name: Test Web Push encryption, VAPID signatures and SSRF endpoint allowlist
+        run: npm run test:web-push-delivery
       - name: Test device lifecycle domain contract
         run: npm run test:devices
       - name: Test root-signed device certificates
