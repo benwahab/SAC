@@ -3,7 +3,7 @@
 **Date :** 18 novembre 2026  
 **Statut :** décision produit validée par le porteur du projet.  
 **Périmètre :** alertes SOS et contacts de confiance.  
-**Implémentation :** non réalisée ; ce document fixe le comportement attendu.
+**Implémentation :** règles métier documentées ; fondation technique partielle ajoutée sur `main` le 19 novembre 2026. Voir l'état d'avancement en fin de document.
 
 ## Décision
 
@@ -56,3 +56,15 @@ Cette validation fixe le comportement produit attendu ; elle ne signifie pas que
 - `docs/CONTRAT_API_ET_AUTHENTIFICATION_V1.md`, section 12.
 - `docs/CONTRATS_OPERATIONS_ATOMIQUES_D1.md`, section 13.
 - `docs/AUDIT_NOTIFICATION_OUTBOX_ET_LIVRAISON.md` pour les prérequis de scheduler, outbox, reprise et preuve de livraison.
+
+
+## État d'implémentation technique — 19 novembre 2026
+
+La décision produit reste inchangée. Le dépôt contient maintenant :
+- l'activation volontaire PushManager depuis l'espace privé ;
+- l'enregistrement chiffré lié à l'appareil SAC authentifié ;
+- un Service Worker pour afficher une notification générique et ouvrir SAC ;
+- un transport Web Push avec signature VAPID ES256, chiffrement `aes128gcm` et allowlist stricte des services push ;
+- un Worker Cron distinct configuré dans le dépôt pour traiter l'outbox chaque minute.
+
+Cette tranche est une fondation de code, pas une activation du canal. La paire VAPID, les secrets dans l'environnement Worker et le déploiement du Worker restent à configurer/autoriser. Aucun Push ou SMS réel n'a été envoyé. La livraison ne doit être présentée comme opérationnelle qu'après configuration des clés, déploiement autorisé, exécution des suites CI et vérification de l'observabilité sans fuite de données.
