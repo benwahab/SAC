@@ -84,29 +84,29 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const encrypted = await encryptPushSubscription(subscription, env.PUSH_SUBSCRIPTION_ENCRYPTION_KEY, crypto);
     if (!encrypted) return json({ error: "push_subscription_storage_not_configured" }, 503);
     const now = Date.now();
-    const result = await env.DB.prepare(
-      `INSERT INTO push_subscriptions
-         (id, account_id, device_id, endpoint_hash, encrypted_subscription, encryption_key_version, iv, status, created_at, updated_at, revoked_at)
-       VALUES (?, ?, ?, ?, ?, 'v1', ?, 'active', ?, ?, NULL)
-       ON CONFLICT(endpoint_hash) DO UPDATE SET
-         encrypted_subscription = excluded.encrypted_subscription,
-         iv = excluded.iv,
-         updated_at = excluded.updated_at
-       WHERE push_subscriptions.account_id = excluded.account_id
-         AND push_subscriptions.device_id = excluded.device_id
-         AND push_subscriptions.status = 'active'`,
-    ).bind(
-      crypto.randomUUID(),
-      session.value.accountId,
-      session.value.deviceId,
-      encrypted.endpointHash,
-      encrypted.ciphertext,
-      encrypted.iv,
-      now,
-      now,
-    ).run();
-    if (!result.success) return json({ error: "subscription_storage_unavailable" }, 503);
-    if (result.meta.changes !== 1) return json({ error: "push_subscription_conflict" }, 409);
+    const results = await env.DB.batch([
+      env.DB.prepare(
+        "DELETE FROM push_subscriptions WHERE account_id = ? AND device_id = ? AND status = 'active'",
+      ).bind(session.value.accountId, session.value.deviceId),
+      env.DB.prepare(
+        `INSERT INTO push_subscriptions
+           (id, account_id, device_id, endpoint_hash, encrypted_subscription, encryption_key_version, iv, status, created_at, updated_at, revoked_at)
+         VALUES (?, ?, ?, ?, ?, 'v1', ?, 'active', ?, ?, NULL)`,
+      ).bind(
+        crypto.randomUUID(),
+        session.value.accountId,
+        session.value.deviceId,
+        encrypted.endpointHash,
+        encrypted.ciphertext,
+        encrypted.iv,
+        now,
+        now,
+      ),
+    ]);
+    if (results.length !== 2 || results.some((result) => !result.success)) {
+      return json({ error: "subscription_storage_unavailable" }, 503);
+    }
+    if (results[1].meta.changes !== 1) return json({ error: "push_subscription_conflict" }, 409);
     return json({ registered: true });
   } catch {
     return json({ error: "subscription_storage_unavailable" }, 503);
