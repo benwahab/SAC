@@ -45,6 +45,12 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   const created = await post<{ alertId: string }>("/create", { owner, recipients: [contact, contact2], reminders: 2, now });
   assert.equal(created.status, 200, JSON.stringify(created.data));
   const alertId = created.data.alertId;
+
+  const overLimit = await post<{ error: string }>("/create", {
+    owner, recipients: [contact, contact2, outsider], reminders: 2, now: now + 1,
+  });
+  assert.equal(overLimit.status, 409);
+  assert.equal(overLimit.data.error, "recipient_limit_exceeded");
   const noLeadYet = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: contact, alertId });
   assert.equal(noLeadYet.status, 200);
   assert.deepEqual(noLeadYet.data, { assigned: false, isSelf: false });
