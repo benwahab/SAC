@@ -91,6 +91,7 @@ Vérifications réalisées :
 4. génération d’une paire ECDSA P-256 par Web Crypto ;
 5. signature et vérification d’un message de test ;
 6. répétition du vecteur RFC, des deux variantes S et de la génération d’une signature dans le runtime local Wrangler/Miniflare.
+7. conversion raw → DER → raw sur le vecteur RFC ; vérification DER avec le moteur `node:crypto` indépendant ; rejet des INTEGER négatifs, nuls, non minimaux, des longueurs non canoniques et des octets finaux.
 
 **Résultat observé :** Node.js Web Crypto et le runtime local Workers acceptent le vecteur raw de 64 octets, vérifient la variante high-S et la variante low-S, et produisent des signatures de 64 octets.
 
@@ -126,7 +127,9 @@ La représentation la plus simple à tester pour P-256 est le format brut fixe d
 
 Ce choix correspond au format ES256 défini par RFC 7518 et au format de sortie Web Crypto pour P-256. Il constitue une **recommandation candidate**, pas une décision de protocole.
 
-Si Android fournit une signature DER, l’adaptateur devra effectuer un décodage DER strict :
+Un adaptateur de référence limité aux tests a été écrit dans `tests/ecdsa-der-format.test.ts`. Il démontre le trajet et les contrôles ci-dessous ; il ne doit pas être importé par le code de production avant arbitrage et revue indépendante.
+
+Si Android fournit une signature DER, l’adaptateur natif devra effectuer un décodage DER strict :
 - exactement une séquence ;
 - exactement deux INTEGER positifs ;
 - encodage DER minimal ;
