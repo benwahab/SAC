@@ -1,3 +1,4 @@
+import { guardSameOriginJsonPost } from "../../lib/security/http-request-guard.ts";
 import { validateRegistrationInput } from "../../../src/domain/registration-policy.ts";
 import { sendAccountVerificationCode } from "../../lib/email/resend.ts";
 import { digestEmailOtp, generateEmailOtpCode } from "../../lib/security/email-otp-code.ts";
@@ -21,6 +22,8 @@ function json(body: unknown, status = 200): Response {
 }
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+  const requestGuard = guardSameOriginJsonPost(request);
+  if (requestGuard) return requestGuard;
   if (!env.DB) return json({ error: "service_unavailable" }, 503);
   if (
     !env.EMAIL_OTP_HMAC_SECRET ||
