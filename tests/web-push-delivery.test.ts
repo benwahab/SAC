@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { webcrypto } from "node:crypto";
 import { sendWebPush } from "../functions/lib/notifications/web-push-delivery.ts";
+import { isAllowedPushEndpoint, isValidPushSubscriptionPublicKey } from "../functions/lib/notifications/push-endpoint-policy.ts";
 
 const cryptoProvider = webcrypto as unknown as Crypto;
 const encoder = new TextEncoder();
@@ -35,6 +36,15 @@ async function makeFixture() {
     },
   };
 }
+
+test("la politique commune valide les fournisseurs Push et les clés P-256 avant stockage", async () => {
+  const fixture = await makeFixture();
+  assert.equal(isAllowedPushEndpoint(fixture.subscription.endpoint)?.origin, "https://fcm.googleapis.com");
+  assert.equal(isAllowedPushEndpoint("https://evil.example/push"), null);
+  assert.equal(isAllowedPushEndpoint("https://fcm.googleapis.com:8443/push"), null);
+  assert.equal(await isValidPushSubscriptionPublicKey(fixture.subscription.keys.p256dh, cryptoProvider), true);
+  assert.equal(await isValidPushSubscriptionPublicKey("B".repeat(87), cryptoProvider), false);
+});
 
 test("Web Push construit un corps aes128gcm chiffré et un jeton VAPID signé", async () => {
   const fixture = await makeFixture();
