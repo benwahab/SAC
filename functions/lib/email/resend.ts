@@ -7,7 +7,7 @@ export interface ResendEmailEnvironment {
 
 export type EmailDeliveryResult =
   | { ok: true; messageId: string }
-  | { ok: false; reason: "provider_not_configured" | "invalid_recipient" | "provider_rejected" | "provider_unavailable" };
+  | { ok: false; reason: "provider_not_configured" | "invalid_recipient" | "provider_rejected" | "provider_unavailable" | "invalid_code" | "invalid_language" };
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
@@ -56,6 +56,8 @@ export async function sendAccountVerificationCode(
   const from = env.RESEND_FROM_EMAIL?.trim();
   if (!apiKey || !from) return { ok: false, reason: "provider_not_configured" };
 
+  if (!(language in copy)) return { ok: false, reason: "invalid_language" };
+
   const normalizedRecipient = recipient.trim();
   if (
     normalizedRecipient.length > 254 ||
@@ -65,6 +67,7 @@ export async function sendAccountVerificationCode(
   ) {
     return { ok: false, reason: "invalid_recipient" };
   }
+  if (!/^\\d{6}$/.test(code)) return { ok: false, reason: "invalid_code" };
 
   const template = copy[language];
   const safeCode = escapeHtml(code);
