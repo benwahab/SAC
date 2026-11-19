@@ -67,3 +67,22 @@ Vérifications ajoutées :
 - `npm run test:d1-root-device-enrollment`
 
 Cette migration n'a pas été appliquée à la base distante. Avant mise en production, configurer les origines réelles, appliquer les migrations après revue, puis réaliser des essais physiques Android/Chrome et vérifier la compatibilité du profil residentKey retenu.
+
+
+## 0008 — abonnements Web Push chiffrés
+
+`0008_push_subscriptions.sql` crée le stockage des abonnements push liés à un couple compte/appareil :
+- empreinte HMAC unique de l'endpoint ; endpoint et clés `p256dh`/`auth` conservés uniquement dans un ciphertext AES-256-GCM ;
+- clé dérivée par HKDF à partir du secret Cloudflare `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, jamais stocké dans D1 ou Git ;
+- version de chiffrement explicite `v1` ;
+- route authentifiée `POST /api/push/subscriptions` avec actions `subscribe` et `remove` ;
+- aucune valeur d'endpoint ni clé de souscription renvoyée au navigateur après enregistrement ;
+- révocation d'un appareil : suppression immédiate de ses abonnements et des données chiffrées associées.
+
+Le secret `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` doit contenir exactement 32 octets encodés en base64url. Il n'est pas encore configuré dans Cloudflare. Tant qu'il est absent, l'enregistrement répond 503 et échoue fermé. Ne pas réutiliser le secret OTP e-mail ni une clé partagée avec un autre environnement.
+
+Tests ajoutés :
+- `npm run test:push-subscriptions` ;
+- `python3 tests/d1_push_subscriptions_schema.test.py`.
+
+Cette migration n'a pas été appliquée à D1 distant. Le fournisseur Web Push/VAPID, le scheduler et l'adaptateur de livraison restent non configurés : cet ajout permet de stocker les abonnements de manière chiffrée, mais n'envoie encore aucune notification.
