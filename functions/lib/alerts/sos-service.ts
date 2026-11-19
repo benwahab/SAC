@@ -75,7 +75,8 @@ export async function createSosAlert(
     !categories.has(input.category) ||
     !levels.has(input.level) ||
     !Number.isSafeInteger(input.pushReminderCount) ||
-    input.pushReminderCount < 0 ||
+    input.pushReminderCount < 1 ||
+    input.pushReminderCount > 5 ||
     !Number.isSafeInteger(now) ||
     now <= 0 ||
     (description !== null && (typeof description !== "string" || description.length > 2000)) ||
@@ -117,7 +118,8 @@ export async function createSosAlert(
     ];
 
     for (const recipientId of recipients) {
-      for (let number = 1; number <= input.pushReminderCount; number += 1) {
+      // Le push initial (séquence 0) est distinct des rappels 1 à 5.
+      for (let number = 0; number <= input.pushReminderCount; number += 1) {
         statements.push(db.prepare(
           `INSERT INTO alert_reminder_outbox
            (id, alert_id, recipient_account_id, reminder_number, scheduled_at, created_at)
