@@ -79,7 +79,10 @@ export default {
             requireUserVerification: true,
             credential: info.credential,
           });
-          authenticationVerified = authentication.verified;
+          if (!authentication.verified) {
+            return jsonError("Authentication signature verification returned false");
+          }
+          authenticationVerified = true;
         }
 
         return Response.json({
