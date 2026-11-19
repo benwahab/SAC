@@ -55,6 +55,12 @@ export default {
       catch (error) { return json({ error: "seed_failed", detail: String(error) }, 500); }
     }
 
+    if (url.pathname === "/revoke") {
+      const result = await env.DB.prepare(
+        "UPDATE trusted_contacts SET status='revoked',revoked_at=? WHERE owner_account_id=? AND contact_account_id=? AND status='active'",
+      ).bind(now, String(input.owner), String(input.contact)).run();
+      return result.success && result.meta.changes === 1 ? json({ revoked: true }) : json({ error: "not_revoked" }, 409);
+    }
     if (url.pathname === "/create") {
       const result = await createSosAlert(env.DB, crypto, {
         authenticatedAccountId: String(input.owner),
