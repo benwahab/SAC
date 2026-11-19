@@ -3,14 +3,21 @@ import { ArrowLeft, LogOut, MailPlus, RefreshCw, ShieldCheck, UserRoundMinus, Us
 import { getDeviceSession, logoutDeviceSession } from "./services/device/root-enrollment";
 
 type Contact = { accountId: string; email: string; createdAt: number };
-type SosAlert = { id: string; category: string; level: string; description: string | null; status: string; createdAt: number; closedAt: number | null; closureReason: string | null; participantRole: "author" | "recipient" };\ntype Props = { onLogout: () => void };
+type SosAlert = { id: string; category: string; level: string; description: string | null; status: string; createdAt: number; closedAt: number | null; closureReason: string | null; participantRole: "author" | "recipient" };
+type Props = { onLogout: () => void };
 
 export default function PrivateSpacePage({ onLogout }: Props) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");\n  const [alerts, setAlerts] = useState<SosAlert[]>([]);\n  const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);\n  const [category, setCategory] = useState("personal_danger");\n  const [level, setLevel] = useState("urgent");\n  const [reminderCount, setReminderCount] = useState(2);\n  const [description, setDescription] = useState("");
+  const [message, setMessage] = useState("");
+  const [alerts, setAlerts] = useState<SosAlert[]>([]);
+  const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
+  const [category, setCategory] = useState("personal_danger");
+  const [level, setLevel] = useState("urgent");
+  const [reminderCount, setReminderCount] = useState(2);
+  const [description, setDescription] = useState("");
   const [error, setError] = useState("");
 
   const loadContacts = useCallback(async () => {
@@ -28,7 +35,11 @@ export default function PrivateSpacePage({ onLogout }: Props) {
         if (response.status === 401) onLogout();
         throw new Error("Impossible de charger les proches pour le moment.");
       }
-      setContacts(payload.contacts);\n      setSelectedRecipients((current) => current.filter((id) => payload.contacts!.some((contact) => contact.accountId === id)));\n      const alertsResponse = await fetch("/api/alerts", { credentials: "same-origin", cache: "no-store" });\n      const alertsPayload = await alertsResponse.json() as { alerts?: SosAlert[] };\n      if (alertsResponse.ok && Array.isArray(alertsPayload.alerts)) setAlerts(alertsPayload.alerts);
+      setContacts(payload.contacts);
+      setSelectedRecipients((current) => current.filter((id) => payload.contacts!.some((contact) => contact.accountId === id)));
+      const alertsResponse = await fetch("/api/alerts", { credentials: "same-origin", cache: "no-store" });
+      const alertsPayload = await alertsResponse.json() as { alerts?: SosAlert[] };
+      if (alertsResponse.ok && Array.isArray(alertsPayload.alerts)) setAlerts(alertsPayload.alerts);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Service momentanément indisponible.");
     } finally {
