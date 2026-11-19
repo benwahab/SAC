@@ -95,7 +95,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         "INSERT INTO account_identities (id, account_id, channel, normalized_value, verified_at, is_primary, created_at) VALUES (?, ?, 'phone', ?, NULL, 1, ?)",
       ).bind(phoneIdentityId, accountId, phone, now),
       env.DB.prepare(
-        "INSERT INTO email_otp_challenges (id, account_id, identity_id, purpose, digest, attempt_count, max_attempts, created_at, expires_at) VALUES (?, ?, ?, 'account_email_verification', ?, 0, 6, ?, ?)",
+        "INSERT INTO email_otp_challenges (id, account_id, identity_id, purpose, digest, attempt_count, max_attempts, created_at, expires_at, delivery_status) VALUES (?, ?, ?, 'account_email_verification', ?, 0, 6, ?, ?, 'pending')",
       ).bind(challengeId, accountId, emailIdentityId, digest, now, expiresAt),
     ]);
 
@@ -108,10 +108,33 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ error: "registration_unavailable" }, 503);
   }
 
-  // Le résultat du fournisseur ne doit pas révéler si l'adresse correspond
-  // à un nouveau compte. En cas d'échec, le compte reste en attente et le
-  // parcours peut proposer un renvoi après le délai minimal de 60 secondes.
-  await sendAccountVerificationCode(env, email, code, language);
+  // Le défi reste pending jusqu'à l'acceptation du fournisseur. Un échec
+  // d'envoi ne crée donc jamais un code vérifiable qui n'a pas été livré.
+  const delivery = await sendAccountVerificationCode(env, email, code, language);
+  const deliveryStatus = delivery.ok ? "accepted" : "failed";
+
+  try {
+    await env.DB.prepare(
+      `UPDATE email_otp_challenges
+       SET delivery_status = ?
+       WHERE id = ?
+         AND delivery_status = 'pending'
+         AND expires_at > ?
+         AND EXISTS (
+           SELECT 1
+           FROM accounts a
+           JOIN account_identities i ON i.account_id = a.id
+           WHERE a.id = email_otp_challenges.account_id
+             AND a.status = 'pending_verification'
+             AND i.id = email_otp_challenges.identity_id
+             AND i.channel = 'email'
+             AND i.is_primary = 1
+             AND i.verified_at IS NULL
+         )`,
+    ).bind(deliveryStatus, challengeId, Date.now()).run();
+  } catch {
+    // En cas d'incident D1, le compte reste en attente et le défi non vérifiable.
+  }
 
   return json(GENERIC_ACCEPTED, 202);
 };
