@@ -63,6 +63,19 @@ test("enforces the byte limit while streaming even without Content-Length", asyn
   assert.deepEqual(result, { ok: false, reason: "too_large" });
 });
 
+test("keeps the too-large result when stream cancellation rejects", async () => {
+  const stream = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      controller.enqueue(new Uint8Array(32).fill(65));
+    },
+    cancel() {
+      throw new Error("cancel_failed");
+    },
+  });
+  const result = await readJsonRequestBody(request(stream), 8);
+  assert.deepEqual(result, { ok: false, reason: "too_large" });
+});
+
 test("counts UTF-8 bytes rather than JavaScript characters", async () => {
   const result = await readJsonRequestBody(request(JSON.stringify({ value: "ééé" })), 10);
   assert.deepEqual(result, { ok: false, reason: "too_large" });
