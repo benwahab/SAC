@@ -18,6 +18,25 @@ test("accepts same-origin JSON POST requests", () => {
   assert.equal(guardSameOriginJsonPost(request()), null);
 });
 
+test("rejection responses include defensive security headers", () => {
+  const response = guardSameOriginJsonPost(request({ Origin: "https://attacker.example" }));
+  assert.equal(response?.headers.get("Cache-Control"), "no-store");
+  assert.equal(response?.headers.get("X-Content-Type-Options"), "nosniff");
+  assert.equal(response?.headers.get("Referrer-Policy"), "no-referrer");
+  assert.equal(response?.headers.get("X-Frame-Options"), "DENY");
+});
+
+test("rejects same-site requests from a different origin", () => {
+  assert.equal(guardSameOriginJsonPost(request({
+    Origin: "https://sub.sac.example",
+    "Sec-Fetch-Site": "same-site",
+  }))?.status, 403);
+});
+
+test("rejects opaque null origins", () => {
+  assert.equal(guardSameOriginJsonPost(request({ Origin: "null" }))?.status, 403);
+});
+
 test("rejects a missing Origin header", () => {
   const headers = new Headers(request().headers);
   headers.delete("Origin");
