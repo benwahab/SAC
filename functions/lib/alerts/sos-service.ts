@@ -465,3 +465,69 @@ export async function respondToSosAlert(
     return fail("storage_unavailable");
   }
 }
+
+
+export type SosEventType =
+  | "triggered"
+  | "acknowledged"
+  | "volunteered"
+  | "withdrew"
+  | "closed_by_author";
+
+export interface SosEventRecord {
+  readonly id: string;
+  readonly actorAccountId: string;
+  readonly type: SosEventType;
+  readonly occurredAt: string;
+  readonly serverSequence: number | null;
+}
+
+/** Returns the event timeline only to the author or a snapshotted recipient. */
+export async function listSosEventsForParticipant(
+  db: SosDatabase,
+  authenticatedAccountId: string,
+  alertId: string,
+): Promise<SosResult<readonly SosEventRecord[]>> {
+  if (!validId(authenticatedAccountId) || !validId(alertId)) return fail("invalid_input");
+
+  try {
+    const access = await db.prepare(
+      `SELECT 1 AS allowed FROM alerts a
+       WHERE a.id = ? AND (
+         a.author_account_id = ? OR EXISTS (
+           SELECT 1 FROM alert_recipients r
+           WHERE r.alert_id = a.id AND r.recipient_account_id = ?
+         )
+       ) LIMIT 1`,
+    ).bind(alertId, authenticatedAccountId, authenticatedAccountId)
+      .first<{ allowed: number }>();
+    if (!access) return fail("alert_not_found_or_closed");
+
+    const result = await db.prepare(
+      `SELECT id, actor_account_id, event_type, occurred_at, server_sequence
+       FROM alert_events
+       WHERE alert_id = ?
+       ORDER BY occurred_at ASC, COALESCE(server_sequence, 0) ASC, id ASC`,
+    ).bind(alertId).all<{
+      id: string;
+      actor_account_id: string;
+      event_type: SosEventType;
+      occurred_at: number;
+      server_sequence: number | null;
+    }>();
+    if (!result.success) return fail("storage_unavailable");
+
+    return {
+      ok: true,
+      value: (result.results ?? []).map((event) => ({
+        id: event.id,
+        actorAccountId: event.actor_account_id,
+        type: event.event_type,
+        occurredAt: new Date(event.occurred_at).toISOString(),
+        serverSequence: event.server_sequence,
+      })),
+    };
+  } catch {
+    return fail("storage_unavailable");
+  }
+}
