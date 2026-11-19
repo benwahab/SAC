@@ -223,3 +223,56 @@ test("un appareil révoqué ne peut pas avoir une dernière activité postérieu
 
   assert.deepEqual(result, { ok: false, error: "invalid_device_record" });
 });
+
+test("un enregistrement dont les champs textuels sont malformés est refusé sans exception", () => {
+  for (const overrides of [
+    { deviceId: null as never },
+    { accountId: 42 as never },
+    { displayName: null as never },
+    { platform: null as never },
+    { status: null as never },
+    { createdAt: null as never },
+  ]) {
+    assert.deepEqual(
+      transitionDevice(makeDevice(overrides), {
+        type: "revoke",
+        actorAccountId: "account-a",
+        at: revokedAt,
+      }),
+      { ok: false, error: "invalid_device_record" },
+    );
+  }
+});
+
+test("une transition ne peut pas être horodatée avant la dernière activité connue", () => {
+  const device = makeDevice({ lastSeenAt: "2026-11-17T10:07:00.000Z" });
+  assert.deepEqual(transitionDevice(device, {
+    type: "approve",
+    actorAccountId: "account-a",
+    actorDeviceId: "root-device",
+    rootDeviceId: "root-device",
+    at: verifiedAt,
+  }), { ok: false, error: "event_before_last_activity" });
+
+  assert.deepEqual(transitionDevice(device, {
+    type: "revoke",
+    actorAccountId: "account-a",
+    at: verifiedAt,
+  }), { ok: false, error: "event_before_last_activity" });
+});
+
+test("un identifiant d'acteur malformé est refusé sans exception", () => {
+  assert.deepEqual(transitionDevice(makeDevice(), {
+    type: "revoke",
+    actorAccountId: null as never,
+    at: revokedAt,
+  }), { ok: false, error: "account_mismatch" });
+
+  assert.deepEqual(transitionDevice(makeDevice(), {
+    type: "approve",
+    actorAccountId: "account-a",
+    actorDeviceId: null as never,
+    rootDeviceId: "root-device",
+    at: verifiedAt,
+  }), { ok: false, error: "approval_not_from_root" });
+});
