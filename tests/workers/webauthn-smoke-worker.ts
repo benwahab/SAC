@@ -25,7 +25,7 @@ export default {
         supportedAlgorithmIDs: [-7],
         authenticatorSelection: {
           authenticatorAttachment: "platform",
-          residentKey: "required",
+          residentKey: "discouraged",
           userVerification: "required",
         },
       });
