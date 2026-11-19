@@ -22,6 +22,7 @@ export async function requireAuthenticatedDeviceSession(
   request: Request,
   db: D1Database | undefined,
   nowMs = Date.now(),
+  cryptoProvider: Crypto = crypto,
 ): Promise<DeviceSessionGuardResult> {
   if (!db || !Number.isSafeInteger(nowMs) || nowMs < 0) {
     return { ok: false, status: 503 };
@@ -31,7 +32,7 @@ export async function requireAuthenticatedDeviceSession(
   if (!token) return { ok: false, status: 401 };
 
   try {
-    const tokenHash = await hashSessionToken(crypto, token);
+    const tokenHash = await hashSessionToken(cryptoProvider, token);
     if (!tokenHash) return { ok: false, status: 401 };
 
     const now = new Date(nowMs).toISOString();
