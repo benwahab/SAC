@@ -531,3 +531,145 @@ export async function listSosEventsForParticipant(
     return fail("storage_unavailable");
   }
 }
+
+
+export interface ClaimedSosReminder {
+  readonly id: string;
+  readonly alertId: string;
+  readonly recipientAccountId: string;
+  readonly reminderNumber: number;
+  readonly attemptCount: number;
+  readonly leaseToken: string;
+  readonly leaseUntil: number;
+}
+
+/**
+ * Atomically leases due reminder rows for one delivery worker.
+ * It is infrastructure plumbing only: it does not itself send push messages.
+ */
+export async function claimDueSosReminders(
+  db: SosDatabase,
+  cryptoProvider: Crypto,
+  input: { readonly now?: number; readonly batchSize?: number; readonly leaseMilliseconds?: number },
+): Promise<SosResult<readonly ClaimedSosReminder[]>> {
+  const now = input.now ?? Date.now();
+  const batchSize = input.batchSize ?? 20;
+  const leaseMilliseconds = input.leaseMilliseconds ?? 60_000;
+  if (
+    !Number.isSafeInteger(now) || now <= 0 ||
+    !Number.isSafeInteger(batchSize) || batchSize < 1 || batchSize > 50 ||
+    !Number.isSafeInteger(leaseMilliseconds) || leaseMilliseconds < 10_000 || leaseMilliseconds > 300_000
+  ) return fail("invalid_input");
+
+  const leaseToken = cryptoProvider.randomUUID() + cryptoProvider.randomUUID();
+  const leaseUntil = now + leaseMilliseconds;
+  try {
+    const result = await db.prepare(
+      `UPDATE alert_reminder_outbox
+       SET status = 'processing',
+           attempt_count = attempt_count + 1,
+           lease_until = ?,
+           lease_token = ?
+       WHERE id IN (
+         SELECT r.id
+         FROM alert_reminder_outbox r
+         JOIN alerts a ON a.id = r.alert_id
+         WHERE a.status = 'active'
+           AND r.scheduled_at <= ?
+           AND r.attempt_count < 5
+           AND (
+             r.status = 'pending'
+             OR (r.status = 'processing' AND r.lease_until <= ?)
+           )
+         ORDER BY r.scheduled_at, r.id
+         LIMIT ?
+       )
+       AND (
+         status = 'pending'
+         OR (status = 'processing' AND lease_until <= ?)
+       )
+       RETURNING id, alert_id, recipient_account_id, reminder_number, attempt_count`,
+    ).bind(leaseUntil, leaseToken, now, now, batchSize, now)
+      .all<{
+        id: string;
+        alert_id: string;
+        recipient_account_id: string;
+        reminder_number: number;
+        attempt_count: number;
+      }>();
+    if (!result.success) return fail("storage_unavailable");
+    return {
+      ok: true,
+      value: (result.results ?? []).map((row) => ({
+        id: row.id,
+        alertId: row.alert_id,
+        recipientAccountId: row.recipient_account_id,
+        reminderNumber: row.reminder_number,
+        attemptCount: row.attempt_count,
+        leaseToken,
+        leaseUntil,
+      })),
+    };
+  } catch {
+    return fail("storage_unavailable");
+  }
+}
+
+/** A delivery worker may complete only the exact lease it acquired. */
+export async function completeSosReminderDelivery(
+  db: SosDatabase,
+  input: {
+    readonly reminderId: string;
+    readonly leaseToken: string;
+    readonly outcome: "sent" | "retry";
+    readonly now?: number;
+  },
+): Promise<SosResult<{ readonly updated: boolean; readonly terminal: boolean }>> {
+  const now = input.now ?? Date.now();
+  if (
+    !validId(input.reminderId) ||
+    typeof input.leaseToken !== "string" ||
+    input.leaseToken.length < 16 || input.leaseToken.length > 256 ||
+    (input.outcome !== "sent" && input.outcome !== "retry") ||
+    !Number.isSafeInteger(now) || now <= 0
+  ) return fail("invalid_input");
+
+  try {
+    const row = await db.prepare(
+      `SELECT attempt_count, status FROM alert_reminder_outbox
+       WHERE id = ? AND status = 'processing' AND lease_token = ?
+         AND lease_until > ?`,
+    ).bind(input.reminderId, input.leaseToken, now)
+      .first<{ attempt_count: number; status: string }>();
+    if (!row) return { ok: true, value: { updated: false, terminal: false } };
+
+    if (input.outcome === "sent") {
+      const result = await db.prepare(
+        `UPDATE alert_reminder_outbox
+         SET status = 'sent', processed_at = ?, lease_until = NULL, lease_token = NULL
+         WHERE id = ? AND status = 'processing' AND lease_token = ? AND lease_until > ?`,
+      ).bind(now, input.reminderId, input.leaseToken, now).run();
+      if (!result.success) return fail("storage_unavailable");
+      return { ok: true, value: { updated: result.meta.changes === 1, terminal: result.meta.changes === 1 } };
+    }
+
+    const terminal = row.attempt_count >= 5;
+    const delay = Math.min(300_000, 15_000 * (2 ** Math.max(0, row.attempt_count - 1)));
+    const result = await db.prepare(
+      `UPDATE alert_reminder_outbox
+       SET status = ?, scheduled_at = ?, processed_at = ?, lease_until = NULL, lease_token = NULL
+       WHERE id = ? AND status = 'processing' AND lease_token = ? AND lease_until > ?`,
+    ).bind(
+      terminal ? "failed" : "pending",
+      terminal ? now : now + delay,
+      terminal ? now : null,
+      input.reminderId,
+      input.leaseToken,
+      now,
+    ).run();
+    if (!result.success) return fail("storage_unavailable");
+    return { ok: true, value: { updated: result.meta.changes === 1, terminal: terminal && result.meta.changes === 1 } };
+  } catch {
+    return fail("storage_unavailable");
+  }
+}
