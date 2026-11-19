@@ -17,7 +17,7 @@ Les autres domaines SAC (appareils, sessions, contacts, alertes, trajets, groupe
 
 `0006_email_otp_delivery_state.sql` ajoute un état de livraison aux défis OTP :
 - les défis historiques sont conservés comme déjà acceptés ;
-- les nouveaux défis sont créés en `pending` ;
+- un trigger D1 refuse toute nouvelle insertion qui ne déclare pas explicitement `pending` (le défaut historique `accepted` ne peut pas être utilisé par inadvertance) ;
 - un échec fournisseur les marque `failed` sans invalider le code précédemment livré ;
 - seule l'acceptation du nouveau courriel le rend vérifiable et invalide l'ancien défi ;
 - le parcours de vérification ne sélectionne que les défis acceptés ;
