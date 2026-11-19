@@ -47,6 +47,32 @@ test("verify-email rejects malformed identity and OTP before database access", a
   }
 });
 
+test("verify-email selects only the current, delivered, unconsumed OTP challenge", async () => {
+  let selection = "";
+  const selectionEnv = {
+    ...env,
+    DB: {
+      prepare(sql: string) {
+        selection = sql;
+        return {
+          bind() {
+            return { async first() { return null; } };
+          },
+        };
+      },
+    } as never,
+  };
+  const request = jsonRequest("verify-email", JSON.stringify({
+    email: "person@example.com",
+    code: "123456",
+  }));
+  const response = await (verifyEmail as never)({ request, env: selectionEnv } as never);
+  assert.equal(response.status, 400);
+  assert.match(selection, /latest\.delivery_status = 'accepted'/);
+  assert.match(selection, /latest\.invalidated_at IS NULL/);
+  assert.match(selection, /latest\.consumed_at IS NULL/);
+});
+
 test("verify-email rejects oversized payloads before database access", async () => {
   const body = JSON.stringify({
     email: "person@example.com",
