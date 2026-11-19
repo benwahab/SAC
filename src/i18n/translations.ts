@@ -2,6 +2,7 @@ export type Language = "fr" | "en" | "ar";
 
 export interface Translation {
   appName: string; tagline: string; privateApp: string; languageLabel: string;
+  offersEyebrow: string; offersTitle: string; offersSubtitle: string; freeLabel: string; recommendedLabel: string; freePrice: string; premiumPrice: string;
   trustEyebrow: string; heroTitle: string; heroSecond: string; heroThird: string;
   heroDescription: string; sosLabel: string; preparing: string; sosStatus: string;
   protectedData: string; chosenContacts: string; personalSpace: string; accompaniment: string;
@@ -27,6 +28,7 @@ export const translations: Record<Language, Translation> = {
   fr: {
     appName: "Sécurité · Alerte · Citoyenne", tagline: "Votre sécurité. Vos proches. Votre décision.",
     privateApp: "Application privée", languageLabel: "Langue",
+    offersEyebrow: "Choisissez votre formule", offersTitle: "Nos offres", offersSubtitle: "Les essentiels restent accessibles à tous.", freeLabel: "Essentielle", recommendedLabel: "Plus de liberté", freePrice: "Gratuit", premiumPrice: "Premium",
     trustEyebrow: "Votre cercle de confiance, toujours au centre",
     heroTitle: "Votre sécurité.", heroSecond: "Vos proches.", heroThird: "Votre décision.",
     heroDescription: "SAC vous aidera à prévenir les personnes qui comptent pour vous en cas de danger et à sécuriser vos déplacements, tout en gardant le contrôle de vos informations.",
@@ -53,6 +55,7 @@ export const translations: Record<Language, Translation> = {
   en: {
     appName: "Safety · Alert · Citizen", tagline: "Your safety. Your loved ones. Your decision.",
     privateApp: "Private app", languageLabel: "Language",
+    offersEyebrow: "Choose your plan", offersTitle: "Our plans", offersSubtitle: "Essential safety stays accessible to everyone.", freeLabel: "Essential", recommendedLabel: "More freedom", freePrice: "Free", premiumPrice: "Premium",
     trustEyebrow: "Your trusted circle always comes first",
     heroTitle: "Your safety.", heroSecond: "Your loved ones.", heroThird: "Your decision.",
     heroDescription: "SAC helps you notify the people who matter when you are in danger and make your journeys safer, while keeping control of your information.",
@@ -79,6 +82,7 @@ export const translations: Record<Language, Translation> = {
   ar: {
     appName: "السلامة · التنبيه · المواطنة", tagline: "سلامتك. أحباؤك. قرارك.",
     privateApp: "تطبيق خاص", languageLabel: "اللغة",
+    offersEyebrow: "اختر باقتك", offersTitle: "باقاتنا", offersSubtitle: "تظل أساسيات السلامة متاحة للجميع.", freeLabel: "أساسية", recommendedLabel: "حرية أكبر", freePrice: "مجاناً", premiumPrice: "مميزة",
     trustEyebrow: "دائرة الأشخاص الذين تثق بهم تأتي أولاً",
     heroTitle: "سلامتك.", heroSecond: "أحباؤك.", heroThird: "قرارك.",
     heroDescription: "يساعدك SAC على إبلاغ الأشخاص المهمين لديك عند التعرض للخطر وعلى جعل تنقلاتك أكثر أماناً، مع احتفاظك بالتحكم في معلوماتك.",
