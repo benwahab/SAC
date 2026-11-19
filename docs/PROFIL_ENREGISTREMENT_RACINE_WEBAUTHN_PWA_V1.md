@@ -142,7 +142,7 @@ Le profil initial proposait `residentKey: "required"` pour créer une credential
 Cette observation est importante pour SAC, dont la racine V1 doit être mono-appareil :
 - **candidat à tester :** `residentKey: "discouraged"` ;
 - conserver `authenticatorAttachment: "platform"` et `userVerification: "required"` ;
-- refuser côté serveur toute credential dont `BE !== 0` ou `BS !== 0), même si le navigateur a reçu `residentKey: "discouraged"` ;
+- refuser côté serveur toute credential dont `BE !== 0` ou `BS !== 0`, même si le navigateur a reçu `residentKey: "discouraged"` ;
 - ne jamais considérer `residentKey` comme une preuve de non-synchronisation.
 
 La préférence `"discouraged"` ne garantit pas à elle seule BE=0/BS=0. Le contrôle des flags reçus reste obligatoire et souverain.
