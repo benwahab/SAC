@@ -64,6 +64,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
            WHERE latest.account_id = a.id
              AND latest.identity_id = i.id
              AND latest.delivery_status = 'accepted'
+             AND latest.invalidated_at IS NULL
+             AND latest.consumed_at IS NULL
            ORDER BY latest.created_at DESC, latest.id DESC
            LIMIT 1
          )
