@@ -37,6 +37,22 @@ function parseUtc(value: string): number | null {
   return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value ? timestamp : null;
 }
 
+/**
+ * Calcule l'échéance à enregistrer pour une session nouvellement créée ou
+ * renouvelée : la première des deux limites (inactivité ou durée absolue).
+ * Cette fonction ne prolonge jamais la limite absolue de 90 jours.
+ */
+export function getSessionExpiresAt(session: SessionAgeRecord): string | null {
+  const created = parseUtc(session.createdAt);
+  const lastActivity = parseUtc(session.lastActivityAt);
+  if (created === null || lastActivity === null || lastActivity < created) return null;
+
+  return new Date(Math.min(
+    created + SESSION_ABSOLUTE_LIMIT_MS,
+    lastActivity + SESSION_IDLE_LIMIT_MS,
+  )).toISOString();
+}
+
 /** Vérifie les deux limites sans prolonger la durée absolue de 90 jours. */
 export function evaluateSessionAge(session: SessionAgeRecord, now: string): SessionAgeResult {
   const created = parseUtc(session.createdAt);
