@@ -47,6 +47,17 @@ Fichier : `functions/lib/security/webauthn-root-options.ts`
 
 Test ajouté : `tests/webauthn-root-options.test.ts`, commande `npm run test:webauthn-root-options`, incluse dans CI.
 
+### Contrôle d'origine et de RP ID
+
+Fichier : `functions/lib/security/webauthn-origin.ts`
+
+- Exige une origine HTTPS canonique, sans chemin, paramètres, fragment ni identifiants.
+- Vérifie l'appartenance du nom d'hôte au RP ID configuré.
+- Exige en plus une correspondance exacte avec une origine de la liste blanche serveur.
+- Refuse les domaines ressemblants et les origines non listées.
+
+Test ajouté : `tests/webauthn-origin.test.ts`, commande `npm run test:webauthn-origin`, incluse dans CI.
+
 ## 2. Limites importantes
 
 L'adaptateur navigateur n'est pas encore raccordé à un endpoint d'enrôlement SAC. Il ne prouve pas à lui seul l'identité du compte, l'origine, le RP ID, la validité cryptographique de la réponse ni l'unicité de la racine. Ces vérifications appartiennent au serveur.
