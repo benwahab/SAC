@@ -3,14 +3,16 @@ import { ArrowUpRight, Download, HeartHandshake, LockKeyhole, MapPin, Share2, Sh
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
 import { completeRootEnrollment, requestRootEnrollment, type RootEnrollmentCeremony } from "./services/device/root-enrollment";
 import PrivateSpacePage from "./PrivateSpacePage";
+import InvitationAcceptancePage from "./InvitationAcceptancePage";
 
 
 type LoginPageProps = {
   language: Language;
   setLanguage: (language: Language) => void;
+  returnTo: string;
 };
 
-function LoginPage({ language, setLanguage }: LoginPageProps) {
+function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
   const copy = {
     fr: {
       title: "Bienvenue sur SAC", subtitle: "Votre espace personnel sécurisé.",
@@ -319,7 +321,7 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
         {mode === "complete" && (
           <div className="mt-8 space-y-4">
             <div className="rounded-xl border border-sac-confirm/25 bg-sac-confirm/10 p-4 text-sm leading-6 text-sac-ink" role="status">{copy.rootSuccess}</div>
-            <a href="/espace-prive" className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-sac-primary-strong px-4 text-sm font-extrabold text-white">Ouvrir mon espace privé</a>
+            <a href={returnTo} className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-sac-primary-strong px-4 text-sm font-extrabold text-white">{returnTo.startsWith("/invitation/accept?") ? "Continuer vers l’invitation" : "Ouvrir mon espace privé"}</a>
             <a href="/" className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-white/90 bg-white/70 px-4 text-sm font-bold text-sac-ink">{copy.home}</a>
           </div>
         )}
@@ -360,6 +362,11 @@ export default function App() {
   const signInLabel = language === "fr" ? "Connexion" : language === "en" ? "Sign in" : "تسجيل الدخول";
   const isLoginPage = window.location.pathname === "/connexion";
   const isPrivateSpacePage = window.location.pathname === "/espace-prive";
+  const isInvitationAcceptancePage = window.location.pathname === "/invitation/accept";
+  const requestedReturnTo = new URLSearchParams(window.location.search).get("returnTo") ?? "";
+  const loginReturnTo = requestedReturnTo.startsWith("/invitation/accept?") && !requestedReturnTo.startsWith("//")
+    ? requestedReturnTo
+    : "/espace-prive";
   const isRtl = language === "ar";
 
   useEffect(() => {
@@ -472,7 +479,8 @@ export default function App() {
     };
   }, [healthRefresh]);
 
-  if (isLoginPage) return <LoginPage language={language} setLanguage={setLanguage} />;
+  if (isLoginPage) return <LoginPage language={language} setLanguage={setLanguage} returnTo={loginReturnTo} />;
+  if (isInvitationAcceptancePage) return <InvitationAcceptancePage />;
   if (isPrivateSpacePage) return <PrivateSpacePage onLogout={() => { window.location.assign("/connexion"); }} />;
 
   const statusDot =
