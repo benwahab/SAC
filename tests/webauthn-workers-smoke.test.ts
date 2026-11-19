@@ -70,6 +70,8 @@ type FixtureOptions = {
   authenticationOrigin?: string;
   authenticationRpId?: string;
   authenticationChallenge?: string;
+  registrationUv?: boolean;
+  authenticationUv?: boolean;
   tamperAuthenticationSignature?: boolean;
 };
 
@@ -89,7 +91,11 @@ function createFixture(options: FixtureOptions = {}) {
   });
 
   // UP | UV | AT, with BE and BS varied for policy tests.
-  const flags = 0x45 | (options.be ? 0x08 : 0) | (options.bs ? 0x10 : 0);
+  const flags = 0x40
+    | 0x01
+    | (options.registrationUv === false ? 0 : 0x04)
+    | (options.be ? 0x08 : 0)
+    | (options.bs ? 0x10 : 0);
   const registrationAuthData = Buffer.concat([
     sha256(Buffer.from(options.registrationRpId ?? RP_ID)),
     Buffer.from([flags]),
@@ -113,7 +119,7 @@ function createFixture(options: FixtureOptions = {}) {
 
   const authenticationAuthData = Buffer.concat([
     sha256(Buffer.from(options.authenticationRpId ?? RP_ID)),
-    Buffer.from([0x05]), // UP | UV
+    Buffer.from([0x01 | (options.authenticationUv === false ? 0 : 0x04)]), // UP and optional UV
     Buffer.from([0, 0, 0, 1]),
   ]);
   const authenticationClientData = Buffer.from(JSON.stringify({
@@ -264,6 +270,9 @@ test(
       }),
     })).status, 400);
 
+    const missingRegistrationUv = createFixture({ registrationUv: false });
+    assert.equal((await verify(missingRegistrationUv)).status, 400);
+
     const wrongOrigin = createFixture({ registrationOrigin: "https://attacker.example" });
     assert.equal((await verify(wrongOrigin)).status, 400);
 
@@ -272,6 +281,9 @@ test(
 
     const wrongAuthChallenge = createFixture();
     assert.equal((await verify(wrongAuthChallenge, b64url(randomBytes(32)))).status, 400);
+
+    const missingAuthenticationUv = createFixture({ authenticationUv: false });
+    assert.equal((await verify(missingAuthenticationUv)).status, 400);
 
     const wrongAuthOrigin = createFixture({ authenticationOrigin: "https://attacker.example" });
     assert.equal((await verify(wrongAuthOrigin)).status, 400);
