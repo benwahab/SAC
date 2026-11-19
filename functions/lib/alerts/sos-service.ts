@@ -564,6 +564,48 @@ export async function listSosEventsForParticipant(
 }
 
 
+/**
+ * Private projection of the current SOS lead. The caller may learn only
+ * whether a lead exists and whether it is the authenticated account.
+ * Account identifiers for other recipients are never returned.
+ */
+export async function getSosResponsibilityForParticipant(
+  db: SosDatabase,
+  authenticatedAccountId: string,
+  alertId: string,
+): Promise<SosResult<{ readonly assigned: boolean; readonly isSelf: boolean }>> {
+  if (!validId(authenticatedAccountId) || !validId(alertId)) return fail("invalid_input");
+
+  try {
+    const row = await db.prepare(
+      `SELECT a.status, p.contact_account_id
+       FROM alerts a
+       LEFT JOIN alert_responsibility_periods p
+         ON p.alert_id = a.id AND p.ended_at IS NULL AND a.status = 'active'
+       WHERE a.id = ?
+         AND (a.author_account_id = ? OR EXISTS (
+           SELECT 1 FROM alert_recipients r
+           WHERE r.alert_id = a.id AND r.recipient_account_id = ?
+         ))
+       LIMIT 1`,
+    ).bind(alertId, authenticatedAccountId, authenticatedAccountId)
+      .first<{ status: "active" | "closed_by_author"; contact_account_id: string | null }>();
+
+    if (!row) return fail("alert_not_found_or_closed");
+    const assigned = row.status === "active" && typeof row.contact_account_id === "string";
+    return {
+      ok: true,
+      value: {
+        assigned,
+        isSelf: assigned && row.contact_account_id === authenticatedAccountId,
+      },
+    };
+  } catch {
+    return fail("storage_unavailable");
+  }
+}
+
+
 export interface ClaimedSosReminder {
   readonly id: string;
   readonly alertId: string;
