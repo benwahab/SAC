@@ -1,6 +1,6 @@
 import { createSessionCookie, readSessionCookie } from "../../lib/security/session-cookie.ts";
 import { hashSessionToken } from "../../lib/security/session-token.ts";
-import { authorizeDeviceSession, type DeviceSessionRecord } from "../../../src/domain/session-authorization.ts";
+import { authorizeDeviceSession, type DeviceSessionRecord, type SessionAuthorizationContext } from "../../../src/domain/session-authorization.ts";
 import { getSessionExpiresAt } from "../../../src/domain/auth-policy.ts";
 
 interface Env { DB: D1Database; }
@@ -47,9 +47,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     const authorization = authorizeDeviceSession(session, {
       expectedAccountId: row.account_id,
       expectedDeviceId: row.device_id,
-      accountStatus: row.account_status as "active",
+      accountStatus: row.account_status as SessionAuthorizationContext["accountStatus"],
       currentDeviceAuthVersion: row.current_device_auth_version,
-      deviceStatus: row.device_status as "active",
+      deviceStatus: row.device_status as SessionAuthorizationContext["deviceStatus"],
       now,
     });
     if (!authorization.ok) return json({ authenticated: false }, 401);
