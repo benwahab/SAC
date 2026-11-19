@@ -121,7 +121,7 @@ test("rejects a challenge replayed from a different challenge digest", async () 
 test("rejects an origin not in the server allowlist", async () => {
   const input = await fixture({ origin: "https://evil.sac.example" });
   await assert.rejects(() => verifyRootRegistrationResponse({
-    ...input, allowedOrigins: ["https://sac.example"], cryptoProvider,
+    ...input, expectedOrigin: "https://sac.example", allowedOrigins: ["https://sac.example"], cryptoProvider,
   }));
 });
 
@@ -129,7 +129,7 @@ test("rejects backup-eligible and backed-up authenticator flags", async () => {
   for (const flags of [0x4d, 0x5d]) {
     const input = await fixture({ flags });
     await assert.rejects(() => verifyRootRegistrationResponse({
-      ...input, allowedOrigins: ["https://sac.example"], cryptoProvider,
+      ...input, expectedOrigin: "https://sac.example", allowedOrigins: ["https://sac.example"], cryptoProvider,
     }));
   }
 });
