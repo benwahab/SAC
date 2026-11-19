@@ -1209,3 +1209,8 @@ L'architecture candidate et le modèle de test isolé sont décrits dans [ARCHIT
 ## Étude d'intégration Azure Confidential Ledger — 19 novembre 2026
 
 L'étude [ETUDE_INTEGRATION_AZURE_CONFIDENTIAL_LEDGER_CLOUDFLARE_WORKERS_V1.md](ETUDE_INTEGRATION_AZURE_CONFIDENTIAL_LEDGER_CLOUDFLARE_WORKERS_V1.md) documente l'API REST, les reçus, l'idempotence, l'authentification, les limites Cloudflare Workers, la résidence et les coûts. Elle identifie un compare-and-append candidat via UDF pré-hook atomique dans ACL, mais exige des tests de concurrence et de rollback sur un vrai registre. La connexion directe Worker → ACL reste non prouvée en raison de la validation TLS par certificat d'identité ; une passerelle dédiée est seulement une option de repli à étudier. ACL n'est pas choisi, aucune ressource ni secret n'a été créé, et le NO-GO production est maintenu.
+
+
+### Correction de sécurité — Azure Confidential Ledger (19 novembre 2026)
+
+L'étude ACL a été complétée par une réserve bloquante : un pré-hook UDF doit être explicitement nommé dans chaque requête d'écriture ; il n'est donc pas une protection suffisante si une identité peut écrire directement sans l'invoquer. La piste prioritaire à tester devient une application UDE avec RBAC métier dédié, à condition de démontrer qu'aucune route native d'écriture ne permet de contourner le contrôle. Workers VPC ne donne pas automatiquement un accès direct sécurisé à l'endpoint public ACL ; la voie directe et la voie passerelle restent non homologuées. Voir [l'étude d'intégration corrigée](ETUDE_INTEGRATION_AZURE_CONFIDENTIAL_LEDGER_CLOUDFLARE_WORKERS_V1.md), section 11. Aucun fournisseur ni service n'est choisi ; NO-GO production maintenu.
