@@ -113,6 +113,33 @@ test("creates and serializes a platform credential while leaving verification to
   assert.equal(result.authenticatorAttachment, "platform");
 });
 
+test("reports user cancellation and rejects a malformed browser response", async () => {
+  const cancelledByUser: WebAuthnCreationPort = {
+    isSecureContext: () => true,
+    isSupported: () => true,
+    create: async () => { throw new DOMException("cancelled", "NotAllowedError"); },
+  };
+  await assert.rejects(
+    createRootWebAuthnCredential(options(), cancelledByUser),
+    /annulée ou refusée/,
+  );
+
+  const malformed: WebAuthnCreationPort = {
+    isSecureContext: () => true,
+    isSupported: () => true,
+    create: async () => ({
+      id: "credential-id",
+      rawId: Uint8Array.from([1]).buffer,
+      type: "public-key",
+      response: { clientDataJSON: Uint8Array.from([2]).buffer },
+    } as unknown as Credential),
+  };
+  await assert.rejects(
+    createRootWebAuthnCredential(options(), malformed),
+    /ne contient pas de preuve d'enregistrement/,
+  );
+});
+
 test("fails closed when the browser is insecure, unsupported or returns no credential", async () => {
   const insecure: WebAuthnCreationPort = {
     isSecureContext: () => false,
