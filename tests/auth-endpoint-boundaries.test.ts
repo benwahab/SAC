@@ -116,3 +116,66 @@ test("resend-email rejects malformed email before database access", async () => 
   assert.deepEqual(await response.json(), { error: "invalid_email" });
   assert.equal(response.headers.get("Cache-Control"), "no-store");
 });
+
+
+test("all public authentication endpoints reject missing Origin before database access", async () => {
+  const handlers = [
+    ["register", register],
+    ["verify-email", verifyEmail],
+    ["resend-email", resendEmail],
+  ] as const;
+
+  for (const [path, handler] of handlers) {
+    const request = new Request(`https://sac.example/api/auth/${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    });
+    const response = await invoke(handler as never, request);
+    assert.equal(response.status, 403, path);
+    assert.equal(response.headers.get("Cache-Control"), "no-store", path);
+  }
+});
+
+test("all public authentication endpoints reject non-JSON content types before database access", async () => {
+  const handlers = [
+    ["register", register],
+    ["verify-email", verifyEmail],
+    ["resend-email", resendEmail],
+  ] as const;
+
+  for (const [path, handler] of handlers) {
+    const request = new Request(`https://sac.example/api/auth/${path}`, {
+      method: "POST",
+      headers: {
+        Origin: "https://sac.example",
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: "email=person%40example.com",
+    });
+    const response = await invoke(handler as never, request);
+    assert.equal(response.status, 415, path);
+    assert.equal(response.headers.get("Cache-Control"), "no-store", path);
+  }
+});
+
+test("all public authentication endpoints reject methods other than POST", async () => {
+  const handlers = [
+    ["register", register],
+    ["verify-email", verifyEmail],
+    ["resend-email", resendEmail],
+  ] as const;
+
+  for (const [path, handler] of handlers) {
+    const request = new Request(`https://sac.example/api/auth/${path}`, {
+      method: "GET",
+      headers: {
+        Origin: "https://sac.example",
+        "Content-Type": "application/json",
+      },
+    });
+    const response = await invoke(handler as never, request);
+    assert.equal(response.status, 405, path);
+    assert.equal(response.headers.get("Cache-Control"), "no-store", path);
+  }
+});
