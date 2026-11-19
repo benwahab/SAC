@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.app.json && vite build",
-    "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.functions.json",
+    "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.functions.json && tsc -p tsconfig.workers.json",
     "preview": "vite preview",
     "pages:dev": "wrangler pages dev dist",
     "pages:deploy": "wrangler pages deploy dist",
@@ -53,7 +53,8 @@
     "test:d1-root-device-enrollment": "python3 tests/d1_root_device_enrollment_schema.test.py",
     "test:root-enrollment-endpoints": "node --experimental-strip-types --test tests/root-enrollment-endpoints.test.ts",
     "test:root-enrollment-client": "node --experimental-strip-types --test tests/root-enrollment-client.test.ts",
-    "test:push-subscriptions": "node --experimental-strip-types --test tests/push-subscription-crypto.test.ts"
+    "test:push-subscriptions": "node --experimental-strip-types --test tests/push-subscription-crypto.test.ts",
+    "test:web-push-delivery": "node --experimental-strip-types --test tests/web-push-delivery.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
