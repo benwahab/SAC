@@ -24,6 +24,7 @@ export type InvitationDeliveryResult =
   | {
       readonly ok: false;
       readonly error: ContactInvitationServiceError | "delivery_failed";
+      readonly invitationId?: string;
     };
 
 /**
@@ -73,7 +74,7 @@ export async function createAndSendContactInvitation(
       now: input.now,
     });
     if (!cancelled.ok) return { ok: false, error: cancelled.error };
-    return { ok: false, error: "delivery_failed" };
+    return { ok: false, error: "delivery_failed", invitationId: created.value.invitationId };
   }
 
   return {
