@@ -1224,3 +1224,8 @@ Le dépôt public Microsoft `azureconfidentialledger-app-samples/code-transparen
 ### Résidence et coût ACL — précision (19 novembre 2026)
 
 La réplication vers la région jumelée est obligatoire et non désactivable. La page tarifaire publique ne fournit pas de montant exploitable et indique une disponibilité limitée selon les régions. Aucun budget ni région n'est donc validé ; un devis et l'accord sur les deux régions seraient requis avant toute création. Détails dans la section 13 de l'étude d'intégration.
+
+
+### Audit de l'exemple Microsoft UDE — 19 novembre 2026
+
+L'exemple public Microsoft Code Transparency confirme la forme d'une API métier UDE dans le TEE avec tables KV et compteur de séquence, mais ne fournit pas à lui seul le compare-and-append, l'idempotence, l'immutabilité des clés, le reçu transactionnel ni le blocage des routes natives requis par SAC. Voir [l'audit détaillé de l'exemple UDE](AUDIT_EXEMPLE_MICROSOFT_UDE_POUR_SAC_V1.md). Aucun prototype réel ni ressource Azure n'est autorisé par cet audit.
