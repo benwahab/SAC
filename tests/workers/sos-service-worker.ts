@@ -3,6 +3,7 @@ import {
   closeSosAlertByAuthor,
   completeSosReminderDelivery,
   createSosAlert,
+  dispatchDueSosReminders,
   getSosAlertForParticipant,
   listSosEventsForParticipant,
   respondToSosAlert,
@@ -93,6 +94,15 @@ export default {
         authenticatedAccountId: String(input.actor), alertId: String(input.alertId),
         reason: "completed", now,
       });
+      return result.ok ? json(result.value) : json({ error: result.error }, 409);
+    }
+    if (url.pathname === "/dispatch") {
+      const result = await dispatchDueSosReminders(env.DB, crypto, {
+        async send(envelope) {
+          if (input.failRecipient === envelope.recipientAccountId) return false;
+          return true;
+        },
+      }, { now, batchSize: 10, leaseMilliseconds: 30_000 });
       return result.ok ? json(result.value) : json({ error: result.error }, 409);
     }
     if (url.pathname === "/claim") {
