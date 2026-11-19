@@ -192,3 +192,20 @@ test("refuse un contexte d'autorisation malformé sans exception", () => {
     );
   }
 });
+
+
+test("refuse une date d'expiration stockée au-delà des 30 jours d'inactivité", () => {
+  assert.deepEqual(authorizeDeviceSession(makeSession({
+    expiresAt: "2026-12-18T11:00:00.000Z",
+  }), makeContext()), { ok: false, error: "invalid_session_record" });
+});
+
+test("refuse une date d'expiration stockée au-delà des 90 jours absolus", () => {
+  assert.deepEqual(authorizeDeviceSession(makeSession({
+    createdAt: "2026-01-01T00:00:00.000Z",
+    lastActivityAt: "2026-03-30T00:00:00.000Z",
+    expiresAt: "2026-04-02T00:00:00.000Z",
+  }), makeContext({
+    now: "2026-03-30T12:00:00.000Z",
+  })), { ok: false, error: "invalid_session_record" });
+});
