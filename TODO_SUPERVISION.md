@@ -1071,3 +1071,13 @@ Le présent bloc actualise les sections de supervision antérieures lorsque cell
 - [x] Ajouter la suite `tests/contact-invitations.test.ts` et l'enregistrer dans le script npm et la CI.
 - [ ] Vérifier la CI complète incluant la nouvelle suite des invitations sur le HEAD courant.
 - [ ] Ne pas créer encore d'API ou migration d'invitation : durée, relances, quotas, permissions détaillées, révocation symétrique et droits pendant SOS actif restent ouverts selon le contrat spécialisé.
+
+
+### Cohérence du cycle SOS — 19 novembre 2026
+
+- [x] Corriger le contrat métier pour fermer la période de responsabilité du proche au même horodatage que la clôture de l'alerte.
+- [x] Refuser les états où une alerte clôturée conserve un responsable principal actif.
+- [x] Vérifier que la clôture porte sur la même alerte, le même auteur et le même instantané de destinataires.
+- [x] Ajouter les tests de clôture avec/sans responsable, de mismatch d'alerte, de chronologie et d'état terminal incohérent.
+- [ ] Vérifier le workflow CI complet sur le commit final avant de considérer cette tranche validée.
+- [ ] À l'implémentation SOS, persister clôture, historique de responsabilité, événement d'audit et arrêt des rappels dans la même transaction D1.
