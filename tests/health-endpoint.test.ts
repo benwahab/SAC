@@ -15,6 +15,13 @@ const TABLES = [
   "alert_reminder_outbox",
   "alert_sms_escalations",
   "alert_sms_outbox",
+  "root_enrollment_rate_limits",
+  "root_enrollment_ceremonies",
+  "root_enrollment_challenges",
+  "devices",
+  "device_root_credentials",
+  "device_sessions",
+  "device_enrollment_events",
 ];
 
 function makeContext(options: {
