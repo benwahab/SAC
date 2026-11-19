@@ -39,7 +39,8 @@ Le dépôt contient beaucoup de conception ; le travail doit maintenant se dépl
 - `GET /api/alerts/:alertId` : lecture du SOS réservée à son auteur ou à un destinataire de l'instantané initial.
 - `POST /api/alerts/:alertId/respond` : accusé de réception, volontariat ou retrait du volontariat pour un destinataire autorisé.
 - `POST /api/alerts/:alertId/close` : clôture réservée à l'auteur, avec motif validé.
-- Routes toujours absentes : connexion/émission de session, récupération/réinitialisation de compte, lecture de la chronologie d'événements, notifications push réellement livrées, SMS réellement livrés, trajets, paiements et administration professionnelle.
+- `GET /api/alerts/:alertId/events` : chronologie accessible uniquement à l'auteur ou à un destinataire initial ; l'API masque les identifiants de comptes et ne renvoie que « self » ou « participant » pour l'acteur.
+- Routes toujours absentes : connexion par assertion WebAuthn pour un appareil déjà enrôlé, récupération/réinitialisation de compte, notifications push réellement livrées, SMS réellement livrés, trajets, paiements et administration professionnelle.
 
 La présence d'un adaptateur Resend et de routes d'inscription ne prouve pas qu'un compte fournisseur ou des secrets sont configurés, ni qu'un e-mail réel a été délivré.
 
@@ -203,3 +204,41 @@ Les routes suivantes sont maintenant présentes dans `functions/api/alerts/` :
 Le nombre de rappels choisi est validé par le service existant (1 à 5) et les échéances restent espacées de cinq minutes. La création SOS ne demande aucune coordonnée GPS. La limite de destinataires appliquée par l'API est actuellement celle de l'offre gratuite (2), les droits Premium n'étant pas encore activés.
 
 **Limites :** ces routes exigent une session appareil authentifiée et les tables des migrations D1 0001 à 0007. Le compte Cloudflare connecté montre toujours `sac-db` avec 0 table et aucun projet Pages. Il n'existe pas encore de route de connexion pour émettre les sessions ; par conséquent ces API ne sont pas encore utilisables en production. Les files D1 de rappels et SMS ne constituent pas une livraison push/SMS : aucun adaptateur fournisseur ni worker de dispatch opérationnel n'est encore configuré. La chronologie des événements n'a pas encore son endpoint de lecture.
+
+## 11. Audit de correspondance : ne pas reconstruire les services métier déjà présents
+
+Une vérification ciblée du code et de l'interface a été effectuée après les tranches API précédentes.
+
+| Domaine | Ce qui existe réellement | Ce qui manque encore |
+|---|---|---|
+| Comptes | Inscription, hash du mot de passe, OTP e-mail, activation, renvoi OTP | Connexion d'un appareil déjà enrôlé, récupération du compte, interface privée après connexion |
+| Appareil racine | Préparation et finalisation d'un premier enrôlement WebAuthn ; création d'une première session | Vérification indépendante du protocole actuel, bibliothèque WebAuthn de production, assertion de connexion et tests physiques |
+| Sessions | Cookie opaque, hash D1, vérification/renouvellement et déconnexion ; garde partagée ajoutée aux routes contacts/SOS | Émission de session lors d'une connexion ultérieure, intégration systématique de la garde à toutes les routes privées |
+| Proches | Services métier, invitation à usage unique, acceptation/refus, révocation, liste ; routes API ajoutées | Écrans de gestion des proches, boîte de réception des invitations, route d'acceptation web et raccordement UI |
+| SOS | Service métier D1 : création, instantané des destinataires, réponses, volontariat, responsabilité, clôture, rappels/outbox, évaluation d'escalade SMS ; routes de création/lecture/réponse/clôture ajoutées | Interface SOS et suivi, worker de livraison push/SMS, lecture de la chronologie désormais exposée par API mais non affichée |
+| Protection de trajet | Contrat métier pur et tests | Persistance D1, API, interface, communications et règles de confidentialité en production |
+| GPS | Modules cryptographiques expérimentaux | Parcours utilisateur complet et preuve vérifiable de destruction irréversible à J+30 ; activation interdite tant que la preuve manque |
+| Administration | Contrats et documentation de gouvernance/permissions | Comptes et rôles persistés, API, audit D1 et interfaces |
+| Abonnements | Règles d'offre et limites documentées | Paiement, vérification de droits Premium et activation réelle des quotas |
+| Documents | Décision d'archivage et contrats de traçabilité documentés | Génération, impression, indexation et archivage opérationnels dans les rubriques sources |
+| Interface globale | Page de présentation, PWA, inscription, vérification e-mail et préparation du premier appareil | Tableau de bord privé, écrans métier, navigation connectée et parcours de bout en bout |
+
+### Constat d'interface confirmé
+
+La page `src/App.tsx` contient une page d'accueil de présentation et une page `/connexion` qui permet actuellement l'inscription, la vérification e-mail et le lancement de l'enrôlement initial. Le formulaire présenté comme « Connexion » déclenche en réalité la préparation du premier enrôlement racine ; il ne permet pas à un utilisateur déjà enrôlé de se reconnecter. Il n'existe pas encore d'écran opérationnel pour les proches, les SOS, les trajets ou l'administration.
+
+### Tranche réellement ajoutée après cet audit
+
+- `GET /api/alerts/:alertId/events` appelle le service métier de chronologie déjà présent, applique la garde de session et vérifie l'appartenance à l'alerte. Les identifiants de comptes des autres participants ne sont pas exposés à l'interface.
+- Commit : `b3c89b81b3b4ccd8d8f3be155285a1b99664d35e`.
+
+### Ordre de travail corrigé
+
+1. Terminer le parcours de connexion WebAuthn existant sans réécrire les contrats SOS/proches déjà développés.
+2. Construire l'interface privée et raccorder les écrans proches + invitations + SOS aux API existantes.
+3. Implémenter les workers et adaptateurs de livraison push/SMS en distinguant systématiquement « accepté par le fournisseur » de « livré ».
+4. Ajouter la persistance et l'interface des trajets, puis seulement les communications associées.
+5. Fermer les preuves de destruction GPS J+30, l'administration, les droits Premium et l'archivage documentaire.
+6. Vérifier les migrations et la CI dans un environnement de build ; aucune migration distante ni aucun déploiement n'est autorisé par cet audit.
+
+Aucun écran ou service métier déjà présent ne doit être réécrit au seul motif qu'il ne dispose pas encore de route ou d'interface.
