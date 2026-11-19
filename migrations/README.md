@@ -44,7 +44,7 @@ Elle nécessite une revue dédiée, la confirmation de l'environnement cible et 
 ## 0007 — credential racine, appareils et sessions
 
 `0007_root_device_enrollment.sql` ajoute le premier parcours serveur d'enrôlement :
-- cérémonie et challenge WebAuthn à usage unique, avec seule empreinte SHA-256 persistée ;
+- cérémonie et challenge WebAuthn à usage unique, avec seule empreinte SHA-256 persistée et origine exacte liée à la cérémonie ;
 - expiration après cinq minutes et cinq tentatives maximum ;
 - une seule racine par compte, liée à une credential P-256 ES256 non synchronisable ;
 - clé publique, compteur, type de credential et état de sauvegarde ;
