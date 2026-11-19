@@ -133,3 +133,56 @@ Ce test est un smoke test de runtime. Il ne prouve pas encore qu'une véritable 
 La configuration du test reprend la date de compatibilité du dépôt (`2026-11-17`). Cloudflare active automatiquement la compatibilité Node.js pour les dates à partir du 4 août 2026 ; aucun drapeau supplémentaire n'a été ajouté. Référence : https://developers.cloudflare.com/workers/runtime-apis/nodejs/
 
 **Décision technique actualisée :** conserver SimpleWebAuthn 14.1.0 comme candidat et poursuivre vers un test cryptographique complet avec des fixtures WebAuthn valides, avant d'ajouter la dépendance au runtime applicatif ou de créer les tables D1 d'enrôlement.
+
+
+## 10. Test cryptographique complet avec fixtures générées — 19 novembre 2026
+
+Le test runtime a été étendu avec des réponses WebAuthn cryptographiquement construites pendant le test, sans clé privée persistée dans le dépôt :
+- génération éphémère d'une paire EC P-256 ;
+- construction CBOR d'une clé publique COSE EC2/ES256/P-256 ;
+- construction d'un objet d'attestation `fmt: none` avec authenticator data ;
+- génération de `clientDataJSON` d'inscription ;
+- signature ECDSA DER d'une assertion d'authentification sur `authenticatorData || SHA-256(clientDataJSON)` ;
+- vérification de l'inscription et de l'authentification par SimpleWebAuthn **dans le Worker Cloudflare local**, pas seulement dans Node.
+
+Cas couverts par la suite de fixtures :
+- inscription ES256 valide et authentification signée valide ;
+- `BE=0, BS=0` : classée `singleDevice`, `backedUp=false`, acceptée par la règle candidate de racine SAC ;
+- `BE=1, BS=0` : classée `multiDevice`, refusée par la règle de racine ;
+- `BE=1, BS=1` : classée `multiDevice` et sauvegardée, refusée ;
+- `BE=0, BS=1` : rejetée ;
+- challenge d'inscription incorrect ;
+- origine d'inscription incorrecte ;
+- RP ID d'inscription incorrect ;
+- challenge, origine et RP ID d'authentification incorrects ;
+- signature d'authentification altérée.
+
+Le Worker vérifie explicitement le booléen `verified` renvoyé par chaque fonction. Un résultat `verified: false` ne doit jamais être interprété comme un succès, même si la fonction ne lève pas d'exception.
+
+**Workflow complet réussi :** [SAC quality checks — run 44475318262](https://github.com/benwahab/SAC/actions/runs/44475318262)  
+**Commit testé :** `613720b68176ef18b5b1b0b0f83687615e811a5a`  
+**Résultat :** `success`. Le test WebAuthn, le typecheck, les tests existants, le build et les audits de dépendances sont passés.
+
+Les tests supplémentaires de refus lorsque le flag UV est absent viennent d'être ajoutés et doivent encore être confirmés par le workflow suivant.
+
+## 11. Découverte importante : residentKey et passkeys synchronisées sur Android
+
+La documentation SimpleWebAuthn 14.1.x indique que `residentKey: "preferred"` et `"required"` conduisent à la création de passkeys synchronisées sur Android, tandis que `"discouraged"` évite ce comportement par défaut.
+
+Le test Worker a donc été ajusté comme **expérience technique candidate** vers `residentKey: "discouraged"`, sans changer la décision produit validée. Le serveur doit dans tous les cas refuser toute inscription dont les flags ne démontrent pas `BE=0` et `BS=0`.
+
+Cela ne garantit pas que tous les appareils Android fourniront une credential conforme. Les essais physiques restent nécessaires.
+
+Source officielle : https://simplewebauthn.dev/docs/packages/server/#guiding-use-of-authenticators-via-authenticatorselection
+
+## 12. Limites restant à lever
+
+Ce test ne couvre pas encore :
+- expiration, consommation atomique et rejeu d'un challenge conservé en D1 ;
+- concurrence entre deux cérémonies d'enrôlement ;
+- transaction D1 atomique de création de racine ;
+- vérification indépendante du transcript sur le nouvel appareil ;
+- authentificateurs physiques Android et navigateurs réels ;
+- matrice de compatibilité Android/iOS/Desktop effectivement ciblée.
+
+**Conclusion actuelle :** SimpleWebAuthn 14.1.0 a passé un test cryptographique positif/négatif complet de base dans le runtime Workers local, y compris les flags BE/BS et les signatures ES256. Cela autorise la poursuite vers les tests de protocole et d'état, mais ne donne pas encore le GO à l'enrôlement racine de production.
