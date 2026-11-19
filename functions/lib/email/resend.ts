@@ -56,7 +56,9 @@ export async function sendAccountVerificationCode(
   const from = env.RESEND_FROM_EMAIL?.trim();
   if (!apiKey || !from) return { ok: false, reason: "provider_not_configured" };
 
-  if (!(language in copy)) return { ok: false, reason: "invalid_language" };
+  if (!Object.prototype.hasOwnProperty.call(copy, language)) {
+    return { ok: false, reason: "invalid_language" };
+  }
 
   const normalizedRecipient = recipient.trim();
   if (
