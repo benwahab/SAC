@@ -4,8 +4,8 @@
 
 :root {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #20372b;
-  background: #f1f8f2;
+  color: #29231f;
+  background: #fff7f0;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -14,38 +14,38 @@
   color-scheme: light;
 }
 * { box-sizing: border-box; }
-html { min-width: 320px; scroll-behavior: smooth; background: #f1f8f2; }
+html { min-width: 320px; scroll-behavior: smooth; background: #fff7f0; }
 body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at 8% 12%, rgba(190, 231, 199, .55), transparent 30rem),
-    radial-gradient(circle at 92% 28%, rgba(219, 241, 223, .7), transparent 32rem),
-    #f1f8f2;
+    radial-gradient(circle at 8% 12%, rgba(255, 218, 188, .58), transparent 30rem),
+    radial-gradient(circle at 92% 28%, rgba(255, 235, 218, .78), transparent 32rem),
+    #fff7f0;
 }
 button, a { -webkit-tap-highlight-color: transparent; }
-button:focus-visible, a:focus-visible { outline: 3px solid #26764b; outline-offset: 3px; }
-::selection { color: #183a29; background: #ccebd2; }
+button:focus-visible, a:focus-visible { outline: 3px solid #F38020; outline-offset: 3px; }
+::selection { color: #3a2414; background: #ffd9ba; }
 .sac-shell { background: transparent; }
 .sac-glass-panel {
-  border: 1px solid rgba(255,255,255,.9);
-  background: rgba(255,255,255,.66);
-  box-shadow: 0 24px 70px rgba(43, 92, 58, .12), inset 0 1px 0 rgba(255,255,255,.9);
+  border: 1px solid rgba(255,255,255,.92);
+  background: rgba(255,255,255,.72);
+  box-shadow: 0 24px 70px rgba(128, 70, 28, .12), inset 0 1px 0 rgba(255,255,255,.95);
   -webkit-backdrop-filter: blur(22px);
   backdrop-filter: blur(22px);
 }
 .sac-glass-card {
-  border: 1px solid rgba(255,255,255,.92);
-  background: rgba(255,255,255,.62);
-  box-shadow: 0 12px 38px rgba(43, 92, 58, .07), inset 0 1px 0 rgba(255,255,255,.95);
+  border: 1px solid rgba(255,255,255,.94);
+  background: rgba(255,255,255,.68);
+  box-shadow: 0 12px 38px rgba(128, 70, 28, .08), inset 0 1px 0 rgba(255,255,255,.96);
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
 }
 .sac-responsible-panel {
-  border: 1px solid rgba(255,255,255,.9);
-  background: linear-gradient(120deg, rgba(216,240,220,.92), rgba(255,255,255,.78));
-  box-shadow: 0 18px 48px rgba(43, 92, 58, .1);
+  border: 1px solid rgba(255,255,255,.92);
+  background: linear-gradient(120deg, rgba(255,231,211,.94), rgba(255,255,255,.82));
+  box-shadow: 0 18px 48px rgba(128, 70, 28, .1);
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
