@@ -47,8 +47,10 @@ export async function readJsonRequestBody(
       if (totalBytes > maxBytes) {
         // L'annulation est une optimisation de ressources, pas une condition
         // du verdict : un flux peut refuser cancel() après dépassement.
+        // Ne pas attendre le nettoyage du flux : un flux hostile peut laisser
+        // cancel() en attente et bloquer indéfiniment la réponse HTTP.
         try {
-          await reader.cancel();
+          void reader.cancel().catch(() => undefined);
         } catch {
           // Le corps a déjà dépassé la limite ; conserver le résultat 413.
         }
