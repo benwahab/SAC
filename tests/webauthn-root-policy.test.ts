@@ -22,13 +22,13 @@ test("rejects a multi-device credential even when it is not currently backed up"
   );
 });
 
-test("rejects a single-device credential reporting backed-up state", () => {
+test("rejects the inconsistent BE=0/BS=1 state", () => {
   assert.deepEqual(
     evaluateWebAuthnRootCredentialPolicy({
       credentialDeviceType: "singleDevice",
       credentialBackedUp: true,
     }),
-    { accepted: false, reason: "credential_backed_up" },
+    { accepted: false, reason: "backup_state_inconsistent" },
   );
 });
 
