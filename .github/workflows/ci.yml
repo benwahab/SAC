@@ -80,6 +80,8 @@ jobs:
         run: python3 tests/d1_contact_invitations_schema.test.py
       - name: Test D1 SOS recipient snapshots, event chronology and reminder constraints
         run: python3 tests/d1_alerts_schema.test.py
+      - name: Test SOS service end-to-end against isolated local D1
+        run: npm run test:sos-d1
       - name: Test trusted contact service against isolated local D1
         run: npm run test:contact-invitations-d1
       - name: Test registration input policy
