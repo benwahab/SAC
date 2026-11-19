@@ -173,6 +173,14 @@ BEGIN
           AND ch.attempt_count >= 5
       )
     )
+  ) AND NOT (
+    OLD.status = 'pending' AND NEW.status = 'cancelled'
+    AND OLD.completed_at IS NULL AND NEW.completed_at IS NULL
+    AND EXISTS (
+      SELECT 1 FROM root_enrollment_challenges ch
+      WHERE ch.ceremony_id = OLD.id AND ch.account_id = OLD.account_id
+        AND ch.consumed_at IS NULL
+    )
   ) THEN RAISE(ABORT, 'root_enrollment_ceremony_transition_invalid') END;
 END;
 
