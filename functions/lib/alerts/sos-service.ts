@@ -873,6 +873,15 @@ export async function scheduleDueSosSmsEscalations(
        FROM alerts a
        WHERE a.status = 'active'
          AND a.created_at + (a.push_reminder_limit * 300000) <= ?
+         AND (
+           SELECT COUNT(*) FROM alert_reminder_outbox r
+           WHERE r.alert_id = a.id
+             AND r.reminder_number = a.push_reminder_limit
+             AND r.status IN ('sent', 'failed')
+         ) = (
+           SELECT COUNT(*) FROM alert_recipients r
+           WHERE r.alert_id = a.id
+         )
          AND NOT EXISTS (
            SELECT 1 FROM alert_sms_escalations e WHERE e.alert_id = a.id
          )
