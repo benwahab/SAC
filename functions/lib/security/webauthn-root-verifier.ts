@@ -104,7 +104,7 @@ export async function verifyRootRegistrationResponse(input: {
     } catch { challengeMatches = false; }
   }
   if (clientData.type !== "webauthn.create" || !challengeMatches ||
-      clientData.crossOrigin === true || clientData.origin !== input.expectedOrigin ||
+      (clientData.crossOrigin !== undefined && clientData.crossOrigin !== false) || clientData.origin !== input.expectedOrigin ||
       !isAllowedWebAuthnOrigin(clientData.origin, input.rpId, input.allowedOrigins)) {
     throw new Error("webauthn_client_data_binding_invalid");
   }
