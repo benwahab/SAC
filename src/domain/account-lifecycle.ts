@@ -53,7 +53,17 @@ function isUtc(value: string): boolean {
 }
 
 function isValidAccount(account: AccountLifecycleRecord): boolean {
-  if (!account.accountId.trim() || !isUtc(account.createdAt)) return false;
+  if (
+    typeof account !== "object" ||
+    account === null ||
+    typeof account.accountId !== "string" ||
+    typeof account.status !== "string" ||
+    typeof account.createdAt !== "string" ||
+    (account.deletionRequestedAt !== null && typeof account.deletionRequestedAt !== "string") ||
+    (account.deletedAt !== null && typeof account.deletedAt !== "string") ||
+    !account.accountId.trim() ||
+    !isUtc(account.createdAt)
+  ) return false;
   if (account.status === "pending_verification" || account.status === "active" || account.status === "suspended") {
     return account.deletionRequestedAt === null && account.deletedAt === null;
   }
@@ -83,27 +93,36 @@ export function transitionAccountLifecycle(
   command: AccountLifecycleCommand,
 ): AccountLifecycleResult {
   if (!isValidAccount(account)) return { ok: false, error: "invalid_account" };
-  if (!command || typeof command !== "object" || typeof command.at !== "string") {
+  if (
+    !command ||
+    typeof command !== "object" ||
+    typeof command.type !== "string" ||
+    typeof command.at !== "string"
+  ) {
     return { ok: false, error: "invalid_command" };
   }
   if (!isUtc(command.at)) return { ok: false, error: "invalid_timestamp" };
   if (Date.parse(command.at) < Date.parse(account.createdAt)) return { ok: false, error: "event_before_account_creation" };
 
   if (command.type === "request_deletion") {
-    if (command.actorAccountId !== account.accountId) return { ok: false, error: "actor_not_owner" };
+    if (typeof command.actorAccountId !== "string" || command.actorAccountId !== account.accountId) return { ok: false, error: "actor_not_owner" };
     if (account.status !== "active") return { ok: false, error: "account_not_active" };
     return result({ ...account, status: "deletion_pending", deletionRequestedAt: command.at });
   }
 
   if (command.type === "cancel_deletion") {
-    if (command.actorAccountId !== account.accountId) return { ok: false, error: "actor_not_owner" };
+    if (typeof command.actorAccountId !== "string" || command.actorAccountId !== account.accountId) return { ok: false, error: "actor_not_owner" };
     if (account.status !== "deletion_pending") return { ok: false, error: "deletion_not_pending" };
     if (Date.parse(command.at) < Date.parse(account.deletionRequestedAt!)) return { ok: false, error: "invalid_timestamp" };
     return result({ ...account, status: "active", deletionRequestedAt: null });
   }
 
   if (command.type === "suspend_account") {
-    if (command.actorRole !== "super_admin" || !command.actorAccountId.trim()) {
+    if (
+      command.actorRole !== "super_admin" ||
+      typeof command.actorAccountId !== "string" ||
+      !command.actorAccountId.trim()
+    ) {
       return { ok: false, error: "actor_not_super_admin" };
     }
     if (account.status !== "active") return { ok: false, error: "account_not_suspendable" };
@@ -111,7 +130,11 @@ export function transitionAccountLifecycle(
   }
 
   if (command.type === "reinstate_account") {
-    if (command.actorRole !== "super_admin" || !command.actorAccountId.trim()) {
+    if (
+      command.actorRole !== "super_admin" ||
+      typeof command.actorAccountId !== "string" ||
+      !command.actorAccountId.trim()
+    ) {
       return { ok: false, error: "actor_not_super_admin" };
     }
     if (account.status !== "suspended") return { ok: false, error: "account_not_suspended" };
@@ -121,9 +144,14 @@ export function transitionAccountLifecycle(
   if (command.type === "finalize_deletion") {
     if (command.actorAccountId !== "system") return { ok: false, error: "invalid_command" };
     if (account.status !== "deletion_pending") return { ok: false, error: "deletion_not_pending" };
-    if (!command.activity ||
-        !Number.isSafeInteger(command.activity.activeAlerts) || command.activity.activeAlerts < 0 ||
-        !Number.isSafeInteger(command.activity.activeTrips) || command.activity.activeTrips < 0) {
+    if (
+      !command.activity ||
+      typeof command.activity !== "object" ||
+      !Number.isSafeInteger(command.activity.activeAlerts) ||
+      command.activity.activeAlerts < 0 ||
+      !Number.isSafeInteger(command.activity.activeTrips) ||
+      command.activity.activeTrips < 0
+    ) {
       return { ok: false, error: "invalid_activity_counts" };
     }
     if (command.activity.activeAlerts > 0) return { ok: false, error: "active_alerts_remain" };
