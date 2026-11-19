@@ -358,3 +358,20 @@ Références :
 ### Audit de code complémentaire
 
 L'examen des fichiers réels de l'exemple Microsoft (routes, tables KV et compteur) est consigné dans [AUDIT_EXEMPLE_MICROSOFT_UDE_POUR_SAC_V1.md](AUDIT_EXEMPLE_MICROSOFT_UDE_POUR_SAC_V1.md). Il précise les écarts bloquants : séquence attendue non fournie par l'appelant, absence de clé d'idempotence, absence de preuve de non-écrasement des clés, absence de contrat transaction ID/reçu et RBAC natif non testé.
+
+
+## 14. Arbitrage documentaire complémentaire — UDF/UDE et sécurité d'exécution (19 novembre 2026)
+
+La lecture croisée des références Microsoft actuelles précise le choix technique :
+
+- UDF et UDE sont **mutuellement exclusifs** sur une même instance ACL. Le passage de l'un à l'autre est documenté comme destructif : les UDF/UDE existants sont supprimés lors du changement. Ce n'est donc pas une option à basculer librement après mise en service ; le modèle d'application serveur doit être choisi avant le déploiement.
+- Les UDF offrent les hooks transactionnels pré/post, mais ces hooks sont explicitement indiqués dans chaque requête d'écriture. Ils ne sont pas automatiques.
+- Les UDE exposent des endpoints personnalisés avec authentification et RBAC personnalisés. C'est la piste prioritaire pour limiter l'identité d'exécution SAC à une route métier dédiée. Les rôles d'exécution et de déploiement doivent être séparés.
+- L'identité d'exécution ne doit pas recevoir Contributor ou Administrator par facilité. La liste exacte des actions autorisées doit être minimale et les refus des routes natives doivent être testés sur un registre réel.
+- Les UDE n'offrent pas les hooks UDF ; leur capacité à lier dans une seule transaction CCF la mutation de tête, la clé d'idempotence et l'entrée historique vérifiable par reçu reste un critère de preuve. Ne pas déduire cette garantie de la seule présence d'une table KV ou d'un compteur.
+- Les fonctions UDF s'exécutent dans un environnement JavaScript limité : pas d'import de modules et pas d'API Web ; les limites d'exécution et de mémoire doivent être prises en compte si cette piste est réévaluée.
+- Pour l'authentification, Entra ID est la voie recommandée par Microsoft. Un Worker sans utilisateur interactif doit utiliser une identité applicative ; une clé privée de certificat, si le flux d'assertion signé est retenu et testé, reste exclusivement dans un secret serveur. L'option mTLS du SDK JavaScript ne doit pas être confondue avec l'authentification Entra.
+- Le certificat d'identité TLS du registre est obtenu auprès du service d'identité ACL. Il doit être validé comme ancre de confiance et faire l'objet d'une procédure de renouvellement/rotation ; ne jamais désactiver la validation TLS pour simplifier le test.
+- Les données ACL sont automatiquement répliquées vers la région jumelée, sans option de désactivation. La région primaire et sa paire doivent être acceptables avant sélection ; le prix public consulté ne permet pas d'établir un budget fiable sans région et devis.
+
+**Conclusion mise à jour :** UDF avec pré-hook seul = NO-GO comme barrière de sécurité tant que le contournement par écriture native n'est pas empêché. UDE avec RBAC dédié = piste prioritaire, toujours NO-GO jusqu'à preuve réelle de l'append atomique, du reçu, de l'idempotence après perte de réponse et du refus des routes natives. ACL reste non sélectionné.
