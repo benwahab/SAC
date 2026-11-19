@@ -11,7 +11,7 @@ interface Env {
   RESEND_FROM_EMAIL?: string;
 }
 
-const NO_STORE = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" };
+const NO_STORE = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" };
 const GENERIC_ACCEPTED = {
   accepted: true,
   message: "Si cette adresse est éligible, vous recevrez les instructions de vérification.",
