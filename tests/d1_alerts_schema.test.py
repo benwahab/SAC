@@ -8,6 +8,7 @@ MIGRATIONS = [
     ROOT / "migrations" / "0002_contact_invitations.sql",
     ROOT / "migrations" / "0003_alerts_sos.sql",
     ROOT / "migrations" / "0004_sos_reminder_leases.sql",
+    ROOT / "migrations" / "0005_sos_sms_escalation.sql",
 ]
 
 
@@ -151,7 +152,81 @@ class AlertD1SchemaTests(unittest.TestCase):
                 (created + 1,),
             )
 
-    def test_reminders_are_bounded_by_user_choice_and_five_minute_spacing(self):
+    def test_reminders_continue_beyond_sms_threshold_at_five_minute_spacing(self):
+        created = self._alert(reminder_limit=1)
+        self.db.execute(
+            """INSERT INTO alert_reminder_outbox
+               (id, alert_id, recipient_account_id, reminder_number, scheduled_at, created_at)
+               VALUES ('initial', 'alert-1', 'contact', 0, ?, ?)""",
+            (created, created),
+        )
+        self.db.execute(
+            """INSERT INTO alert_reminder_outbox
+               (id, alert_id, recipient_account_id, reminder_number, scheduled_at, created_at)
+               VALUES ('reminder-1', 'alert-1', 'contact', 1, ?, ?)""",
+            (created + 300_000, created + 1),
+        )
+        # Le seuil SMS est atteint après un rappel, mais les rappels push continuent.
+        self.db.execute(
+            """INSERT INTO alert_reminder_outbox
+               (id, alert_id, recipient_account_id, reminder_number, scheduled_at, created_at)
+               VALUES ('reminder-2', 'alert-1', 'contact', 2, ?, ?)""",
+            (created + 600_000, created + 2),
+        )
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "alert_reminder_not_eligible"):
+            self.db.execute(
+                """INSERT INTO alert_reminder_outbox
+                   (id, alert_id, recipient_account_id, reminder_number, scheduled_at, created_at)
+                   VALUES ('reminder-3-too-early', 'alert-1', 'contact', 3, ?, ?)""",
+                (created + 899_999, created + 3),
+            )
+
+    def test_sms_escalation_requires_completed_threshold_push_and_targets_snapshot(self):
+        created = self._alert(reminder_limit=1)
+        self.db.execute(
+            """INSERT INTO alert_reminder_outbox
+               (id, alert_id, recipient_account_id, reminder_number, scheduled_at, created_at)
+               VALUES ('initial', 'alert-1', 'contact', 0, ?, ?)""",
+            (created, created),
+        )
+        self.db.execute(
+            """INSERT INTO alert_reminder_outbox
+               (id, alert_id, recipient_account_id, reminder_number, scheduled_at, created_at)
+               VALUES ('reminder-1', 'alert-1', 'contact', 1, ?, ?)""",
+            (created + 300_000, created + 1),
+        )
+        threshold = created + 300_000
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "alert_sms_escalation_not_eligible"):
+            self.db.execute(
+                """INSERT INTO alert_sms_escalations
+                   (alert_id, threshold_reached_at, evaluated_at, status)
+                   VALUES ('alert-1', ?, ?, 'queued')""",
+                (threshold, threshold),
+            )
+        self.db.execute(
+            """UPDATE alert_reminder_outbox
+               SET status='sent', processed_at=?
+               WHERE id='reminder-1'""",
+            (threshold,),
+        )
+        self.db.execute(
+            """INSERT INTO alert_sms_escalations
+               (alert_id, threshold_reached_at, evaluated_at, status)
+               VALUES ('alert-1', ?, ?, 'queued')""",
+            (threshold, threshold),
+        )
+        self.db.execute(
+            """INSERT INTO alert_sms_outbox
+               (id, alert_id, recipient_account_id, status, scheduled_at, created_at)
+               VALUES ('sms-1', 'alert-1', 'contact', 'pending', ?, ?)""",
+            (threshold, threshold),
+        )
+        row = self.db.execute(
+            "SELECT recipient_account_id,status FROM alert_sms_outbox WHERE id='sms-1'"
+        ).fetchone()
+        self.assertEqual(tuple(row), ("contact", "pending"))
+
+    def test_prior_lead_assignment_suppresses_sms_after_withdrawal(self):
         created = self._alert(reminder_limit=1)
         self.db.execute(
             """INSERT INTO alert_reminder_outbox
@@ -159,13 +234,44 @@ class AlertD1SchemaTests(unittest.TestCase):
                VALUES ('reminder-1', 'alert-1', 'contact', 1, ?, ?)""",
             (created + 300_000, created + 1),
         )
-        with self.assertRaisesRegex(sqlite3.IntegrityError, "alert_reminder_not_eligible"):
-            self.db.execute(
-                """INSERT INTO alert_reminder_outbox
-                   (id, alert_id, recipient_account_id, reminder_number, scheduled_at, created_at)
-                   VALUES ('reminder-2', 'alert-1', 'contact', 2, ?, ?)""",
-                (created + 600_000, created + 2),
-            )
+        self.db.execute(
+            """UPDATE alert_reminder_outbox SET status='sent', processed_at=?
+               WHERE id='reminder-1'""",
+            (created + 300_000,),
+        )
+        self.db.execute(
+            """INSERT INTO alert_events
+               (id, alert_id, actor_account_id, event_type, occurred_at, server_sequence)
+               VALUES ('volunteer', 'alert-1', 'contact', 'volunteered', ?, 1)""",
+            (created + 1,),
+        )
+        self.db.execute(
+            """INSERT INTO alert_responsibility_periods
+               (id, alert_id, contact_account_id, started_at, sequence)
+               VALUES ('period', 'alert-1', 'contact', ?, 1)""",
+            (created + 1,),
+        )
+        self.db.execute(
+            """INSERT INTO alert_events
+               (id, alert_id, actor_account_id, event_type, occurred_at)
+               VALUES ('withdraw', 'alert-1', 'contact', 'withdrew', ?)""",
+            (created + 2,),
+        )
+        self.db.execute(
+            """UPDATE alert_responsibility_periods
+               SET ended_at=?, end_reason='withdrawn' WHERE id='period'""",
+            (created + 2,),
+        )
+        self.db.execute(
+            """INSERT INTO alert_sms_escalations
+               (alert_id, threshold_reached_at, evaluated_at, status)
+               VALUES ('alert-1', ?, ?, 'suppressed')""",
+            (created + 300_000, created + 300_000),
+        )
+        self.assertEqual(
+            self.db.execute("SELECT status FROM alert_sms_escalations").fetchone()[0],
+            "suppressed",
+        )
 
     def test_author_closure_cancels_unsent_reminders_and_blocks_new_ones(self):
         created = self._alert()
