@@ -1179,3 +1179,18 @@ Référence normative : docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md. Les garan
 ## Audit transversal de cohérence — 18 novembre 2026
 
 Lire `AUDIT_TRANSVERSAL_COHERENCE_ET_MATURITE_2026-11-18.md` pour le registre des contradictions corrigées et des dépendances P0. Les anciennes formulations GPS « 30 jours après fin du partage » sont historiques et remplacées pour les alertes SOS par le contrat spécialisé : GPS supprimé à la clôture, catégorie seule pendant 30 jours, entrée/catégorie supprimées à J+30. Les trajets indépendants d'une alerte ont une durée GPS non arbitrée. Ne pas utiliser les passages historiques comme règles opérationnelles.
+
+## 4. Décision validée le 19 novembre 2026 — racine PWA WebAuthn
+
+**Décision utilisateur validée : retenir l'option A pour SAC V1.** La création de l'appareil racine est accessible depuis la PWA au moyen d'un authenticator de plateforme WebAuthn compatible, avec vérification utilisateur obligatoire et credential non éligible à la sauvegarde/synchronisation (BE=0, BS=0). Cette décision permet de viser une utilisation et une phase de tests depuis la PWA sur les appareils compatibles.
+
+Garanties et limites à respecter :
+- La racine est qualifiée d'authenticator lié à un appareil et non synchronisable selon les indicateurs WebAuthn vérifiés ; SAC ne doit pas la présenter comme matériellement certifiée, ni prétendre prouver StrongBox, TEE ou Secure Enclave.
+- Une credential avec BE=1 est refusée comme racine V1 ; aucune bascule silencieuse vers une clé Web Crypto stockée dans IndexedDB n'est autorisée.
+- La compatibilité doit être vérifiée sur les téléphones, navigateurs et authenticator réellement utilisés pendant la phase de tests. Si les exigences WebAuthn ne sont pas satisfaites, la création de racine est refusée avec un message explicite.
+- Le modèle conserve un seul appareil racine actif par compte ; seul cet appareil peut approuver l'ajout d'appareils secondaires. Les appareils secondaires ne peuvent ni approuver d'autres appareils ni devenir racine par eux-mêmes.
+- Les parcours natifs Android/iOS avec attestation matérielle restent une évolution distincte possible ; ils ne sont pas requis pour utiliser l'option A et ne sont pas activés par cette décision.
+
+**Périmètre de validation :** le choix produit de l'option A est acté. Les détails du profil WebAuthn, de l'enrôlement, du transcript, des vecteurs cryptographiques, des contrôles de rejeu, de l'atomicité D1, des sessions et des tests physiques restent à spécifier, vérifier et implémenter. Les documents candidats antérieurs restent des études techniques et ne deviennent pas automatiquement des contrats de production.
+
+**État d'implémentation au moment de la décision :** non implémenté de bout en bout. Cette validation ne signifie pas que la création de racine, l'approbation multi-appareils ou les parcours SOS sont déjà disponibles dans l'application.
