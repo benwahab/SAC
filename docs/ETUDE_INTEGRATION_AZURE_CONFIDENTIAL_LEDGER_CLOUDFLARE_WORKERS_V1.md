@@ -353,3 +353,8 @@ Références :
 - Résidence et réplication ACL : https://learn.microsoft.com/en-us/azure/confidential-ledger/data-residency
 - Tarification ACL : https://azure.microsoft.com/en-us/pricing/details/confidential-ledger/
 - Paires régionales Azure : https://learn.microsoft.com/en-us/azure/reliability/regions-paired
+
+
+### Audit de code complémentaire
+
+L'examen des fichiers réels de l'exemple Microsoft (routes, tables KV et compteur) est consigné dans [AUDIT_EXEMPLE_MICROSOFT_UDE_POUR_SAC_V1.md](AUDIT_EXEMPLE_MICROSOFT_UDE_POUR_SAC_V1.md). Il précise les écarts bloquants : séquence attendue non fournie par l'appelant, absence de clé d'idempotence, absence de preuve de non-écrasement des clés, absence de contrat transaction ID/reçu et RBAC natif non testé.
