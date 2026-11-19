@@ -1199,3 +1199,8 @@ Garanties et limites à respecter :
 ## Complément technique — enrôlement des appareils (19 novembre 2026)
 
 Les recommandations et blocages techniques liés à l'enrôlement WebAuthn, au modèle D1, aux sessions et à la restauration sont regroupés dans [ARBITRAGES_TECHNIQUES_ENROLEMENT_APPAREILS_V1.md](ARBITRAGES_TECHNIQUES_ENROLEMENT_APPAREILS_V1.md). Ce document est une proposition technique non validée ; il ne modifie aucune décision produit déjà actée et n'autorise aucune migration ou mise en production.
+
+
+## Protection anti-retour-arrière (19 novembre 2026)
+
+L'architecture candidate et le modèle de test isolé sont décrits dans [ARCHITECTURE_PROTECTION_ANTI_RESTAURATION_V1.md](ARCHITECTURE_PROTECTION_ANTI_RESTAURATION_V1.md). Le stockage SQLite des Durable Objects dispose lui aussi d'un PITR : il n'est donc pas retenu comme ancre indépendante de D1. Le test ajouté est un modèle en mémoire, pas une preuve fournisseur. Le choix du service externe, les garanties d'immutabilité et la procédure de reprise restent ouverts. Aucun service ni secret n'a été créé ; NO-GO production maintenu.
