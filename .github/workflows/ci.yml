@@ -58,6 +58,8 @@ jobs:
         run: npm run test:trips
       - name: Test account deletion lifecycle domain contract
         run: npm run test:accounts
+      - name: Test trusted contact invitation lifecycle domain contract
+        run: npm run test:contact-invitations
       - name: Test account authentication and session policy
         run: npm run test:auth-policy
       - name: Test Resend email adapter and delivery outcomes
