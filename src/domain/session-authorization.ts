@@ -53,6 +53,21 @@ function isUtc(value: string): boolean {
 }
 
 function validSession(session: DeviceSessionRecord): boolean {
+  if (
+    typeof session !== "object" ||
+    session === null ||
+    typeof session.sessionId !== "string" ||
+    typeof session.accountId !== "string" ||
+    typeof session.deviceId !== "string" ||
+    typeof session.tokenHash !== "string" ||
+    typeof session.status !== "string" ||
+    typeof session.authVersion !== "number" ||
+    typeof session.createdAt !== "string" ||
+    typeof session.lastActivityAt !== "string" ||
+    typeof session.expiresAt !== "string" ||
+    (session.revokedAt !== null && typeof session.revokedAt !== "string")
+  ) return false;
+
   return Boolean(
     session.sessionId.trim() &&
     session.accountId.trim() &&
@@ -68,7 +83,8 @@ function validSession(session: DeviceSessionRecord): boolean {
     Date.parse(session.expiresAt) > Date.parse(session.createdAt) &&
     (session.revokedAt === null ||
       (isUtc(session.revokedAt) &&
-        Date.parse(session.revokedAt) >= Date.parse(session.createdAt)))
+        Date.parse(session.revokedAt) >= Date.parse(session.createdAt) &&
+        Date.parse(session.revokedAt) >= Date.parse(session.lastActivityAt)))
   ) && (session.status === "active" ? session.revokedAt === null : session.revokedAt !== null);
 }
 
@@ -84,9 +100,17 @@ export function authorizeDeviceSession(
   if (!validSession(session)) return { ok: false, error: "invalid_session_record" };
 
   if (
+    typeof context !== "object" ||
+    context === null ||
+    typeof context.expectedAccountId !== "string" ||
+    typeof context.expectedDeviceId !== "string" ||
+    typeof context.accountStatus !== "string" ||
+    typeof context.deviceStatus !== "string" ||
+    typeof context.now !== "string" ||
     !context.expectedAccountId.trim() ||
     !context.expectedDeviceId.trim() ||
     !["pending_verification", "active", "suspended", "deletion_pending", "deleted"].includes(context.accountStatus) ||
+    !["pending_verification", "active", "revoked"].includes(context.deviceStatus) ||
     !Number.isSafeInteger(context.currentDeviceAuthVersion) ||
     context.currentDeviceAuthVersion < 0 ||
     !isUtc(context.now)
