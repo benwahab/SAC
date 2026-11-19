@@ -17,7 +17,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     fr: {
       title: "Bienvenue sur SAC", subtitle: "Votre espace personnel sécurisé.",
       email: "Adresse e-mail", phone: "Téléphone avec indicatif international",
-      password: "Mot de passe", code: "Code de vérification à 6 chiffres",
+      password: "Mot de passe", confirmPassword: "Confirmer le mot de passe", passwordMismatch: "Les deux mots de passe ne correspondent pas.", code: "Code de vérification à 6 chiffres",
       signIn: "Connexion", create: "Créer un compte", register: "Créer mon compte",
       verify: "Vérifier mon adresse", resend: "Renvoyer un code",
       back: "Retour", home: "Retour à l’accueil", language: "Langue",
@@ -40,7 +40,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     en: {
       title: "Welcome to SAC", subtitle: "Your secure personal space.",
       email: "Email address", phone: "Phone with international country code",
-      password: "Password", code: "6-digit verification code",
+      password: "Password", confirmPassword: "Confirm password", passwordMismatch: "The passwords do not match.", code: "6-digit verification code",
       signIn: "Sign in", create: "Create an account", register: "Create my account",
       verify: "Verify my email", resend: "Resend code",
       back: "Back", home: "Back to home", language: "Language",
@@ -63,7 +63,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     ar: {
       title: "مرحباً بك في SAC", subtitle: "مساحتك الشخصية الآمنة.",
       email: "البريد الإلكتروني", phone: "رقم الهاتف مع رمز الدولة الدولي",
-      password: "كلمة المرور", code: "رمز التحقق المكوّن من 6 أرقام",
+      password: "كلمة المرور", confirmPassword: "تأكيد كلمة المرور", passwordMismatch: "كلمتا المرور غير متطابقتين.", code: "رمز التحقق المكوّن من 6 أرقام",
       signIn: "تسجيل الدخول", create: "إنشاء حساب", register: "إنشاء حسابي",
       verify: "التحقق من بريدي", resend: "إعادة إرسال الرمز",
       back: "رجوع", home: "العودة إلى الصفحة الرئيسية", language: "اللغة",
@@ -90,6 +90,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -125,6 +126,11 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
 
   async function submitRegistration(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (password !== confirmPassword) {
+      setError(copy.passwordMismatch);
+      setNotice("");
+      return;
+    }
     setBusy(true);
     setError("");
     setNotice("");
@@ -140,6 +146,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
         return;
       }
       setPassword("");
+      setConfirmPassword("");
       setCode("");
       setMode("verify");
       setNotice(payload.message ?? copy.genericAccepted);
@@ -300,6 +307,10 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
               <label className="mb-2 block text-sm font-bold" htmlFor="sac-register-password">{copy.password}</label>
               <input id="sac-register-password" type="password" autoComplete="new-password" required minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} />
               <p className="mt-2 text-xs leading-5 text-sac-muted">{copy.passwordHint}</p>
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-bold" htmlFor="sac-register-confirm-password">{copy.confirmPassword}</label>
+              <input id="sac-register-confirm-password" type="password" autoComplete="new-password" required minLength={12} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className={inputClass} />
             </div>
             <button type="submit" disabled={busy} className={primaryButton}>{busy ? "…" : copy.register}</button>
             <button type="button" disabled={busy} onClick={() => { setMode("login"); setError(""); setNotice(""); }} className="min-h-11 w-full rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 text-sm font-bold text-sac-ink disabled:opacity-60">{copy.back}</button>
