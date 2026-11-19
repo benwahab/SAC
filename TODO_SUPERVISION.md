@@ -1039,3 +1039,25 @@ Référence : `docs/AUDIT_TRANSVERSAL_COHERENCE_ET_MATURITE_2026-11-18.md`. Audi
 - [ ] Authentifier et analyser l'ordonnance n° 2026-30, le décret de suppression de la HAPDP et les textes d'organisation des missions transférées.
 - [ ] Obtenir une confirmation écrite du service ministériel actuel sur les formalités, numéros de téléphone, données de santé, transferts, correspondant et notifications de violation.
 - [ ] Faire valider l'analyse par un juriste nigérien avant tout traitement réel.
+
+
+## Reprise opérationnelle et état réel — 19 novembre 2026
+
+Le présent bloc actualise les sections de supervision antérieures lorsque celles-ci décrivent un état du code dépassé. L'autorisation utilisateur ultérieure de poursuivre la construction sur `main` prévaut sur les anciennes mentions « documentation uniquement » des audits datés.
+
+- [x] Reprendre l'inventaire réel du dépôt : page d'accueil, parcours d'inscription, routes API existantes, migrations, contrats purs et tests.
+- [x] Confirmer les routes présentes : `/api/health`, `/api/auth/register`, `/api/auth/resend-email`, `/api/auth/verify-email`.
+- [x] Confirmer l'absence des routes de connexion/session, proches/invitations, SOS, notifications, trajets, paiements et console professionnelle.
+- [x] Corriger le contrat TypeScript du cycle de compte pour exiger le rôle `super_admin` lors de la suspension et du rétablissement administratifs.
+- [x] Ajouter des tests du contrat de suspension/rétablissement et des états qui ne peuvent pas être suspendus.
+- [x] Corriger le test du modèle UDE pour Node.js `--experimental-strip-types` (propriété de paramètre non prise en charge).
+- [x] Créer `docs/ETAT_REEL_ET_FEUILLE_DE_ROUTE_OPERATIONNELLE_2026-11-19.md` et l'ajouter aux références du README.
+- [ ] Vérifier la CI complète sur le HEAD courant après les derniers commits de code.
+- [ ] Compléter le socle compte/appareils : protocole WebAuthn, sessions, connexion, déconnexion, récupération, révocation et migrations approuvées.
+- [ ] Construire les proches/invitations : modèle relationnel, API, acceptation explicite, révocation, isolation et interface réelle.
+- [ ] Construire le moteur SOS serveur : création atomique, instantané des destinataires, événements, accusés, volontariat, responsabilité principale, transfert et clôture.
+- [ ] Construire outbox, push, rappels à cinq minutes, seuil SMS et webhooks après sélection/autorisation des fournisseurs.
+- [ ] Construire Protection des trajets sans activer GPS précis tant que la destruction J+30 et la non-résurrection ne sont pas prouvées.
+- [ ] Finaliser l'application citoyenne, puis les abonnements/paiements et la console professionnelle selon les dépendances du plan directeur.
+
+**Règle de pilotage :** ne pas consacrer les prochaines itérations au seul registre anti-restauration. Avancer par tranches fonctionnelles compte/appareils, proches/invitations, SOS, communications, trajets, puis espaces complémentaires. Une fonction ne passe à terminée qu'après code, tests pertinents et preuve CI.
