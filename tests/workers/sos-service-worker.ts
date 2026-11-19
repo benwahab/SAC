@@ -32,11 +32,15 @@ export default {
       const stamp = Date.now();
       const statements: D1PreparedStatement[] = [];
       for (const [id, email] of [[owner, "owner"], [contact, "contact"], [contact2, "contact2"], [outsider, "outsider"]] as const) {
-        const identity = crypto.randomUUID();
+        const emailIdentity = crypto.randomUUID();
+        const phoneIdentity = crypto.randomUUID();
+        const challenge = crypto.randomUUID();
         statements.push(
           env.DB.prepare("INSERT INTO accounts (id,status,preferred_language,password_hash,created_at,updated_at) VALUES (?,'pending_verification','fr','test-only',?,?)").bind(id, stamp, stamp),
-          env.DB.prepare("INSERT INTO account_identities (id,account_id,channel,normalized_value,verified_at,is_primary,created_at) VALUES (?,?,'email',?,?,1,?)").bind(identity, id, email + "-" + id + "@example.ne", stamp, stamp),
-          env.DB.prepare("UPDATE accounts SET status='active',updated_at=? WHERE id=?").bind(stamp, id),
+          env.DB.prepare("INSERT INTO account_identities (id,account_id,channel,normalized_value,verified_at,is_primary,created_at) VALUES (?,?,'email',?,NULL,1,?)").bind(emailIdentity, id, email + "-" + id + "@example.ne", stamp),
+          env.DB.prepare("INSERT INTO account_identities (id,account_id,channel,normalized_value,verified_at,is_primary,created_at) VALUES (?,?,'phone',?,NULL,1,?)").bind(phoneIdentity, id, "+227" + id.replaceAll("-", "").slice(0, 8), stamp),
+          env.DB.prepare("INSERT INTO email_otp_challenges (id,account_id,identity_id,purpose,digest,attempt_count,max_attempts,created_at,expires_at) VALUES (?,?,?,'account_email_verification',?,0,6,?,?)").bind(challenge, id, emailIdentity, "b".repeat(64), stamp, stamp + 600000),
+          env.DB.prepare("UPDATE email_otp_challenges SET attempt_count=1,consumed_at=? WHERE id=?").bind(stamp + 1, challenge),
         );
       }
       for (const [recipient, label] of [[contact, "contact"], [contact2, "contact2"]] as const) {
