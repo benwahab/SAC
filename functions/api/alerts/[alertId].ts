@@ -1,5 +1,5 @@
-import { requireAuthenticatedDeviceSession } from "../../../lib/security/require-authenticated-device-session.ts";
-import { getSosAlertForParticipant } from "../../../lib/alerts/sos-service.ts";
+import { requireAuthenticatedDeviceSession } from "../../lib/security/require-authenticated-device-session.ts";
+import { getSosAlertForParticipant } from "../../lib/alerts/sos-service.ts";
 
 interface Env { DB: D1Database; }
 const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" };
