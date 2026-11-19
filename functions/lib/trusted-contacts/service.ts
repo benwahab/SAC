@@ -205,13 +205,40 @@ export async function acceptContactInvitation(
       ).bind(input.invitationId, input.authenticatedAccountId, now),
     ]);
 
-    if (
-      results.length !== 2 ||
-      !results[0].success ||
-      results[0].meta.changes !== 1 ||
-      !results[1].success ||
-      results[1].meta.changes !== 1
-    ) return fail("invalid_or_expired_invitation");
+    if (results.length !== 2 || !results[0].success || results[0].meta.changes !== 1) {
+      const limitCheck = await db.prepare(
+        `SELECT
+           (SELECT COUNT(*) FROM trusted_contacts t
+            WHERE t.owner_account_id = i.inviter_account_id AND t.status = 'active') AS active_count
+         FROM contact_invitations i
+         JOIN accounts a ON a.id = ?
+           AND a.status = 'active'
+         JOIN account_identities identity ON identity.account_id = a.id
+           AND identity.channel = 'email'
+           AND identity.is_primary = 1
+           AND identity.verified_at IS NOT NULL
+           AND identity.normalized_value = i.destination_email
+         WHERE i.id = ?
+           AND i.status = 'pending'
+           AND i.token_digest = ?
+           AND i.permission_version = ?
+           AND i.expires_at > ?
+         LIMIT 1`,
+      ).bind(
+        input.authenticatedAccountId,
+        input.invitationId,
+        digest,
+        input.permissionVersion,
+        now,
+      ).first<{ active_count: number }>();
+      if (limitCheck && limitCheck.active_count >= input.maxActiveContacts) {
+        return fail("contact_limit_reached");
+      }
+      return fail("invalid_or_expired_invitation");
+    }
+    if (!results[1].success || results[1].meta.changes !== 1) {
+      return fail("storage_unavailable");
+    }
 
     const relationship = await db.prepare(
       `SELECT owner_account_id, contact_account_id
