@@ -25,6 +25,8 @@ jobs:
         run: npm install --no-save --package-lock=false @simplewebauthn/server@14.1.0
       - name: Test SimpleWebAuthn inside local Cloudflare Workers runtime
         run: npm run test:webauthn-workers
+      - name: Test SAC single-device WebAuthn root policy
+        run: npm run test:webauthn-root-policy
       - name: Apply isolated D1 enrollment test migration (local only)
         run: npx wrangler d1 migrations apply sac-d1-enrollment-atomicity-test --local --config tests/wrangler.d1-atomicity.toml
       - name: Test D1 enrollment challenge atomicity, rollback and concurrent replay
