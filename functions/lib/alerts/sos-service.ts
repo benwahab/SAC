@@ -660,7 +660,7 @@ export async function claimDueSosReminders(
              )`,
         ).bind(
           cryptoProvider.randomUUID(), row.recipient_account_id, nextNumber,
-          now + 300_000, now, row.alert_id, row.alert_id,
+          now + 300_000, now, row.alert_id,
           row.recipient_account_id, nextNumber,
         );
       });
