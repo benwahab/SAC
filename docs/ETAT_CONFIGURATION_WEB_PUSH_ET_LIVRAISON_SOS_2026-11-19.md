@@ -47,6 +47,8 @@ La lecture Cloudflare du script `sac-sos-notification-delivery` retourne « Work
 
 Le dernier déploiement Pages visible est marqué `is_skipped=true` avec le motif `production_deployments_disabled`. Il ne constitue pas une preuve que les derniers changements du dépôt sont exécutés sur le site.
 
+La dernière exécution GitHub Actions vérifiée pour le commit de ce rapport (run `44591358335`) est en échec avant toute étape : le job `validate` ne fournit aucune étape, aucun journal exploitable et son identifiant de runner est `0`. Cela indique un échec d'initialisation du runner côté GitHub, pas un échec identifié d'une commande de test du projet. La cause exacte ne peut pas être déduite des données disponibles.
+
 ## 4. Configuration manquante
 
 ### Pages — variables et secrets
@@ -107,6 +109,8 @@ Les clés ne doivent jamais être écrites dans GitHub, les fichiers `.toml`, le
 - aucun SMS n'est configuré ni envoyé ;
 - aucun déploiement Pages de production n'a été déclenché par cette tranche.
 
+Le Worker appelle aussi l'évaluation d'escalade SMS, qui ne fait qu'inscrire des tâches dans l'outbox D1. Aucun adaptateur fournisseur SMS n'est appelé par ce Worker et aucune tâche SMS n'est transmise à un opérateur. Cette séparation doit être conservée jusqu'à la configuration et l'autorisation explicites d'un fournisseur.
+
 Le dépôt est donc **préparé côté code, mais la configuration Cloudflare de livraison n'est pas terminée**. Il ne faut pas annoncer la fonctionnalité comme opérationnelle.
 
 ## 8. Vérifications bloquantes avant de déclarer « prêt »
@@ -117,6 +121,7 @@ Le dépôt est donc **préparé côté code, mais la configuration Cloudflare de
 - Vérifier que le Cron est actif uniquement sur l'environnement prévu.
 - Vérifier la gestion des erreurs, les baux, la reprise et la clôture des alertes.
 - Vérifier les tests du transport et les tests D1 concurrents.
+- Vérifier séparément le traitement de l'outbox SMS avant toute intégration fournisseur ; le Worker actuel ne doit rester qu'un producteur de tâches d'escalade.
 - Vérifier qu'aucune donnée GPS ou donnée personnelle ne sort dans les payloads ou logs.
 - Vérifier que les paramètres de déploiement Pages restent conformes à la décision de ne pas déclencher de déploiement de production.
 
