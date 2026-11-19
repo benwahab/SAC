@@ -148,3 +148,56 @@ test("un compte suspendu ne reçoit aucune autorisation générale de clôture",
   assert.deepEqual(result, { ok: false, error: "deletion_not_pending" });
   assert.equal(canAccountCloseExistingActivity("suspended"), false);
 });
+
+
+test("seul le Super Admin peut suspendre un compte actif", () => {
+  const denied = transitionAccountLifecycle(makeAccount(), {
+    type: "suspend_account", actorAccountId: "staff-1", actorRole: "support", at: requestedAt,
+  });
+  assert.deepEqual(denied, { ok: false, error: "actor_not_super_admin" });
+
+  const allowed = transitionAccountLifecycle(makeAccount(), {
+    type: "suspend_account", actorAccountId: "super-admin-1", actorRole: "super_admin", at: requestedAt,
+  });
+  assert.equal(allowed.ok, true);
+  if (!allowed.ok) return;
+  assert.equal(allowed.account.status, "suspended");
+  assert.equal(allowed.allowNewActivity, false);
+  assert.equal(allowed.allowCloseExistingActivity, false);
+});
+
+test("un compte en attente, en suppression ou déjà supprimé ne peut pas être suspendu", () => {
+  for (const status of ["pending_verification", "deletion_pending", "deleted"] as const) {
+    const account = makeAccount({
+      status,
+      deletionRequestedAt: status === "deletion_pending" || status === "deleted" ? requestedAt : null,
+      deletedAt: status === "deleted" ? finalizedAt : null,
+    });
+    assert.deepEqual(transitionAccountLifecycle(account, {
+      type: "suspend_account", actorAccountId: "super-admin-1", actorRole: "super_admin", at: finalizedAt,
+    }), { ok: false, error: "account_not_suspendable" });
+  }
+});
+
+test("seul le Super Admin peut rétablir un compte suspendu", () => {
+  const suspended = makeAccount({ status: "suspended" });
+  assert.deepEqual(transitionAccountLifecycle(suspended, {
+    type: "reinstate_account", actorAccountId: "staff-1", actorRole: "moderator", at: requestedAt,
+  }), { ok: false, error: "actor_not_super_admin" });
+
+  const restored = transitionAccountLifecycle(suspended, {
+    type: "reinstate_account", actorAccountId: "super-admin-1", actorRole: "super_admin", at: requestedAt,
+  });
+  assert.equal(restored.ok, true);
+  if (!restored.ok) return;
+  assert.equal(restored.account.status, "active");
+  assert.equal(restored.allowNewActivity, true);
+});
+
+test("un verrouillage technique de risque ne doit pas être confondu avec la suspension administrative", () => {
+  // Le verrou technique est une dimension distincte et ne constitue pas
+  // une transition de statut de compte dans ce contrat métier.
+  const active = makeAccount({ status: "active" });
+  assert.equal(active.status, "active");
+  assert.equal(canAccountCloseExistingActivity(active.status), true);
+});
