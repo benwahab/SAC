@@ -108,7 +108,7 @@ test("creates and serializes a platform credential while leaving verification to
   assert.equal(result.id, "credential-id");
   assert.equal(result.rawId, "AQID");
   assert.equal(result.response.clientDataJSON, "CgsM");
-  assert.equal(result.response.attestationObject, "DQ4P EA".replace(" ", ""));
+  assert.equal(result.response.attestationObject, "DQ4PEA");
   assert.deepEqual(result.response.transports, ["internal"]);
   assert.equal(result.authenticatorAttachment, "platform");
 });
