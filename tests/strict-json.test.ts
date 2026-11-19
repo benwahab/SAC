@@ -6,6 +6,7 @@ import {
   type StrictJsonLimits,
 } from "../src/services/crypto/strict-json.ts";
 
+// Caller limits are additionally bounded by absolute parser ceilings (1 MiB / depth 128).
 const limits: StrictJsonLimits = { maxBytes: 4096, maxDepth: 16 };
 
 test("le parseur accepte un document JSON strict et conserve les tableaux", () => {
