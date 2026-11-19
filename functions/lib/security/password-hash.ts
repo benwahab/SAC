@@ -9,6 +9,7 @@ const ALGORITHM = "pbkdf2-sha256";
 const ITERATIONS = 600_000;
 const SALT_BYTES = 16;
 const TAG_BYTES = 32;
+const MAX_ENCODED_HASH_LENGTH = 256;
 const VERIFIER_CONTEXT = new TextEncoder().encode("SAC password verifier v1");
 
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
@@ -76,6 +77,13 @@ export async function verifyAccountPassword(
   password: string,
   encoded: string,
 ): Promise<boolean> {
+  if (
+    typeof password !== "string" ||
+    password.length === 0 ||
+    typeof encoded !== "string" ||
+    encoded.length > MAX_ENCODED_HASH_LENGTH
+  ) return false;
+
   const parts = encoded.split("$");
   if (parts.length !== 4 || parts[0] !== ALGORITHM || parts[1] !== String(ITERATIONS)) {
     return false;
