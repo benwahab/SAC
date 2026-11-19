@@ -149,3 +149,40 @@ La documentation doit maintenir une seule source de vérité datée pour l'état
 - Ne pas connecter de fournisseur, créer de dépense ou déployer sans accord explicite.
 - Ne pas supprimer les contrats/tests existants ni reconstruire une fonctionnalité déjà implémentée.
 - Toute modification de code doit être précédée d'une lecture des décisions concernées et suivie de tests ciblés, typecheck, build et CI vérifiés.
+
+
+## 10. Mise à jour après corrections ciblées (19 novembre 2026)
+
+Les commits suivants ont été poussés sur `main` :
+- `10eef622f881a98afcaa0d8d20f2d5c533aeffb5` — ajout du panneau de suivi SOS privé.
+- `4e3f92f47ce3435d3653104a97768c91080ad719` — intégration du panneau dans « Mes alertes ».
+- `a80dea3d4cd0f6bf6355a9435d99c0f7e64352f7` — aperçu d'invitation authentifié, lié à l'e-mail vérifié destinataire.
+- `33dfe46e868e4c7f7c2308865b5a74c8061bcdfa` — écran d'acceptation/refus explicite.
+- `5ebec3b88520c17b00bfabb09271a2358aae8ce5` — préservation du lien d'invitation pendant la connexion.
+- `5856a057ae8eb07b3b66a6838a07fa82e302ced9` — routage de l'écran d'invitation et retour après connexion.
+
+### Corrections apportées
+
+**Suivi SOS privé**
+- Le panneau détaille le niveau, l'heure de création, l'heure/motif de clôture et la chronologie.
+- Le destinataire peut accuser réception, se porter volontaire ou retirer son volontariat.
+- L'auteur peut clôturer en choisissant « situation terminée » ou « annuler cette alerte ».
+- Les opérations utilisent les endpoints et services déjà présents ; aucun nouveau moteur de responsabilité n'a été introduit.
+- Les actions sont confirmées avant envoi et les erreurs réseau/API restent visibles.
+- Les réponses n'exposent pas les identifiants des autres participants.
+
+**Invitation reçue par e-mail**
+- Le lien e-mail existant `/invitation/accept?id=…&token=…` dispose maintenant d'un écran.
+- L'écran vérifie la session, l'adresse e-mail vérifiée correspondante, l'état et l'expiration de l'invitation côté serveur avant d'afficher l'identité e-mail minimale de l'invitant.
+- Le destinataire doit accepter ou refuser explicitement ; la consommation reste assurée par les services existants et le jeton à usage unique.
+- Si le destinataire n'est pas connecté, le retour vers le lien complet est conservé après l'enrôlement/connexion.
+- Le jeton n'est pas stocké en clair en D1. L'aperçu ne retourne jamais le jeton.
+
+### Ce qui reste bloqué / non vérifié
+
+1. **CI toujours en échec.** Le run `44565618505` sur le commit `5ebec3b88520c17b00bfabb09271a2358aae8ce5` termine en échec environ deux secondes après le démarrage du job. GitHub ne renvoie aucune étape et l'archive de logs répond `BlobNotFound`. L'annotation est inaccessible via l'API autorisée. Cela ne permet pas d'affirmer que le code est compilé ni de corriger une cause imaginaire. La validation CI reste P0 ouverte.
+2. **Boîte de réception des invitations :** aucun endpoint ne liste les invitations entrantes sans jeton. Le destinataire reçoit l'invitation via le lien e-mail individuel. Le lien peut être accepté/refusé dans l'application après connexion. Une boîte de réception interne demanderait un arbitrage de confidentialité et un mécanisme sécurisé de reprise d'invitation ; ne pas exposer les jetons ni permettre une acceptation sans preuve du lien.
+3. **Validation runtime :** les commits déclenchent le workflow mais celui-ci ne fournit pas de résultat exploitable. Aucune affirmation de build vert, de tests passants ou de parcours testé sur téléphone n'est faite.
+4. **D1 distante, notifications, GPS et déploiement :** inchangés. Aucune migration distante, activation fournisseur, activation GPS ou mise en production n'a été effectuée.
+
+**État après cette passe :** le parcours d'intervention SOS est maintenant relié à l'interface et le lien d'invitation reçu par e-mail possède un parcours explicite. La validation CI, la boîte de réception interne et les autres domaines de l'audit transversal restent ouverts ; SAC n'est pas déclaré prêt pour production.
