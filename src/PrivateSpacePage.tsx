@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ArrowLeft, LogOut, MailPlus, RefreshCw, ShieldCheck, UserRoundMinus, UsersRound } from "lucide-react";
 import { getDeviceSession, logoutDeviceSession } from "./services/device/root-enrollment";
 import PrivateSosAlertPanel from "./components/PrivateSosAlertPanel";
+import PushNotificationSettings from "./components/PushNotificationSettings";
 
 type Contact = { accountId: string; email: string; createdAt: number };
 type SosAlert = { id: string; category: string; level: string; description: string | null; status: string; createdAt: number; closedAt: number | null; closureReason: string | null; participantRole: "author" | "recipient" };
@@ -172,6 +173,7 @@ export default function PrivateSpacePage({ onLogout }: Props) {
             <ul className="mt-4 divide-y divide-white/80 rounded-2xl border border-white/80 bg-white/45 px-4">
               {contacts.map((contact) => <li key={contact.accountId} className="flex items-center justify-between gap-3 py-4"><div className="min-w-0"><p className="truncate font-bold">{contact.email}</p><p className="mt-1 text-xs text-sac-muted">Proche vérifié</p></div><button type="button" disabled={busy} onClick={() => void revoke(contact.accountId)} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-sac-alert/20 bg-sac-alert/5 px-3 text-xs font-bold text-sac-alert disabled:opacity-50"><UserRoundMinus size={15}/>Retirer</button></li>)}
             </ul>}
+          <PushNotificationSettings />
           <section className="mt-9 border-t border-white/80 pt-7">
             <h2 className="text-lg font-extrabold">Déclencher une alerte SOS</h2>
             <p className="mt-2 text-sm leading-6 text-sac-muted">L’alerte est privée et adressée uniquement aux proches choisis. Aucune localisation n’est obligatoire.</p>
