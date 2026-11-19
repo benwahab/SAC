@@ -26,6 +26,8 @@ type SosEvent = {
   serverSequence: number | null;
 };
 
+type ResponsibilityState = { assigned: boolean; isSelf: boolean };
+
 const eventLabels: Record<SosEvent["type"], string> = {
   triggered: "Alerte déclenchée",
   acknowledged: "Alerte vue par un proche",
@@ -37,6 +39,7 @@ const eventLabels: Record<SosEvent["type"], string> = {
 export default function PrivateSosAlertPanel({ alertId, participantRole, status, onUpdated }: Props) {
   const [detail, setDetail] = useState<AlertDetail | null>(null);
   const [events, setEvents] = useState<SosEvent[]>([]);
+  const [responsibility, setResponsibility] = useState<ResponsibilityState | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -45,17 +48,28 @@ export default function PrivateSosAlertPanel({ alertId, participantRole, status,
   async function load() {
     setLoading(true);
     setError("");
+    setResponsibility(null);
     try {
       const [detailResponse, eventsResponse] = await Promise.all([
         fetch(`/api/alerts/${encodeURIComponent(alertId)}`, { credentials: "same-origin", cache: "no-store" }),
         fetch(`/api/alerts/${encodeURIComponent(alertId)}/events`, { credentials: "same-origin", cache: "no-store" }),
       ]);
       const detailPayload = await detailResponse.json() as { alert?: AlertDetail; error?: string };
-      const eventsPayload = await eventsResponse.json() as { events?: SosEvent[]; error?: string };
+      const eventsPayload = await eventsResponse.json() as {
+        events?: SosEvent[];
+        responsibility?: ResponsibilityState;
+        error?: string;
+      };
       if (!detailResponse.ok || !detailPayload.alert) throw new Error("Les détails de cette alerte ne sont pas accessibles.");
-      if (!eventsResponse.ok || !Array.isArray(eventsPayload.events)) throw new Error("La chronologie de cette alerte est momentanément indisponible.");
+      if (!eventsResponse.ok || !Array.isArray(eventsPayload.events) ||
+          !eventsPayload.responsibility ||
+          typeof eventsPayload.responsibility.assigned !== "boolean" ||
+          typeof eventsPayload.responsibility.isSelf !== "boolean") {
+        throw new Error("La chronologie de cette alerte est momentanément indisponible.");
+      }
       setDetail(detailPayload.alert);
       setEvents(eventsPayload.events);
+      setResponsibility(eventsPayload.responsibility);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Impossible de charger cette alerte.");
     } finally {
@@ -150,6 +164,13 @@ export default function PrivateSosAlertPanel({ alertId, participantRole, status,
             <div className="rounded-xl bg-white/80 p-3"><p className="text-sac-muted">Niveau</p><p className="mt-1 font-extrabold">{detail.level === "critical" ? "Critique" : detail.level === "urgent" ? "Urgent" : "Préventif"}</p></div>
             <div className="rounded-xl bg-white/80 p-3"><p className="text-sac-muted">Créée le</p><p className="mt-1 font-extrabold">{new Date(detail.createdAt).toLocaleString()}</p></div>
           </div>
+          {active && responsibility && <p className="mt-3 rounded-xl bg-sac-primary-strong/5 p-3 text-sm">
+            {responsibility.isSelf
+              ? "Vous êtes actuellement le responsable principal de cette alerte."
+              : responsibility.assigned
+                ? "Un autre proche est actuellement le responsable principal."
+                : "Aucun responsable principal n’a encore été désigné."}
+          </p>}
           {detail.closedAt && <p className="mt-3 rounded-xl bg-sac-confirm/10 p-3 text-sm text-sac-ink">Clôturée le {new Date(detail.closedAt).toLocaleString()} · {detail.closureReason === "completed" ? "Situation terminée" : "Annulée"}</p>}
           <div className="mt-4">
             <h4 className="flex items-center gap-2 text-sm font-extrabold"><Clock3 size={15}/>Chronologie</h4>
