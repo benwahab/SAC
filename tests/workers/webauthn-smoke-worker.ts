@@ -3,6 +3,7 @@ import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
+import { evaluateWebAuthnRootCredentialPolicy } from "../../src/domain/webauthn-root-policy.ts";
 
 const RP_ID = "localhost";
 const ORIGIN = "http://localhost:8798";
@@ -66,8 +67,10 @@ export default {
         }
 
         const info = registration.registrationInfo;
-        const singleDevice = info.credentialDeviceType === "singleDevice";
-        const notBackedUp = info.credentialBackedUp === false;
+        const rootPolicy = evaluateWebAuthnRootCredentialPolicy({
+          credentialDeviceType: info.credentialDeviceType,
+          credentialBackedUp: info.credentialBackedUp,
+        });
 
         let authenticationVerified: boolean | null = null;
         if (input.authentication && input.authenticationChallenge) {
@@ -90,7 +93,8 @@ export default {
           credentialDeviceType: info.credentialDeviceType,
           credentialBackedUp: info.credentialBackedUp,
           userVerified: info.userVerified,
-          acceptedBySacRootPolicy: singleDevice && notBackedUp,
+          acceptedBySacRootPolicy: rootPolicy.accepted,
+          rootPolicyRejection: rootPolicy.accepted ? null : rootPolicy.reason,
           authenticationVerified,
         });
       } catch {
