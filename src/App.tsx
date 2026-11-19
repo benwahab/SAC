@@ -569,9 +569,6 @@ export default function App() {
               <h2 className="mt-2 text-2xl font-extrabold">{t.emergencyTitle}</h2>
               <p className="mt-2 text-sm leading-6 text-sac-muted">{t.emergencyDescription}</p>
             </div>
-            <a href="https://github.com/benwahab/SAC" target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-2 self-start rounded-xl border border-white/90 bg-white/80 px-4 py-3 text-sm font-bold text-sac-ink shadow-glass transition hover:bg-white">
-              {t.followProject}<ArrowUpRight size={16} />
-            </a>
           </div>
         </section>
       </main>
