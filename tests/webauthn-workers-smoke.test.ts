@@ -239,6 +239,7 @@ test(
       credentialBackedUp: false,
       userVerified: true,
       acceptedBySacRootPolicy: true,
+      rootPolicyRejection: null,
       authenticationVerified: true,
     });
 
