@@ -9,7 +9,7 @@
 
 SAC possède désormais plus qu'une simple maquette : une PWA React/Vite, un formulaire d'inscription branché sur des routes réelles de vérification e-mail, une migration D1 initiale pour comptes/identités/défis OTP, plusieurs contrats métier TypeScript et une CI étendue.
 
-Mais l'application n'est pas encore une plateforme d'alerte utilisable : la connexion privée et les sessions ne sont pas livrées, les proches/invitations ne disposent pas de backend, aucun SOS n'est créé côté serveur, aucun push/SMS n'est livré, aucun trajet n'est exécuté et aucun GPS réel ne doit être activé.
+Mais l'application n'est pas encore une plateforme d'alerte utilisable : la connexion privée n'est pas livrée, les sessions ne sont pas encore émises par un parcours de connexion, les invitations n'ont pas encore leurs routes de création/acceptation, aucun endpoint SOS n'est encore exposé, aucun push/SMS n'est livré, aucun trajet n'est exécuté et aucun GPS réel ne doit être activé. Des endpoints authentifiés de consultation et de révocation des proches viennent d'être ajoutés ; ils restent inutilisables tant que le parcours de session et le schéma D1 ne sont pas activés.
 
 Le dépôt contient beaucoup de conception ; le travail doit maintenant se déplacer progressivement vers des tranches fonctionnelles verticales, sans créer des écrans qui prétendent fonctionner sans API.
 
@@ -28,15 +28,21 @@ Le dépôt contient beaucoup de conception ; le travail doit maintenant se dépl
 - `POST /api/auth/register` : création de compte en attente, identité e-mail/téléphone, hash du mot de passe, défi OTP et envoi via Resend si les secrets sont configurés.
 - `POST /api/auth/resend-email` : nouveau défi e-mail pour un compte en attente.
 - `POST /api/auth/verify-email` : vérification OTP et activation via trigger D1.
-- Routes non présentes dans `functions/api/` : login, logout, renouvellement/révocation de session, récupération/réinitialisation de mot de passe, proches, invitations, SOS, notifications, trajets, paiements, administration professionnelle.
+- `GET /api/auth/session` : vérification et renouvellement d'une session liée à un appareil déjà existante ; elle ne crée pas de session.
+- `POST /api/auth/logout` : révocation de la session courante.
+- `POST /api/auth/root-enrollment-options` et `POST /api/auth/complete-root-enrollment` : préparation et finalisation de l'enrôlement racine, actuellement protégées par un interrupteur de fonctionnalité et non homologuées pour production.
+- `GET /api/contacts` : liste les proches actifs du compte authentifié.
+- `POST /api/contacts/revoke` : révoque une relation directionnelle dont le compte courant est propriétaire.
+- Routes toujours absentes : connexion/émission de session, récupération/réinitialisation de compte, création/acceptation/refus d'invitations, endpoints SOS, notifications, trajets, paiements et administration professionnelle.
 
 La présence d'un adaptateur Resend et de routes d'inscription ne prouve pas qu'un compte fournisseur ou des secrets sont configurés, ni qu'un e-mail réel a été délivré.
 
 ### 2.3 D1 et migrations
-- Une migration applicative versionnée existe : `migrations/0001_account_email_otp.sql`.
-- Elle porte sur les comptes, identités et défis OTP.
-- Aucune migration de production pour appareils/racines/sessions, proches, invitations, alertes, destinataires, outbox, abonnements push, trajets, paiements ou console professionnelle n'est présente.
-- La base D1 distante a été décrite comme vide dans le suivi ; aucune migration distante ne doit être présumée appliquée.
+- Sept migrations sont versionnées : `0001_account_email_otp.sql`, `0002_contact_invitations.sql`, `0003_alerts_sos.sql`, `0004_sos_reminder_leases.sql`, `0005_sos_sms_escalation.sql`, `0006_email_otp_delivery_state.sql` et `0007_root_device_enrollment.sql`.
+- Elles définissent les comptes/OTP, invitations et relations directionnelles de proches, alertes/destinataires/événements/rappels, leases de rappels, files d'escalade SMS, état de livraison OTP, appareils racines et sessions.
+- Elles ne couvrent pas encore les abonnements push, les trajets, les paiements ni la console professionnelle.
+- Vérification en lecture seule du compte Cloudflare connecté le 19 novembre : une base D1 nommée `sac-db` existe (UUID `892ce876-f279-409c-8f9e-06b1dca66e9d`, version `production`) mais elle contient actuellement **0 table**. Aucune migration distante n'est donc appliquée.
+- La liste Cloudflare Pages renvoie actuellement **aucun projet** dans le compte connecté. Aucun déploiement SAC n'est donc établi par cette vérification.
 - Le schéma relationnel général reste non prêt à migration selon sa revue de cohérence.
 
 ### 2.4 Contrats métier et tests
@@ -54,8 +60,10 @@ Des contrats purs et suites de tests existent notamment pour :
 Ces modules et tests n'établissent pas à eux seuls la persistance D1, les autorisations serveur, la livraison des notifications ou une expérience de bout en bout.
 
 ### 2.5 Infrastructure
-- Cloudflare Pages et le binding D1 Preview restent à vérifier selon le suivi.
-- R2 n'est pas déclaré opérationnel.
+- L'accès API Cloudflare est connecté et a permis une vérification en lecture seule.
+- Aucun projet Cloudflare Pages n'est présent dans le compte connecté au moment de la vérification.
+- La base D1 `sac-db` existe, mais contient 0 table ; elle n'est pas prête à servir l'application.
+- R2 n'a pas été vérifié dans cette passe et n'est pas déclaré opérationnel.
 - Aucun fournisseur push/SMS/paiement n'est intégré comme service opérationnel.
 - Aucun registre Azure externe n'a été choisi ni créé.
 - Les coordonnées GPS réelles restent NO-GO.
@@ -160,3 +168,15 @@ Correction ajoutée :
 Tests ajoutés dans `tests/alert-responses.test.ts` : clôture avec responsable, sans responsable, mauvais instantané, horodatage antérieur et état terminal incohérent.
 
 **Limite :** cette correction porte sur le contrat métier pur. La clôture, l'historique de responsabilité, l'événement d'audit et l'arrêt des rappels devront être persistés dans une seule transaction D1 lors de la future implémentation SOS. Aucun endpoint SOS ni envoi de notification n'est créé ici.
+
+
+## 9. Tranche technique ajoutée — garde de session et API des proches
+
+Sur `main`, les changements suivants ont été ajoutés :
+- `functions/lib/security/require-authenticated-device-session.ts` centralise la vérification du cookie opaque, de son empreinte D1, de l'état du compte, de l'appareil, de la version d'autorisation, de l'expiration et du renouvellement d'activité.
+- `GET /api/auth/session` réutilise désormais cette garde commune au lieu de dupliquer la vérification.
+- `GET /api/contacts` retourne uniquement les relations directionnelles actives du compte authentifié ; aucun identifiant de compte fourni par le client n'est utilisé comme autorité.
+- `POST /api/contacts/revoke` permet au propriétaire authentifié de révoquer sa relation, avec contrôle same-origin et lecture JSON bornée.
+- `tests/require-authenticated-device-session.test.ts` couvre l'absence de cookie, l'autorisation d'une session valide, le refus d'un compte suspendu et l'indisponibilité D1 ; commande dédiée `npm run test:session-guard`.
+
+**Limites explicites :** cette tranche ne crée pas encore les sessions et ne résout donc pas l'absence de route de connexion. Elle ne crée pas non plus les invitations. Les endpoints refusent l'accès tant que les tables D1 et une session valide ne sont pas disponibles. Les migrations distantes n'ont pas été appliquées et aucun projet Pages n'a été créé ou déployé. Aucun secret ni fournisseur n'a été configuré.
