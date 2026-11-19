@@ -10,7 +10,7 @@ export type RootCredentialPolicyResult =
   | { readonly accepted: true }
   | {
       readonly accepted: false;
-      readonly reason: "credential_not_single_device" | "backup_state_inconsistent";
+      readonly reason: "credential_not_single_device" | "backup_state_inconsistent" | "user_verification_missing";
     };
 
 export function evaluateWebAuthnRootCredentialPolicy(
@@ -21,6 +21,9 @@ export function evaluateWebAuthnRootCredentialPolicy(
   }
 
   const candidate = input as Record<string, unknown>;
+  if (candidate.userVerified !== true) {
+    return { accepted: false, reason: "user_verification_missing" };
+  }
   if (
     candidate.credentialDeviceType !== "singleDevice" &&
     candidate.credentialDeviceType !== "multiDevice" &&
