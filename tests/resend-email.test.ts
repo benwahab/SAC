@@ -107,3 +107,53 @@ test("une réponse 2xx sans identifiant fournisseur reste un résultat non confi
     globalThis.fetch = originalFetch;
   }
 });
+
+test("un code OTP qui ne contient pas exactement six chiffres est rejeté avant l'appel fournisseur", async () => {
+  const originalFetch = globalThis.fetch;
+  let called = false;
+  globalThis.fetch = (async () => {
+    called = true;
+    return new Response(JSON.stringify({ id: "unexpected" }), { status: 200 });
+  }) as typeof fetch;
+
+  try {
+    for (const code of ["12345", "1234567", "12a456", "１２３４５６", ""]) {
+      assert.deepEqual(
+        await sendAccountVerificationCode(
+          { RESEND_API_KEY: "test-api-key", RESEND_FROM_EMAIL: "SAC <noreply@example.com>" },
+          "person@example.com",
+          code,
+          "fr",
+        ),
+        { ok: false, reason: "invalid_code" },
+      );
+    }
+    assert.equal(called, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("une langue inconnue est rejetée sans appel fournisseur", async () => {
+  const originalFetch = globalThis.fetch;
+  let called = false;
+  globalThis.fetch = (async () => {
+    called = true;
+    return new Response(JSON.stringify({ id: "unexpected" }), { status: 200 });
+  }) as typeof fetch;
+
+  try {
+    assert.deepEqual(
+      await sendAccountVerificationCode(
+        { RESEND_API_KEY: "test-api-key", RESEND_FROM_EMAIL: "SAC <noreply@example.com>" },
+        "person@example.com",
+        "004219",
+        "de" as "fr",
+      ),
+      { ok: false, reason: "invalid_language" },
+    );
+    assert.equal(called, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
