@@ -408,7 +408,7 @@ export default function App() {
                 </div>
                 <div className="flex items-center justify-between gap-3 rounded-xl bg-white/55 px-4 py-3">
                   <span className="text-sm font-semibold text-sac-muted">{t.premiumPlan}</span>
-                  <span className="text-sm font-extrabold text-sac-ink">5 000 FCFA {t.perMonth}</span>
+                  <span className="text-sm font-extrabold text-sac-ink">10 {t.contacts}</span>
                 </div>
               </div>
               <p className="mt-5 text-xs leading-5 text-sac-muted">{t.freeSafety}</p>
