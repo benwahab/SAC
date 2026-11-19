@@ -247,8 +247,8 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
   const primaryButton = "min-h-12 w-full rounded-xl bg-sac-primary-strong px-4 font-extrabold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60";
 
   return (
-    <main className="sac-shell flex min-h-screen items-center justify-center px-5 py-10 text-sac-ink" dir={rtl ? "rtl" : "ltr"}>
-      <section className="sac-glass-panel w-full max-w-md rounded-[2rem] p-6 sm:p-9">
+    <main className="sac-shell sac-auth-page flex min-h-screen items-center justify-center px-5 py-10 text-sac-ink" dir={rtl ? "rtl" : "ltr"}>
+      <section className="sac-glass-panel sac-auth-card w-full max-w-md rounded-[2rem] p-6 sm:p-9">
         <div className="flex items-start justify-between gap-4">
           <a href="/" className="flex flex-col" aria-label="SAC accueil">
             <span className="text-xl font-black tracking-[0.2em]">SAC</span>
