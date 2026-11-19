@@ -48,8 +48,8 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   const noLeadYet = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: contact, alertId });
   assert.equal(noLeadYet.status, 200);
   assert.deepEqual(noLeadYet.data, { assigned: false, isSelf: false });
-  const authorCannotSeeAnotherLeadIdentity = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: owner, alertId });
-  assert.deepEqual(authorCannotSeeAnotherLeadIdentity.data, { assigned: false, isSelf: false });
+  const authorSeesNoLeadInitially = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: owner, alertId });
+  assert.deepEqual(authorSeesNoLeadInitially.data, { assigned: false, isSelf: false });
   const outsiderCannotReadResponsibility = await post<{ error: string }>("/responsibility", { actor: outsider, alertId });
   assert.equal(outsiderCannotReadResponsibility.status, 404);
   const invalidZeroReminder = await post<{ error: string }>("/create", {
@@ -91,6 +91,8 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   assert.equal(volunteer.data.responsibilityAssigned, true);
   const firstLeadView = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: contact, alertId });
   assert.deepEqual(firstLeadView.data, { assigned: true, isSelf: true });
+  const authorLeadView = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: owner, alertId });
+  assert.deepEqual(authorLeadView.data, { assigned: true, isSelf: false });
   const otherRecipientLeadView = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: contact2, alertId });
   assert.deepEqual(otherRecipientLeadView.data, { assigned: true, isSelf: false });
   const secondVolunteer = await post<{ responsibilityAssigned: boolean }>("/respond", { actor: contact2, alertId, action: "volunteer", now: now + 3 });
