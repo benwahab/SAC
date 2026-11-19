@@ -69,7 +69,6 @@ export async function sendAccountVerificationCode(
   }
   if (!/^\d{6}$/.test(code)) return { ok: false, reason: "invalid_code" };
 
-  
   const template = copy[language];
   const safeCode = escapeHtml(code);
   const direction = language === "ar" ? "rtl" : "ltr";
@@ -89,8 +88,10 @@ export async function sendAccountVerificationCode(
 
   let response: Response;
   try {
+    // Ne pas laisser un fournisseur lent bloquer indéfiniment la requête PWA.
     response = await fetch(RESEND_ENDPOINT, {
       method: "POST",
+      signal: AbortSignal.timeout(8_000),
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
