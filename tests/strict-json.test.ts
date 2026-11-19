@@ -90,3 +90,13 @@ test("la canonicalisation ne normalise pas Unicode", () => {
   const decomposed = canonicalizeStrictJson(String.raw`{"value":"e\u0301"}`, limits);
   assert.notEqual(composed, decomposed);
 });
+
+
+test("JCS trie les noms de propriétés selon les unités de code UTF-16", () => {
+  const source = String.raw`{"\\uE000":1,"\\uD83D\\uDE00":2}`;
+  assert.equal(canonicalizeStrictJson(source, limits), '{"😀":2,"":1}');
+});
+
+test("JCS sérialise -0 comme 0 et conserve les valeurs numériques IEEE-754", () => {
+  assert.equal(canonicalizeStrictJson("[-0,0,1.0,1e0]", limits), "[0,0,1,1]");
+});
