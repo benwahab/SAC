@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   transitionContactInvitation,
+  type ContactAccountStatus,
   type ContactInvitationRecord,
 } from "../src/domain/contact-invitations.ts";
 
@@ -26,7 +27,7 @@ function invitation(overrides: Partial<ContactInvitationRecord> = {}): ContactIn
   };
 }
 
-function accept(overrides: Record<string, unknown> = {}) {
+function accept(overrides: Partial<{ actorAccountId: string; accountStatus: ContactAccountStatus; verifiedEmail: string | null; presentedTokenDigest: string; presentedPermissionVersion: string; existingActiveRelationship: boolean; at: string }> = {}) {
   return {
     type: "accept" as const,
     actorAccountId: "account-contact",
