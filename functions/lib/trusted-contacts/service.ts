@@ -338,3 +338,34 @@ export async function listTrustedContacts(
     return fail("storage_unavailable");
   }
 }
+
+
+/** Cancels an unsent invitation after delivery failure; caller must be its owner. */
+export async function cancelPendingContactInvitation(
+  db: InvitationDatabase,
+  input: {
+    readonly authenticatedOwnerAccountId: string;
+    readonly invitationId: string;
+    readonly now?: number;
+  },
+): Promise<ContactInvitationServiceResult<{ readonly cancelled: true }>> {
+  const now = input.now ?? Date.now();
+  if (!input.authenticatedOwnerAccountId.trim() || !input.invitationId.trim() ||
+      !Number.isSafeInteger(now) || now < 0) return fail("invalid_input");
+
+  try {
+    const result = await db.prepare(
+      `UPDATE contact_invitations
+       SET status = 'revoked', decided_at = ?
+       WHERE id = ?
+         AND inviter_account_id = ?
+         AND status = 'pending'
+         AND created_at <= ?`,
+    ).bind(now, input.invitationId, input.authenticatedOwnerAccountId, now).run();
+
+    if (!result.success || result.meta.changes !== 1) return fail("invitation_not_created");
+    return { ok: true, value: { cancelled: true } };
+  } catch {
+    return fail("storage_unavailable");
+  }
+}
