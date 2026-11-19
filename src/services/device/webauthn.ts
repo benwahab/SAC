@@ -79,11 +79,20 @@ export function normalizeRootCreationOptions(
     input === null ||
     typeof input.rp?.id !== "string" ||
     !input.rp.id ||
+    typeof input.rp.name !== "string" ||
+    !input.rp.name.trim() ||
     !selection ||
     selection.authenticatorAttachment !== "platform" ||
     selection.userVerification !== "required" ||
     typeof input.user?.name !== "string" ||
-    typeof input.user?.displayName !== "string"
+    !input.user.name.trim() ||
+    typeof input.user?.displayName !== "string" ||
+    !input.user.displayName.trim() ||
+    input.attestation !== "none" ||
+    !Array.isArray(input.pubKeyCredParams) ||
+    input.pubKeyCredParams.length !== 1 ||
+    input.pubKeyCredParams[0]?.type !== "public-key" ||
+    input.pubKeyCredParams[0]?.alg !== -7
   ) {
     throw new Error("Les options WebAuthn racine fournies par le serveur sont invalides.");
   }
