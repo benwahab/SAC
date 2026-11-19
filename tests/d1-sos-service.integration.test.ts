@@ -68,6 +68,9 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   assert.equal(due.status, 200);
   assert.equal(due.data.length, 1);
   assert.equal(due.data[0].attemptCount, 1);
+  const duplicateClaim = await post<unknown[]>("/claim", { now: now + 300_001 });
+  assert.equal(duplicateClaim.status, 200);
+  assert.equal(duplicateClaim.data.length, 0);
   const stale = await post<{ updated: boolean }>("/complete", { reminderId: due.data[0].id, leaseToken: "wrong-token-00000000", outcome: "sent", now: now + 300_001 });
   assert.equal(stale.status, 200);
   assert.equal(stale.data.updated, false);
@@ -75,6 +78,17 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   assert.equal(retried.status, 200);
   assert.equal(retried.data.updated, true);
   assert.equal(retried.data.terminal, false);
+  const retryDue = await post<Array<{ id: string; leaseToken: string; attemptCount: number }>>("/claim", { now: now + 315_002 });
+  assert.equal(retryDue.status, 200);
+  assert.equal(retryDue.data.length, 1);
+  assert.equal(retryDue.data[0].attemptCount, 2);
+  const sent = await post<{ updated: boolean; terminal: boolean }>("/complete", {
+    reminderId: retryDue.data[0].id, leaseToken: retryDue.data[0].leaseToken,
+    outcome: "sent", now: now + 315_003,
+  });
+  assert.equal(sent.status, 200);
+  assert.equal(sent.data.updated, true);
+  assert.equal(sent.data.terminal, true);
 
   const closeWrong = await post<{ error: string }>("/close", { actor: contact, alertId, now: now + 400_000 });
   assert.equal(closeWrong.status, 409);
