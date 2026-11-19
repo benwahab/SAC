@@ -1061,3 +1061,13 @@ Le présent bloc actualise les sections de supervision antérieures lorsque cell
 - [ ] Finaliser l'application citoyenne, puis les abonnements/paiements et la console professionnelle selon les dépendances du plan directeur.
 
 **Règle de pilotage :** ne pas consacrer les prochaines itérations au seul registre anti-restauration. Avancer par tranches fonctionnelles compte/appareils, proches/invitations, SOS, communications, trajets, puis espaces complémentaires. Une fonction ne passe à terminée qu'après code, tests pertinents et preuve CI.
+
+
+### Tranches de domaine compte et proches — 19 novembre 2026
+
+- [x] Ajouter au contrat pur du compte la suspension/réactivation administrative réservée au rôle Super Admin.
+- [x] Ajouter les tests de suspension non autorisée, états non suspendables et rétablissement Super Admin ; typecheck, tests du cycle de compte et build vérifiés avec succès au run `44480715548`.
+- [x] Ajouter `src/domain/contact-invitations.ts` pour les transitions d'invitation validées : acceptation explicite, compte actif, e-mail vérifié correspondant, jeton hashé, version des permissions, refus, retrait par l'invitant, expiration et relation directionnelle.
+- [x] Ajouter la suite `tests/contact-invitations.test.ts` et l'enregistrer dans le script npm et la CI.
+- [ ] Vérifier la CI complète incluant la nouvelle suite des invitations sur le HEAD courant.
+- [ ] Ne pas créer encore d'API ou migration d'invitation : durée, relances, quotas, permissions détaillées, révocation symétrique et droits pendant SOS actif restent ouverts selon le contrat spécialisé.
