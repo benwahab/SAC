@@ -1,0 +1,85 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { onRequestPost as register } from "../functions/api/auth/register.ts";
+import { onRequestPost as verifyEmail } from "../functions/api/auth/verify-email.ts";
+
+const env = {
+  DB: {
+    prepare() {
+      throw new Error("database_must_not_be_accessed_for_invalid_input");
+    },
+  } as never,
+  EMAIL_OTP_HMAC_SECRET: "x".repeat(32),
+  RESEND_API_KEY: "test-only",
+  RESEND_FROM_EMAIL: "noreply@sac.example",
+};
+
+function jsonRequest(path: string, body: string): Request {
+  return new Request(`https://sac.example/api/auth/${path}`, {
+    method: "POST",
+    headers: {
+      Origin: "https://sac.example",
+      "Content-Type": "application/json; charset=utf-8",
+    },
+    body,
+  });
+}
+
+async function invoke(
+  handler: (context: never) => Promise<Response>,
+  request: Request,
+): Promise<Response> {
+  return handler({ request, env } as never);
+}
+
+test("verify-email rejects malformed identity and OTP before database access", async () => {
+  for (const body of [
+    JSON.stringify({ email: "not-an-email", code: "123456" }),
+    JSON.stringify({ email: "person@example.com", code: "１２３４５６" }),
+    JSON.stringify({ email: "person@example.com", code: "12345x" }),
+    JSON.stringify({ email: "person@example.com", code: "1234567" }),
+  ]) {
+    const response = await invoke(verifyEmail as never, jsonRequest("verify-email", body));
+    assert.equal(response.status, 400);
+    assert.deepEqual(await response.json(), { error: "invalid_or_expired_code" });
+    assert.equal(response.headers.get("Cache-Control"), "no-store");
+  }
+});
+
+test("verify-email rejects oversized payloads before database access", async () => {
+  const body = JSON.stringify({
+    email: "person@example.com",
+    code: "123456",
+    padding: "x".repeat(9_000),
+  });
+  const response = await invoke(verifyEmail as never, jsonRequest("verify-email", body));
+  assert.equal(response.status, 413);
+  assert.deepEqual(await response.json(), { error: "request_too_large" });
+});
+
+test("register rejects invalid email, phone, password and language before database access", async () => {
+  const valid = {
+    email: "person@example.com",
+    phone: "+22790000000",
+    password: "une phrase de passe assez longue",
+    language: "fr",
+  };
+  const invalidInputs = [
+    { ...valid, email: "invalid" },
+    { ...valid, phone: "90000000" },
+    { ...valid, password: "court" },
+    { ...valid, language: "toString" },
+  ];
+
+  for (const input of invalidInputs) {
+    const response = await invoke(register as never, jsonRequest("register", JSON.stringify(input)));
+    assert.equal(response.status, 400);
+    assert.equal(response.headers.get("Cache-Control"), "no-store");
+  }
+});
+
+test("register rejects malformed JSON before database access", async () => {
+  const response = await invoke(register as never, jsonRequest("register", "{"));
+  assert.equal(response.status, 400);
+  assert.deepEqual(await response.json(), { error: "invalid_request" });
+});
