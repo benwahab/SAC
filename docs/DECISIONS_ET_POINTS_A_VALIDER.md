@@ -1208,7 +1208,7 @@ L'architecture candidate et le modèle de test isolé sont décrits dans [ARCHIT
 
 ## Étude d'intégration Azure Confidential Ledger — 19 novembre 2026
 
-L'étude [ETUDE_INTEGRATION_AZURE_CONFIDENTIAL_LEDGER_CLOUDFLARE_WORKERS_V1.md](ETUDE_INTEGRATION_AZURE_CONFIDENTIAL_LEDGER_CLOUDFLARE_WORKERS_V1.md) documente l'API REST, les reçus, l'idempotence, l'authentification, les limites Cloudflare Workers, la résidence et les coûts. Elle identifie un compare-and-append candidat via UDF pré-hook atomique dans ACL, mais exige des tests de concurrence et de rollback sur un vrai registre. La connexion directe Worker → ACL reste non prouvée en raison de la validation TLS par certificat d'identité ; une passerelle dédiée est seulement une option de repli à étudier. ACL n'est pas choisi, aucune ressource ni secret n'a été créé, et le NO-GO production est maintenu.
+L'étude [ETUDE_INTEGRATION_AZURE_CONFIDENTIAL_LEDGER_CLOUDFLARE_WORKERS_V1.md](ETUDE_INTEGRATION_AZURE_CONFIDENTIAL_LEDGER_CLOUDFLARE_WORKERS_V1.md) documente l'API REST, les reçus, l'idempotence, l'authentification, les limites Cloudflare Workers, la résidence et les coûts. Elle a d'abord étudié les UDF pré-hooks, puis corrigé l'orientation : UDF seul est insuffisant si le hook peut être omis ; la piste prioritaire devient UDE avec RBAC métier dédié, sous réserve de prouver l'append atomique et le blocage des routes natives. La connexion directe Worker → ACL reste non prouvée en raison de la validation TLS par certificat d'identité ; une passerelle dédiée est seulement une option de repli à étudier. ACL n'est pas choisi, aucune ressource ni secret n'a été créé, et le NO-GO production est maintenu.
 
 
 ### Correction de sécurité — Azure Confidential Ledger (19 novembre 2026)
@@ -1229,3 +1229,8 @@ La réplication vers la région jumelée est obligatoire et non désactivable. L
 ### Audit de l'exemple Microsoft UDE — 19 novembre 2026
 
 L'exemple public Microsoft Code Transparency confirme la forme d'une API métier UDE dans le TEE avec tables KV et compteur de séquence, mais ne fournit pas à lui seul le compare-and-append, l'idempotence, l'immutabilité des clés, le reçu transactionnel ni le blocage des routes natives requis par SAC. Voir [l'audit détaillé de l'exemple UDE](AUDIT_EXEMPLE_MICROSOFT_UDE_POUR_SAC_V1.md). Aucun prototype réel ni ressource Azure n'est autorisé par cet audit.
+
+
+### Arbitrage documentaire UDF/UDE — 19 novembre 2026
+
+La documentation Microsoft confirme que UDF et UDE sont mutuellement exclusifs et que le passage de l'un à l'autre est destructif. Les UDF disposent de hooks transactionnels explicitement appelés dans chaque écriture ; les UDE disposent d'endpoints et de RBAC personnalisés, sans hooks UDF. La piste UDE est prioritaire pour un endpoint métier unique, mais sa transaction d'append, son reçu et son idempotence doivent encore être démontrés sur un registre réel. Voir section 14 de [l'étude d'intégration ACL](ETUDE_INTEGRATION_AZURE_CONFIDENTIAL_LEDGER_CLOUDFLARE_WORKERS_V1.md). Aucun choix fournisseur ou déploiement n'est autorisé.
