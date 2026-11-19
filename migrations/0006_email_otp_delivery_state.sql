@@ -9,6 +9,16 @@ ALTER TABLE email_otp_challenges
 DROP TRIGGER IF EXISTS email_otp_challenge_invalidate_previous;
 DROP TRIGGER IF EXISTS email_otp_challenge_guard_update;
 
+-- Toute nouvelle insertion doit déclarer explicitement pending.
+-- Le DEFAULT historique 'accepted' ne doit jamais rendre un futur défi
+-- vérifiable si un nouvel appelant oublie le champ de livraison.
+CREATE TRIGGER email_otp_challenge_insert_pending_guard
+BEFORE INSERT ON email_otp_challenges
+WHEN NEW.delivery_status <> 'pending'
+BEGIN
+  SELECT RAISE(ABORT, 'otp_new_challenge_must_start_pending');
+END;
+
 -- L'insertion ne révoque plus le code précédent. La révocation intervient
 -- uniquement lorsque le fournisseur a accepté le nouvel e-mail.
 CREATE TRIGGER email_otp_challenge_invalidate_previous
