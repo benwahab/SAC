@@ -13,16 +13,32 @@ export type RootCredentialPolicyResult =
       readonly reason: "credential_not_single_device" | "backup_state_inconsistent";
     };
 
-export function evaluateWebAuthnRootCredentialPolicy(input: {
-  credentialDeviceType: RootCredentialDeviceType;
-  credentialBackedUp: boolean;
-}): RootCredentialPolicyResult {
-  if (input.credentialDeviceType !== "singleDevice") {
+export function evaluateWebAuthnRootCredentialPolicy(
+  input: unknown,
+): RootCredentialPolicyResult {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) {
     return { accepted: false, reason: "credential_not_single_device" };
   }
 
+  const candidate = input as Record<string, unknown>;
+  if (
+    candidate.credentialDeviceType !== "singleDevice" &&
+    candidate.credentialDeviceType !== "multiDevice" &&
+    candidate.credentialDeviceType !== "unknown"
+  ) {
+    return { accepted: false, reason: "credential_not_single_device" };
+  }
+
+  if (candidate.credentialDeviceType !== "singleDevice") {
+    return { accepted: false, reason: "credential_not_single_device" };
+  }
+
+  if (typeof candidate.credentialBackedUp !== "boolean") {
+    return { accepted: false, reason: "backup_state_inconsistent" };
+  }
+
   // BE=0/BS=1 is an invalid WebAuthn state, not an ordinary backed-up root.
-  if (input.credentialBackedUp) {
+  if (candidate.credentialBackedUp) {
     return { accepted: false, reason: "backup_state_inconsistent" };
   }
 
