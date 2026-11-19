@@ -27,6 +27,8 @@ jobs:
         run: npm run test:ecdsa
       - name: Test strict ECDSA DER and P1363 format adapters
         run: npm run test:ecdsa-der
+      - name: Test canonical P-256 JWK coordinate encoding
+        run: npm run test:p256-jwk
       - run: npm run typecheck
       - name: Test experimental location encryption primitive
         run: npm run test:crypto
