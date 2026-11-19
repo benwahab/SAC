@@ -233,6 +233,38 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     now: exhaustionBase + 525_000, failRecipient: contact,
   });
   assert.deepEqual(fifthFailure.data, { claimed: 1, providerAccepted: 0, retryScheduled: 0, terminalFailures: 1, completionErrors: 0, smsEvaluationsCreated: 1, smsEvaluationsSuppressed: 0, smsTasksCreated: 1 });
+  const reminderAfterThreshold = await post<Array<{ id: string; leaseToken: string; reminderNumber: number }>>("/claim", {
+    now: exhaustionBase + 600_000,
+  });
+  assert.equal(reminderAfterThreshold.status, 200);
+  assert.equal(reminderAfterThreshold.data.length, 1);
+  assert.equal(reminderAfterThreshold.data[0].reminderNumber, 2);
+  const laterPushSent = await post<{ updated: boolean }>("/complete", {
+    reminderId: reminderAfterThreshold.data[0].id,
+    leaseToken: reminderAfterThreshold.data[0].leaseToken,
+    outcome: "sent",
+    now: exhaustionBase + 600_001,
+  });
+  assert.equal(laterPushSent.data.updated, true);
+  const continuingPushState = await post<{ rows: Array<{ reminder_number: number; status: string; scheduled_at: number }> }>("/push-state", {
+    alertId: exhaustionAlert.data.alertId,
+  });
+  assert.deepEqual(continuingPushState.data.rows.map(x => [x.reminder_number, x.status]), [
+    [0, "sent"], [1, "failed"], [2, "sent"], [3, "pending"],
+  ]);
+  assert.equal(continuingPushState.data.rows[3].scheduled_at, exhaustionBase + 900_000);
+  const closeExhaustion = await post<{ closed: boolean }>("/close", {
+    actor: owner, alertId: exhaustionAlert.data.alertId, now: exhaustionBase + 650_000,
+  });
+  assert.equal(closeExhaustion.status, 200);
+  const smsExhaustionState = await post<{ rows: Array<{ status: string }> }>("/sms-state", {
+    alertId: exhaustionAlert.data.alertId,
+  });
+  assert.equal(smsExhaustionState.data.rows[0].status, "cancelled");
+  const closedPushState = await post<{ rows: Array<{ reminder_number: number; status: string }> }>("/push-state", {
+    alertId: exhaustionAlert.data.alertId,
+  });
+  assert.equal(closedPushState.data.rows.find(x => x.reminder_number === 3)?.status, "cancelled");
   const noSixthAttempt = await post<unknown[]>("/claim", { now: exhaustionBase + 1_000_000 });
   assert.equal(noSixthAttempt.status, 200);
   assert.equal(noSixthAttempt.data.length, 0);
