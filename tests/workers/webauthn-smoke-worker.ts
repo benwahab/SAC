@@ -1,7 +1,15 @@
-import { generateRegistrationOptions, verifyRegistrationResponse } from "@simplewebauthn/server";
+import {
+  generateRegistrationOptions,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse,
+} from "@simplewebauthn/server";
 
 const RP_ID = "localhost";
 const ORIGIN = "http://localhost:8798";
+
+function jsonError(message: string, status = 400): Response {
+  return Response.json({ verified: false, error: message }, { status });
+}
 
 export default {
   async fetch(request: Request): Promise<Response> {
@@ -33,26 +41,57 @@ export default {
       });
     }
 
-    if (url.pathname === "/reject-invalid") {
+    if (url.pathname === "/verify-fixture" && request.method === "POST") {
+      const input = await request.json() as {
+        registration: Parameters<typeof verifyRegistrationResponse>[0]["response"];
+        registrationChallenge: string;
+        authentication?: Parameters<typeof verifyAuthenticationResponse>[0]["response"];
+        authenticationChallenge?: string;
+        invalidAuthenticationSignature?: boolean;
+      };
+
       try {
-        await verifyRegistrationResponse({
-          response: {
-            id: "invalid",
-            rawId: "invalid",
-            type: "public-key",
-            response: {
-              clientDataJSON: "e30",
-              attestationObject: "e30",
-            },
-            clientExtensionResults: {},
-          },
-          expectedChallenge: "challenge-that-must-not-match",
+        const registration = await verifyRegistrationResponse({
+          response: input.registration,
+          expectedChallenge: input.registrationChallenge,
           expectedOrigin: ORIGIN,
           expectedRPID: RP_ID,
+          requireUserPresence: true,
+          requireUserVerification: true,
+          supportedAlgorithmIDs: [-7],
         });
-        return Response.json({ rejected: false }, { status: 500 });
+
+        if (!registration.verified) {
+          return jsonError("Registration verification returned false");
+        }
+
+        const info = registration.registrationInfo;
+        const singleDevice = info.credentialDeviceType === "singleDevice";
+        const notBackedUp = info.credentialBackedUp === false;
+
+        let authenticationVerified: boolean | null = null;
+        if (input.authentication && input.authenticationChallenge) {
+          const authentication = await verifyAuthenticationResponse({
+            response: input.authentication,
+            expectedChallenge: input.authenticationChallenge,
+            expectedOrigin: ORIGIN,
+            expectedRPID: RP_ID,
+            requireUserVerification: true,
+            credential: info.credential,
+          });
+          authenticationVerified = authentication.verified;
+        }
+
+        return Response.json({
+          verified: true,
+          credentialDeviceType: info.credentialDeviceType,
+          credentialBackedUp: info.credentialBackedUp,
+          userVerified: info.userVerified,
+          acceptedBySacRootPolicy: singleDevice && notBackedUp,
+          authenticationVerified,
+        });
       } catch {
-        return Response.json({ rejected: true });
+        return jsonError("WebAuthn fixture rejected");
       }
     }
 
