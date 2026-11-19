@@ -98,3 +98,8 @@ Le projet Cloudflare Pages a maintenant été créé et relu dans le compte Clou
 La base distante est toujours sans tables au dernier contrôle. Les migrations ne sont pas appliquées. Aucun secret Resend, expéditeur e-mail SAC, fournisseur push ou SMS n'est configuré. La durée de vie des invitations est encore en arbitrage produit ; aucune valeur n'a été inventée. Le projet Pages et ses bindings sont configurés, mais le service n'est pas publié ni prêt pour les utilisateurs.
 
 La configuration de la variable secrète a reçu une réponse de succès Cloudflare, mais sa valeur n'est volontairement pas lisible après écriture. Pour confirmer le fonctionnement de bout en bout, il faudra effectuer un test contrôlé de l'API d'inscription après initialisation D1 et configuration Resend, sans jamais exposer le secret ni un OTP.
+
+
+### Vérification R2 complémentaire (19 novembre 2026)
+
+La liste des buckets a été interrogée directement sur l'API du compte connecté. Cloudflare a répondu HTTP 403, code 10042 : `Please enable R2 through the Cloudflare Dashboard.` R2 n'est donc pas activé pour ce compte. Aucun bucket ni binding R2 n'a été créé. Cette activation doit être effectuée dans le tableau de bord Cloudflare par le titulaire du compte ; la configuration SAC ne doit pas simuler un stockage objet disponible.
