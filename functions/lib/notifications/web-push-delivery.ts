@@ -1,15 +1,8 @@
 import { decryptPushSubscription, type EncryptedPushSubscription, type PushSubscriptionPayload } from "./push-subscription-crypto.ts";
 import type { SosPushEnvelope, SosPushSender } from "../alerts/sos-service.ts";
+import { isAllowedPushEndpoint } from "./push-endpoint-policy.ts";
 
 const encoder = new TextEncoder();
-const ALLOWED_PUSH_HOSTS = new Set([
-  "fcm.googleapis.com",
-  "fcmregistrations.googleapis.com",
-  "updates.push.services.mozilla.com",
-  "push.services.mozilla.com",
-  "web.push.apple.com",
-]);
-
 export interface WebPushEnvironment {
   PUSH_SUBSCRIPTION_ENCRYPTION_KEY?: string;
   PUSH_VAPID_PUBLIC_KEY?: string;
@@ -49,24 +42,6 @@ function concat(...parts: Uint8Array[]): Uint8Array {
     offset += part.byteLength;
   }
   return output;
-}
-
-function isAllowedPushEndpoint(endpoint: string): URL | null {
-  try {
-    const url = new URL(endpoint);
-    if (
-      url.protocol !== "https:" ||
-      url.username ||
-      url.password ||
-      (url.port !== "" && url.port !== "443") ||
-      !ALLOWED_PUSH_HOSTS.has(url.hostname.toLowerCase()) ||
-      url.hostname.endsWith(".local") ||
-      url.hostname.endsWith(".localhost")
-    ) return null;
-    return url;
-  } catch {
-    return null;
-  }
 }
 
 async function hmac(keyBytes: Uint8Array, data: Uint8Array, cryptoProvider: Crypto): Promise<Uint8Array> {
