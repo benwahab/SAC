@@ -80,12 +80,14 @@ Ces valeurs doivent être testées sur des téléphones réels et avec réseau i
 
 Le smoke test Workers déjà passé prouve uniquement que le paquet s'importe dans le runtime local Cloudflare Workers, que la génération d'options fonctionne et qu'une réponse volontairement invalide est rejetée. Il ne prouve pas qu'une vraie inscription ou authentification valide est acceptée.
 
+Le dépôt contient déjà un test CI qui génère des fixtures synthétiques cryptographiquement valides : clé ECDSA P-256, clé publique COSE, attestation `fmt=none`, données authenticator et assertion signée. Dans le runtime Workers local, SimpleWebAuthn accepte l'inscription et vérifie l'assertion d'authentification ; les tests vérifient aussi plusieurs rejets et les états BE/BS.
+
 Avant d'ajouter la dépendance à l'application :
-1. intégrer des fixtures WebAuthn valides et indépendamment générées ;
-2. vérifier inscription et assertion d'authentification valides ;
-3. vérifier BE/BS, UP/UV, origin, RP ID, challenge, algorithme et credential ID ;
+1. compléter les fixtures avec des vecteurs indépendants et une vérification croisée par un second vérificateur ;
+2. ajouter des tests d'inscription et d'authentification pour les extensions/champs réellement retenus dans le profil final ;
+3. vérifier les limites précises du parseur et les cas d'attestation que SAC acceptera ;
 4. tester signatures altérées, mauvais compte, rejeu, expiration et credential révoquée ;
-5. comparer les résultats avec un second vérificateur indépendant ;
+5. résoudre l'écart de configuration : le test Workers actuel utilise `residentKey: discouraged`, alors que le profil d'enregistrement candidat propose `residentKey: required`. Ne pas considérer ce point comme arbitré ;
 6. tester le parcours sur appareils Android réels et navigateurs cibles.
 
 Ne pas écrire un vérificateur WebAuthn maison pour contourner une incompatibilité de la bibliothèque.
@@ -195,7 +197,9 @@ Aucun service externe n'est sélectionné par ce document. Aucun compte, secret,
 - le modèle relationnel, le profil d'enregistrement et le profil de preuve restent des documents de conception ;
 - aucun endpoint de racine ou d'appareil secondaire n'est opérationnel ;
 - aucune migration d'enrôlement de production n'existe ;
-- aucun test cryptographique avec fixture valide ni test d'authenticator physique n'a été réalisé ;
+- des fixtures WebAuthn synthétiques valides ont été acceptées par SimpleWebAuthn dans le runtime Workers local, avec une assertion ES256 signée vérifiée ; elles ne proviennent pas d'un authenticator physique et ne démontrent pas la compatibilité matérielle ;
+- aucun test sur authenticator physique Android ou navigateur mobile cible n'a été réalisé ;
+- l'écart `residentKey: discouraged` dans le test / `residentKey: required` dans le profil candidat reste à arbitrer ;
 - aucune stratégie anti-retour-arrière D1 n'est homologuée.
 
 Le passage à l'implémentation ne doit pas être confondu avec la validation des documents ni avec le succès du CI.
