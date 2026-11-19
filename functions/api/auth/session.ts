@@ -1,11 +1,11 @@
-import { readSessionCookie, SESSION_COOKIE_NAME } from "../../lib/security/session-cookie.ts";
+import { createSessionCookie, readSessionCookie } from "../../lib/security/session-cookie.ts";
 import { hashSessionToken } from "../../lib/security/session-token.ts";
 import { authorizeDeviceSession, type DeviceSessionRecord } from "../../../src/domain/session-authorization.ts";
 import { getSessionExpiresAt } from "../../../src/domain/auth-policy.ts";
 
 interface Env { DB: D1Database; }
 const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" };
-function json(body: unknown, status = 200): Response { return new Response(JSON.stringify(body), { status, headers: HEADERS }); }
+function json(body: unknown, status = 200, token?: string): Response { const headers = new Headers(HEADERS); if (token) headers.append("Set-Cookie", createSessionCookie(token)); return new Response(JSON.stringify(body), { status, headers }); }
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   if (!env.DB) return json({ authenticated: false }, 503);
@@ -62,6 +62,6 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
          AND auth_version = ? AND last_activity_at <= ? AND expires_at > ?`,
     ).bind(nowMs, Date.parse(nextExpiry), session.sessionId, tokenHash, session.authVersion, nowMs, nowMs).run();
     if (!updated.success || updated.meta.changes !== 1) return json({ authenticated: false }, 401);
-    return json({ authenticated: true, accountId: session.accountId, deviceId: session.deviceId, sessionId: session.sessionId });
+    return json({ authenticated: true, accountId: session.accountId, deviceId: session.deviceId, sessionId: session.sessionId }, 200, token);
   } catch { return json({ authenticated: false }, 503); }
 };
