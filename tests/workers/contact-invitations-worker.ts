@@ -87,7 +87,7 @@ export default {
         expiresAt: Number(body.expiresAt),
         now: Number(body.now),
       });
-      return result.ok ? json(result.value) : json({ error: result.error }, 400);
+      return result.ok ? json(result.value) : json({ error: result.error, invitationId: result.invitationId }, 400);
     }
 
     if (url.pathname === "/create-and-send") {
