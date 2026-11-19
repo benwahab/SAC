@@ -63,13 +63,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
            FROM email_otp_challenges latest
            WHERE latest.account_id = a.id
              AND latest.identity_id = i.id
+             AND latest.purpose = 'account_email_verification'
              AND latest.delivery_status = 'accepted'
              AND latest.invalidated_at IS NULL
              AND latest.consumed_at IS NULL
            ORDER BY latest.created_at DESC, latest.id DESC
            LIMIT 1
          )
-       WHERE i.channel = 'email' AND i.normalized_value = ?
+       WHERE i.channel = 'email'
+         AND i.is_primary = 1
+         AND i.normalized_value = ?
        LIMIT 1`,
     ).bind(email).first<LatestChallenge>();
   } catch {
