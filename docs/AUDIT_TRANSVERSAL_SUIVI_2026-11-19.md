@@ -250,3 +250,15 @@ Aucun identifiant, nom, e-mail ou autre donnée personnelle du proche responsabl
 ### Limite de validation
 
 Les deux commits ont déclenché GitHub Actions. Le run du dernier commit (`44569930288`) a échoué avant de fournir des étapes exécutées ; l'API GitHub consultée ne fournit toujours aucun journal exploitable. Aucun résultat de typecheck, build ou tests n'est donc revendiqué pour cette modification. La CI reste P0 ouverte.
+
+
+## 14. Projection privée du responsable SOS — durcissement et tests D1
+
+Complément apporté après le premier affichage de la responsabilité :
+
+- `b32dc260e39b8d765bfdb79d4681d8c7815bb91e` — ajout de `getSosResponsibilityForParticipant` dans le service métier. La lecture de la responsabilité et le contrôle d'accès auteur/destinataire sont réunis dans une requête D1.
+- `9ea56155fafcf8cd3969cc4f97337bf50b329685` — l'endpoint des événements utilise désormais cette projection métier et ne réalise plus de requête SQL directe.
+- `057bd4714b102e0356040b3570f45141ad30cae7` — ajout d'une route au worker D1 de test pour la projection.
+- `dfcc181eeda744786a161718774fb0c01fc58dc8` — tests D1 couvrant l'absence initiale de responsable, l'auteur, le responsable, un autre destinataire, le transfert après retrait, l'accès refusé à un tiers et la clôture.
+
+La projection ne retourne que `assigned` et `isSelf`. L'accès est limité à l'auteur et aux destinataires figés de l'alerte. Les tests ont été ajoutés au scénario D1 existant `test:sos-d1`, mais leur exécution n'est pas certifiée tant que GitHub Actions ne démarre pas ses étapes.
