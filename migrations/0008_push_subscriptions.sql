@@ -7,6 +7,7 @@ CREATE TABLE push_subscriptions (
   endpoint_hash TEXT NOT NULL UNIQUE
     CHECK (length(endpoint_hash) = 64 AND endpoint_hash NOT GLOB '*[^a-f0-9]*'),
   encrypted_subscription TEXT NOT NULL CHECK (length(encrypted_subscription) BETWEEN 32 AND 8192),
+  encryption_key_version TEXT NOT NULL DEFAULT 'v1' CHECK (encryption_key_version = 'v1'),
   iv TEXT NOT NULL CHECK (length(iv) = 16),
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'revoked')),
   created_at INTEGER NOT NULL CHECK (created_at > 0),
