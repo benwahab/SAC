@@ -4,6 +4,7 @@ import {
   completeSosReminderDelivery,
   createSosAlert,
   dispatchDueSosReminders,
+  scheduleDueSosSmsEscalations,
   getSosAlertForParticipant,
   listSosEventsForParticipant,
   respondToSosAlert,
@@ -105,6 +106,19 @@ export default {
         },
       }, { now, batchSize: 10, leaseMilliseconds: 30_000 });
       return result.ok ? json(result.value) : json({ error: result.error }, 409);
+    }
+    if (url.pathname === "/sms-escalate") {
+      const result = await scheduleDueSosSmsEscalations(env.DB, crypto, { now, batchSize: 20 });
+      return result.ok ? json(result.value) : json({ error: result.error }, 409);
+    }
+    if (url.pathname === "/sms-state") {
+      const rows = await env.DB.prepare(
+        "SELECT recipient_account_id,status,scheduled_at,created_at FROM alert_sms_outbox WHERE alert_id=? ORDER BY recipient_account_id",
+      ).bind(String(input.alertId)).all();
+      const evaluation = await env.DB.prepare(
+        "SELECT status,threshold_reached_at,evaluated_at FROM alert_sms_escalations WHERE alert_id=?",
+      ).bind(String(input.alertId)).first();
+      return json({ evaluation, rows: rows.results });
     }
     if (url.pathname === "/claim") {
       const result = await claimDueSosReminders(env.DB, crypto, { now, batchSize: 10, leaseMilliseconds: 30_000 });
