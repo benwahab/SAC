@@ -60,22 +60,26 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   assert.equal(recipientRead.data.isAuthor, false);
   assert.deepEqual(recipientRead.data.alert.recipientSnapshot.map(x => x.contactUserId).sort(), [contact, contact2].sort());
 
-  const volunteer = await post<{ responsibilityAssigned: boolean }>("/respond", { actor: contact, alertId, action: "volunteer", now: now + 1 });
+  const acknowledgement = await post<{ recorded: boolean }>("/respond", { actor: contact, alertId, action: "acknowledge", now: now + 1 });
+  const duplicateAcknowledgement = await post<{ recorded: boolean }>("/respond", { actor: contact, alertId, action: "acknowledge", now: now + 1 });
+  assert.equal(acknowledgement.status, 200);
+  assert.equal(duplicateAcknowledgement.status, 200);
+  const volunteer = await post<{ responsibilityAssigned: boolean }>("/respond", { actor: contact, alertId, action: "volunteer", now: now + 2 });
   assert.equal(volunteer.status, 200);
   assert.equal(volunteer.data.responsibilityAssigned, true);
-  const secondVolunteer = await post<{ responsibilityAssigned: boolean }>("/respond", { actor: contact2, alertId, action: "volunteer", now: now + 2 });
+  const secondVolunteer = await post<{ responsibilityAssigned: boolean }>("/respond", { actor: contact2, alertId, action: "volunteer", now: now + 3 });
   assert.equal(secondVolunteer.status, 200);
   assert.equal(secondVolunteer.data.responsibilityAssigned, false);
-  const withdraw = await post<{ responsibilityAssigned: boolean }>("/respond", { actor: contact, alertId, action: "withdraw", now: now + 3 });
+  const withdraw = await post<{ responsibilityAssigned: boolean }>("/respond", { actor: contact, alertId, action: "withdraw", now: now + 4 });
   assert.equal(withdraw.status, 200);
   assert.equal(withdraw.data.responsibilityAssigned, true);
-  const handoverCheck = await post<{ responsibilityAssigned: boolean }>("/respond", { actor: contact2, alertId, action: "volunteer", now: now + 4 });
+  const handoverCheck = await post<{ responsibilityAssigned: boolean }>("/respond", { actor: contact2, alertId, action: "volunteer", now: now + 5 });
   assert.equal(handoverCheck.status, 200);
   assert.equal(handoverCheck.data.responsibilityAssigned, true);
 
   const events = await post<Array<{ type: string }>>("/events", { actor: contact2, alertId });
   assert.equal(events.status, 200);
-  assert.deepEqual(events.data.map(x => x.type), ["triggered", "volunteered", "volunteered", "withdrew"]);
+  assert.deepEqual(events.data.map(x => x.type), ["triggered", "acknowledged", "volunteered", "volunteered", "withdrew"]);
 
   const dueEarly = await post<unknown[]>("/claim", { now: now + 299_999 });
   assert.equal(dueEarly.status, 200);
@@ -120,5 +124,5 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   assert.equal(postCloseClaim.data.length, 0);
   const closedEvents = await post<Array<{ type: string }>>("/events", { actor: owner, alertId });
   assert.equal(closedEvents.status, 200);
-  assert.deepEqual(closedEvents.data.map(x => x.type), ["triggered", "volunteered", "volunteered", "withdrew", "closed_by_author"]);
+  assert.deepEqual(closedEvents.data.map(x => x.type), ["triggered", "acknowledged", "volunteered", "volunteered", "withdrew", "closed_by_author"]);
 });
