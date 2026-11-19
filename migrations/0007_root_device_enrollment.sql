@@ -13,6 +13,7 @@ CREATE TABLE root_enrollment_rate_limits (
 CREATE TABLE root_enrollment_ceremonies (
   id TEXT PRIMARY KEY NOT NULL,
   account_id TEXT NOT NULL,
+  origin TEXT NOT NULL CHECK (length(origin) BETWEEN 9 AND 255),
   status TEXT NOT NULL CHECK (status IN ('pending', 'completed', 'expired', 'cancelled')),
   created_at INTEGER NOT NULL CHECK (created_at > 0),
   expires_at INTEGER NOT NULL CHECK (expires_at > created_at),
@@ -151,7 +152,7 @@ CREATE TRIGGER root_enrollment_ceremony_update_guard
 BEFORE UPDATE ON root_enrollment_ceremonies
 BEGIN
   SELECT CASE WHEN NEW.id <> OLD.id OR NEW.account_id <> OLD.account_id
-    OR NEW.created_at <> OLD.created_at OR NEW.expires_at <> OLD.expires_at
+    OR NEW.origin <> OLD.origin OR NEW.created_at <> OLD.created_at OR NEW.expires_at <> OLD.expires_at
     THEN RAISE(ABORT, 'root_enrollment_ceremony_immutable') END;
   SELECT CASE WHEN NOT (
     OLD.status = 'pending' AND NEW.status = 'completed'
