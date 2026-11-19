@@ -85,6 +85,7 @@ async function fixture(overrides: { flags?: number; origin?: string; rpId?: stri
       id: credentialId,
       rawId: credentialId,
       type: "public-key",
+      authenticatorAttachment: "platform",
       response: {
         clientDataJSON: base64url(clientData),
         attestationObject: base64url(attestation),
