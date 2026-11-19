@@ -136,4 +136,19 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   const closedEvents = await post<Array<{ type: string }>>("/events", { actor: owner, alertId });
   assert.equal(closedEvents.status, 200);
   assert.deepEqual(closedEvents.data.map(x => x.type), ["triggered", "acknowledged", "volunteered", "volunteered", "withdrew", "closed_by_author"]);
+
+  const followup = await post<{ alertId: string }>("/create", {
+    owner, recipients: [contact], reminders: 1, now: now + 500_000,
+  });
+  assert.equal(followup.status, 200);
+  const failedDelivery = await post<{ claimed: number; providerAccepted: number; retryScheduled: number; completionErrors: number }>("/dispatch", {
+    now: now + 800_000, failRecipient: contact,
+  });
+  assert.equal(failedDelivery.status, 200);
+  assert.deepEqual(failedDelivery.data, { claimed: 1, providerAccepted: 0, retryScheduled: 1, completionErrors: 0 });
+  const successfulRetry = await post<{ claimed: number; providerAccepted: number; retryScheduled: number; completionErrors: number }>("/dispatch", {
+    now: now + 815_000,
+  });
+  assert.equal(successfulRetry.status, 200);
+  assert.deepEqual(successfulRetry.data, { claimed: 1, providerAccepted: 1, retryScheduled: 0, completionErrors: 0 });
 });
