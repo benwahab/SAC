@@ -872,7 +872,7 @@ export async function scheduleDueSosSmsEscalations(
            (alert_id, threshold_reached_at, evaluated_at, status)
            SELECT a.id, ?, ?, CASE WHEN EXISTS (
              SELECT 1 FROM alert_responsibility_periods p
-             WHERE p.alert_id = a.id AND p.ended_at IS NULL
+             WHERE p.alert_id = a.id
            ) THEN 'suppressed' ELSE 'queued' END
            FROM alerts a
            WHERE a.id = ? AND a.status = 'active'
