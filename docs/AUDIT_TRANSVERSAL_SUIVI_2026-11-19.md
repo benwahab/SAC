@@ -230,3 +230,23 @@ Lecture complémentaire de `src/App.tsx`, `src/services/device/root-enrollment.t
 **Priorité P0 avant toute ouverture à des utilisateurs :** définir et implémenter la connexion WebAuthn par assertion sur appareil déjà enrôlé, avec challenge serveur à usage unique, vérification cryptographique côté serveur, origine/RP ID, contrôle du compte et de l'appareil, anti-rejeu, limites de tentatives et création de session atomique. Le parcours d'un nouvel appareil et la récupération de compte restent des parcours distincts à spécifier. Ne pas inventer un refresh token ni contourner la racine matérielle avec un mot de passe seul.
 
 Cette lacune n'a pas été modifiée dans cette passe : le protocole d'assertion doit être conçu et audité avant implémentation. Aucune migration distante ni activation de l'enrôlement n'a été effectuée.
+
+
+## 13. Suivi du responsable principal — mise à jour du 19 novembre 2026
+
+Deux commits ont complété le suivi privé d'une alerte SOS :
+
+- `277695793a3f0fdf5a26956c476a8dd228af8d2e` — l'endpoint `GET /api/alerts/:alertId/events` renvoie maintenant l'état de la responsabilité principale active.
+- `63052d642fe5a87d56c8e527af4bbd2b3fc079e3` — le panneau privé affiche si le compte connecté est responsable principal, si un autre proche l'est, ou si aucune responsabilité n'est actuellement attribuée.
+
+### Données exposées
+
+L'API renvoie uniquement deux booléens :
+- `responsibility.assigned` : une responsabilité principale active existe ;
+- `responsibility.isSelf` : elle appartient au compte actuellement connecté.
+
+Aucun identifiant, nom, e-mail ou autre donnée personnelle du proche responsable n'est exposé. La lecture reste précédée de la vérification de session et du contrôle d'accès à l'alerte effectué par le service de chronologie. Une erreur de lecture D1 renvoie une indisponibilité explicite (503), sans inventer un état de responsabilité.
+
+### Limite de validation
+
+Les deux commits ont déclenché GitHub Actions. Le run du dernier commit (`44569930288`) a échoué avant de fournir des étapes exécutées ; l'API GitHub consultée ne fournit toujours aucun journal exploitable. Aucun résultat de typecheck, build ou tests n'est donc revendiqué pour cette modification. La CI reste P0 ouverte.
