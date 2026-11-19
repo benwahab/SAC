@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowUpRight, Download, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, Wifi, X } from "lucide-react";
+import { ArrowUpRight, Download, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, X } from "lucide-react";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
 import { completeRootEnrollment, requestRootEnrollment, type RootEnrollmentCeremony } from "./services/device/root-enrollment";
 import PrivateSpacePage from "./PrivateSpacePage";
@@ -353,14 +353,11 @@ interface InstallPromptEvent extends Event {
 }
 
 export default function App() {
-  const [health, setHealth] = useState<HealthState>("checking");
-  const [healthRefresh, setHealthRefresh] = useState(0);
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [installHelp, setInstallHelp] = useState<"ios" | "android" | null>(null);
   const [isAppleDevice, setIsAppleDevice] = useState(false);
   const [isAndroidDevice, setIsAndroidDevice] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
-  const [networkOnline, setNetworkOnline] = useState(() => navigator.onLine);
   const [language, setLanguage] = useState<Language>(() => {
     try {
       const saved = window.localStorage.getItem("sac-language");
@@ -441,62 +438,9 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    let controller: AbortController | null = null;
-
-    const checkHealth = () => {
-      controller?.abort();
-      if (!navigator.onLine) {
-        setNetworkOnline(false);
-        setHealth("unavailable");
-        return;
-      }
-
-      setNetworkOnline(true);
-      setHealth("checking");
-      controller = new AbortController();
-      fetch("/api/health", { signal: controller.signal, cache: "no-store" })
-        .then(async (response) => {
-          const payload: { ok?: boolean; database?: string } = await response.json();
-          if (payload.database === "schema_incomplete") {
-            setHealth("schema_incomplete");
-            return;
-          }
-          if (!response.ok) throw new Error("API unavailable");
-          setHealth(payload.ok && payload.database === "connected" ? "connected" : "unavailable");
-        })
-        .catch((error: unknown) => {
-          if (error instanceof DOMException && error.name === "AbortError") return;
-          setHealth("unavailable");
-        });
-    };
-
-    const handleOffline = () => {
-      controller?.abort();
-      setNetworkOnline(false);
-      setHealth("unavailable");
-    };
-
-    const handleOnline = () => checkHealth();
-
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-    checkHealth();
-
-    return () => {
-      controller?.abort();
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, [healthRefresh]);
-
   if (isLoginPage) return <LoginPage language={language} setLanguage={setLanguage} returnTo={loginReturnTo} />;
   if (isInvitationAcceptancePage) return <InvitationAcceptancePage />;
   if (isPrivateSpacePage) return <PrivateSpacePage onLogout={() => { window.location.assign("/connexion"); }} />;
-
-  const statusDot =
-    health === "connected" ? "bg-sac-confirm" :
-    health === "schema_incomplete" || health === "unavailable" ? "bg-sac-alert" : "animate-pulse bg-sac-primary-strong";
 
   const pillars = [
     { icon: UsersRound, title: t.contactTitle, description: t.contactDescription },
@@ -518,9 +462,6 @@ export default function App() {
             </button>
           )}
           <a href="/connexion" className="hidden rounded-full border border-white/90 bg-white/65 px-4 py-2 text-xs font-extrabold text-sac-ink shadow-glass hover:bg-white sm:inline-flex">{signInLabel}</a>
-          <div className="hidden items-center gap-2 rounded-full border border-white/80 bg-white/55 px-3 py-2 text-xs font-semibold text-sac-ink shadow-glass sm:flex">
-            <LockKeyhole size={14} className="text-sac-confirm" />{t.privateApp}
-          </div>
           <div className="sac-language-switch flex items-center gap-1 rounded-full border border-white/90 bg-white/65 p-1 shadow-glass" role="group" aria-label={t.languageLabel} dir="ltr">
             {languages.map((item) => (
               <button
@@ -572,47 +513,32 @@ export default function App() {
 
           <div className="relative mx-auto w-full max-w-md">
             <div className="absolute -inset-5 rounded-[2.5rem] bg-gradient-to-br from-sac-primary/80 via-white/70 to-sac-confirm/10 blur-xl" />
-            <div className="sac-glass-panel relative rounded-[2rem] p-6 sm:p-8">
+            <div className="sac-glass-panel sac-offers-panel relative rounded-[2rem] p-6 sm:p-8">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-sac-muted">{t.personalSpace}</p>
-                  <h2 className="mt-1 text-xl font-extrabold text-sac-ink">{t.accompaniment}</h2>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-sac-primary-strong">{t.offersEyebrow}</p>
+                  <h2 className="mt-1 text-2xl font-black tracking-tight text-sac-ink">{t.offersTitle}</h2>
+                  <p className="mt-1 text-sm leading-6 text-sac-muted">{t.offersSubtitle}</p>
                 </div>
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sac-primary/70 text-sac-confirm"><ShieldCheck size={25} /></span>
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sac-primary/70 text-sac-primary-strong"><ShieldCheck size={25} /></span>
               </div>
-              <div className="mt-7 rounded-2xl border border-white/90 bg-white/55 p-5 backdrop-blur-xl">
-                <div className="flex items-center gap-3">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/80 text-sac-confirm shadow-sm"><Wifi size={19} /></span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-sac-ink">{t.serverStatus}</p>
-                    <p className="mt-0.5 text-xs text-sac-muted" aria-live="polite">
-                      {!networkOnline && t.offline}
-                      {networkOnline && health === "checking" && t.checking}
-                      {networkOnline && health === "connected" && t.connected}
-                      {networkOnline && health === "schema_incomplete" && t.schemaIncomplete}
-                      {networkOnline && health === "unavailable" && t.unavailable}
-                    </p>
-                    {networkOnline && health !== "connected" && (
-                      <button
-                        type="button"
-                        onClick={() => setHealthRefresh((value) => value + 1)}
-                        disabled={health === "checking"}
-                        className="mt-2 min-h-9 rounded-lg border border-sac-primary-strong/25 bg-white/70 px-3 text-xs font-bold text-sac-ink disabled:opacity-50"
-                      >{health === "checking" ? t.checking : t.retry}</button>
-                    )}
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                <article className="sac-offer-card sac-offer-free rounded-2xl p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-base font-extrabold text-sac-ink">{t.freePlan}</h3>
+                    <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-extrabold text-sac-ink">{t.freeLabel}</span>
                   </div>
-                  <span className={"ml-auto h-2.5 w-2.5 shrink-0 rounded-full " + statusDot} />
-                </div>
-              </div>
-              <div className="mt-5 space-y-3">
-                <div className="flex items-center justify-between gap-3 rounded-xl bg-white/55 px-4 py-3">
-                  <span className="text-sm font-semibold text-sac-muted">{t.freePlan}</span>
-                  <span className="text-sm font-extrabold text-sac-ink">2 {t.contacts}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3 rounded-xl bg-white/55 px-4 py-3">
-                  <span className="text-sm font-semibold text-sac-muted">{t.premiumPlan}</span>
-                  <span className="text-sm font-extrabold text-sac-ink">10 {t.contacts}</span>
-                </div>
+                  <p className="mt-3 text-3xl font-black tracking-tight text-sac-ink">{t.freePrice}</p>
+                  <p className="mt-1 text-sm text-sac-muted">2 {t.contacts}</p>
+                </article>
+                <article className="sac-offer-card sac-offer-premium rounded-2xl p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-base font-extrabold text-sac-ink">{t.premiumPlan}</h3>
+                    <span className="rounded-full bg-sac-primary-strong px-3 py-1 text-xs font-extrabold text-white">{t.recommendedLabel}</span>
+                  </div>
+                  <p className="mt-3 text-3xl font-black tracking-tight text-sac-ink">{t.premiumPrice}</p>
+                  <p className="mt-1 text-sm text-sac-muted">10 {t.contacts}</p>
+                </article>
               </div>
               <p className="mt-5 text-xs leading-5 text-sac-muted">{t.freeSafety}</p>
             </div>
