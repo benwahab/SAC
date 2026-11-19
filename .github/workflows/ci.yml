@@ -64,6 +64,8 @@ jobs:
         run: npm run test:auth-policy
       - name: Test Resend email adapter and delivery outcomes
         run: npm run test:email
+      - name: Test trusted contact invitation email delivery adapter
+        run: npm run test:contact-invitation-email
       - name: Test validated email OTP policy
         run: npm run test:otp-policy
       - name: Test secure email OTP generation and digest
