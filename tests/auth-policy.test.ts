@@ -125,3 +125,27 @@ test("les dates malformées ne produisent aucune expiration", () => {
     lastActivityAt: "2026-01-02T00:00:00.000Z",
   }), null);
 });
+
+
+test("les entrées de session nulles ou malformées sont refusées sans exception", () => {
+  assert.deepEqual(evaluateSessionAge(null as never, "2026-01-02T00:00:00.000Z"), {
+    ok: false, error: "invalid_session_dates",
+  });
+  assert.deepEqual(evaluateSessionAge({
+    createdAt: null as never,
+    lastActivityAt: "2026-01-02T00:00:00.000Z",
+  }, "2026-01-03T00:00:00.000Z"), {
+    ok: false, error: "invalid_session_dates",
+  });
+  assert.deepEqual(evaluateSessionAge({
+    createdAt,
+    lastActivityAt: "2026-01-02T00:00:00.000Z",
+  }, null as never), {
+    ok: false, error: "invalid_session_dates",
+  });
+  assert.equal(getSessionExpiresAt(null as never), null);
+  assert.equal(getSessionExpiresAt({
+    createdAt,
+    lastActivityAt: null as never,
+  }), null);
+});
