@@ -34,8 +34,6 @@ self.addEventListener("push",event=>{
   const title="Alerte privée SAC";
   const options={
     body:"Une alerte privée vous attend. Ouvrez SAC pour la consulter.",
-    icon:"/icons/icon-192.png",
-    badge:"/icons/icon-192.png",
     tag:"sac-private-alert",
     renotify:false,
     data:{url:"/"},
