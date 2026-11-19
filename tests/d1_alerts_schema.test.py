@@ -7,6 +7,7 @@ MIGRATIONS = [
     ROOT / "migrations" / "0001_account_email_otp.sql",
     ROOT / "migrations" / "0002_contact_invitations.sql",
     ROOT / "migrations" / "0003_alerts_sos.sql",
+    ROOT / "migrations" / "0004_sos_reminder_leases.sql",
 ]
 
 
@@ -191,6 +192,50 @@ class AlertD1SchemaTests(unittest.TestCase):
                    VALUES ('reminder-2', 'alert-1', 'contact', 2, ?, ?)""",
                 (created + 600_000, closed + 1),
             )
+
+    def test_reminder_lease_requires_token_and_expiry(self):
+        created = self._alert(reminder_limit=1)
+        self.db.execute(
+            """INSERT INTO alert_reminder_outbox
+               (id, alert_id, recipient_account_id, reminder_number, scheduled_at, created_at)
+               VALUES ('lease-reminder', 'alert-1', 'contact', 1, ?, ?)""",
+            (created + 300_000, created + 1),
+        )
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "alert_reminder_processing_requires_lease"):
+            self.db.execute(
+                "UPDATE alert_reminder_outbox SET status='processing' WHERE id='lease-reminder'"
+            )
+        self.db.execute(
+            """UPDATE alert_reminder_outbox
+               SET status='processing', attempt_count=1, lease_until=?, lease_token=?
+               WHERE id='lease-reminder'""",
+            (created + 60_000, "a" * 32),
+        )
+        self.db.execute(
+            """UPDATE alert_reminder_outbox
+               SET status='pending', scheduled_at=?, lease_until=NULL, lease_token=NULL
+               WHERE id='lease-reminder'""",
+            (created + 360_000,),
+        )
+
+    def test_closing_alert_clears_active_reminder_lease(self):
+        created = self._alert(reminder_limit=1)
+        self.db.execute(
+            """INSERT INTO alert_reminder_outbox
+               (id, alert_id, recipient_account_id, reminder_number, scheduled_at, created_at,
+                status, attempt_count, lease_until, lease_token)
+               VALUES ('leased', 'alert-1', 'contact', 1, ?, ?, 'processing', 1, ?, ?)""",
+            (created + 300_000, created + 1, created + 60_000, "b" * 32),
+        )
+        self.db.execute(
+            """UPDATE alerts SET status='closed_by_author', closed_at=?,
+               closure_reason='completed' WHERE id='alert-1'""",
+            (created + 90_000,),
+        )
+        row = self.db.execute(
+            "SELECT status, lease_until, lease_token FROM alert_reminder_outbox WHERE id='leased'"
+        ).fetchone()
+        self.assertEqual(tuple(row), ("cancelled", None, None))
 
     def test_events_are_append_only(self):
         self._alert()
