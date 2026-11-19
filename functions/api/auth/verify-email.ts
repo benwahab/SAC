@@ -7,7 +7,7 @@ interface Env {
   EMAIL_OTP_HMAC_SECRET?: string;
 }
 
-const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" };
+const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" };
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: HEADERS });
