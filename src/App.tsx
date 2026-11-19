@@ -174,6 +174,41 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
     }
   }
 
+  async function submitRootOptions(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const ceremony = await requestRootEnrollment(email, password);
+      setRootCeremony(ceremony);
+      setPassword("");
+      setMode("enroll");
+      setNotice(copy.rootReady);
+    } catch (reason) {
+      setError(errorMessage(reason instanceof Error ? reason.message : undefined));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function confirmRootEnrollment() {
+    if (!rootCeremony || busy) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      await completeRootEnrollment(rootCeremony);
+      setRootCeremony(null);
+      setPassword("");
+      setMode("complete");
+      setNotice(copy.rootSuccess);
+    } catch (reason) {
+      setError(errorMessage(reason instanceof Error ? reason.message : undefined));
+    } finally {
+      setBusy(false);
+    }
+  }
   async function resendCode() {
     if (busy || secondsRemaining > 0) return;
     setBusy(true);
