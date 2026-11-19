@@ -43,6 +43,13 @@ function parseUtc(value: string): number | null {
  * Cette fonction ne prolonge jamais la limite absolue de 90 jours.
  */
 export function getSessionExpiresAt(session: SessionAgeRecord): string | null {
+  if (
+    typeof session !== "object" ||
+    session === null ||
+    typeof session.createdAt !== "string" ||
+    typeof session.lastActivityAt !== "string"
+  ) return null;
+
   const created = parseUtc(session.createdAt);
   const lastActivity = parseUtc(session.lastActivityAt);
   if (created === null || lastActivity === null || lastActivity < created) return null;
@@ -55,6 +62,14 @@ export function getSessionExpiresAt(session: SessionAgeRecord): string | null {
 
 /** Vérifie les deux limites sans prolonger la durée absolue de 90 jours. */
 export function evaluateSessionAge(session: SessionAgeRecord, now: string): SessionAgeResult {
+  if (
+    typeof session !== "object" ||
+    session === null ||
+    typeof session.createdAt !== "string" ||
+    typeof session.lastActivityAt !== "string" ||
+    typeof now !== "string"
+  ) return { ok: false, error: "invalid_session_dates" };
+
   const created = parseUtc(session.createdAt);
   const lastActivity = parseUtc(session.lastActivityAt);
   const current = parseUtc(now);
