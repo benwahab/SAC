@@ -24,8 +24,8 @@ export type AccountLifecycleCommand =
   | { readonly type: "request_deletion"; readonly actorAccountId: string; readonly at: string }
   | { readonly type: "cancel_deletion"; readonly actorAccountId: string; readonly at: string }
   | { readonly type: "finalize_deletion"; readonly actorAccountId: "system"; readonly at: string; readonly activity: AccountActivityCounts }
-  | { readonly type: "suspend_account"; readonly actorAccountId: string; readonly actorRole: "super_admin"; readonly at: string }
-  | { readonly type: "reinstate_account"; readonly actorAccountId: string; readonly actorRole: "super_admin"; readonly at: string };
+  | { readonly type: "suspend_account"; readonly actorAccountId: string; readonly actorRole: string; readonly at: string }
+  | { readonly type: "reinstate_account"; readonly actorAccountId: string; readonly actorRole: string; readonly at: string };
 
 export type AccountLifecycleError =
   | "invalid_account"
