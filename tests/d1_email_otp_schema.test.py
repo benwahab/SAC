@@ -37,14 +37,20 @@ class EmailOtpD1SchemaTests(unittest.TestCase):
         self.db.close()
 
     def create_challenge(self, challenge_id, created_at, digest=None, delivery_status="accepted"):
+        # Toute insertion commence en pending, comme l'exige le trigger D1.
         self.db.execute(
             """INSERT INTO email_otp_challenges
                (id, account_id, identity_id, purpose, digest, attempt_count,
                 max_attempts, created_at, expires_at, delivery_status)
                VALUES (?, 'account-1', 'email-1', 'account_email_verification',
-                       ?, 0, 6, ?, ?, ?)""",
-            (challenge_id, digest or ("a" * 64), created_at, created_at + 600_000, delivery_status),
+                       ?, 0, 6, ?, ?, 'pending')""",
+            (challenge_id, digest or ("a" * 64), created_at, created_at + 600_000),
         )
+        if delivery_status != "pending":
+            self.db.execute(
+                "UPDATE email_otp_challenges SET delivery_status=? WHERE id=?",
+                (delivery_status, challenge_id),
+            )
         self.db.commit()
 
 
