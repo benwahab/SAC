@@ -289,6 +289,8 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     owner, recipients: [contact], reminders: 1, now: suppressedBase,
   });
   assert.equal(suppressedAlert.status, 200);
+  const initialSuppressed = await post<Record<string, number>>("/dispatch", { now: suppressedBase });
+  assert.deepEqual(initialSuppressed.data, { claimed: 1, providerAccepted: 1, retryScheduled: 0, terminalFailures: 0, completionErrors: 0, smsEvaluationsCreated: 0, smsEvaluationsSuppressed: 0, smsTasksCreated: 0 });
   const leadAssigned = await post<{ responsibilityAssigned: boolean }>("/respond", {
     actor: contact, alertId: suppressedAlert.data.alertId, action: "volunteer", now: suppressedBase + 1,
   });
@@ -299,17 +301,14 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   });
   assert.equal(leadWithdrawn.status, 200);
   assert.equal(leadWithdrawn.data.recorded, true);
-  const suppressedEscalation = await post<{ evaluationsCreated: number; evaluationsSuppressed: number; smsTasksCreated: number }>("/sms-escalate", {
+  const suppressedReminder = await post<Record<string, number>>("/dispatch", {
     now: suppressedBase + 300_000,
   });
-  assert.equal(suppressedEscalation.status, 200);
-  assert.deepEqual(suppressedEscalation.data, { evaluationsCreated: 2, evaluationsSuppressed: 1, smsTasksCreated: 1 });
-  const exhaustionSmsState = await post<{ evaluation: { status: string }; rows: Array<{ recipient_account_id: string; status: string }> }>("/sms-state", {
-    alertId: exhaustionAlert.data.alertId,
+  assert.deepEqual(suppressedReminder.data, { claimed: 1, providerAccepted: 1, retryScheduled: 0, terminalFailures: 0, completionErrors: 0, smsEvaluationsCreated: 1, smsEvaluationsSuppressed: 1, smsTasksCreated: 0 });
+  const duplicateSuppressedEvaluation = await post<{ evaluationsCreated: number; evaluationsSuppressed: number; smsTasksCreated: number }>("/sms-escalate", {
+    now: suppressedBase + 300_000,
   });
-  assert.equal(exhaustionSmsState.data.evaluation.status, "queued");
-  assert.deepEqual(exhaustionSmsState.data.rows.map(x => x.recipient_account_id), [contact]);
-  assert.equal(exhaustionSmsState.data.rows[0].status, "pending");
+  assert.deepEqual(duplicateSuppressedEvaluation.data, { evaluationsCreated: 0, evaluationsSuppressed: 0, smsTasksCreated: 0 });
   const suppressedState = await post<{ evaluation: { status: string }; rows: unknown[] }>("/sms-state", {
     alertId: suppressedAlert.data.alertId,
   });
