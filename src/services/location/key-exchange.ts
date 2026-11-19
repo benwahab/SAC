@@ -7,6 +7,8 @@
  * signature et révocation est obligatoire avant toute utilisation réelle.
  * Ce module n'est pas branché à l'application.
  */
+import { isCanonicalP256PublicJwk } from "../crypto/p256-jwk.ts";
+
 const encoder = new TextEncoder();
 const SALT_LENGTH = 32;
 
@@ -28,17 +30,7 @@ function requireContext(value: string, label: string): void {
 }
 
 function isP256PublicJwk(value: unknown): value is JsonWebKey {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
-  const jwk = value as Record<string, unknown>;
-  return (
-    jwk.kty === "EC" &&
-    jwk.crv === "P-256" &&
-    typeof jwk.x === "string" &&
-    /^[A-Za-z0-9_-]{43}$/.test(jwk.x) &&
-    typeof jwk.y === "string" &&
-    /^[A-Za-z0-9_-]{43}$/.test(jwk.y) &&
-    !("d" in jwk)
-  );
+  return isCanonicalP256PublicJwk(value);
 }
 
 export interface LocationExchangeKeyPair {
