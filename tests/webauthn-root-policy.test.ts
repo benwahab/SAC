@@ -41,3 +41,24 @@ test("fails closed when the validator cannot classify the credential", () => {
     { accepted: false, reason: "credential_not_single_device" },
   );
 });
+
+test("fails closed for null, arrays and malformed validator output", () => {
+  for (const input of [null, undefined, [], "singleDevice", 1, {}]) {
+    assert.deepEqual(
+      evaluateWebAuthnRootCredentialPolicy(input),
+      { accepted: false, reason: "credential_not_single_device" },
+    );
+  }
+});
+
+test("fails closed when backup state is not a boolean", () => {
+  for (const credentialBackedUp of [undefined, null, 0, "false"]) {
+    assert.deepEqual(
+      evaluateWebAuthnRootCredentialPolicy({
+        credentialDeviceType: "singleDevice",
+        credentialBackedUp,
+      }),
+      { accepted: false, reason: "backup_state_inconsistent" },
+    );
+  }
+});
