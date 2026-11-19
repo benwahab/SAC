@@ -21,6 +21,9 @@ CREATE TABLE push_subscriptions (
 CREATE INDEX push_subscriptions_account_device
   ON push_subscriptions(account_id, device_id, status);
 
+CREATE UNIQUE INDEX push_subscriptions_one_active_per_device
+  ON push_subscriptions(device_id) WHERE status = 'active';
+
 CREATE TRIGGER push_subscription_update_guard
 BEFORE UPDATE ON push_subscriptions
 BEGIN
