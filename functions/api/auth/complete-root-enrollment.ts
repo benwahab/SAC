@@ -67,7 +67,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ error: "enrollment_expired_or_unavailable" }, 409);
   }
 
-  let verified;
+  let verified: Awaited<ReturnType<typeof verifyRootRegistrationResponse>>;
   try {
     verified = await verifyRootRegistrationResponse({
       response: body.credential,
@@ -93,7 +93,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const credentialRecordId = crypto.randomUUID();
   const sessionId = crypto.randomUUID();
   const eventId = crypto.randomUUID();
-  let session;
+  let session: Awaited<ReturnType<typeof createSessionToken>>;
   try { session = await createSessionToken(crypto); }
   catch { return json({ error: "session_creation_unavailable" }, 503); }
   const expiresAt = now + 30 * 24 * 60 * 60 * 1000;
