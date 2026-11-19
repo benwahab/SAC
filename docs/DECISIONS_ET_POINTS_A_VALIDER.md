@@ -1219,3 +1219,8 @@ L'étude ACL a été complétée par une réserve bloquante : un pré-hook UDF d
 ### Exemple Microsoft UDE analysé — 19 novembre 2026
 
 Le dépôt public Microsoft `azureconfidentialledger-app-samples/code-transparency` montre une application UDE avec routes métier personnalisées, tables KV et compteur de séquence applicatif. L'étude SAC décrit le périmètre de ce précédent et les preuves encore manquantes : transaction ID/reçu pour une écriture UDE, reprise après réponse perdue, interdiction des écritures natives directes et append-only effectif des clés. Voir section 12 de l'étude. Cela justifie de poursuivre l'analyse UDE, sans déclarer ACL sélectionné ni autoriser un déploiement.
+
+
+### Résidence et coût ACL — précision (19 novembre 2026)
+
+La réplication vers la région jumelée est obligatoire et non désactivable. La page tarifaire publique ne fournit pas de montant exploitable et indique une disponibilité limitée selon les régions. Aucun budget ni région n'est donc validé ; un devis et l'accord sur les deux régions seraient requis avant toute création. Détails dans la section 13 de l'étude d'intégration.
