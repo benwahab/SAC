@@ -1204,3 +1204,8 @@ Les recommandations et blocages techniques liés à l'enrôlement WebAuthn, au m
 ## Protection anti-retour-arrière (19 novembre 2026)
 
 L'architecture candidate et le modèle de test isolé sont décrits dans [ARCHITECTURE_PROTECTION_ANTI_RESTAURATION_V1.md](ARCHITECTURE_PROTECTION_ANTI_RESTAURATION_V1.md). Le stockage SQLite des Durable Objects dispose lui aussi d'un PITR : il n'est donc pas retenu comme ancre indépendante de D1. Le test ajouté est un modèle en mémoire, pas une preuve fournisseur. Le choix du service externe, les garanties d'immutabilité et la procédure de reprise restent ouverts. Aucun service ni secret n'a été créé ; NO-GO production maintenu.
+
+
+## Étude d'intégration Azure Confidential Ledger — 19 novembre 2026
+
+L'étude [ETUDE_INTEGRATION_AZURE_CONFIDENTIAL_LEDGER_CLOUDFLARE_WORKERS_V1.md](ETUDE_INTEGRATION_AZURE_CONFIDENTIAL_LEDGER_CLOUDFLARE_WORKERS_V1.md) documente l'API REST, les reçus, l'idempotence, l'authentification, les limites Cloudflare Workers, la résidence et les coûts. Elle identifie un compare-and-append candidat via UDF pré-hook atomique dans ACL, mais exige des tests de concurrence et de rollback sur un vrai registre. La connexion directe Worker → ACL reste non prouvée en raison de la validation TLS par certificat d'identité ; une passerelle dédiée est seulement une option de repli à étudier. ACL n'est pas choisi, aucune ressource ni secret n'a été créé, et le NO-GO production est maintenu.
