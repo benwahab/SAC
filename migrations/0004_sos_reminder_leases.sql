@@ -21,3 +21,16 @@ BEGIN
     AND (NEW.lease_until IS NOT NULL OR NEW.lease_token IS NOT NULL)
     THEN RAISE(ABORT, 'alert_reminder_nonprocessing_cannot_hold_lease') END;
 END;
+
+DROP TRIGGER alert_close_cancels_pending_reminders;
+CREATE TRIGGER alert_close_cancels_pending_reminders
+AFTER UPDATE OF status ON alerts
+WHEN OLD.status = 'active' AND NEW.status = 'closed_by_author'
+BEGIN
+  UPDATE alert_reminder_outbox
+  SET status = 'cancelled',
+      processed_at = NEW.closed_at,
+      lease_until = NULL,
+      lease_token = NULL
+  WHERE alert_id = NEW.id AND status IN ('pending', 'processing');
+END;
