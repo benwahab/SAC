@@ -242,3 +242,20 @@ La page `src/App.tsx` contient une page d'accueil de présentation et une page `
 6. Vérifier les migrations et la CI dans un environnement de build ; aucune migration distante ni aucun déploiement n'est autorisé par cet audit.
 
 Aucun écran ou service métier déjà présent ne doit être réécrit au seul motif qu'il ne dispose pas encore de route ou d'interface.
+
+## Mise à jour — interface de l'espace privé (19 novembre 2026)
+
+Une première interface réellement raccordée aux API existantes a été ajoutée sur `/espace-prive` :
+
+- vérification de la session active via `GET /api/auth/session` avant le chargement ;
+- lecture du cercle de confiance via `GET /api/contacts` ;
+- envoi d'invitation via `POST /api/contacts/invitations` ;
+- révocation unilatérale d'un proche via `POST /api/contacts/revoke` ;
+- déconnexion via `POST /api/auth/logout` ;
+- états de chargement, erreurs et confirmation affichés sans présenter une invitation comme acceptée.
+
+Le parcours est volontairement limité aux capacités réellement exposées par les API. La page ne prétend pas fournir l'historique des invitations, le statut de livraison push/SMS, ni un tableau de bord SOS complet. L'accès reste conditionné à une session valide ; le parcours d'authentification WebAuthn de connexion reste à finaliser.
+
+Fichiers concernés : `src/PrivateSpacePage.tsx`, `src/App.tsx`.
+
+Cette interface n'est pas considérée comme validée en production : D1 distante reste non initialisée (zéro table lors du dernier contrôle) et aucun projet Pages n'a été observé dans le compte Cloudflare connecté. Aucun déploiement ni changement distant n'a été effectué.
