@@ -103,3 +103,33 @@ L'intégration ne pourra être déclarée GO que lorsque :
 - Cloudflare Workers, Web Crypto : https://developers.cloudflare.com/workers/runtime-apis/web-crypto/
 
 Consultation effectuée le 19 novembre 2026. Les versions et compatibilités devront être revérifiées au moment du test d'intégration.
+
+
+## 9. Résultat du premier test runtime — 19 novembre 2026
+
+**GO pour la compatibilité de base du paquet dans le runtime Workers local ; pas de GO pour l'intégration métier.**
+
+Le dépôt contient maintenant un test isolé :
+- `tests/workers/webauthn-smoke-worker.ts` ;
+- `tests/wrangler.webauthn.toml` ;
+- `tests/webauthn-workers-smoke.test.ts` ;
+- commande `npm run test:webauthn-workers`.
+
+Le workflow CI installe `@simplewebauthn/server@14.1.0` en dépendance temporaire de test avec `npm install --no-save --package-lock=false`. Le paquet n'a donc pas été ajouté aux dépendances applicatives de `package.json` et le lockfile de production n'a pas été modifié.
+
+Résultat observé dans GitHub Actions :
+- le module s'importe dans le Worker local ;
+- `generateRegistrationOptions()` s'exécute dans le Worker ;
+- le Worker retourne un challenge et les options attendues : RP ID, authentificateur de plateforme, clé résidente requise, vérification utilisateur requise et algorithme ES256 (-7) ;
+- le chemin de vérification rejette une réponse volontairement invalide ;
+- le reste du workflow (tests existants, typecheck, build, audit bloquant des dépendances de production et audit complet) passe également.
+
+**Workflow complet :** [SAC quality checks — run 44474843292](https://github.com/benwahab/SAC/actions/runs/44474843292)  
+**Commit testé :** `1e127db1704dcba386b439cfe2e19689fa50dec4`  
+**Conclusion GitHub Actions :** `success`.
+
+Ce test est un smoke test de runtime. Il ne prouve pas encore qu'une véritable attestation WebAuthn valide passe avec un authentificateur physique, ni que les contrôles BE/BS sont rejetés/acceptés correctement à partir de fixtures authentiques. Il ne teste pas la vérification complète des signatures d'inscription/authentification, l'approbation du transcript, les courses D1 ou le parcours réel Android.
+
+La configuration du test reprend la date de compatibilité du dépôt (`2026-11-17`). Cloudflare active automatiquement la compatibilité Node.js pour les dates à partir du 4 août 2026 ; aucun drapeau supplémentaire n'a été ajouté. Référence : https://developers.cloudflare.com/workers/runtime-apis/nodejs/
+
+**Décision technique actualisée :** conserver SimpleWebAuthn 14.1.0 comme candidat et poursuivre vers un test cryptographique complet avec des fixtures WebAuthn valides, avant d'ajouter la dépendance au runtime applicatif ou de créer les tables D1 d'enrôlement.
