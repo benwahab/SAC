@@ -25,3 +25,13 @@ test("refuse un hash mal formé ou des paramètres inattendus", async () => {
   assert.equal(await verifyAccountPassword(cryptoProvider, "password", "sha256$1$bad$bad"), false);
   assert.equal(await verifyAccountPassword(cryptoProvider, "password", "pbkdf2-sha256$1$bad$bad"), false);
 });
+
+test("refuse les vérificateurs surdimensionnés et les entrées de vérification non textuelles", async () => {
+  const encoded = await hashAccountPassword(cryptoProvider, "une phrase de passe valide");
+  assert.equal(await verifyAccountPassword(cryptoProvider, "une phrase de passe valide", "x".repeat(257)), false);
+  assert.equal(await verifyAccountPassword(cryptoProvider, "une phrase de passe valide", encoded + "$extra"), false);
+  assert.equal(await verifyAccountPassword(cryptoProvider, "", encoded), false);
+  assert.equal(await verifyAccountPassword(cryptoProvider, "une phrase de passe valide", null as never), false);
+  assert.equal(await verifyAccountPassword(cryptoProvider, "une phrase de passe valide", 42 as never), false);
+  assert.equal(await verifyAccountPassword(cryptoProvider, null as never, encoded), false);
+});
