@@ -10,6 +10,7 @@ interface Env {
   WEBAUTHN_RP_ID?: string;
   WEBAUTHN_RP_NAME?: string;
   WEBAUTHN_ALLOWED_ORIGINS?: string;
+  EMAIL_OTP_HMAC_SECRET?: string;
 }
 const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" };
 const DUMMY_PASSWORD_HASH = "pbkdf2-sha256$600000$PFp-kbLU9ggaPF5_kLLU9g$UH7I5h10GxoZrC61QkcmamX2kS6MSnPQ8-aJwoD_mWA";
@@ -39,7 +40,7 @@ function configuredOrigins(value: string | undefined): string[] {
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const guard = guardSameOriginJsonPost(request);
   if (guard) return guard;
-  if (!env.DB || !env.WEBAUTHN_RP_ID || !env.WEBAUTHN_RP_NAME) return json({ error: "root_enrollment_unavailable" }, 503);
+  if (!env.DB || !env.WEBAUTHN_RP_ID || !env.WEBAUTHN_RP_NAME || !env.EMAIL_OTP_HMAC_SECRET || env.EMAIL_OTP_HMAC_SECRET.length < 32) return json({ error: "root_enrollment_unavailable" }, 503);
   const origins = configuredOrigins(env.WEBAUTHN_ALLOWED_ORIGINS);
   const origin = request.headers.get("Origin");
   if (!origin || !isAllowedWebAuthnOrigin(origin, env.WEBAUTHN_RP_ID, origins)) {
@@ -56,7 +57,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   const now = Date.now();
-  const emailHashBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("SAC:root-enrollment-rate:v1:" + email)));
+  const rateKey = await crypto.subtle.importKey("raw", new TextEncoder().encode(env.EMAIL_OTP_HMAC_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);\n  const emailHashBytes = new Uint8Array(await crypto.subtle.sign("HMAC", rateKey, new TextEncoder().encode("SAC:root-enrollment-rate:v1:" + email)));
   const emailHash = Array.from(emailHashBytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
   try {
     await env.DB.prepare(
