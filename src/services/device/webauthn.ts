@@ -62,8 +62,8 @@ export function decodeBase64Url(value: string, label: string): Uint8Array {
   const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
   const canonical = globalThis.btoa(String.fromCharCode(...bytes))
     .replace(/=/g, "")
-    .replace(/\\+/g, "-")
-    .replace(/\\//g, "_");
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
   if (canonical !== value) {
     throw new Error(`Le champ WebAuthn ${label} n'est pas un Base64URL canonique.`);
   }
@@ -175,6 +175,6 @@ function encodeBase64Url(bytes: Uint8Array): string {
   }
   return globalThis.btoa(binary)
     .replace(/=/g, "")
-    .replace(/\\+/g, "-")
-    .replace(/\\//g, "_");
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
 }
