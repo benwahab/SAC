@@ -45,6 +45,13 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   const created = await post<{ alertId: string }>("/create", { owner, recipients: [contact, contact2], reminders: 2, now });
   assert.equal(created.status, 200, JSON.stringify(created.data));
   const alertId = created.data.alertId;
+  const noLeadYet = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: contact, alertId });
+  assert.equal(noLeadYet.status, 200);
+  assert.deepEqual(noLeadYet.data, { assigned: false, isSelf: false });
+  const authorCannotSeeAnotherLeadIdentity = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: owner, alertId });
+  assert.deepEqual(authorCannotSeeAnotherLeadIdentity.data, { assigned: false, isSelf: false });
+  const outsiderCannotReadResponsibility = await post<{ error: string }>("/responsibility", { actor: outsider, alertId });
+  assert.equal(outsiderCannotReadResponsibility.status, 404);
   const invalidZeroReminder = await post<{ error: string }>("/create", {
     owner, recipients: [contact], reminders: 0, now: now + 1,
   });
@@ -82,6 +89,10 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   const volunteer = await post<{ responsibilityAssigned: boolean }>("/respond", { actor: contact, alertId, action: "volunteer", now: now + 2 });
   assert.equal(volunteer.status, 200);
   assert.equal(volunteer.data.responsibilityAssigned, true);
+  const firstLeadView = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: contact, alertId });
+  assert.deepEqual(firstLeadView.data, { assigned: true, isSelf: true });
+  const otherRecipientLeadView = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: contact2, alertId });
+  assert.deepEqual(otherRecipientLeadView.data, { assigned: true, isSelf: false });
   const secondVolunteer = await post<{ responsibilityAssigned: boolean }>("/respond", { actor: contact2, alertId, action: "volunteer", now: now + 3 });
   assert.equal(secondVolunteer.status, 200);
   assert.equal(secondVolunteer.data.responsibilityAssigned, false);
@@ -91,6 +102,10 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   const handoverCheck = await post<{ responsibilityAssigned: boolean }>("/respond", { actor: contact2, alertId, action: "volunteer", now: now + 5 });
   assert.equal(handoverCheck.status, 200);
   assert.equal(handoverCheck.data.responsibilityAssigned, true);
+  const newLeadView = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: contact2, alertId });
+  assert.deepEqual(newLeadView.data, { assigned: true, isSelf: true });
+  const formerLeadView = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: contact, alertId });
+  assert.deepEqual(formerLeadView.data, { assigned: true, isSelf: false });
 
   const events = await post<Array<{ type: string }>>("/events", { actor: contact2, alertId });
   assert.equal(events.status, 200);
@@ -159,6 +174,8 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   const closedEvents = await post<Array<{ type: string }>>("/events", { actor: owner, alertId });
   assert.equal(closedEvents.status, 200);
   assert.deepEqual(closedEvents.data.map(x => x.type), ["triggered", "acknowledged", "volunteered", "volunteered", "withdrew", "closed_by_author"]);
+  const closedResponsibility = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", { actor: contact2, alertId });
+  assert.deepEqual(closedResponsibility.data, { assigned: false, isSelf: false });
 
   const followup = await post<{ alertId: string }>("/create", {
     owner, recipients: [contact], reminders: 1, now: now + 500_000,
