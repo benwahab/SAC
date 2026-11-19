@@ -14,6 +14,7 @@ const env = {
   WEBAUTHN_RP_NAME: "SAC",
   WEBAUTHN_ALLOWED_ORIGINS: '["https://sac.example"]',
   EMAIL_OTP_HMAC_SECRET: "x".repeat(32),
+  WEBAUTHN_ROOT_ENROLLMENT_ENABLED: "true",
 };
 
 function post(path: string, body = "{}") {
@@ -35,6 +36,26 @@ test("root options rejects missing and untrusted origins before database access"
   });
   assert.equal((await rootOptions({ request: missing, env } as never)).status, 403);
   assert.equal((await rootOptions({ request: untrusted, env } as never)).status, 403);
+});
+
+test("root enrollment endpoints stay disabled unless explicitly approved", async () => {
+  const disabledEnv = { ...env, WEBAUTHN_ROOT_ENROLLMENT_ENABLED: undefined };
+  const options = await rootOptions({
+    request: post("root-enrollment-options", JSON.stringify({ email: "person@example.com", password: "not-used" })),
+    env: disabledEnv,
+  } as never);
+  assert.equal(options.status, 503);
+  assert.deepEqual(await options.json(), { error: "root_enrollment_not_approved" });
+
+  const completion = await completeRoot({
+    request: post("complete-root-enrollment", JSON.stringify({
+      ceremonyId: "123e4567-e89b-42d3-a456-426614174000",
+      credential: {},
+    })),
+    env: disabledEnv,
+  } as never);
+  assert.equal(completion.status, 503);
+  assert.deepEqual(await completion.json(), { error: "root_enrollment_not_approved" });
 });
 
 test("root options rejects malformed input before database access", async () => {
