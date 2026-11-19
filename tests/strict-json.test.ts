@@ -93,7 +93,7 @@ test("la canonicalisation ne normalise pas Unicode", () => {
 
 
 test("JCS trie les noms de propriétés selon les unités de code UTF-16", () => {
-  const source = String.raw`{"\\uE000":1,"\\uD83D\\uDE00":2}`;
+  const source = String.raw`{"\uE000":1,"\uD83D\uDE00":2}`;
   assert.equal(canonicalizeStrictJson(source, limits), '{"😀":2,"":1}');
 });
 
