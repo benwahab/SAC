@@ -96,8 +96,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   try {
     const inserted = await env.DB.prepare(
       `INSERT INTO email_otp_challenges
-       (id, account_id, identity_id, purpose, digest, attempt_count, max_attempts, created_at, expires_at)
-       VALUES (?, ?, ?, 'account_email_verification', ?, 0, 6, ?, ?)`,
+       (id, account_id, identity_id, purpose, digest, attempt_count, max_attempts, created_at, expires_at, delivery_status)
+       VALUES (?, ?, ?, 'account_email_verification', ?, 0, 6, ?, ?, 'pending')`,
     ).bind(
       challengeId,
       record.account_id,
@@ -115,7 +115,31 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   const delivery = await sendAccountVerificationCode(env, email, code, record.language);
-  if (!delivery.ok) return json(ACCEPTED);
+  const deliveryStatus = delivery.ok ? "accepted" : "failed";
+
+  try {
+    await env.DB.prepare(
+      `UPDATE email_otp_challenges
+       SET delivery_status = ?
+       WHERE id = ?
+         AND delivery_status = 'pending'
+         AND expires_at > ?
+         AND EXISTS (
+           SELECT 1
+           FROM accounts a
+           JOIN account_identities i ON i.account_id = a.id
+           WHERE a.id = email_otp_challenges.account_id
+             AND a.status = 'pending_verification'
+             AND i.id = email_otp_challenges.identity_id
+             AND i.channel = 'email'
+             AND i.is_primary = 1
+             AND i.verified_at IS NULL
+         )`,
+    ).bind(deliveryStatus, challengeId, Date.now()).run();
+  } catch {
+    // En cas d'incident D1, le défi reste pending et ne peut pas être vérifié.
+    // Le défi livré précédemment n'a pas été invalidé.
+  }
 
   return json(ACCEPTED);
 };
