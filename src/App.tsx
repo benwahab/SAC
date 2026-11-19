@@ -319,6 +319,7 @@ function LoginPage({ language, setLanguage }: LoginPageProps) {
         {mode === "complete" && (
           <div className="mt-8 space-y-4">
             <div className="rounded-xl border border-sac-confirm/25 bg-sac-confirm/10 p-4 text-sm leading-6 text-sac-ink" role="status">{copy.rootSuccess}</div>
+            <a href="/espace-prive" className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-sac-primary-strong px-4 text-sm font-extrabold text-white">Ouvrir mon espace privé</a>
             <a href="/" className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-white/90 bg-white/70 px-4 text-sm font-bold text-sac-ink">{copy.home}</a>
           </div>
         )}
