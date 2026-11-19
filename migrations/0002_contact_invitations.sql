@@ -38,6 +38,23 @@ CREATE TABLE contact_invitations (
   CHECK (recipient_account_id IS NULL OR recipient_account_id <> inviter_account_id)
 );
 
+
+CREATE TRIGGER contact_invitation_insert_guard
+BEFORE INSERT ON contact_invitations
+BEGIN
+  SELECT CASE WHEN NOT EXISTS (
+    SELECT 1
+    FROM accounts a
+    JOIN account_identities i ON i.account_id = a.id
+    WHERE a.id = NEW.inviter_account_id
+      AND a.status = 'active'
+      AND i.channel = 'email'
+      AND i.is_primary = 1
+      AND i.verified_at IS NOT NULL
+      AND i.normalized_value <> NEW.destination_email
+  ) THEN RAISE(ABORT, 'contact_invitation_inviter_not_eligible') END;
+END;
+
 CREATE UNIQUE INDEX contact_invitations_one_pending_destination
   ON contact_invitations(inviter_account_id, destination_email)
   WHERE status = 'pending';
