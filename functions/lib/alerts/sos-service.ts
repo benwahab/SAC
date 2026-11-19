@@ -376,8 +376,10 @@ export async function respondToSosAlert(
       if (results.some((result) => !result.success)) return fail("storage_unavailable");
       if (results[0].meta.changes !== 1) {
         const prior = await db.prepare(
-          `SELECT 1 AS present FROM alert_events
-           WHERE alert_id = ? AND actor_account_id = ? AND event_type = 'volunteered'`,
+          `SELECT 1 AS present
+           FROM alert_events e JOIN alerts a ON a.id = e.alert_id
+           WHERE e.alert_id = ? AND e.actor_account_id = ?
+             AND e.event_type = 'volunteered' AND a.status = 'active'`,
         ).bind(input.alertId, input.authenticatedAccountId).first<{ present: number }>();
         if (!prior) return fail("alert_not_found_or_closed");
       }
