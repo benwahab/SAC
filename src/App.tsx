@@ -284,6 +284,7 @@ export default function App() {
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [installHelp, setInstallHelp] = useState<"ios" | "android" | null>(null);
   const [isAppleDevice, setIsAppleDevice] = useState(false);
+  const [isAndroidDevice, setIsAndroidDevice] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [networkOnline, setNetworkOnline] = useState(() => navigator.onLine);
   const [language, setLanguage] = useState<Language>(() => {
@@ -316,7 +317,9 @@ export default function App() {
 
     const isAppleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const isAndroid = /Android/i.test(navigator.userAgent);
     setIsAppleDevice(isAppleMobile);
+    setIsAndroidDevice(isAndroid);
     if (!standalone && isAppleMobile) setInstallHelp("ios");
 
     const handleBeforeInstall = (event: Event) => {
@@ -427,7 +430,7 @@ export default function App() {
           <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-sac-muted">{t.appName}</span>
         </a>
         <div className="flex items-center gap-2 sm:gap-3">
-          {!isInstalled && (installPrompt || installHelp || isAppleDevice) && (
+          {!isInstalled && (installPrompt || installHelp || isAppleDevice || isAndroidDevice) && (
             <button type="button" onClick={() => void installApp()} className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-sac-confirm/25 bg-white/75 px-3 py-2 text-xs font-extrabold text-sac-ink shadow-glass hover:bg-white">
               <Download size={14} />{t.installApp}
             </button>
