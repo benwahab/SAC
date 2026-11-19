@@ -308,3 +308,10 @@ La politique de sérialisation par compte et génération racine doit être déf
 Le modèle relationnel conceptuel est désormais décrit, mais il ne lève aucun NO-GO. Les tables et noms sont provisoires, les décisions ouvertes restent ouvertes, et aucune migration/API/session n'est créée par ce document.
 
 **Prochaine étape logique :** revue critique du modèle et fermeture des questions bloquantes, puis seulement rédaction du schéma SQL final. La racine unique et l'interdiction de récupération/remplacement de racine en V1 restent inchangées.
+
+
+## 11. Complément — arbitrages techniques proposés
+
+Le document [ARBITRAGES_TECHNIQUES_ENROLEMENT_APPAREILS_V1.md](ARBITRAGES_TECHNIQUES_ENROLEMENT_APPAREILS_V1.md) consolide les recommandations sur la normalisation racine/appareil, les cérémonies concurrentes, le nonce et le transcript, les TTL, SimpleWebAuthn, la transaction D1, les sessions et l'audit.
+
+Il ajoute un point bloquant : D1 Time Travel peut restaurer un état antérieur et donc réintroduire dans D1 un état précédant une révocation. Une stratégie anti-retour-arrière indépendante ou une procédure de restauration fail-closed doit être conçue et testée avant la production. Ce complément ne valide aucun arbitrage et ne lève aucun NO-GO.
