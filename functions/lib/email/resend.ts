@@ -63,14 +63,13 @@ export async function sendAccountVerificationCode(
   const normalizedRecipient = recipient.trim();
   if (
     normalizedRecipient.length > 254 ||
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedRecipient) ||
-    code.length === 0 ||
-    code.length > 32
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedRecipient)
   ) {
     return { ok: false, reason: "invalid_recipient" };
   }
-  if (!/^\\d{6}$/.test(code)) return { ok: false, reason: "invalid_code" };
+  if (!/^\d{6}$/.test(code)) return { ok: false, reason: "invalid_code" };
 
+  
   const template = copy[language];
   const safeCode = escapeHtml(code);
   const direction = language === "ar" ? "rtl" : "ltr";
