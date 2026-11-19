@@ -55,6 +55,8 @@ Le serveur :
 
 Le décodeur CBOR est borné en taille/profondeur et refuse les longueurs non canoniques, les valeurs non prises en charge et les données résiduelles.
 
+**Choix de vérificateur à revoir :** le smoke test SimpleWebAuthn 14.1.0 reste une dépendance installée uniquement dans le job CI. L'endpoint d'enrôlement utilise actuellement un vérificateur natif restreint au profil `none`/ES256, sans dépendance runtime supplémentaire. Cette implémentation n'est pas homologuée par une revue WebAuthn indépendante. Il faut comparer/remplacer cette voie par SimpleWebAuthn comme dépendance de production dès que le verrouillage package/lockfile et la compatibilité Workers sont résolus. Ne pas ouvrir le parcours en production avant cette revue.
+
 **Limite du profil none :** l'attestation ne fournit pas de signature de fabricant ou de preuve matérielle d'authenticité. Le serveur valide la structure, le challenge, l'origine, le RP ID et la clé publique ; la preuve de possession de la clé privée doit être apportée lors d'une authentification WebAuthn ultérieure.
 
 ### 1.4 Persistance D1 et première session
