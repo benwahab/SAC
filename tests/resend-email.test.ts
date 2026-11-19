@@ -29,7 +29,7 @@ test("un code vide est rejeté avant tout appel fournisseur", async () => {
       "",
       "fr",
     ),
-    { ok: false, reason: "invalid_recipient" },
+    { ok: false, reason: "invalid_code" },
   );
 });
 
