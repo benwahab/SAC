@@ -347,10 +347,14 @@ export async function respondToSosAlert(
            (id, alert_id, actor_account_id, event_type, occurred_at, server_sequence)
            SELECT ?, ?, ?, 'volunteered', ?,
              COALESCE((SELECT MAX(server_sequence) FROM alert_events WHERE alert_id = ?), 0) + 1
-           WHERE EXISTS (SELECT 1 FROM alerts WHERE id = ? AND status = 'active')`,
+           WHERE EXISTS (SELECT 1 FROM alerts WHERE id = ? AND status = 'active')
+             AND NOT EXISTS (
+               SELECT 1 FROM alert_events
+               WHERE alert_id = ? AND actor_account_id = ? AND event_type IN ('volunteered', 'withdrew')
+             )`,
         ).bind(
           cryptoProvider.randomUUID(), input.alertId, input.authenticatedAccountId,
-          now, input.alertId, input.alertId,
+          now, input.alertId, input.alertId, input.alertId, input.authenticatedAccountId,
         ),
         db.prepare(
           `INSERT INTO alert_responsibility_periods
@@ -370,7 +374,13 @@ export async function respondToSosAlert(
         ).bind(cryptoProvider.randomUUID(), input.alertId, input.authenticatedAccountId),
       ]);
       if (results.some((result) => !result.success)) return fail("storage_unavailable");
-      if (results[0].meta.changes !== 1) return fail("alert_not_found_or_closed");
+      if (results[0].meta.changes !== 1) {
+        const prior = await db.prepare(
+          `SELECT 1 AS present FROM alert_events
+           WHERE alert_id = ? AND actor_account_id = ? AND event_type = 'volunteered'`,
+        ).bind(input.alertId, input.authenticatedAccountId).first<{ present: number }>();
+        if (!prior) return fail("alert_not_found_or_closed");
+      }
       return {
         ok: true,
         value: { recorded: true, responsibilityAssigned: results[1].meta.changes === 1 },
@@ -395,10 +405,13 @@ export async function respondToSosAlert(
          SELECT ?, ?, ?, 'withdrew', ?
          WHERE EXISTS (SELECT 1 FROM alerts WHERE id = ? AND status = 'active')
            AND EXISTS (SELECT 1 FROM alert_events
-             WHERE alert_id = ? AND actor_account_id = ? AND event_type = 'volunteered')`,
+             WHERE alert_id = ? AND actor_account_id = ? AND event_type = 'volunteered')
+           AND NOT EXISTS (SELECT 1 FROM alert_events
+             WHERE alert_id = ? AND actor_account_id = ? AND event_type = 'withdrew')`,
       ).bind(
         cryptoProvider.randomUUID(), input.alertId, input.authenticatedAccountId, now,
         input.alertId, input.alertId, input.authenticatedAccountId,
+        input.alertId, input.authenticatedAccountId,
       ),
       db.prepare(
         `UPDATE alert_responsibility_periods
