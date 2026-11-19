@@ -49,11 +49,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (!isUuid(body.ceremonyId) || typeof body.credential !== "object" || body.credential === null || Array.isArray(body.credential)) return json({ error: "invalid_enrollment" }, 400);
 
   const now = Date.now();
-  type Ceremony = { id: string; account_id: string; status: string; expires_at: number; challenge_id: string; challenge_digest: string; attempt_count: number; account_status: string };
+  type Ceremony = { id: string; account_id: string; origin: string; status: string; expires_at: number; challenge_id: string; challenge_digest: string; attempt_count: number; account_status: string };
   let ceremony: Ceremony | null;
   try {
     ceremony = await env.DB.prepare(
-      `SELECT c.id, c.account_id, c.status, c.expires_at,
+      `SELECT c.id, c.account_id, c.origin, c.status, c.expires_at,
               ch.id AS challenge_id, ch.challenge_digest, ch.attempt_count,
               a.status AS account_status
        FROM root_enrollment_ceremonies c
@@ -62,7 +62,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
        WHERE c.id = ? LIMIT 1`,
     ).bind(body.ceremonyId).first<Ceremony>();
   } catch { return json({ error: "root_enrollment_unavailable" }, 503); }
-  if (!ceremony || ceremony.status !== "pending" || ceremony.account_status !== "active" ||
+  if (!ceremony || ceremony.origin !== origin || ceremony.status !== "pending" || ceremony.account_status !== "active" ||
       ceremony.expires_at <= now || ceremony.attempt_count >= 5) {
     return json({ error: "enrollment_expired_or_unavailable" }, 409);
   }
@@ -72,6 +72,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     verified = await verifyRootRegistrationResponse({
       response: body.credential,
       expectedChallengeDigest: ceremony.challenge_digest,
+      expectedOrigin: ceremony.origin,
       rpId: env.WEBAUTHN_RP_ID,
       allowedOrigins,
       cryptoProvider: crypto,
