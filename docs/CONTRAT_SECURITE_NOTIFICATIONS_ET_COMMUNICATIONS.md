@@ -78,7 +78,11 @@ Exigences cibles :
 
 Les réponses 404/410 et autres erreurs fournisseur doivent être classées sans exposer l'endpoint. Les erreurs transitoires peuvent être réessayées avec une stratégie bornée et une déduplication ; les erreurs permanentes désactivent l'abonnement après vérification.
 
-**À arbitrer :** nombre maximal d'appareils et d'abonnements, politique de renouvellement, chiffrement/gestion des clés, délais de retry, durée de conservation et comportement multi-appareils. Aucun seuil numérique n'est fixé ici.
+**État d'implémentation — première tranche sur main :** la migration `0008_push_subscriptions.sql` et `POST /api/push/subscriptions` existent. L'API exige une session d'appareil active et same-origin, lie chaque enregistrement au compte/appareil issus de la session, chiffre l'endpoint et les clés par AES-256-GCM avec une clé dérivée HKDF, et ne renvoie jamais l'endpoint. L'empreinte HMAC sert à l'unicité. La révocation de l'appareil supprime les enregistrements via trigger D1. L'action `remove` supprime les abonnements du seul appareil courant.
+
+Le secret Cloudflare `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` (32 octets base64url) n'est pas configuré. L'API échoue donc fermé tant qu'il manque. La migration n'est pas appliquée à une base distante et le client PWA n'appelle pas encore cette API. Aucun fournisseur VAPID ni worker de livraison n'est connecté. Cette implémentation ne signifie pas que les notifications push fonctionnent.
+
+**À arbitrer :** nombre maximal d'abonnements par appareil, renouvellement, rotation des clés au-delà de la version v1, délais de retry, durée de conservation et comportement multi-appareils. Aucun seuil numérique n'est fixé ici.
 
 ## 6. E-mail : vérification, invitations et communications
 
