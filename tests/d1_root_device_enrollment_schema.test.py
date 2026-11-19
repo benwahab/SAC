@@ -108,6 +108,12 @@ class RootDeviceEnrollmentSchemaTests(unittest.TestCase):
         self.assertEqual(self.db.execute("SELECT device_id FROM device_sessions WHERE id=?", (session,)).fetchone()[0], device)
         with self.assertRaises(sqlite3.IntegrityError):
             self.db.execute("INSERT INTO devices (id,account_id,status,auth_version,created_at,revoked_at) VALUES ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',?,'active',1,?,NULL)", (self.account_id, self.now + 2))
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("UPDATE root_enrollment_ceremonies SET origin='https://evil.example' WHERE id=?", (ceremony,))
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("DELETE FROM device_enrollment_events WHERE ceremony_id=?", (ceremony,))
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("UPDATE device_sessions SET last_activity_at=created_at-1 WHERE id=?", (session,))
 
     def test_failed_verification_attempts_are_counted_and_capped(self):
         ceremony = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
@@ -131,6 +137,28 @@ class RootDeviceEnrollmentSchemaTests(unittest.TestCase):
         self.db.execute("INSERT INTO root_enrollment_challenges (id,ceremony_id,account_id,challenge_digest,created_at,expires_at) VALUES (?,?,?,?,?,?)", (challenge, ceremony, self.account_id, "e" * 64, created + 1, expires))
         self.db.execute("UPDATE root_enrollment_ceremonies SET status='expired' WHERE id=?", (ceremony,))
         self.assertEqual(self.db.execute("SELECT status FROM root_enrollment_ceremonies WHERE id=?", (ceremony,)).fetchone()[0], "expired")
+
+
+    def test_abandoned_pending_ceremony_can_be_cancelled_and_replaced(self):
+        first = "aaaaaaaa-1111-4111-8111-111111111111"
+        first_challenge = "bbbbbbbb-1111-4111-8111-111111111111"
+        second = "cccccccc-1111-4111-8111-111111111111"
+        now = self.now + 100
+        self.db.execute(
+            "INSERT INTO root_enrollment_ceremonies (id,account_id,origin,status,created_at,expires_at,completed_at) VALUES (?,?,'https://sac.example','pending',?,?,NULL)",
+            (first, self.account_id, now, now + 300000),
+        )
+        self.db.execute(
+            "INSERT INTO root_enrollment_challenges (id,ceremony_id,account_id,challenge_digest,created_at,expires_at) VALUES (?,?,?,?,?,?)",
+            (first_challenge, first, self.account_id, "f" * 64, now, now + 300000),
+        )
+        self.db.execute("UPDATE root_enrollment_ceremonies SET status='cancelled' WHERE id=?", (first,))
+        self.db.execute(
+            "INSERT INTO root_enrollment_ceremonies (id,account_id,origin,status,created_at,expires_at,completed_at) VALUES (?,?,'https://sac.example','pending',?,?,NULL)",
+            (second, self.account_id, now + 1, now + 300001),
+        )
+        self.assertEqual(self.db.execute("SELECT status FROM root_enrollment_ceremonies WHERE id=?", (first,)).fetchone()[0], "cancelled")
+        self.assertEqual(self.db.execute("SELECT status FROM root_enrollment_ceremonies WHERE id=?", (second,)).fetchone()[0], "pending")
 
     def test_unverified_account_cannot_start_root_enrollment(self):
         pending_id = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"
