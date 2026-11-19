@@ -2,14 +2,18 @@ import sqlite3
 import unittest
 from pathlib import Path
 
-MIGRATIONS = [\n    Path(__file__).resolve().parents[1] / "migrations" / "0001_account_email_otp.sql",\n    Path(__file__).resolve().parents[1] / "migrations" / "0006_email_otp_delivery_state.sql",\n]
+MIGRATIONS = [
+    Path(__file__).resolve().parents[1] / "migrations" / "0001_account_email_otp.sql",
+    Path(__file__).resolve().parents[1] / "migrations" / "0006_email_otp_delivery_state.sql",
+]
 
 
 class EmailOtpD1SchemaTests(unittest.TestCase):
     def setUp(self):
         self.db = sqlite3.connect(":memory:")
         self.db.row_factory = sqlite3.Row
-        for migration in MIGRATIONS:\n            self.db.executescript(migration.read_text(encoding="utf-8"))
+        for migration in MIGRATIONS:
+            self.db.executescript(migration.read_text(encoding="utf-8"))
         self.now = 1_800_000_000_000
         self.db.execute(
             "INSERT INTO accounts VALUES (?, 'pending_verification', 'fr', ?, ?, ?)",
@@ -245,6 +249,49 @@ class EmailOtpD1SchemaTests(unittest.TestCase):
         ).fetchone()
         self.assertEqual(state["attempt_count"], 0)
         self.assertIsNone(state["consumed_at"])
+
+
+    def test_failed_email_delivery_keeps_previous_delivered_code_valid(self):
+        self.create_challenge("otp-delivered-old", self.now)
+        self.create_challenge("otp-new-failed", self.now + 60_000, "b" * 64, "pending")
+        self.db.execute(
+            "UPDATE email_otp_challenges SET delivery_status='failed' WHERE id='otp-new-failed'"
+        )
+        self.db.commit()
+        old = self.db.execute(
+            "SELECT invalidated_at FROM email_otp_challenges WHERE id='otp-delivered-old'"
+        ).fetchone()
+        self.assertIsNone(old["invalidated_at"])
+        result = self.submit_attempt("otp-delivered-old", "a" * 64, self.now + 60_001)
+        self.assertIsNotNone(result)
+        self.assertEqual(result["consumed_at"], self.now + 60_001)
+
+    def test_new_code_invalidates_previous_only_after_delivery_acceptance(self):
+        self.create_challenge("otp-delivered-old-2", self.now)
+        self.create_challenge("otp-new-pending", self.now + 60_000, "b" * 64, "pending")
+        old = self.db.execute(
+            "SELECT invalidated_at FROM email_otp_challenges WHERE id='otp-delivered-old-2'"
+        ).fetchone()
+        self.assertIsNone(old["invalidated_at"])
+        self.db.execute(
+            "UPDATE email_otp_challenges SET delivery_status='accepted' WHERE id='otp-new-pending'"
+        )
+        self.db.commit()
+        old = self.db.execute(
+            "SELECT invalidated_at FROM email_otp_challenges WHERE id='otp-delivered-old-2'"
+        ).fetchone()
+        self.assertEqual(old["invalidated_at"], self.now + 60_000)
+
+    def test_pending_code_cannot_consume_verification_attempts(self):
+        self.create_challenge("otp-not-delivered", self.now, "a" * 64, "pending")
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "otp_invalid_challenge_transition"):
+            self.db.execute(
+                """UPDATE email_otp_challenges
+                   SET attempt_count=1, consumed_at=?
+                   WHERE id='otp-not-delivered'""",
+                (self.now + 1,),
+            )
+
 
 
 if __name__ == "__main__":
