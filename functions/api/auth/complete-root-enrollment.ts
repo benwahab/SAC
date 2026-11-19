@@ -9,6 +9,7 @@ interface Env {
   DB: D1Database;
   WEBAUTHN_RP_ID?: string;
   WEBAUTHN_ALLOWED_ORIGINS?: string;
+  WEBAUTHN_ROOT_ENROLLMENT_ENABLED?: string;
 }
 const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" };
 function json(body: unknown, status = 200, cookie?: string): Response {
@@ -47,6 +48,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (typeof parsed.value !== "object" || parsed.value === null || Array.isArray(parsed.value)) return json({ error: "invalid_enrollment" }, 400);
   const body = parsed.value as Record<string, unknown>;
   if (!isUuid(body.ceremonyId) || typeof body.credential !== "object" || body.credential === null || Array.isArray(body.credential)) return json({ error: "invalid_enrollment" }, 400);
+  if (env.WEBAUTHN_ROOT_ENROLLMENT_ENABLED !== "true") return json({ error: "root_enrollment_not_approved" }, 503);
 
   const now = Date.now();
   type Ceremony = { id: string; account_id: string; origin: string; status: string; expires_at: number; challenge_id: string; challenge_digest: string; attempt_count: number; account_status: string };
