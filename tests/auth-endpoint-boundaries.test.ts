@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { onRequestPost as register } from "../functions/api/auth/register.ts";
 import { onRequestPost as verifyEmail } from "../functions/api/auth/verify-email.ts";
+import { onRequestPost as resendEmail } from "../functions/api/auth/resend-email.ts";
 
 const env = {
   DB: {
@@ -82,4 +83,36 @@ test("register rejects malformed JSON before database access", async () => {
   const response = await invoke(register as never, jsonRequest("register", "{"));
   assert.equal(response.status, 400);
   assert.deepEqual(await response.json(), { error: "invalid_request" });
+});
+
+test("all public authentication endpoints reject cross-origin requests before database access", async () => {
+  const handlers = [
+    ["register", register],
+    ["verify-email", verifyEmail],
+    ["resend-email", resendEmail],
+  ] as const;
+
+  for (const [path, handler] of handlers) {
+    const request = new Request(`https://sac.example/api/auth/${path}`, {
+      method: "POST",
+      headers: {
+        Origin: "https://attacker.example",
+        "Content-Type": "application/json",
+      },
+      body: "{}",
+    });
+    const response = await invoke(handler as never, request);
+    assert.equal(response.status, 403, path);
+    assert.equal(response.headers.get("Cache-Control"), "no-store", path);
+  }
+});
+
+test("resend-email rejects malformed email before database access", async () => {
+  const response = await invoke(
+    resendEmail as never,
+    jsonRequest("resend-email", JSON.stringify({ email: "not-an-email" })),
+  );
+  assert.equal(response.status, 400);
+  assert.deepEqual(await response.json(), { error: "invalid_email" });
+  assert.equal(response.headers.get("Cache-Control"), "no-store");
 });
