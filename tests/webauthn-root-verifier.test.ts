@@ -23,10 +23,10 @@ function cborText(value: string): number[] {
   const bytes = new TextEncoder().encode(value);
   return [...head(3, bytes.length), ...bytes];
 }
-function cborMap(entries: Array<[number[] | string, number[]]>): Uint8Array {
+function cborMap(entries: Array<[number[] | string, number[] | Uint8Array]>): Uint8Array {
   const output = [...head(5, entries.length)];
   for (const [key, value] of entries) {
-    output.push(...(typeof key === "string" ? cborText(key) : key), ...value);
+    output.push(...(typeof key === "string" ? cborText(key) : key), ...(value instanceof Uint8Array ? [...value] : value));
   }
   return Uint8Array.from(output);
 }
