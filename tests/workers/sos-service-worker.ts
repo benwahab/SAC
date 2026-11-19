@@ -6,6 +6,7 @@ import {
   dispatchDueSosReminders,
   scheduleDueSosSmsEscalations,
   getSosAlertForParticipant,
+  getSosResponsibilityForParticipant,
   listSosEventsForParticipant,
   respondToSosAlert,
 } from "../../functions/lib/alerts/sos-service.ts";
@@ -81,6 +82,10 @@ export default {
     }
     if (url.pathname === "/events") {
       const result = await listSosEventsForParticipant(env.DB, String(input.actor), String(input.alertId));
+      return result.ok ? json(result.value) : json({ error: result.error }, 404);
+    }
+    if (url.pathname === "/responsibility") {
+      const result = await getSosResponsibilityForParticipant(env.DB, String(input.actor), String(input.alertId));
       return result.ok ? json(result.value) : json({ error: result.error }, 404);
     }
     if (url.pathname === "/respond") {
