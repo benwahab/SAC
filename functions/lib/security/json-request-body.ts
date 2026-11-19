@@ -1,6 +1,6 @@
 export type JsonRequestBodyResult =
   | { ok: true; value: unknown }
-  | { ok: false; reason: "too_large" | "invalid_json" };
+  | { ok: false; reason: "too_large" | "invalid_json" | "invalid_content_length" };
 
 /**
  * Lit un corps JSON avec une limite stricte appliquée pendant le streaming.
@@ -17,8 +17,16 @@ export async function readJsonRequestBody(
 
   const declaredLength = request.headers.get("Content-Length");
   if (declaredLength !== null) {
+    // Content-Length doit être un entier décimal sûr. Une valeur mal formée
+    // ne doit jamais être traitée comme une absence d'en-tête.
+    if (!/^\\d+$/.test(declaredLength)) {
+      return { ok: false, reason: "invalid_content_length" };
+    }
     const parsedLength = Number(declaredLength);
-    if (Number.isFinite(parsedLength) && parsedLength > maxBytes) {
+    if (!Number.isSafeInteger(parsedLength)) {
+      return { ok: false, reason: "invalid_content_length" };
+    }
+    if (parsedLength > maxBytes) {
       return { ok: false, reason: "too_large" };
     }
   }
