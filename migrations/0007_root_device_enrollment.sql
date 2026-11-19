@@ -191,3 +191,63 @@ BEGIN
       AND s.status = 'active'
   ) THEN RAISE(ABORT, 'device_enrollment_event_incomplete') END;
 END;
+
+CREATE TRIGGER device_root_credential_update_guard
+BEFORE UPDATE ON device_root_credentials
+BEGIN
+  SELECT CASE WHEN NEW.id <> OLD.id OR NEW.device_id <> OLD.device_id
+    OR NEW.account_id <> OLD.account_id OR NEW.credential_id <> OLD.credential_id
+    OR NEW.public_key_x <> OLD.public_key_x OR NEW.public_key_y <> OLD.public_key_y
+    OR NEW.credential_device_type <> OLD.credential_device_type
+    OR NEW.credential_backed_up <> OLD.credential_backed_up
+    OR NEW.created_at <> OLD.created_at
+    THEN RAISE(ABORT, 'root_credential_immutable_fields') END;
+  SELECT CASE WHEN NEW.sign_count < OLD.sign_count
+    OR (OLD.last_used_at IS NOT NULL AND (NEW.last_used_at IS NULL OR NEW.last_used_at < OLD.last_used_at))
+    THEN RAISE(ABORT, 'root_credential_counter_rollback') END;
+END;
+
+CREATE TRIGGER device_update_guard
+BEFORE UPDATE ON devices
+BEGIN
+  SELECT CASE WHEN NEW.id <> OLD.id OR NEW.account_id <> OLD.account_id
+    OR NEW.created_at <> OLD.created_at
+    THEN RAISE(ABORT, 'device_immutable_fields') END;
+  SELECT CASE WHEN NOT (
+    OLD.status = 'active' AND NEW.status = 'revoked'
+    AND NEW.auth_version = OLD.auth_version + 1
+    AND NEW.revoked_at IS NOT NULL AND NEW.revoked_at >= OLD.created_at
+  ) THEN RAISE(ABORT, 'device_transition_invalid') END;
+END;
+
+CREATE TRIGGER device_session_update_guard
+BEFORE UPDATE ON device_sessions
+BEGIN
+  SELECT CASE WHEN NEW.id <> OLD.id OR NEW.account_id <> OLD.account_id
+    OR NEW.device_id <> OLD.device_id OR NEW.token_hash <> OLD.token_hash
+    OR NEW.auth_version <> OLD.auth_version OR NEW.created_at <> OLD.created_at
+    THEN RAISE(ABORT, 'device_session_immutable_fields') END;
+  SELECT CASE WHEN NOT (
+    OLD.status = 'active' AND NEW.status = 'active'
+    AND OLD.revoked_at IS NULL AND NEW.revoked_at IS NULL
+    AND NEW.last_activity_at >= OLD.last_activity_at
+    AND NEW.expires_at >= OLD.expires_at
+  ) AND NOT (
+    OLD.status = 'active' AND NEW.status = 'revoked'
+    AND OLD.revoked_at IS NULL AND NEW.revoked_at IS NOT NULL
+    AND NEW.last_activity_at = OLD.last_activity_at
+    AND NEW.expires_at = OLD.expires_at
+    AND NEW.revoked_at >= OLD.last_activity_at
+  ) THEN RAISE(ABORT, 'device_session_transition_invalid') END;
+END;
+
+CREATE TRIGGER device_enrollment_event_immutable_update
+BEFORE UPDATE ON device_enrollment_events
+BEGIN
+  SELECT RAISE(ABORT, 'device_enrollment_event_immutable');
+END;
+CREATE TRIGGER device_enrollment_event_immutable_delete
+BEFORE DELETE ON device_enrollment_events
+BEGIN
+  SELECT RAISE(ABORT, 'device_enrollment_event_immutable');
+END;
