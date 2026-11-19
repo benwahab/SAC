@@ -275,6 +275,7 @@ type HealthState = "checking" | "connected" | "unavailable";
 
 export default function App() {
   const [health, setHealth] = useState<HealthState>("checking");
+  const [networkOnline, setNetworkOnline] = useState(() => navigator.onLine);
   const [language, setLanguage] = useState<Language>(() => {
     try {
       const saved = window.localStorage.getItem("sac-language");
@@ -299,18 +300,48 @@ export default function App() {
   }, [language, isRtl]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetch("/api/health", { signal: controller.signal })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("API unavailable");
-        const payload: { ok?: boolean; database?: string } = await response.json();
-        setHealth(payload.ok && payload.database === "connected" ? "connected" : "unavailable");
-      })
-      .catch((error: unknown) => {
-        if (error instanceof DOMException && error.name === "AbortError") return;
+    let controller: AbortController | null = null;
+
+    const checkHealth = () => {
+      controller?.abort();
+      if (!navigator.onLine) {
+        setNetworkOnline(false);
         setHealth("unavailable");
-      });
-    return () => controller.abort();
+        return;
+      }
+
+      setNetworkOnline(true);
+      setHealth("checking");
+      controller = new AbortController();
+      fetch("/api/health", { signal: controller.signal, cache: "no-store" })
+        .then(async (response) => {
+          if (!response.ok) throw new Error("API unavailable");
+          const payload: { ok?: boolean; database?: string } = await response.json();
+          setHealth(payload.ok && payload.database === "connected" ? "connected" : "unavailable");
+        })
+        .catch((error: unknown) => {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+          setHealth("unavailable");
+        });
+    };
+
+    const handleOffline = () => {
+      controller?.abort();
+      setNetworkOnline(false);
+      setHealth("unavailable");
+    };
+
+    const handleOnline = () => checkHealth();
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    checkHealth();
+
+    return () => {
+      controller?.abort();
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, []);
 
   if (isLoginPage) return <LoginPage language={language} setLanguage={setLanguage} />;
@@ -393,9 +424,10 @@ export default function App() {
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-sac-ink">{t.serverStatus}</p>
                     <p className="mt-0.5 text-xs text-sac-muted" aria-live="polite">
-                      {health === "checking" && t.checking}
-                      {health === "connected" && t.connected}
-                      {health === "unavailable" && t.unavailable}
+                      {!networkOnline && t.offline}
+                      {networkOnline && health === "checking" && t.checking}
+                      {networkOnline && health === "connected" && t.connected}
+                      {networkOnline && health === "unavailable" && t.unavailable}
                     </p>
                   </div>
                   <span className={"ml-auto h-2.5 w-2.5 shrink-0 rounded-full " + statusDot} />
