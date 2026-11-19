@@ -250,7 +250,7 @@ BEGIN
       AND (
         (NEW.reminder_number = 0 AND NEW.scheduled_at = a.created_at)
         OR
-        (NEW.reminder_number BETWEEN 1 AND a.push_reminder_limit
+        (NEW.reminder_number >= 1
           AND NEW.scheduled_at >= a.created_at + (NEW.reminder_number * 300000))
       )
       AND NEW.created_at >= a.created_at
