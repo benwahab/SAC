@@ -108,8 +108,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
     await env.DB.batch([
       env.DB.prepare(
-        "INSERT INTO root_enrollment_ceremonies (id, account_id, status, created_at, expires_at, completed_at) VALUES (?, ?, 'pending', ?, ?, NULL)",
-      ).bind(ceremonyId, account.id, now, expiresAt),
+        "INSERT INTO root_enrollment_ceremonies (id, account_id, origin, status, created_at, expires_at, completed_at) VALUES (?, ?, ?, 'pending', ?, ?, NULL)",
+      ).bind(ceremonyId, account.id, origin, now, expiresAt),
       env.DB.prepare(
         "INSERT INTO root_enrollment_challenges (id, ceremony_id, account_id, challenge_digest, created_at, expires_at, consumed_at, attempt_count) VALUES (?, ?, ?, ?, ?, ?, NULL, 0)",
       ).bind(challengeId, ceremonyId, account.id, challengeDigest, now, expiresAt),
