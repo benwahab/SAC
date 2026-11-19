@@ -283,6 +283,7 @@ export default function App() {
   const [healthRefresh, setHealthRefresh] = useState(0);
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [installHelp, setInstallHelp] = useState<"ios" | "android" | null>(null);
+  const [isAppleDevice, setIsAppleDevice] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [networkOnline, setNetworkOnline] = useState(() => navigator.onLine);
   const [language, setLanguage] = useState<Language>(() => {
@@ -315,6 +316,7 @@ export default function App() {
 
     const isAppleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    setIsAppleDevice(isAppleMobile);
     if (!standalone && isAppleMobile) setInstallHelp("ios");
 
     const handleBeforeInstall = (event: Event) => {
@@ -337,14 +339,23 @@ export default function App() {
 
   const installApp = async () => {
     if (!installPrompt) {
-      setInstallHelp((current) => current ? null : "android");
+      if (isAppleDevice) {
+        setInstallHelp((current) => current === "ios" ? null : "ios");
+      } else {
+        setInstallHelp((current) => current === "android" ? null : "android");
+      }
       return;
     }
-    await installPrompt.prompt();
-    const choice = await installPrompt.userChoice;
-    setInstallPrompt(null);
-    if (choice.outcome === "accepted") setIsInstalled(true);
-    else setInstallHelp("android");
+    try {
+      await installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+      setInstallPrompt(null);
+      if (choice.outcome === "accepted") setIsInstalled(true);
+      else setInstallHelp("android");
+    } catch {
+      setInstallPrompt(null);
+      setInstallHelp(isAppleDevice ? "ios" : "android");
+    }
   };
 
   useEffect(() => {
@@ -416,7 +427,7 @@ export default function App() {
           <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-sac-muted">{t.appName}</span>
         </a>
         <div className="flex items-center gap-2 sm:gap-3">
-          {!isInstalled && (installPrompt || installHelp) && (
+          {!isInstalled && (installPrompt || installHelp || isAppleDevice) && (
             <button type="button" onClick={() => void installApp()} className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-sac-confirm/25 bg-white/75 px-3 py-2 text-xs font-extrabold text-sac-ink shadow-glass hover:bg-white">
               <Download size={14} />{t.installApp}
             </button>
