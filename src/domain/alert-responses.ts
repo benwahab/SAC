@@ -49,7 +49,10 @@ export type AlertResponderError =
   | "already_withdrawn"
   | "not_volunteered"
   | "invalid_server_sequence"
-  | "duplicate_server_sequence";
+  | "duplicate_server_sequence"
+  | "closed_alert_has_open_responsibility"
+  | "closure_alert_mismatch"
+  | "closure_before_responsibility_start";
 
 export type AlertResponderResult =
   | { readonly ok: true; readonly state: AlertResponderState }
@@ -127,7 +130,19 @@ function isValidState(state: AlertResponderState): boolean {
       (period.endReason === "withdrawn" && periodResponder.withdrawnAt !== period.endedAt)
     ) return false;
   }
-  return openPeriods <= 1;
+  if (openPeriods > 1) return false;
+  if (state.alert.status === "closed_by_author") {
+    if (openPeriods !== 0 || state.alert.closedAt === null) return false;
+    if (state.responsibilityHistory.some((period) =>
+      period.endReason === "alert_closed" && period.endedAt !== state.alert.closedAt
+    )) return false;
+    if (state.responsibilityHistory.some((period) =>
+      period.endedAt !== null && Date.parse(period.endedAt) > Date.parse(state.alert.closedAt!)
+    )) return false;
+  } else if (state.responsibilityHistory.some((period) => period.endReason === "alert_closed")) {
+    return false;
+  }
+  return true;
 }
 
 function emptyResponder(contactAccountId: string): AlertResponderRecord {
@@ -241,4 +256,59 @@ export function transitionAlertResponder(
     : closedHistory;
 
   return { ok: true, state: { ...state, responders, responsibilityHistory } };
+}
+
+
+/**
+ * Synchronise la clôture métier de l'alerte avec la fin de la responsabilité.
+ * Le serveur doit d'abord obtenir l'alerte clôturée par transitionAlert(),
+ * puis persister l'alerte, l'événement de clôture et l'historique dans une
+ * seule transaction D1. Cette fonction ne réalise aucune écriture.
+ */
+export function closeAlertResponderState(
+  state: AlertResponderState,
+  closedAlert: TriggeredAlertRecord,
+): AlertResponderResult {
+  if (!isValidState(state)) return { ok: false, error: "invalid_state" };
+  if (state.alert.status !== "active" || closedAlert.status !== "closed_by_author" ||
+      closedAlert.closedAt === null || closedAlert.closureReason === null) {
+    return { ok: false, error: "invalid_event" };
+  }
+
+  const sameRecipients =
+    state.alert.recipientSnapshot.length === closedAlert.recipientSnapshot.length &&
+    state.alert.recipientSnapshot.every((recipient, index) => {
+      const other = closedAlert.recipientSnapshot[index];
+      return other !== undefined &&
+        recipient.contactUserId === other.contactUserId &&
+        recipient.selectedAt === other.selectedAt;
+    });
+
+  if (
+    state.alert.alertId !== closedAlert.alertId ||
+    state.alert.authorAccountId !== closedAlert.authorAccountId ||
+    state.alert.createdAt !== closedAlert.createdAt ||
+    !sameRecipients
+  ) return { ok: false, error: "closure_alert_mismatch" };
+
+  const closedAt = Date.parse(closedAlert.closedAt);
+  const openPeriod = state.responsibilityHistory.find((period) => period.endedAt === null);
+  if (openPeriod && closedAt < Date.parse(openPeriod.startedAt)) {
+    return { ok: false, error: "closure_before_responsibility_start" };
+  }
+
+  const responsibilityHistory = openPeriod
+    ? state.responsibilityHistory.map((period) => period === openPeriod
+        ? { ...period, endedAt: closedAlert.closedAt, endReason: "alert_closed" as const }
+        : period)
+    : state.responsibilityHistory;
+
+  const nextState: AlertResponderState = {
+    ...state,
+    alert: closedAlert,
+    responsibilityHistory,
+  };
+
+  if (!isValidState(nextState)) return { ok: false, error: "closed_alert_has_open_responsibility" };
+  return { ok: true, state: nextState };
 }
