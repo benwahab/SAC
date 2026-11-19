@@ -7,6 +7,7 @@
  *
  * Ce module ne gère ni stockage, ni révocation serveur, ni sessions.
  */
+import { isCanonicalP256PublicJwk } from "../crypto/p256-jwk.ts";
 import {
   fingerprintLocationIdentityKey,
   validateLocationExchangePublicKey,
@@ -46,13 +47,7 @@ function validTimestamp(value: string): boolean {
 }
 
 function validPublicJwk(value: unknown, curve: "P-256"): value is JsonWebKey {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
-  const jwk = value as Record<string, unknown>;
-  return jwk.kty === "EC" &&
-    jwk.crv === curve &&
-    typeof jwk.x === "string" && /^[A-Za-z0-9_-]{43}$/.test(jwk.x) &&
-    typeof jwk.y === "string" && /^[A-Za-z0-9_-]{43}$/.test(jwk.y) &&
-    !("d" in jwk);
+  return curve === "P-256" && isCanonicalP256PublicJwk(value);
 }
 
 function canonicalPayload(
