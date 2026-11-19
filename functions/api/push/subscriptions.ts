@@ -2,6 +2,7 @@ import { guardSameOriginJsonPost } from "../../lib/security/http-request-guard.t
 import { readJsonRequestBody } from "../../lib/security/json-request-body.ts";
 import { requireAuthenticatedDeviceSession } from "../../lib/security/require-authenticated-device-session.ts";
 import { encryptPushSubscription, type PushSubscriptionPayload } from "../../lib/notifications/push-subscription-crypto.ts";
+import { isAllowedPushEndpoint, isValidPushSubscriptionPublicKey } from "../../lib/notifications/push-endpoint-policy.ts";
 
 interface Env {
   DB: D1Database;
@@ -33,7 +34,7 @@ function decodeBase64Url(value: string): Uint8Array | null {
   }
 }
 
-function parseSubscription(value: unknown): PushSubscriptionPayload | null {
+async function parseSubscription(value: unknown, cryptoProvider: Crypto): Promise<PushSubscriptionPayload | null> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
   const record = value as Record<string, unknown>;
   if (typeof record.endpoint !== "string" || record.endpoint.length < 12 || record.endpoint.length > 2048) return null;
@@ -42,13 +43,9 @@ function parseSubscription(value: unknown): PushSubscriptionPayload | null {
   if (typeof keys.p256dh !== "string" || typeof keys.auth !== "string") return null;
   const p256dh = decodeBase64Url(keys.p256dh);
   const auth = decodeBase64Url(keys.auth);
-  if (!p256dh || p256dh.byteLength !== 65 || !auth || auth.byteLength !== 16) return null;
-  try {
-    const endpoint = new URL(record.endpoint);
-    if (endpoint.protocol !== "https:" || endpoint.username || endpoint.password || endpoint.hostname.length > 253) return null;
-  } catch {
-    return null;
-  }
+  if (!p256dh || p256dh.byteLength !== 65 || p256dh[0] !== 4 || !auth || auth.byteLength !== 16) return null;
+  if (!(await isValidPushSubscriptionPublicKey(keys.p256dh, cryptoProvider))) return null;
+  if (!isAllowedPushEndpoint(record.endpoint)) return null;
   return { endpoint: record.endpoint, keys: { p256dh: keys.p256dh, auth: keys.auth } };
 }
 
@@ -76,7 +73,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   if (body.action !== "subscribe") return json({ error: "invalid_action" }, 400);
-  const subscription = parseSubscription(body.subscription);
+  const subscription = await parseSubscription(body.subscription, crypto);
   if (!subscription) return json({ error: "invalid_push_subscription" }, 400);
   if (!env.PUSH_SUBSCRIPTION_ENCRYPTION_KEY) return json({ error: "push_subscription_storage_not_configured" }, 503);
 
