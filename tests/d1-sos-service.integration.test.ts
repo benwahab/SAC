@@ -120,6 +120,8 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   const closed = await post<{ closed: boolean }>("/close", { actor: owner, alertId, now: now + 400_000 });
   assert.equal(closed.status, 200);
   assert.equal(closed.data.closed, true);
+  const duplicateClose = await post<{ error: string }>("/close", { actor: owner, alertId, now: now + 400_001 });
+  assert.equal(duplicateClose.status, 409);
   const postCloseClaim = await post<unknown[]>("/claim", { now: now + 900_000 });
   assert.equal(postCloseClaim.status, 200);
   assert.equal(postCloseClaim.data.length, 0);
