@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ArrowLeft, LogOut, MailPlus, RefreshCw, ShieldCheck, UserRoundMinus, UsersRound } from "lucide-react";
 import { getDeviceSession, logoutDeviceSession } from "./services/device/root-enrollment";
+import PrivateSosAlertPanel from "./components/PrivateSosAlertPanel";
 
 type Contact = { accountId: string; email: string; createdAt: number };
 type SosAlert = { id: string; category: string; level: string; description: string | null; status: string; createdAt: number; closedAt: number | null; closureReason: string | null; participantRole: "author" | "recipient" };
@@ -13,6 +14,7 @@ export default function PrivateSpacePage({ onLogout }: Props) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [alerts, setAlerts] = useState<SosAlert[]>([]);
+  const [expandedAlertId, setExpandedAlertId] = useState<string | null>(null);
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const [category, setCategory] = useState("personal_danger");
   const [level, setLevel] = useState("urgent");
@@ -188,7 +190,13 @@ export default function PrivateSpacePage({ onLogout }: Props) {
           </section>
           <section className="mt-8 border-t border-white/80 pt-7">
             <h2 className="text-lg font-extrabold">Mes alertes</h2>
-            {alerts.length === 0 ? <p className="mt-3 text-sm text-sac-muted">Aucune alerte enregistrée.</p> : <ul className="mt-3 space-y-2">{alerts.map((alert) => <li key={alert.id} className="rounded-xl border border-white/80 bg-white/55 p-3"><div className="flex items-center justify-between gap-2"><span className="text-sm font-bold">{alert.category.replaceAll("_"," ")}</span><span className={"rounded-full px-2 py-1 text-xs font-bold " + (alert.status === "active" ? "bg-sac-alert/10 text-sac-alert" : "bg-sac-confirm/10 text-sac-confirm")}>{alert.status === "active" ? "En cours" : "Clôturée"}</span></div><p className="mt-1 text-xs text-sac-muted">{alert.participantRole === "author" ? "Votre alerte" : "Alerte reçue"} · {new Date(alert.createdAt).toLocaleString()}</p>{alert.description && <p className="mt-2 text-sm">{alert.description}</p>}</li>)}</ul>}
+            {alerts.length === 0 ? <p className="mt-3 text-sm text-sac-muted">Aucune alerte enregistrée.</p> : <ul className="mt-3 space-y-3">{alerts.map((alert) => <li key={alert.id} className="rounded-xl border border-white/80 bg-white/55 p-3">
+              <div className="flex items-center justify-between gap-2"><span className="text-sm font-bold">{alert.category.replaceAll("_"," ")}</span><span className={"rounded-full px-2 py-1 text-xs font-bold " + (alert.status === "active" ? "bg-sac-alert/10 text-sac-alert" : "bg-sac-confirm/10 text-sac-confirm")}>{alert.status === "active" ? "En cours" : "Clôturée"}</span></div>
+              <p className="mt-1 text-xs text-sac-muted">{alert.participantRole === "author" ? "Votre alerte" : "Alerte reçue"} · {new Date(alert.createdAt).toLocaleString()}</p>
+              {alert.description && <p className="mt-2 text-sm">{alert.description}</p>}
+              <button type="button" onClick={() => setExpandedAlertId((current) => current === alert.id ? null : alert.id)} aria-expanded={expandedAlertId === alert.id} className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-sac-primary-strong/20 bg-white px-3 text-sm font-bold">{expandedAlertId === alert.id ? "Masquer le suivi" : "Consulter et agir"}</button>
+              {expandedAlertId === alert.id && <PrivateSosAlertPanel alertId={alert.id} participantRole={alert.participantRole} status={alert.status} onUpdated={() => void loadContacts()}/>}
+            </li>)}</ul>}
           </section>
           {message && <p role="status" className="mt-4 rounded-xl border border-sac-confirm/20 bg-sac-confirm/10 p-3 text-sm leading-6">{message}</p>}
           {error && <p role="alert" className="mt-4 rounded-xl border border-sac-alert/25 bg-sac-alert/5 p-3 text-sm leading-6 text-sac-alert">{error}</p>}
