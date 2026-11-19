@@ -64,6 +64,7 @@ function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
 export async function verifyRootRegistrationResponse(input: {
   response: unknown;
   expectedChallengeDigest: string;
+  expectedOrigin: string;
   rpId: string;
   allowedOrigins: readonly string[];
   cryptoProvider: Pick<Crypto, "subtle">;
@@ -103,7 +104,7 @@ export async function verifyRootRegistrationResponse(input: {
     } catch { challengeMatches = false; }
   }
   if (clientData.type !== "webauthn.create" || !challengeMatches ||
-      clientData.crossOrigin === true ||
+      clientData.crossOrigin === true || clientData.origin !== input.expectedOrigin ||
       !isAllowedWebAuthnOrigin(clientData.origin, input.rpId, input.allowedOrigins)) {
     throw new Error("webauthn_client_data_binding_invalid");
   }
