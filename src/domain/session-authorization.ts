@@ -1,4 +1,8 @@
-import { evaluateSessionAge } from "./auth-policy.ts";
+import {
+  evaluateSessionAge,
+  SESSION_ABSOLUTE_LIMIT_MS,
+  SESSION_IDLE_LIMIT_MS,
+} from "./auth-policy.ts";
 
 /**
  * Contrat pur d'autorisation des sessions liées à un appareil.
@@ -81,6 +85,8 @@ function validSession(session: DeviceSessionRecord): boolean {
     Date.parse(session.lastActivityAt) >= Date.parse(session.createdAt) &&
     isUtc(session.expiresAt) &&
     Date.parse(session.expiresAt) > Date.parse(session.createdAt) &&
+    Date.parse(session.expiresAt) <= Date.parse(session.createdAt) + SESSION_ABSOLUTE_LIMIT_MS &&
+    Date.parse(session.expiresAt) <= Date.parse(session.lastActivityAt) + SESSION_IDLE_LIMIT_MS &&
     (session.revokedAt === null ||
       (isUtc(session.revokedAt) &&
         Date.parse(session.revokedAt) >= Date.parse(session.createdAt) &&
