@@ -78,7 +78,7 @@ Ces valeurs doivent être testées sur des téléphones réels et avec réseau i
 
 **Candidat conservé :** `@simplewebauthn/server@14.1.0`.
 
-Le smoke test Workers déjà passé prouve uniquement que le paquet s'importe dans le runtime local Cloudflare Workers, que la génération d'options fonctionne et qu'une réponse volontairement invalide est rejetée. Il ne prouve pas qu'une vraie inscription ou authentification valide est acceptée.
+Le test Workers CI dépasse le simple smoke test : il utilise des fixtures synthétiques cryptographiquement valides et vérifie une inscription ainsi qu'une assertion d'authentification ES256 dans le runtime local Cloudflare Workers. Cette preuve ne vaut pas test sur authenticator physique, ni validation indépendante complète du profil final.
 
 Le dépôt contient déjà un test CI qui génère des fixtures synthétiques cryptographiquement valides : clé ECDSA P-256, clé publique COSE, attestation `fmt=none`, données authenticator et assertion signée. Dans le runtime Workers local, SimpleWebAuthn accepte l'inscription et vérifie l'assertion d'authentification ; les tests vérifient aussi plusieurs rejets et les états BE/BS.
 
@@ -203,3 +203,10 @@ Aucun service externe n'est sélectionné par ce document. Aucun compte, secret,
 - aucune stratégie anti-retour-arrière D1 n'est homologuée.
 
 Le passage à l'implémentation ne doit pas être confondu avec la validation des documents ni avec le succès du CI.
+
+
+## 7. Complément — protection anti-retour-arrière
+
+Le document [ARCHITECTURE_PROTECTION_ANTI_RESTAURATION_V1.md](ARCHITECTURE_PROTECTION_ANTI_RESTAURATION_V1.md) décrit une architecture candidate avec autorité indépendante append-only, séquence et chaîne de hachage, ordre d'écriture externe puis D1, contrôle fail-closed et reprise après restauration. Il documente aussi le modèle de test isolé ajouté au CI.
+
+Point confirmé par la documentation Cloudflare : SQLite-backed Durable Objects disposent également d'un PITR de 30 jours. Un DO SQLite ne peut donc pas être considéré comme l'autorité anti-restauration indépendante de D1. Aucun fournisseur externe n'est choisi et aucun service n'est créé. NO-GO production maintenu.
