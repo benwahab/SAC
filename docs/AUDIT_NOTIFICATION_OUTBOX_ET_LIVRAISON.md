@@ -225,7 +225,7 @@ Commits ajoutés sur `main` après la mise à jour précédente :
 - `9dce3b7f5ce8c1188d3a1a0beb05c02c7ab856e1` — ajout des deux suites aux étapes CI.
 - `1ae14c40538d252ec599dcd2fcf4c7535ff7531a` — documentation migration et configuration du secret.
 
-**Configuration encore requise :** le secret Cloudflare `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` (32 octets base64url) n'est pas installé. Aucun secret n'a été créé ou modifié. En son absence, l'endpoint refuse l'enregistrement. La migration 0008 n'est pas appliquée à la base distante.
+**Configuration effectuée le 19 novembre 2026 :** le secret Cloudflare `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` (32 octets base64url) a été généré et configuré comme secret du projet Pages `sac` pour l'environnement Production. Sa valeur reste masquée et n'est pas conservée dans Git ou D1. Les migrations D1 `0001` à `0008` ont été appliquées à `sac-db` après autorisation explicite ; leurs huit noms sont inscrits dans `d1_migrations`. Le schéma a été relu et `PRAGMA foreign_key_check` n'a retourné aucune anomalie. La configuration du secret n'active pas à elle seule les envois.
 
 **Limites actuelles :** l'interface PWA ne s'abonne pas encore au PushManager ; aucune clé VAPID ni aucun fournisseur/adaptateur de livraison n'est connecté ; aucun scheduler n'est déployé. Le stockage chiffré et son endpoint ne signifient donc pas que les notifications fonctionnent. La révocation d'appareil supprime les abonnements de ce dernier via trigger D1.
 
@@ -241,3 +241,15 @@ Commits ajoutés sur `main` après la mise à jour précédente :
 - `23040fc631e74c667362e511e9c868fc6ff0f364` — exigence anti-SSRF avant tout appel vers un endpoint push enregistré.
 
 La réception d'un endpoint depuis un navigateur n'autorise jamais le Worker à lui faire confiance. Avant toute livraison, il faudra restreindre les destinations aux fournisseurs Web Push explicitement autorisés et bloquer les destinations locales/privées ainsi que les redirections non validées. Aucun appel réseau vers les endpoints n'existe dans cette tranche.
+
+
+### 5.5 Configuration distante D1 et secret — 19 novembre 2026
+
+Après autorisation explicite du propriétaire :
+- les migrations `0001` à `0008` ont été appliquées dans l'ordre à la base Cloudflare D1 `sac-db` liée au projet Pages `sac` ;
+- la table `d1_migrations` contient les huit noms de fichiers et leurs dates d'application ;
+- les tables, index et triggers attendus, dont `push_subscriptions`, sont présents ;
+- `PRAGMA foreign_key_check` ne retourne aucune ligne ;
+- le secret `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` a été généré avec 32 octets aléatoires et ajouté comme variable `secret_text` dans la configuration Production du projet Pages. Cloudflare masque sa valeur lors de la relecture.
+
+**Ce qui reste désactivé/non configuré :** l'enrôlement WebAuthn reste fermé (`WEBAUTHN_ROOT_ENROLLMENT_ENABLED=false`) ; les déploiements Production restent désactivés ; aucun VAPID, abonnement PWA, scheduler ni adaptateur de livraison n'est activé. Aucun push ou SMS réel n'a été envoyé. L'ajout du secret à la configuration ne signifie pas que la version actuellement servie a été redéployée ou utilise déjà ce secret.
