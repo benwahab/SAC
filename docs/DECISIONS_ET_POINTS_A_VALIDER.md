@@ -1234,3 +1234,8 @@ L'exemple public Microsoft Code Transparency confirme la forme d'une API métier
 ### Arbitrage documentaire UDF/UDE — 19 novembre 2026
 
 La documentation Microsoft confirme que UDF et UDE sont mutuellement exclusifs et que le passage de l'un à l'autre est destructif. Les UDF disposent de hooks transactionnels explicitement appelés dans chaque écriture ; les UDE disposent d'endpoints et de RBAC personnalisés, sans hooks UDF. La piste UDE est prioritaire pour un endpoint métier unique, mais sa transaction d'append, son reçu et son idempotence doivent encore être démontrés sur un registre réel. Voir section 14 de [l'étude d'intégration ACL](ETUDE_INTEGRATION_AZURE_CONFIDENTIAL_LEDGER_CLOUDFLARE_WORKERS_V1.md). Aucun choix fournisseur ou déploiement n'est autorisé.
+
+
+### Contrat de preuve UDE anti-restauration — 19 novembre 2026
+
+Le contrat candidat est détaillé dans [CONTRAT_PREUVE_UDE_ANTI_RESTAURATION_V1.md](CONTRAT_PREUVE_UDE_ANTI_RESTAURATION_V1.md). Un modèle comportemental local non connecté à Azure est ajouté dans `tests/acl-ude-contract-model.test.ts` et exécuté par `npm run test:acl-ude-contract`. Il couvre concurrence, séquence obsolète, idempotence, rollback simulé, réponse perdue et allowlist simulée. Il ne prouve ni CCF, ni RBAC réel, ni reçu Merkle, ni intégration Azure. NO-GO production maintenu.
