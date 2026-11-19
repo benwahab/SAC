@@ -2,6 +2,7 @@ import { createAndSendContactInvitation } from "../../functions/lib/trusted-cont
 import {
   acceptContactInvitation,
   createContactInvitation,
+  declineContactInvitation,
   listTrustedContacts,
   revokeTrustedContact,
 } from "../../functions/lib/trusted-contacts/service.ts";
@@ -128,6 +129,16 @@ export default {
         token: String(body.token ?? ""),
         permissionVersion: "permissions-v1",
         maxActiveContacts: 2,
+        now: Number(body.now),
+      });
+      return result.ok ? json(result.value) : json({ error: result.error }, 409);
+    }
+
+    if (url.pathname === "/decline") {
+      const result = await declineContactInvitation(env.DB, crypto, {
+        authenticatedAccountId: String(body.contactId ?? ""),
+        invitationId: String(body.invitationId ?? ""),
+        token: String(body.token ?? ""),
         now: Number(body.now),
       });
       return result.ok ? json(result.value) : json({ error: result.error }, 409);
