@@ -39,8 +39,12 @@ export default {
       const now = Date.now();
       const ownerEmail = "owner-" + crypto.randomUUID() + "@example.ne";
       const contactEmail = "contact-" + crypto.randomUUID() + "@example.ne";
+      const contact2Email = "contact2-" + crypto.randomUUID() + "@example.ne";
+      const contact3Email = "contact3-" + crypto.randomUUID() + "@example.ne";
       const ownerId = crypto.randomUUID();
       const contactId = crypto.randomUUID();
+      const contact2Id = crypto.randomUUID();
+      const contact3Id = crypto.randomUUID();
 
       function accountStatements(id: string, email: string) {
         const identityId = crypto.randomUUID();
@@ -65,8 +69,10 @@ export default {
         await env.DB.batch([
           ...accountStatements(ownerId, ownerEmail),
           ...accountStatements(contactId, contactEmail),
+          ...accountStatements(contact2Id, contact2Email),
+          ...accountStatements(contact3Id, contact3Email),
         ]);
-        return json({ ownerId, ownerEmail, contactId, contactEmail });
+        return json({ ownerId, ownerEmail, contactId, contactEmail, contact2Id, contact2Email, contact3Id, contact3Email });
       } catch {
         return json({ error: "seed_failed" }, 500);
       }
