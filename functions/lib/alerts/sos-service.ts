@@ -67,9 +67,13 @@ export async function createSosAlert(
 
   if (
     !validId(input.authenticatedAccountId) ||
-    (input.recipientLimit !== 2 && input.recipientLimit !== 10) ||
+    (input.recipientLimit !== 2 && input.recipientLimit !== 10)
+  ) return fail("invalid_input");
+
+  if (recipients.length > input.recipientLimit) return fail("recipient_limit_exceeded");
+
+  if (
     recipients.length < 1 ||
-    recipients.length > input.recipientLimit ||
     recipients.some((id) => !validId(id) || id === input.authenticatedAccountId) ||
     new Set(recipients).size !== recipients.length ||
     !categories.has(input.category) ||
