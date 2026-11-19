@@ -686,3 +686,91 @@ export async function completeSosReminderDelivery(
     return fail("storage_unavailable");
   }
 }
+
+
+export interface SosPushEnvelope {
+  /** Stable outbox identity; a sender may use it for deduplication if supported. */
+  readonly idempotencyKey: string;
+  readonly alertId: string;
+  readonly recipientAccountId: string;
+  readonly reminderNumber: number;
+}
+
+export interface SosPushSender {
+  /**
+   * Resolves true only when the push provider accepts the request.
+   * This is not proof of device delivery, display, or recipient reading.
+   */
+  send(envelope: SosPushEnvelope): Promise<boolean>;
+}
+
+export interface SosReminderDispatchSummary {
+  readonly claimed: number;
+  readonly providerAccepted: number;
+  readonly retryScheduled: number;
+  readonly completionErrors: number;
+}
+
+/**
+ * Runs one bounded, at-least-once reminder delivery batch.
+ *
+ * The injected sender is an infrastructure adapter, not an HTTP/client input.
+ * A provider acceptance followed by a D1 outage can result in a retry after
+ * lease expiry; downstream adapters should deduplicate by idempotencyKey when
+ * their transport supports it. Web Push acceptance is never described as
+ * device delivery or read confirmation.
+ */
+export async function dispatchDueSosReminders(
+  db: SosDatabase,
+  cryptoProvider: Crypto,
+  sender: SosPushSender,
+  input: {
+    readonly now?: number;
+    readonly batchSize?: number;
+    readonly leaseMilliseconds?: number;
+  } = {},
+): Promise<SosResult<SosReminderDispatchSummary>> {
+  const claimed = await claimDueSosReminders(db, cryptoProvider, input);
+  if (!claimed.ok) return claimed;
+
+  let providerAccepted = 0;
+  let retryScheduled = 0;
+  let completionErrors = 0;
+
+  for (const reminder of claimed.value) {
+    let accepted = false;
+    try {
+      accepted = await sender.send({
+        idempotencyKey: reminder.id,
+        alertId: reminder.alertId,
+        recipientAccountId: reminder.recipientAccountId,
+        reminderNumber: reminder.reminderNumber,
+      });
+    } catch {
+      accepted = false;
+    }
+
+    const completed = await completeSosReminderDelivery(db, {
+      reminderId: reminder.id,
+      leaseToken: reminder.leaseToken,
+      outcome: accepted ? "sent" : "retry",
+      now: input.now,
+    });
+    if (!completed.ok || !completed.value.updated) {
+      completionErrors += 1;
+      continue;
+    }
+    if (accepted) providerAccepted += 1;
+    else retryScheduled += 1;
+  }
+
+  return {
+    ok: true,
+    value: {
+      claimed: claimed.value.length,
+      providerAccepted,
+      retryScheduled,
+      completionErrors,
+    },
+  };
+}
