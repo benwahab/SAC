@@ -179,3 +179,33 @@ Le fournisseur push/SMS, les garanties de délai, les budgets de retry, les dur�
 Les documents de conception fournissent une bonne base, mais le worker, le scheduler, l'idempotence fournisseur, la réconciliation et les tests D1 ne sont pas démontrés dans le périmètre vérifié. La priorité est de spécifier et tester ces mécanismes avant toute interface qui pourrait laisser croire à un envoi réel.
 
 Aucun worker, route, migration, fournisseur, secret, ressource Cloudflare, donnée GPS ou notification réelle n'a été créé par cet audit.
+
+
+## 5. Mise à jour d'implémentation — 19 novembre 2026
+
+Les constats précédents décrivent l'état avant la tranche SOS ajoutée sur `main`. Le code couvre désormais une partie du contrat, sans lever le NO-GO sur les notifications réelles.
+
+### 5.1 Réalisé dans le dépôt
+
+- `migrations/0003_alerts_sos.sql` : outbox push D1 avec une notification initiale (séquence 0), puis des rappels numérotés.
+- Le lanceur choisit un seuil de **1 à 5 rappels** avant l'évaluation de l'escalade SMS. La valeur ne limite plus la durée totale des rappels push.
+- À chaque rappel réclamé, le service programme le rappel suivant à au moins cinq minutes, tant que l'alerte reste active.
+- `migrations/0004_sos_reminder_leases.sql` : baux, reprise des tâches expirées, limite de cinq tentatives et état terminal.
+- `functions/lib/alerts/sos-service.ts` : acquisition, finalisation, orchestration via adaptateur injecté et distinction entre acceptation fournisseur, retry et échec terminal.
+- `migrations/0005_sos_sms_escalation.sql` : évaluation unique du seuil et création d'une tâche SMS par destinataire de l'instantané initial.
+- L'évaluation SMS attend que le rappel correspondant au seuil soit terminé pour **tous** les destinataires : accepté par le fournisseur push ou arrivé à l'échec terminal après les tentatives prévues.
+- Si un responsable principal a été attribué avant l'évaluation, même s'il s'est ensuite retiré, l'escalade est marquée `suppressed`. Sinon, les tâches SMS sont mises en attente.
+- La clôture par l'auteur annule les rappels push et tâches SMS encore en attente/en cours.
+- Les tests couvrent l'idempotence de l'évaluation concurrente, le seuil avant/après, les échecs push et reprises, la poursuite des rappels après le seuil, la suppression après prise en charge et l'annulation à la clôture.
+
+### 5.2 Toujours non réalisé
+
+- Aucun scheduler Cloudflare planifié n'est configuré.
+- Aucun abonnement Web Push par appareil n'est enregistré ou révoqué.
+- Aucun chiffrement Web Push/VAPID ni adaptateur réel de fournisseur push n'est connecté.
+- Aucun fournisseur SMS ni adaptateur d'envoi SMS n'est connecté.
+- Les tâches SMS sont persistées, mais **aucun SMS n'est envoyé**.
+- Les fonctions D1 et migrations sont vérifiées dans des bases locales de CI uniquement ; aucune migration distante Preview/Production n'est déclarée appliquée.
+- Les tests utilisent un adaptateur push simulé dans un Worker strictement réservé aux tests.
+
+**Conclusion mise à jour :** l'outbox et les règles de planification sont partiellement implémentées et testées localement. La livraison réelle, la planification périodique et les canaux push/SMS restent NO-GO jusqu'à l'intégration et aux essais des composants manquants.
