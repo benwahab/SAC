@@ -1,7 +1,7 @@
 # SAC — Annexe d’évaluation ECDSA P-256 et formats de signatures
 
 **Date :** 19 novembre 2026  
-**Dépôt :** \`benwahab/SAC\`, branche \`main\`  
+**Dépôt :** `benwahab/SAC`, branche `main`  
 **Statut :** évaluation technique et vecteurs de test — aucune homologation cryptographique, aucun protocole d’enrôlement activé.
 
 ## 1. Portée
@@ -19,74 +19,76 @@ Les objectifs sont :
 
 ### 2.1 Web Crypto — format brut fixe
 
-Pour ECDSA P-256, la spécification Web Cryptography définit la signature comme la concaténation de deux entiers de 32 octets, dans l’ordre \`r || s\`. Le résultat est donc exactement 64 octets, big-endian, sans encodage ASN.1/DER.
+Pour ECDSA P-256, la spécification Web Cryptography définit la signature comme la concaténation de deux entiers de 32 octets, dans l’ordre `r || s`. Le résultat est donc exactement 64 octets, big-endian, sans encodage ASN.1/DER.
 
 Le profil ES256 de RFC 7518 définit la même représentation : deux entiers non signés de 32 octets, chacun conservant ses zéros initiaux si nécessaire, concaténés dans l’ordre R puis S. Une signature qui ne fait pas 64 octets est invalide pour ES256.
 
 ### 2.2 Apple CryptoKit
 
-L’API CryptoKit P-256 expose deux représentations explicites pour \`ECDSASignature\` :
-- \`rawRepresentation\` ;
-- \`derRepresentation\`.
+L’API CryptoKit P-256 expose deux représentations explicites pour `ECDSASignature` :
+- `rawRepresentation` ;
+- `derRepresentation`.
 
 Il faut sélectionner et vérifier explicitement la représentation utilisée par le pont natif iOS. Les documentations Apple décrivent les deux formes, mais aucun test sur un appareil iOS réel n’a encore été exécuté pour SAC.
 
-Pour les clés publiques, CryptoKit expose plusieurs formes distinctes : représentation complète `rawRepresentation`, représentation ANSI X9.63, DER, PEM, compressée et compacte. Il faut sélectionner explicitement la forme utilisée par le pont natif iOS et ne pas confondre la représentation complète avec X9.63.
+Pour les clés publiques, le format d'export natif iOS reste à sélectionner et à tester sur appareil. Il ne doit pas être supposé identique au JWK Web Crypto.
 
 ### 2.3 Android Keystore / Java Signature
 
-La documentation Android montre l’usage de \`Signature.getInstance("SHA256withECDSA")\` avec Android Keystore. L’API Java précise toutefois que le format des octets dépend du schéma et du fournisseur cryptographique ; la documentation Android ne fixe pas à elle seule une représentation binaire universelle.
+La documentation Android montre l’usage de `Signature.getInstance("SHA256withECDSA")` avec Android Keystore. L’API Java précise toutefois que le format des octets dépend du schéma et du fournisseur cryptographique ; la documentation Android ne fixe pas à elle seule une représentation binaire universelle.
 
-Le format ASN.1 ECDSA couramment utilisé dans les environnements Java/X.509 est une séquence DER contenant deux entiers \`r\` et \`s\`. Il ne faut donc pas supposer que les octets retournés par chaque fournisseur Android sont déjà au format brut 64 octets. Cela doit être mesuré sur les versions et fournisseurs réellement ciblés.
+Le format ASN.1 ECDSA couramment utilisé dans les environnements Java/X.509 est une séquence DER contenant deux entiers `r` et `s`. Il ne faut donc pas supposer que les octets retournés par chaque fournisseur Android sont déjà au format brut 64 octets. Cela doit être mesuré sur les versions et fournisseurs réellement ciblés.
 
-Pour les clés publiques, l’API Android `Key.getEncoded()` expose le format primaire de la clé et peut retourner une représentation X.509 `SubjectPublicKeyInfo` ; elle peut aussi retourner `null` si la clé n’est pas exportable sous cette forme. Ce n’est pas directement un JWK `{x,y}`.
+Pour les clés publiques, la représentation fournie par Android Keystore et le fournisseur cryptographique doit être mesurée sur les versions réellement ciblées ; elle ne doit pas être supposée identique au JWK Web Crypto.
 
 ### 2.4 Formats à ne jamais confondre
 
 | Représentation | Description | P-256 |
 |---|---|---:|
-| Raw / IEEE P1363 / ES256 | \`r[32] || s[32]\`, big-endian | 64 octets |
-| ASN.1 DER | \`SEQUENCE(INTEGER r, INTEGER s)\` | longueur variable |
-| JWK public | Objet JSON avec \`kty\`, \`crv\`, \`x\`, \`y\` | coordonnées base64url |
-| X9.63 non compressé | \`04 || x[32] || y[32]\` | 65 octets |
+| Raw / IEEE P1363 / ES256 | `r[32] || s[32]`, big-endian | 64 octets |
+| ASN.1 DER | `SEQUENCE(INTEGER r, INTEGER s)` | longueur variable |
+| JWK public | Objet JSON avec `kty`, `crv`, `x`, `y` | coordonnées base64url |
+| X9.63 non compressé | `04 || x[32] || y[32]` | 65 octets |
 | SPKI DER | Clé publique enveloppée dans SubjectPublicKeyInfo | longueur variable |
 
 Une signature DER n’est jamais une signature raw de 64 octets. Une clé publique SPKI n’est jamais interchangeable avec les coordonnées JWK ou X9.63 sans conversion explicite.
 
 ## 3. Vecteur de vérification RFC 6979 — P-256 / SHA-256
 
-Le test reprend le vecteur public RFC 6979, annexe A.2.5, message \`sample\`.
+Le test reprend le vecteur public RFC 6979, annexe A.2.5, message `sample`.
 
 - Courbe : NIST P-256 / secp256r1
 - Hash : SHA-256
-- Coordonnée publique X : \`60FED4BA255A9D31C961EB74C6356D68C049B8923B61FA6CE669622E60F29FB6\`
-- Coordonnée publique Y : \`7903FE1008B8BC99A41AE9E95628BC64F2F1B20C2D7E9F5177A3C294D4462299\`
-- Signature R : \`EFD48B2AACB6A8FD1140DD9CD45E81D69D2C877B56AAF991C34D0EA84EAF3716\`
-- Signature S : \`F7CB1C942D657C41D436C7A1B6E29F65F3E900DBB9AFF4064DC4AB2F843ACDA8\`
+- Coordonnée publique X : `60FED4BA255A9D31C961EB74C6356D68C049B8923B61FA6CE669622E60F29FB6`
+- Coordonnée publique Y : `7903FE1008B8BC99A41AE9E95628BC64F2F1B20C2D7E9F5177A3C294D4462299`
+- Signature R : `EFD48B2AACB6A8FD1140DD9CD45E81D69D2C877B56AAF991C34D0EA84EAF3716`
+- Signature S : `F7CB1C942D657C41D436C7A1B6E29F65F3E900DBB9AFF4064DC4AB2F843ACDA8`
 
 La signature brute est la concaténation R puis S, soit 64 octets.
 
 Le test ajoute également la variante mathématiquement équivalente :
-\`s_low = n - s_high\`, où \`n\` est l’ordre du point de base P-256 :
+`s_low = n - s_high`, où `n` est l’ordre du point de base P-256 :
 
-\`FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551\`
+`FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551`
 
 Pour le vecteur :
-- le S RFC est supérieur à \`n / 2\` ;
-- le S transformé est inférieur ou égal à \`n / 2\` ;
+- le S RFC est supérieur à `n / 2` ;
+- le S transformé est inférieur ou égal à `n / 2` ;
 - les deux signatures sont valides mathématiquement pour le même message et la même clé publique.
 
 ## 4. Résultats de tests automatisés dans SAC
 
 Code et tests ajoutés :
-- \`tests/ecdsa-p256-interoperability.test.ts\` ;
-- extension de \`tests/fixtures/jcs-worker.ts\` ;
-- extension de \`tests/jcs-worker-runtime.test.ts\` ;
-- commande \`npm run test:ecdsa\`, intégrée à la CI.
+- `tests/ecdsa-p256-interoperability.test.ts` ;
+- extension de `tests/fixtures/jcs-worker.ts` ;
+- extension de `tests/jcs-worker-runtime.test.ts` ;
+- commande `npm run test:ecdsa`, intégrée à la CI ;
+- `tests/ecdsa-der-format.test.ts`, adaptateur DER/P1363 strict réservé aux tests ;
+- `tests/p256-jwk.test.ts`, tests des coordonnées JWK canoniques et des bits de remplissage base64url.
 
 Vérifications réalisées :
 1. import de la clé publique P-256 du vecteur RFC ;
-2. vérification de la signature raw de 64 octets sur le message \`sample\` ;
+2. vérification de la signature raw de 64 octets sur le message `sample` ;
 3. vérification de la variante low-S ;
 4. génération d’une paire ECDSA P-256 par Web Crypto ;
 5. signature et vérification d’un message de test ;
@@ -96,11 +98,11 @@ Vérifications réalisées :
 
 **Résultat observé :** Node.js Web Crypto et le runtime local Workers acceptent le vecteur raw de 64 octets, vérifient la variante high-S et la variante low-S, et produisent des signatures de 64 octets.
 
-La CI a exécuté avec succès les étapes « Test JCS et Web Crypto dans le runtime local Cloudflare Workers » et « Test P-256 ECDSA RFC 6979 signature interoperability » sur le commit \`e424f7f\`. Le workflow global correspondant doit être consulté avant de déclarer l’ensemble des contrôles terminé.
+La CI complète a réussi sur le commit `e18dbd6` (workflow `44425763811`) : installation reproductible, vecteurs JCS, parseur JSON strict, runtime local Workers/Web Crypto, ECDSA P-256 RFC 6979, tests DER/P1363, validation JWK P-256, typecheck, tests métier, migration D1 locale isolée, build et audits.
 
 ## 5. Conséquence de la malléabilité et arbitrage low-S
 
-ECDSA admet, pour une signature valide \`(r, s)\`, une autre signature valide \`(r, n-s)\`. Les tests montrent que les vérificateurs Web Crypto Node et Workers acceptent les deux variantes.
+ECDSA admet, pour une signature valide `(r, s)`, une autre signature valide `(r, n-s)`. Les tests montrent que les vérificateurs Web Crypto Node et Workers acceptent les deux variantes.
 
 Cela signifie :
 - Web Crypto ne normalise pas automatiquement toutes les signatures en low-S ;
@@ -110,9 +112,9 @@ Cela signifie :
 ### Recommandation candidate
 
 Pour SAC, examiner une règle versionnée imposant :
-- à l’émission, transformer \`s\` en \`min(s, n-s)\` ;
-- à la réception, rejeter toute signature où \`s > n/2\` ;
-- valider aussi \`1 <= r < n\` et \`1 <= s < n\` ;
+- à l’émission, transformer `s` en `min(s, n-s)` ;
+- à la réception, rejeter toute signature où `s > n/2` ;
+- valider aussi `1 <= r < n` et `1 <= s < n` ;
 - effectuer cette règle sur les entiers décodés du format raw, avant la vérification cryptographique.
 
 Cette recommandation reste **à arbitrer**. Elle n’est pas encore intégrée au certificat expérimental et n’est pas une décision homologuée.
@@ -145,13 +147,15 @@ Un parseur DER permissif ou une simple suppression du premier octet ne serait pa
 ## 7. Clé publique : choix encore à figer
 
 Le prototype expérimental exporte les clés publiques en JWK. Pour le futur protocole, une forme JWK minimale pourrait être retenue :
-- \`kty = "EC"\` ;
-- \`crv = "P-256"\` ;
-- \`x\` et \`y\` strictement décodés en 32 octets chacun ;
-- aucun champ privé \`d\` ;
+- `kty = "EC"` ;
+- `crv = "P-256"` ;
+- `x` et `y` strictement décodés en 32 octets chacun ;
+- aucun champ privé `d` ;
 - aucun champ inattendu ou ambigu dans le transcript signé.
 
-Il faut encore définir si le transcript transporte ce JWK minimal, les coordonnées binaires ou une représentation X9.63. La clé publique doit être validée sur la courbe et son empreinte doit utiliser une règle unique versionnée.
+Le helper `src/services/crypto/p256-jwk.ts` vérifie déjà les champs mathématiques `kty`, `crv`, `x`, `y`, l'absence de `d`, ainsi que l'encodage base64url sans bits de remplissage non canoniques. Il est réutilisé par les validateurs expérimentaux de l'échange ECDH et des certificats d'appareils. L'import cryptographique et la tentative d'accord ECDH restent nécessaires pour vérifier que le point est réellement valide sur la courbe.
+
+Il faut encore définir si le transcript transporte ce JWK minimal, les coordonnées binaires ou une représentation native. La clé publique doit être validée sur la courbe et son empreinte doit utiliser une règle unique versionnée.
 
 ## 8. Signatures aléatoires et tests
 
@@ -201,6 +205,7 @@ Aucun de ces tests n’active une clé racine, un certificat secondaire, une ses
 - RFC 6979, annexe A.2.5 (vecteurs ECDSA P-256) : https://www.rfc-editor.org/rfc/rfc6979.html
 - RFC 3279, section 2.2.3 (structure ASN.1 ECDSA) : https://www.rfc-editor.org/rfc/rfc3279.html
 - Android Keystore, signature et vérification : https://developer.android.com/privacy-and-security/keystore
-- Android \`java.security.Signature\` : https://developer.android.com/reference/java/security/Signature
-- Apple CryptoKit \`P256.Signing.ECDSASignature\` : https://developer.apple.com/documentation/cryptokit/p256/signing/ecdsasignature
+- Android `java.security.Signature` : https://developer.android.com/reference/java/security/Signature
+- Apple CryptoKit `P256.Signing.ECDSASignature` : https://developer.apple.com/documentation/cryptokit/p256/signing/ecdsasignature
+- Android `java.security.Key` : https://developer.android.com/reference/java/security/Key
 - Cloudflare Workers Web Crypto : https://developers.cloudflare.com/workers/runtime-apis/web-crypto/
