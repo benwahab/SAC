@@ -11,6 +11,7 @@ interface Env {
   WEBAUTHN_RP_NAME?: string;
   WEBAUTHN_ALLOWED_ORIGINS?: string;
   EMAIL_OTP_HMAC_SECRET?: string;
+  WEBAUTHN_ROOT_ENROLLMENT_ENABLED?: string;
 }
 const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" };
 const DUMMY_PASSWORD_HASH = "pbkdf2-sha256$600000$PFp-kbLU9ggaPF5_kLLU9g$UH7I5h10GxoZrC61QkcmamX2kS6MSnPQ8-aJwoD_mWA";
@@ -51,6 +52,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (!parsed.ok) return json({ error: parsed.reason === "too_large" ? "request_too_large" : "invalid_request" }, parsed.reason === "too_large" ? 413 : 400);
   if (typeof parsed.value !== "object" || parsed.value === null || Array.isArray(parsed.value)) return json({ error: "invalid_credentials" }, 400);
   const body = parsed.value as Record<string, unknown>;
+  if (env.WEBAUTHN_ROOT_ENROLLMENT_ENABLED !== "true") return json({ error: "root_enrollment_not_approved" }, 503);
   const email = normalizeRegistrationEmail(body.email);
   if (!email || typeof body.password !== "string" || body.password.length < 1 || body.password.length > 1024) {
     return json({ error: "invalid_credentials" }, 400);
