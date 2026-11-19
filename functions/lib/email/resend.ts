@@ -11,6 +11,51 @@ export type EmailDeliveryResult =
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
+const MAX_PROVIDER_RESPONSE_BYTES = 4_096;
+
+async function readBoundedJsonResponse(response: Response): Promise<unknown | null> {
+  if (!response.body) return null;
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > MAX_PROVIDER_RESPONSE_BYTES) {
+        try {
+          await reader.cancel();
+        } catch {
+          // Le dépassement reste un refus même si l'annulation échoue.
+        }
+        return null;
+      }
+      chunks.push(value);
+    }
+  } catch {
+    return null;
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  try {
+    const raw = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    return JSON.parse(raw) as unknown;
+  } catch {
+    return null;
+  }
+}
+
 const copy: Record<SacEmailLanguage, { subject: string; title: string; instruction: string; safety: string }> = {
   fr: {
     subject: "Votre code de vérification SAC",
@@ -112,19 +157,15 @@ export async function sendAccountVerificationCode(
     return { ok: false, reason: "provider_rejected" };
   }
 
-  try {
-    const payload: unknown = await response.json();
-    if (
-      typeof payload === "object" &&
-      payload !== null &&
-      "id" in payload &&
-      typeof payload.id === "string" &&
-      payload.id.length > 0
-    ) {
-      return { ok: true, messageId: payload.id };
-    }
-  } catch {
-    // Une réponse 2xx sans identifiant exploitable n'est pas considérée comme un succès.
+  const payload = await readBoundedJsonResponse(response);
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "id" in payload &&
+    typeof payload.id === "string" &&
+    payload.id.length > 0
+  ) {
+    return { ok: true, messageId: payload.id };
   }
 
   return { ok: false, reason: "provider_rejected" };
