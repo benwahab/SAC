@@ -201,7 +201,7 @@ test(
           assert.equal(result.challengePresent, true);
           assert.equal(result.rpId, RP_ID);
           assert.equal(result.userVerification, "required");
-          assert.equal(result.residentKey, "required");
+          assert.equal(result.residentKey, "discouraged");
           assert.equal(result.attachment, "platform");
           assert.deepEqual(result.algorithms, [-7]);
           ready = true;
