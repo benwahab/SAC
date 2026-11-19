@@ -42,7 +42,7 @@ BEGIN
       AND (
         (NEW.status = 'queued' AND NOT EXISTS (
           SELECT 1 FROM alert_responsibility_periods p
-          WHERE p.alert_id = a.id AND p.ended_at IS NULL
+          WHERE p.alert_id = a.id
         ))
         OR
         (NEW.status = 'suppressed' AND EXISTS (
