@@ -173,11 +173,13 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   });
   assert.equal(failedDelivery.status, 200);
   assert.deepEqual(failedDelivery.data, { claimed: 1, providerAccepted: 0, retryScheduled: 1, terminalFailures: 0, completionErrors: 0 });
-  const smsEscalation = await post<{ evaluationsCreated: number; evaluationsSuppressed: number; smsTasksCreated: number }>("/sms-escalate", {
-    now: now + 800_000,
-  });
-  assert.equal(smsEscalation.status, 200);
-  assert.deepEqual(smsEscalation.data, { evaluationsCreated: 1, evaluationsSuppressed: 0, smsTasksCreated: 1 });
+  const smsEscalations = await Promise.all([
+    post<{ evaluationsCreated: number; evaluationsSuppressed: number; smsTasksCreated: number }>("/sms-escalate", { now: now + 800_000 }),
+    post<{ evaluationsCreated: number; evaluationsSuppressed: number; smsTasksCreated: number }>("/sms-escalate", { now: now + 800_000 }),
+  ]);
+  assert.deepEqual(smsEscalations.map(x => x.status), [200, 200]);
+  assert.equal(smsEscalations.reduce((sum, x) => sum + x.data.evaluationsCreated, 0), 1);
+  assert.equal(smsEscalations.reduce((sum, x) => sum + x.data.smsTasksCreated, 0), 1);
   const smsState = await post<{ evaluation: { status: string; threshold_reached_at: number }; rows: Array<{ recipient_account_id: string; status: string; scheduled_at: number }> }>("/sms-state", {
     alertId: followup.data.alertId,
   });
