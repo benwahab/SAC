@@ -50,7 +50,6 @@ export type AlertResponderError =
   | "not_volunteered"
   | "invalid_server_sequence"
   | "duplicate_server_sequence"
-  | "closed_alert_has_open_responsibility"
   | "closure_alert_mismatch"
   | "closure_before_responsibility_start";
 
