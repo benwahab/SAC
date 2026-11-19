@@ -27,6 +27,8 @@ jobs:
         run: npm run test:d1-enrollment-atomicity
       - name: Test independent anti-rollback anchor model and fail-closed recovery
         run: npm run test:anti-rollback-model
+      - name: Test isolated ACL UDE contract model (not an Azure integration test)
+        run: npm run test:acl-ude-contract
       - name: Test full RFC 8785 Appendix B numeric vector set
         run: npm run test:jcs
       - name: Test strict JSON boundary parser and duplicate-key rejection
