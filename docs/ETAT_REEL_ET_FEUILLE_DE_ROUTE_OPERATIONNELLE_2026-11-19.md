@@ -33,7 +33,9 @@ Le dépôt contient beaucoup de conception ; le travail doit maintenant se dépl
 - `POST /api/auth/root-enrollment-options` et `POST /api/auth/complete-root-enrollment` : préparation et finalisation de l'enrôlement racine, actuellement protégées par un interrupteur de fonctionnalité et non homologuées pour production.
 - `GET /api/contacts` : liste les proches actifs du compte authentifié.
 - `POST /api/contacts/revoke` : révoque une relation directionnelle dont le compte courant est propriétaire.
-- Routes toujours absentes : connexion/émission de session, récupération/réinitialisation de compte, création/acceptation/refus d'invitations, endpoints SOS, notifications, trajets, paiements et administration professionnelle.
+- `POST /api/contacts/invitations` : crée une invitation à usage unique et déclenche l'e-mail via Resend lorsque les paramètres de durée, version de permission et fournisseur sont configurés.
+- `POST /api/contacts/invitations/accept` et `POST /api/contacts/invitations/decline` : acceptation/refus par le compte authentifié dont l'adresse e-mail vérifiée correspond à la destination.
+- Routes toujours absentes : connexion/émission de session, récupération/réinitialisation de compte, endpoints SOS, notifications, trajets, paiements et administration professionnelle.
 
 La présence d'un adaptateur Resend et de routes d'inscription ne prouve pas qu'un compte fournisseur ou des secrets sont configurés, ni qu'un e-mail réel a été délivré.
 
@@ -177,6 +179,10 @@ Sur `main`, les changements suivants ont été ajoutés :
 - `GET /api/auth/session` réutilise désormais cette garde commune au lieu de dupliquer la vérification.
 - `GET /api/contacts` retourne uniquement les relations directionnelles actives du compte authentifié ; aucun identifiant de compte fourni par le client n'est utilisé comme autorité.
 - `POST /api/contacts/revoke` permet au propriétaire authentifié de révoquer sa relation, avec contrôle same-origin et lecture JSON bornée.
+- `POST /api/contacts/invitations` crée une invitation avec jeton aléatoire, empreinte stockée en D1 et e-mail de livraison ; le jeton brut n'est jamais renvoyé au navigateur ni stocké en base.
+- `POST /api/contacts/invitations/accept` vérifie l'identité e-mail du compte connecté et consomme l'invitation avec création de la relation directionnelle dans le service D1 existant.
+- `POST /api/contacts/invitations/decline` permet au destinataire vérifié de refuser l'invitation.
+- Les endpoints appliquent le contrôle same-origin, la lecture JSON bornée et l'authentification par session ; l'acceptation conserve la limite gratuite actuelle de deux proches. Les droits Premium ne sont pas activés.
 - `tests/require-authenticated-device-session.test.ts` couvre l'absence de cookie, l'autorisation d'une session valide, le refus d'un compte suspendu et l'indisponibilité D1 ; commande dédiée `npm run test:session-guard`.
 
-**Limites explicites :** cette tranche ne crée pas encore les sessions et ne résout donc pas l'absence de route de connexion. Elle ne crée pas non plus les invitations. Les endpoints refusent l'accès tant que les tables D1 et une session valide ne sont pas disponibles. Les migrations distantes n'ont pas été appliquées et aucun projet Pages n'a été créé ou déployé. Aucun secret ni fournisseur n'a été configuré.
+**Limites explicites :** cette tranche ne crée pas encore les sessions et ne résout donc pas l'absence de route de connexion. Le parcours visuel `/invitation/accept` et son intégration dans l'interface ne sont pas encore livrés. Les routes refusent l'accès tant que les tables D1 et une session valide ne sont pas disponibles. La création d'invitation exige les variables `CONTACT_INVITATION_TTL_MS`, `CONTACT_PERMISSION_VERSION`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL` et `APP_BASE_URL` ; elles ne sont pas configurées ici. Les migrations distantes n'ont pas été appliquées et aucun projet Pages n'a été créé ou déployé. Aucun secret ni fournisseur n'a été configuré.
