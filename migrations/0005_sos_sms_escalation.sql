@@ -56,7 +56,7 @@ BEGIN
         OR
         (NEW.status = 'suppressed' AND EXISTS (
           SELECT 1 FROM alert_responsibility_periods p
-          WHERE p.alert_id = a.id AND p.ended_at IS NULL
+          WHERE p.alert_id = a.id
         ))
       )
   ) THEN RAISE(ABORT, 'alert_sms_escalation_not_eligible') END;
