@@ -200,6 +200,7 @@ test(
 
     const afterRevoke = await post<{ contacts: unknown[] }>("/contacts", { ownerId });
     assert.equal(afterRevoke.status, 200);
-    assert.equal(afterRevoke.data.contacts.length, 0);
+    assert.equal(afterRevoke.data.contacts.length, 1);
+    assert.equal((afterRevoke.data.contacts[0] as { accountId: string }).accountId, contact2Id);
   },
 );
