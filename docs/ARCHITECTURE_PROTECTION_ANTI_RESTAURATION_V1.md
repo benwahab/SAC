@@ -137,3 +137,28 @@ Scénarios couverts :
 - SQLite-backed Durable Object Storage et PITR : https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/
 - Cloudflare D1 restore API : https://developers.cloudflare.com/api/resources/d1/subresources/database/subresources/time_travel/methods/restore/
 
+
+## 6. Fournisseur candidat à étudier — Azure Confidential Ledger
+
+**Candidat de présélection, non choisi et non configuré : Microsoft Azure Confidential Ledger (ACL).** Il présente un meilleur alignement fonctionnel que D1/DO pour le journal externe : Microsoft le décrit comme un registre append-only et tamper-evident, fondé sur CCF et des enclaves matérielles, avec des reçus cryptographiques/Merkle permettant de vérifier qu'une entrée a été validée. Le service expose une API REST et des bibliothèques JavaScript, ce qui mérite un prototype d'intégration avec un Worker Cloudflare.
+
+Sources Microsoft :
+- Présentation, append-only, sécurité, gestion des identités, réplication et suppression : https://learn.microsoft.com/en-us/azure/confidential-ledger/overview
+- Reçus cryptographiques : https://learn.microsoft.com/en-us/azure/confidential-ledger/write-transaction-receipts
+- Vérification des reçus : https://learn.microsoft.com/en-us/azure/confidential-ledger/verify-write-transaction-receipts
+- Résidence des données et région jumelée : https://learn.microsoft.com/en-us/azure/confidential-ledger/data-residency
+
+**Points de vigilance à vérifier avant choix :**
+- ACL est un service à créer dans un abonnement Azure ; sa suppression administrative est un hard delete et les données ne sont pas récupérables. Le rôle de contrôle qui peut supprimer la ressource doit donc être séparé des identités applicatives SAC, fortement restreint et surveillé.
+- Les données sont automatiquement répliquées vers une région Azure jumelée ; la région primaire et sa région jumelée doivent être acceptables pour SAC.
+- L'authentification du Worker, le mode privé/chiffré, les droits data-plane minimaux, l'authenticité des nœuds, les limites, la disponibilité, les coûts et la latence depuis le Niger restent à mesurer.
+- La documentation de reçu précise qu'une connexion interrompue peut laisser incertain le résultat d'un append ; le protocole SAC devra retrouver le commit via transaction ID/état plutôt que renvoyer aveuglément un événement et créer un doublon.
+- Il faut tester comment lire la tête de séquence et retrouver une commande idempotente, comment paginer/rejouer les entrées et vérifier les reçus, et comment réagir à la suppression/recréation du registre.
+
+ACL est donc un **candidat à un prototype non-production**, pas une décision de fournisseur, pas une promesse de gratuité et pas une garantie absolue contre un administrateur qui contrôle aussi l'abonnement et peut supprimer la ressource. Le compte/abonnement ACL devrait être séparé du tenant Cloudflare et administré par une identité distincte. Aucun abonnement, registre ou secret n'a été créé.
+
+## 7. Alternative de comparaison — S3 Object Lock
+
+Amazon S3 Object Lock en mode Compliance peut empêcher l'écrasement ou la suppression d'une version protégée pendant sa période de rétention, même par le root AWS ; il exige le versioning et les nouvelles versions / delete markers restent des considérations à gérer. Cette solution est une archive WORM, pas à elle seule un journal séquencé avec compare-and-append et lecture cohérente de la tête. Elle demanderait un protocole additionnel et une séparation d'administration. Source : https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html
+
+Le choix final doit comparer ACL à un assemblage AWS, sans déployer l'un ou l'autre avant validation.
