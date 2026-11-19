@@ -32,7 +32,8 @@
     "test:p256-jwk": "node --experimental-strip-types --test tests/p256-jwk.test.ts",
     "test:webauthn-workers": "node --experimental-strip-types --test tests/webauthn-workers-smoke.test.ts",
     "test:d1-enrollment-atomicity": "node --experimental-strip-types --test tests/d1-enrollment-atomicity.test.ts",
-    "test:anti-rollback-model": "node --experimental-strip-types --test tests/anti-rollback-model.test.ts"
+    "test:anti-rollback-model": "node --experimental-strip-types --test tests/anti-rollback-model.test.ts",
+    "test:acl-ude-contract": "node --experimental-strip-types --test tests/acl-ude-contract-model.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
