@@ -125,7 +125,7 @@ Variables d'environnement Cloudflare à définir par environnement :
 
 Aucune valeur de domaine de production n'est inventée ou inscrite dans le dépôt. Si ces variables ne sont pas configurées, les endpoints échouent fermé.
 
-La migration 0007 est versionnée dans Git mais **n'a pas été appliquée à la base D1 distante**.
+La migration 0007 est versionnée dans Git mais **n'a pas été appliquée à la base D1 distante**. Le contrôle `GET /api/health` exige maintenant également les sept tables de l'enrôlement racine et des sessions (`root_enrollment_*`, `devices`, `device_root_credentials`, `device_sessions`, `device_enrollment_events`) : une base sans cette migration est explicitement signalée `schema_incomplete`, et non `connected`.
 
 ## 5. Limites restantes — ne pas annoncer SAC comme terminé
 
