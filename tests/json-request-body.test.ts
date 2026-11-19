@@ -100,3 +100,18 @@ test("rejects invalid UTF-8", async () => {
 test("rejects an invalid configured limit", async () => {
   await assert.rejects(() => readJsonRequestBody(request("{}"), 0), RangeError);
 });
+
+test("does not wait for a stalled stream cancellation after the byte limit", async () => {
+  const stream = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      controller.enqueue(new Uint8Array(32).fill(65));
+    },
+    cancel() {
+      return new Promise<void>(() => {
+        // Simule un flux dont le nettoyage ne se termine jamais.
+      });
+    },
+  });
+  const result = await readJsonRequestBody(request(stream), 8);
+  assert.deepEqual(result, { ok: false, reason: "too_large" });
+});
