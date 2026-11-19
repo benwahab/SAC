@@ -130,10 +130,13 @@ BEGIN
     OR NEW.created_at <> OLD.created_at OR NEW.expires_at <> OLD.expires_at
     THEN RAISE(ABORT, 'root_enrollment_challenge_immutable') END;
   SELECT CASE WHEN NOT (
-    OLD.consumed_at IS NULL AND NEW.consumed_at IS NOT NULL
-    AND NEW.consumed_at >= OLD.created_at AND NEW.consumed_at < OLD.expires_at
+    OLD.consumed_at IS NULL
     AND NEW.attempt_count = OLD.attempt_count + 1
     AND NEW.attempt_count <= 5
+    AND (
+      NEW.consumed_at IS NULL
+      OR (NEW.consumed_at >= OLD.created_at AND NEW.consumed_at < OLD.expires_at)
+    )
   ) THEN RAISE(ABORT, 'root_enrollment_challenge_transition_invalid') END;
 END;
 
@@ -150,6 +153,17 @@ BEGIN
       SELECT 1 FROM root_enrollment_challenges ch
       WHERE ch.ceremony_id = OLD.id AND ch.account_id = OLD.account_id
         AND ch.consumed_at = NEW.completed_at
+    )
+  ) AND NOT (
+    OLD.status = 'pending' AND NEW.status = 'expired'
+    AND OLD.completed_at IS NULL AND NEW.completed_at IS NULL
+    AND (
+      OLD.expires_at <= CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)
+      OR EXISTS (
+        SELECT 1 FROM root_enrollment_challenges ch
+        WHERE ch.ceremony_id = OLD.id AND ch.account_id = OLD.account_id
+          AND ch.attempt_count >= 5
+      )
     )
   ) THEN RAISE(ABORT, 'root_enrollment_ceremony_transition_invalid') END;
 END;
