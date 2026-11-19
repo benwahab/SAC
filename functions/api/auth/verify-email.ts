@@ -1,4 +1,5 @@
 import { guardSameOriginJsonPost } from "../../lib/security/http-request-guard.ts";
+import { readJsonRequestBody } from "../../lib/security/json-request-body.ts";
 import { normalizeRegistrationEmail } from "../../../src/domain/registration-policy.ts";
 import { verifyEmailOtpDigest } from "../../lib/security/email-otp-code.ts";
 
@@ -20,16 +21,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ error: "verification_service_not_configured" }, 503);
   }
 
-  let input: unknown;
-  try {
-    const raw = await request.text();
-    if (new TextEncoder().encode(raw).byteLength > 8_192) {
-      return json({ error: "request_too_large" }, 413);
-    }
-    input = JSON.parse(raw);
-  } catch {
-    return json({ error: "invalid_request" }, 400);
+  const parsedBody = await readJsonRequestBody(request, 8_192);
+  if (!parsedBody.ok) {
+    return json({ error: parsedBody.reason === "too_large" ? "request_too_large" : "invalid_request" }, parsedBody.reason === "too_large" ? 413 : 400);
   }
+  const input = parsedBody.value;
 
   if (typeof input !== "object" || input === null) {
     return json({ error: "invalid_verification" }, 400);
