@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { ArrowUpRight, Download, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, Wifi, X } from "lucide-react";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
 import { completeRootEnrollment, requestRootEnrollment, type RootEnrollmentCeremony } from "./services/device/root-enrollment";
+import PrivateSpacePage from "./PrivateSpacePage";
 
 
 type LoginPageProps = {
@@ -357,6 +358,7 @@ export default function App() {
   const t = translations[language];
   const signInLabel = language === "fr" ? "Connexion" : language === "en" ? "Sign in" : "تسجيل الدخول";
   const isLoginPage = window.location.pathname === "/connexion";
+  const isPrivateSpacePage = window.location.pathname === "/espace-prive";
   const isRtl = language === "ar";
 
   useEffect(() => {
@@ -470,6 +472,7 @@ export default function App() {
   }, [healthRefresh]);
 
   if (isLoginPage) return <LoginPage language={language} setLanguage={setLanguage} />;
+  if (isPrivateSpacePage) return <PrivateSpacePage onLogout={() => { window.location.assign("/connexion"); }} />;
 
   const statusDot =
     health === "connected" ? "bg-sac-confirm" :
