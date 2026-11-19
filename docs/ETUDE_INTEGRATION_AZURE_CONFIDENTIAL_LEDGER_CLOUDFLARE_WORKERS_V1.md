@@ -293,3 +293,48 @@ Références officielles complémentaires :
 - Cloudflare VPC Networks et destinations routées : https://developers.cloudflare.com/workers-vpc/configuration/vpc-networks/
 - Cloudflare VPC Services et tunnel privé : https://developers.cloudflare.com/workers-vpc/configuration/vpc-services/
 - Cloudflare Tunnel : https://developers.cloudflare.com/workers-vpc/configuration/tunnel/
+
+
+## 12. Vérification d'un exemple Microsoft UDE — modèle de journal applicatif (19 novembre 2026)
+
+L'examen du dépôt public Microsoft `azureconfidentialledger-app-samples/code-transparency` apporte un exemple concret, au-delà du seul guide :
+
+- le fichier `app.json` déclare des routes UDE, leur méthode, leur module/fonction, le mode `readwrite` ou `readonly`, le transfert vers le primaire et la politique d'authentification ;
+- `src/endpoints/entries.ts` reçoit une écriture, vérifie une politique, calcule un hash, demande le prochain numéro de séquence et écrit l'entrée dans une table KV ;
+- `src/models/schema.ts` définit des tables applicatives distinctes pour les entrées et les compteurs de séquence ;
+- les écritures passent par les endpoints personnalisés et non par un pré-hook UDF fourni dans la requête.
+
+Références :
+- Exemple Microsoft UDE : https://github.com/microsoft/azureconfidentialledger-app-samples/tree/main/code-transparency
+- Déclaration des routes : https://github.com/microsoft/azureconfidentialledger-app-samples/blob/main/code-transparency/app.json
+- Écriture d'entrée : https://github.com/microsoft/azureconfidentialledger-app-samples/blob/main/code-transparency/src/endpoints/entries.ts
+- Tables et séquence : https://github.com/microsoft/azureconfidentialledger-app-samples/blob/main/code-transparency/src/models/schema.ts
+
+### Ce que cet exemple prouve — et ne prouve pas
+
+Il confirme qu'une application UDE peut porter une API métier, maintenir une séquence applicative et écrire l'état dans les tables KV du registre. Le fait que les écritures mutent l'état CCF dans le TEE est cohérent avec le modèle transactionnel du registre et le transfert au primaire.
+
+Il ne prouve pas encore, pour SAC :
+- qu'une entrée UDE obtient exactement le même format de transaction ID et de reçu que `POST /app/transactions` ;
+- comment le client récupère le transaction ID et le reçu après une réponse UDE perdue ;
+- que l'identité applicative UDE ne peut pas appeler les routes natives `/app/transactions` ou d'autres routes d'écriture ;
+- que les tables personnalisées sont effectivement append-only par conception : l'exemple utilise un compteur et des clés d'entrée, mais SAC devra refuser toute réutilisation/écrasement de clé ;
+- que la lecture indépendante peut reconstruire l'historique complet à partir de l'état KV et des transactions/receipts après un incident.
+
+### Architecture UDE SAC à tester
+
+La voie candidate devient une route UDE dédiée `POST /sac/security-events` qui, dans une seule transaction CCF dirigée vers le primaire :
+1. valide un schéma canonique strict et la taille ;
+2. lit la tête du compte opaque ;
+3. compare séquence attendue et empreinte précédente ;
+4. vérifie l'idempotency key et son digest ;
+5. refuse tout identifiant d'événement ou clé de séquence déjà utilisé ;
+6. ajoute l'événement sous une clé unique immuable ;
+7. met à jour la tête et le registre d'idempotence ;
+8. renvoie les métadonnées de commit disponibles sans prétendre à un reçu tant que son contrat n'est pas démontré.
+
+Cette logique doit être transactionnelle : si une étape échoue, aucune modification ne doit être validée. Le test concurrent doit prouver qu'une seule requête utilisant la même séquence attendue réussit.
+
+**Condition supplémentaire bloquante :** prouver que le rôle de la passerelle SAC peut appeler la route UDE autorisée, mais ne peut pas écrire directement dans les routes natives, modifier les UDE, gérer les utilisateurs/roles, supprimer le registre ou altérer les politiques. Les administrateurs qui déploient le bundle et le RBAC doivent être séparés de l'identité d'exécution.
+
+L'exemple Microsoft ne constitue pas une preuve d'homologation pour SAC ; il permet de préparer un prototype contractuel beaucoup plus précis. Aucun code UDE SAC ni ressource Azure n'a été créé.
