@@ -806,3 +806,114 @@ export async function dispatchDueSosReminders(
     },
   };
 }
+
+
+export interface SosSmsEscalationSummary {
+  readonly evaluationsCreated: number;
+  readonly evaluationsSuppressed: number;
+  readonly smsTasksCreated: number;
+}
+
+/**
+ * Evaluates each active alert once when its selected push-reminder threshold
+ * is reached. D1 decides atomically whether a lead responder already exists:
+ * queued SMS tasks are created for the immutable original recipient snapshot
+ * only when no principal responder has been assigned.
+ *
+ * This function only persists work. It does not contact an SMS provider.
+ */
+export async function scheduleDueSosSmsEscalations(
+  db: SosDatabase,
+  cryptoProvider: Crypto,
+  input: { readonly now?: number; readonly batchSize?: number } = {},
+): Promise<SosResult<SosSmsEscalationSummary>> {
+  const now = input.now ?? Date.now();
+  const batchSize = input.batchSize ?? 20;
+  if (
+    !Number.isSafeInteger(now) || now <= 0 ||
+    !Number.isSafeInteger(batchSize) || batchSize < 1 || batchSize > 50
+  ) return fail("invalid_input");
+
+  try {
+    const due = await db.prepare(
+      `SELECT a.id, a.created_at, a.push_reminder_limit,
+              a.created_at + (a.push_reminder_limit * 300000) AS threshold_at
+       FROM alerts a
+       WHERE a.status = 'active'
+         AND a.created_at + (a.push_reminder_limit * 300000) <= ?
+         AND NOT EXISTS (
+           SELECT 1 FROM alert_sms_escalations e WHERE e.alert_id = a.id
+         )
+       ORDER BY threshold_at, a.id
+       LIMIT ?`,
+    ).bind(now, batchSize).all<{
+      id: string;
+      created_at: number;
+      push_reminder_limit: number;
+      threshold_at: number;
+    }>();
+    if (!due.success) return fail("storage_unavailable");
+
+    let evaluationsCreated = 0;
+    let evaluationsSuppressed = 0;
+    let smsTasksCreated = 0;
+
+    for (const alert of due.results ?? []) {
+      const recipients = await db.prepare(
+        `SELECT recipient_account_id
+         FROM alert_recipients WHERE alert_id = ?
+         ORDER BY recipient_account_id`,
+      ).bind(alert.id).all<{ recipient_account_id: string }>();
+      if (!recipients.success || !recipients.results?.length) return fail("storage_unavailable");
+
+      const statements = [
+        db.prepare(
+          `INSERT INTO alert_sms_escalations
+           (alert_id, threshold_reached_at, evaluated_at, status)
+           SELECT a.id, ?, ?, CASE WHEN EXISTS (
+             SELECT 1 FROM alert_responsibility_periods p
+             WHERE p.alert_id = a.id AND p.ended_at IS NULL
+           ) THEN 'suppressed' ELSE 'queued' END
+           FROM alerts a
+           WHERE a.id = ? AND a.status = 'active'
+             AND a.created_at + (a.push_reminder_limit * 300000) = ?
+             AND NOT EXISTS (
+               SELECT 1 FROM alert_sms_escalations e WHERE e.alert_id = a.id
+             )`,
+        ).bind(alert.threshold_at, now, alert.id, alert.threshold_at),
+        ...recipients.results.map((recipient) => db.prepare(
+          `INSERT OR IGNORE INTO alert_sms_outbox
+           (id, alert_id, recipient_account_id, status, scheduled_at, created_at)
+           SELECT ?, e.alert_id, r.recipient_account_id, 'pending', e.threshold_reached_at, ?
+           FROM alert_sms_escalations e
+           JOIN alert_recipients r ON r.alert_id = e.alert_id
+           WHERE e.alert_id = ? AND e.status = 'queued'
+             AND r.recipient_account_id = ?`,
+        ).bind(
+          cryptoProvider.randomUUID(), now, alert.id, recipient.recipient_account_id,
+        )),
+      ];
+
+      const results = await db.batch(statements);
+      if (results.length !== statements.length || results.some((result) => !result.success)) {
+        return fail("storage_unavailable");
+      }
+      evaluationsCreated += results[0].meta.changes === 1 ? 1 : 0;
+      smsTasksCreated += results.slice(1).reduce((sum, result) => sum + result.meta.changes, 0);
+
+      if (results[0].meta.changes === 1) {
+        const evaluation = await db.prepare(
+          "SELECT status FROM alert_sms_escalations WHERE alert_id = ?",
+        ).bind(alert.id).first<{ status: "queued" | "suppressed" }>();
+        if (evaluation?.status === "suppressed") evaluationsSuppressed += 1;
+      }
+    }
+
+    return {
+      ok: true,
+      value: { evaluationsCreated, evaluationsSuppressed, smsTasksCreated },
+    };
+  } catch {
+    return fail("storage_unavailable");
+  }
+}
