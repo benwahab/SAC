@@ -89,6 +89,7 @@ export default {
         invitationId: String(body.invitationId ?? ""),
         token: String(body.token ?? ""),
         permissionVersion: "permissions-v1",
+        maxActiveContacts: 2,
         now: Number(body.now),
       });
       return result.ok ? json(result.value) : json({ error: result.error }, 409);
