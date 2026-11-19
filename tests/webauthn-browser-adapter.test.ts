@@ -54,6 +54,7 @@ function fakeCredential(): Credential {
 
 test("decodeBase64Url accepts canonical unpadded values and rejects malformed encodings", () => {
   assert.deepEqual([...decodeBase64Url("AQIDBA", "test")], [1, 2, 3, 4]);
+  assert.deepEqual([...decodeBase64Url("-___", "test")], [251, 255, 255]);
   for (const value of ["", "AQID=", "AQ+/", "A", "AQI!"]) {
     assert.throws(() => decodeBase64Url(value, "test"));
   }
