@@ -270,3 +270,10 @@ Code ajouté directement sur `main` :
 Le Worker traite une tâche de rappel par destinataire et envoie un push générique à chaque abonnement actif de ses appareils enrôlés. Si un destinataire possède plusieurs appareils et qu'un fournisseur accepte certains envois mais qu'un autre échoue temporairement, une reprise peut répéter un envoi déjà accepté : Web Push ne fournit pas ici de garantie exactly-once. Cette limite est explicitement conservée ; elle ne doit pas être présentée comme une livraison garantie sans doublon.
 
 **État final de cette tranche :** fondation PWA et transport serveur écrits dans le dépôt ; aucune livraison active. Les tests ajoutés n'ont pas encore de résultat CI vérifié. Les envois réels, la planification Cloudflare et les clés VAPID restent NO-GO jusqu'à configuration, déploiement autorisé et validation.
+
+
+### 5.7 Cohérence de la limite de destinataires — 19 novembre 2026
+
+L'audit du contrat entre le service SOS et l'interface a révélé que le service classait un dépassement du nombre autorisé de destinataires comme une entrée génériquement invalide, alors que l'API et l'interface prévoyaient une erreur métier dédiée. Le service renvoie désormais `recipient_limit_exceeded` avant toute lecture ou écriture D1 ; la route traduit cette erreur en HTTP 409 et l'interface peut afficher son message explicite. La limite actuelle reste inchangée : 2 proches pour l'offre gratuite ; le plafond Premium de 10 nécessite toujours une décision d'abonnement côté serveur et n'est pas activé par cette correction.
+
+Un test D1 local dédié à cette réponse a été ajouté à la suite SOS existante. Aucun compte, destinataire ou alerte réelle n'a été créé ; aucun envoi n'a été effectué.
