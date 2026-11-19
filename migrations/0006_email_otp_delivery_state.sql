@@ -65,6 +65,20 @@ BEGIN
       AND NEW.attempt_count = OLD.attempt_count
       AND NEW.consumed_at IS OLD.consumed_at
       AND NEW.invalidated_at IS OLD.invalidated_at
+      AND (
+        NEW.delivery_status = 'failed'
+        OR EXISTS (
+          SELECT 1
+          FROM accounts a
+          JOIN account_identities i ON i.account_id = a.id
+          WHERE a.id = OLD.account_id
+            AND a.status = 'pending_verification'
+            AND i.id = OLD.identity_id
+            AND i.channel = 'email'
+            AND i.is_primary = 1
+            AND i.verified_at IS NULL
+        )
+      )
     )
     OR
     -- Les tentatives ne peuvent être consommées que sur un code livré.
