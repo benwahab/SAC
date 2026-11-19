@@ -19,6 +19,8 @@ jobs:
       - run: npm ci
       - name: Test same-origin JSON request guard for public authentication endpoints
         run: npm run test:http-request-guard
+      - name: Test bounded streaming JSON request bodies for authentication endpoints
+        run: npm run test:json-request-body
       - name: Install pinned SimpleWebAuthn runtime-smoke dependency (test only)
         run: npm install --no-save --package-lock=false @simplewebauthn/server@14.1.0
       - name: Test SimpleWebAuthn inside local Cloudflare Workers runtime
