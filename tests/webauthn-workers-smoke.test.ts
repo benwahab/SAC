@@ -250,6 +250,15 @@ test(
     assert.equal(multiResult.credentialBackedUp, false);
     assert.equal(multiResult.acceptedBySacRootPolicy, false);
 
+    // BE=1 is refused even when BS=0: the credential is backup-eligible.
+    const backupEligibleButNotBackedUp = createFixture({ be: true, bs: false });
+    const eligibleResponse = await verify(backupEligibleButNotBackedUp);
+    assert.equal(eligibleResponse.status, 200);
+    const eligibleResult = await eligibleResponse.json() as Record<string, unknown>;
+    assert.equal(eligibleResult.credentialDeviceType, "multiDevice");
+    assert.equal(eligibleResult.credentialBackedUp, false);
+    assert.equal(eligibleResult.acceptedBySacRootPolicy, false);
+
     const backedUp = createFixture({ be: true, bs: true });
     const backedResponse = await verify(backedUp);
     assert.equal(backedResponse.status, 200);
