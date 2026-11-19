@@ -37,10 +37,14 @@ async function runCommand(args: string[], timeoutMs = 90_000): Promise<string> {
   let output = "";
   child.stdout?.on("data", (chunk: Buffer) => { output += chunk.toString(); });
   child.stderr?.on("data", (chunk: Buffer) => { output += chunk.toString(); });
+  let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
   const result = await Promise.race([
     once(child, "exit").then(([code]) => ({ code: code as number | null })),
-    delay(timeoutMs).then(() => ({ timeout: true as const })),
+    new Promise<{ timeout: true }>((resolve) => {
+      timeoutHandle = setTimeout(() => resolve({ timeout: true }), timeoutMs);
+    }),
   ]);
+  if (timeoutHandle) clearTimeout(timeoutHandle);
   if ("timeout" in result) {
     child.kill("SIGTERM");
     throw new Error("Wrangler command timed out: " + args.join(" ") + "\n" + output);
