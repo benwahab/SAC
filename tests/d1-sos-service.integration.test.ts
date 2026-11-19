@@ -173,6 +173,19 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   });
   assert.equal(failedDelivery.status, 200);
   assert.deepEqual(failedDelivery.data, { claimed: 1, providerAccepted: 0, retryScheduled: 1, terminalFailures: 0, completionErrors: 0 });
+  const smsEscalation = await post<{ evaluationsCreated: number; evaluationsSuppressed: number; smsTasksCreated: number }>("/sms-escalate", {
+    now: now + 800_000,
+  });
+  assert.equal(smsEscalation.status, 200);
+  assert.deepEqual(smsEscalation.data, { evaluationsCreated: 1, evaluationsSuppressed: 0, smsTasksCreated: 1 });
+  const smsState = await post<{ evaluation: { status: string; threshold_reached_at: number }; rows: Array<{ recipient_account_id: string; status: string; scheduled_at: number }> }>("/sms-state", {
+    alertId: followup.data.alertId,
+  });
+  assert.equal(smsState.status, 200);
+  assert.equal(smsState.data.evaluation.status, "queued");
+  assert.deepEqual(smsState.data.rows.map(x => x.recipient_account_id), [contact]);
+  assert.equal(smsState.data.rows[0].status, "pending");
+  assert.equal(smsState.data.rows[0].scheduled_at, now + 800_000);
   const successfulRetry = await post<{ claimed: number; providerAccepted: number; retryScheduled: number; completionErrors: number }>("/dispatch", {
     now: now + 815_000,
   });
@@ -212,4 +225,25 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   const noSixthAttempt = await post<unknown[]>("/claim", { now: exhaustionBase + 1_000_000 });
   assert.equal(noSixthAttempt.status, 200);
   assert.equal(noSixthAttempt.data.length, 0);
+
+  const suppressedBase = now + 2_000_000;
+  const suppressedAlert = await post<{ alertId: string }>("/create", {
+    owner, recipients: [contact], reminders: 1, now: suppressedBase,
+  });
+  assert.equal(suppressedAlert.status, 200);
+  const leadAssigned = await post<{ responsibilityAssigned: boolean }>("/respond", {
+    actor: contact, alertId: suppressedAlert.data.alertId, action: "volunteer", now: suppressedBase + 1,
+  });
+  assert.equal(leadAssigned.status, 200);
+  assert.equal(leadAssigned.data.responsibilityAssigned, true);
+  const suppressedEscalation = await post<{ evaluationsCreated: number; evaluationsSuppressed: number; smsTasksCreated: number }>("/sms-escalate", {
+    now: suppressedBase + 300_000,
+  });
+  assert.equal(suppressedEscalation.status, 200);
+  assert.deepEqual(suppressedEscalation.data, { evaluationsCreated: 1, evaluationsSuppressed: 1, smsTasksCreated: 0 });
+  const suppressedState = await post<{ evaluation: { status: string }; rows: unknown[] }>("/sms-state", {
+    alertId: suppressedAlert.data.alertId,
+  });
+  assert.equal(suppressedState.data.evaluation.status, "suppressed");
+  assert.equal(suppressedState.data.rows.length, 0);
 });
