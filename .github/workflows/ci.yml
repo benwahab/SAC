@@ -58,6 +58,8 @@ jobs:
         run: npm run test:certificates
       - name: Test per-device session authorization
         run: npm run test:sessions
+      - name: Test opaque session token generation and hashing
+        run: npm run test:session-tokens
       - name: Test alert lifecycle domain contract
         run: npm run test:alerts
       - name: Test alert response and responsibility contract
