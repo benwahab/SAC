@@ -201,3 +201,49 @@ test("un délai ou une interruption réseau du fournisseur est signalé comme in
     globalThis.fetch = originalFetch;
   }
 });
+
+test("une réponse fournisseur trop volumineuse est refusée sans être entièrement analysée", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () =>
+    new Response(JSON.stringify({ id: "valid-id", extra: "x".repeat(5_000) }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })) as typeof fetch;
+
+  try {
+    assert.deepEqual(
+      await sendAccountVerificationCode(
+        { RESEND_API_KEY: "test-api-key", RESEND_FROM_EMAIL: "SAC <noreply@example.com>" },
+        "person@example.com",
+        "123456",
+        "fr",
+      ),
+      { ok: false, reason: "provider_rejected" },
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("une réponse fournisseur contenant du JSON UTF-8 invalide est refusée", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () =>
+    new Response(new Uint8Array([0xff, 0xfe, 0xfd]), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })) as typeof fetch;
+
+  try {
+    assert.deepEqual(
+      await sendAccountVerificationCode(
+        { RESEND_API_KEY: "test-api-key", RESEND_FROM_EMAIL: "SAC <noreply@example.com>" },
+        "person@example.com",
+        "123456",
+        "fr",
+      ),
+      { ok: false, reason: "provider_rejected" },
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
