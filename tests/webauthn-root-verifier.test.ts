@@ -99,7 +99,7 @@ async function fixture(overrides: { flags?: number; origin?: string; rpId?: stri
 test("verifies a valid none-attestation P-256 single-device root credential", async () => {
   const input = await fixture();
   const result = await verifyRootRegistrationResponse({
-    ...input, allowedOrigins: ["https://sac.example"], cryptoProvider,
+    ...input, expectedOrigin: "https://sac.example", allowedOrigins: ["https://sac.example"], cryptoProvider,
   });
   assert.equal(result.credentialId.length, 32);
   assert.match(result.publicKeyX, /^[A-Za-z0-9_-]{43}$/);
@@ -113,7 +113,7 @@ test("verifies a valid none-attestation P-256 single-device root credential", as
 test("rejects a challenge replayed from a different challenge digest", async () => {
   const input = await fixture();
   await assert.rejects(() => verifyRootRegistrationResponse({
-    ...input, expectedChallengeDigest: "0".repeat(64),
+    ...input, expectedChallengeDigest: "0".repeat(64), expectedOrigin: "https://sac.example",
     allowedOrigins: ["https://sac.example"], cryptoProvider,
   }));
 });
