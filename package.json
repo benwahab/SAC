@@ -45,7 +45,8 @@
     "test:webauthn-root-policy": "node --experimental-strip-types --test tests/webauthn-root-policy.test.ts",
     "test:auth-endpoints": "node --experimental-strip-types --test tests/auth-endpoint-boundaries.test.ts",
     "test:health": "node --experimental-strip-types --test tests/health-endpoint.test.ts",
-    "test:webauthn-browser": "node --experimental-strip-types --test tests/webauthn-browser-adapter.test.ts"
+    "test:webauthn-browser": "node --experimental-strip-types --test tests/webauthn-browser-adapter.test.ts",
+    "test:webauthn-root-options": "node --experimental-strip-types --test tests/webauthn-root-options.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
