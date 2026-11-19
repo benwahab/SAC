@@ -32,16 +32,17 @@ class EmailOtpD1SchemaTests(unittest.TestCase):
     def tearDown(self):
         self.db.close()
 
-    def create_challenge(self, challenge_id, created_at, digest=None):
+    def create_challenge(self, challenge_id, created_at, digest=None, delivery_status="accepted"):
         self.db.execute(
             """INSERT INTO email_otp_challenges
                (id, account_id, identity_id, purpose, digest, attempt_count,
-                max_attempts, created_at, expires_at)
+                max_attempts, created_at, expires_at, delivery_status)
                VALUES (?, 'account-1', 'email-1', 'account_email_verification',
-                       ?, 0, 6, ?, ?)""",
-            (challenge_id, digest or ("a" * 64), created_at, created_at + 600_000),
+                       ?, 0, 6, ?, ?, ?)""",
+            (challenge_id, digest or ("a" * 64), created_at, created_at + 600_000, delivery_status),
         )
         self.db.commit()
+
 
     def submit_attempt(self, challenge_id, candidate_digest, at):
         return self.db.execute(
@@ -66,13 +67,21 @@ class EmailOtpD1SchemaTests(unittest.TestCase):
         with self.assertRaisesRegex(sqlite3.IntegrityError, "otp_resend_cooldown"):
             self.create_challenge("too-soon", self.now + 59_999)
 
-        self.create_challenge("otp-2", self.now + 60_000)
+        self.create_challenge("otp-2", self.now + 60_000, delivery_status="pending")
+        old = self.db.execute(
+            "SELECT invalidated_at FROM email_otp_challenges WHERE id='otp-1'"
+        ).fetchone()
+        self.assertIsNone(old["invalidated_at"])
+
+        self.db.execute(
+            "UPDATE email_otp_challenges SET delivery_status='accepted' WHERE id='otp-2'"
+        )
+        self.db.commit()
         old = self.db.execute(
             "SELECT invalidated_at FROM email_otp_challenges WHERE id='otp-1'"
         ).fetchone()
         self.assertEqual(old["invalidated_at"], self.now + 60_000)
 
-        # Le nouveau défi n'est pas invalidé par la tentative refusée.
         current = self.db.execute(
             "SELECT invalidated_at FROM email_otp_challenges WHERE id='otp-2'"
         ).fetchone()
