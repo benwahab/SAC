@@ -163,7 +163,7 @@ Le Worker vérifie explicitement le booléen `verified` renvoyé par chaque fonc
 **Commit testé :** `613720b68176ef18b5b1b0b0f83687615e811a5a`  
 **Résultat :** `success`. Le test WebAuthn, le typecheck, les tests existants, le build et les audits de dépendances sont passés.
 
-Les tests supplémentaires de refus lorsque le flag UV est absent viennent d'être ajoutés et doivent encore être confirmés par le workflow suivant.
+Les tests supplémentaires de refus lorsque le flag UV est absent ont également réussi : une inscription sans UV et une authentification sans UV sont rejetées.
 
 ## 11. Découverte importante : residentKey et passkeys synchronisées sur Android
 
@@ -186,3 +186,16 @@ Ce test ne couvre pas encore :
 - matrice de compatibilité Android/iOS/Desktop effectivement ciblée.
 
 **Conclusion actuelle :** SimpleWebAuthn 14.1.0 a passé un test cryptographique positif/négatif complet de base dans le runtime Workers local, y compris les flags BE/BS et les signatures ES256. Cela autorise la poursuite vers les tests de protocole et d'état, mais ne donne pas encore le GO à l'enrôlement racine de production.
+
+
+### Vérification CI complémentaire des flags UV
+
+**Workflow :** [SAC quality checks — run 44475483140](https://github.com/benwahab/SAC/actions/runs/44475483140)  
+**Commit testé :** `babde21a25835767ff26de17089678bbee72bb59`  
+**Conclusion :** `success`.
+
+Ce workflow confirme les tests positifs et négatifs précédemment décrits, avec deux cas supplémentaires :
+- inscription avec UP présent mais UV absent : rejet ;
+- authentification avec UP présent mais UV absent : rejet.
+
+Le test cryptographique est exécuté dans le runtime Workers local avec SimpleWebAuthn 14.1.0. Il ne dépend pas d'un authentificateur réel : les clés et réponses sont générées à la volée pour les tests.
