@@ -71,6 +71,9 @@ export default {
           credentialDeviceType: info.credentialDeviceType,
           credentialBackedUp: info.credentialBackedUp,
         });
+        if (!rootPolicy.accepted) {
+          return jsonError("Credential rejected by SAC root policy");
+        }
 
         let authenticationVerified: boolean | null = null;
         if (input.authentication && input.authenticationChallenge) {
