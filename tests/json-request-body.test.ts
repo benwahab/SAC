@@ -7,7 +7,9 @@ function request(body: BodyInit, headers: Record<string, string> = {}): Request 
     method: "POST",
     headers,
     body,
-  });
+    // Node's Fetch implementation requires duplex for streamed request bodies.
+    duplex: "half",
+  } as RequestInit);
 }
 
 test("parses valid JSON within the byte limit", async () => {
