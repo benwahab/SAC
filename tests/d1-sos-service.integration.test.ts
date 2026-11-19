@@ -193,6 +193,14 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   });
   assert.equal(successfulRetry.status, 200);
   assert.deepEqual(successfulRetry.data, { claimed: 1, providerAccepted: 1, retryScheduled: 0, terminalFailures: 0, completionErrors: 0 });
+  const closeFollowup = await post<{ closed: boolean }>("/close", {
+    actor: owner, alertId: followup.data.alertId, now: now + 820_000,
+  });
+  assert.equal(closeFollowup.status, 200);
+  const smsStateAfterClose = await post<{ rows: Array<{ status: string }> }>("/sms-state", {
+    alertId: followup.data.alertId,
+  });
+  assert.equal(smsStateAfterClose.data.rows[0].status, "cancelled");
 
   const exhaustionBase = now + 1_000_000;
   const exhaustionAlert = await post<{ alertId: string }>("/create", {
