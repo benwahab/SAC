@@ -5,7 +5,7 @@ export interface Translation {
   trustEyebrow: string; heroTitle: string; heroSecond: string; heroThird: string;
   heroDescription: string; sosLabel: string; preparing: string; sosStatus: string;
   protectedData: string; chosenContacts: string; personalSpace: string; accompaniment: string;
-  serverStatus: string; checking: string; connected: string; unavailable: string; offline: string;
+  serverStatus: string; checking: string; connected: string; unavailable: string; offline: string; schemaIncomplete: string; retry: string;
   freePlan: string; premiumPlan: string; contacts: string; perMonth: string; freeSafety: string;
   principles: string; principlesTitle: string; contactTitle: string; contactDescription: string;
   locationTitle: string; locationDescription: string; helpTitle: string; helpDescription: string;
@@ -35,7 +35,7 @@ export const translations: Record<Language, Translation> = {
     protectedData: "Données protégées", chosenContacts: "Contacts choisis",
     personalSpace: "Espace personnel", accompaniment: "SAC vous accompagne",
     serverStatus: "État du serveur", checking: "Vérification de la connexion…",
-    connected: "API et base de données accessibles", unavailable: "Connexion serveur à vérifier", offline: "Aucune connexion Internet détectée",
+    connected: "API et base de données accessibles", unavailable: "Connexion serveur à vérifier", offline: "Aucune connexion Internet détectée", schemaIncomplete: "Structure de base de données incomplète", retry: "Réessayer",
     freePlan: "Formule gratuite", premiumPlan: "Formule Premium", contacts: "contacts",
     perMonth: "/ mois", freeSafety: "Les fonctions de sécurité essentielles, dont le SOS, resteront accessibles gratuitement.",
     principles: "Les principes SAC", principlesTitle: "La confiance commence par le contrôle.",
@@ -61,7 +61,7 @@ export const translations: Record<Language, Translation> = {
     protectedData: "Protected data", chosenContacts: "Chosen contacts",
     personalSpace: "Personal space", accompaniment: "SAC is here for you",
     serverStatus: "Server status", checking: "Checking connection…",
-    connected: "API and database are reachable", unavailable: "Server connection needs checking", offline: "No Internet connection detected",
+    connected: "API and database are reachable", unavailable: "Server connection needs checking", offline: "No Internet connection detected", schemaIncomplete: "Database schema is incomplete", retry: "Try again",
     freePlan: "Free plan", premiumPlan: "Premium plan", contacts: "contacts",
     perMonth: "/ month", freeSafety: "Essential safety features, including SOS, will remain free.",
     principles: "SAC principles", principlesTitle: "Trust begins with control.",
@@ -87,7 +87,7 @@ export const translations: Record<Language, Translation> = {
     protectedData: "بيانات محمية", chosenContacts: "جهات اتصال تختارها",
     personalSpace: "المساحة الشخصية", accompaniment: "SAC إلى جانبك",
     serverStatus: "حالة الخادم", checking: "جارٍ التحقق من الاتصال…",
-    connected: "واجهة الخدمة وقاعدة البيانات متاحتان", unavailable: "يجب التحقق من اتصال الخادم", offline: "لا يوجد اتصال بالإنترنت",
+    connected: "واجهة الخدمة وقاعدة البيانات متاحتان", unavailable: "يجب التحقق من اتصال الخادم", offline: "لا يوجد اتصال بالإنترنت", schemaIncomplete: "هيكل قاعدة البيانات غير مكتمل", retry: "إعادة المحاولة",
     freePlan: "الخطة المجانية", premiumPlan: "الخطة المميزة", contacts: "جهات اتصال",
     perMonth: "شهرياً", freeSafety: "ستظل وظائف السلامة الأساسية، بما فيها الاستغاثة، متاحة مجاناً.",
     principles: "مبادئ SAC", principlesTitle: "الثقة تبدأ بالتحكم.",
