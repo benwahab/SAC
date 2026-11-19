@@ -1,7 +1,7 @@
-import { requireAuthenticatedDeviceSession } from "../../../../lib/security/require-authenticated-device-session.ts";
-import { guardSameOriginJsonPost } from "../../../../lib/security/http-request-guard.ts";
-import { readJsonRequestBody } from "../../../../lib/security/json-request-body.ts";
-import { declineContactInvitation } from "../../../../lib/trusted-contacts/service.ts";
+import { requireAuthenticatedDeviceSession } from "../../../lib/security/require-authenticated-device-session.ts";
+import { guardSameOriginJsonPost } from "../../../lib/security/http-request-guard.ts";
+import { readJsonRequestBody } from "../../../lib/security/json-request-body.ts";
+import { declineContactInvitation } from "../../../lib/trusted-contacts/service.ts";
 
 interface Env { DB: D1Database; }
 
