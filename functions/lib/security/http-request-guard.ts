@@ -34,7 +34,7 @@ export function guardSameOriginJsonPost(request: Request): Response | null {
   }
 
   const contentType = request.headers.get("Content-Type") ?? "";
-  if (!/^application\\/json(?:\\s*;\\s*charset=utf-8)?$/i.test(contentType.trim())) {
+  if (!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(contentType.trim())) {
     return reject("json_content_type_required", 415);
   }
 
