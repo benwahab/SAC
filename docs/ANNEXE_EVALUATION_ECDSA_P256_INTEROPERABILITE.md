@@ -92,6 +92,7 @@ Vérifications réalisées :
 5. signature et vérification d’un message de test ;
 6. répétition du vecteur RFC, des deux variantes S et de la génération d’une signature dans le runtime local Wrangler/Miniflare.
 7. conversion raw → DER → raw sur le vecteur RFC ; vérification DER avec le moteur `node:crypto` indépendant ; rejet des INTEGER négatifs, nuls, non minimaux, des longueurs non canoniques et des octets finaux.
+8. contrôle des coordonnées JWK P-256, y compris le rejet des chaînes base64url de 43 caractères dont les bits de remplissage finaux ne sont pas nuls.
 
 **Résultat observé :** Node.js Web Crypto et le runtime local Workers acceptent le vecteur raw de 64 octets, vérifient la variante high-S et la variante low-S, et produisent des signatures de 64 octets.
 
