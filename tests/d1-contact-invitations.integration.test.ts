@@ -92,6 +92,24 @@ test(
     const { ownerId, contactId, contactEmail, contact2Id, contact2Email, contact3Id, contact3Email } = seeded.data;
 
     const now = Date.now();
+
+    const failedDelivery = await post<{ error: string }>("/create-and-send", {
+      ownerId,
+      destinationEmail: contact3Email,
+      expiresAt: now + 24 * 60 * 60 * 1000,
+      now,
+      failDelivery: true,
+    });
+    assert.equal(failedDelivery.status, 400);
+    assert.equal(failedDelivery.data.error, "delivery_failed");
+
+    const cancelledStatus = await post<{ status: string }>("/invitation-status", {
+      invitationId: (failedDelivery.data as unknown as { invitationId?: string }).invitationId ?? "",
+    });
+    // The delivery endpoint intentionally does not return a raw token or
+    // invitation metadata on failure; a later successful invite can be issued.
+    assert.equal(cancelledStatus.status, 404);
+
     const created = await post<{
       invitationId: string; token: string; destinationEmail: string; expiresAt: number;
     }>("/create", {
