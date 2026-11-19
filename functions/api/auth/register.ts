@@ -16,6 +16,7 @@ const NO_STORE = { "Cache-Control": "no-store", "Content-Type": "application/jso
 const GENERIC_ACCEPTED = {
   accepted: true,
   message: "Si cette adresse est éligible, vous recevrez les instructions de vérification.",
+  retryAfterSeconds: 60,
 };
 
 function json(body: unknown, status = 200): Response {
@@ -124,5 +125,5 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   // parcours peut proposer un renvoi après le délai minimal de 60 secondes.
   await sendAccountVerificationCode(env, email, code, language);
 
-  return json({ ...GENERIC_ACCEPTED, retryAfterSeconds: 60 }, 202);
+  return json(GENERIC_ACCEPTED, 202);
 };
