@@ -157,3 +157,46 @@ test("une langue inconnue est rejetée sans appel fournisseur", async () => {
     globalThis.fetch = originalFetch;
   }
 });
+
+test("la requête fournisseur utilise un signal d'annulation avec délai", async () => {
+  const originalFetch = globalThis.fetch;
+  let signal: AbortSignal | null | undefined;
+  globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
+    signal = init?.signal as AbortSignal | null | undefined;
+    return new Response(JSON.stringify({ id: "resend-timeout-test" }), { status: 200 });
+  }) as typeof fetch;
+
+  try {
+    const result = await sendAccountVerificationCode(
+      { RESEND_API_KEY: "test-api-key", RESEND_FROM_EMAIL: "SAC <noreply@example.com>" },
+      "person@example.com",
+      "123456",
+      "fr",
+    );
+    assert.deepEqual(result, { ok: true, messageId: "resend-timeout-test" });
+    assert.ok(signal instanceof AbortSignal);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("un délai ou une interruption réseau du fournisseur est signalé comme indisponibilité", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () => {
+    throw new DOMException("The operation was aborted", "AbortError");
+  }) as typeof fetch;
+
+  try {
+    assert.deepEqual(
+      await sendAccountVerificationCode(
+        { RESEND_API_KEY: "test-api-key", RESEND_FROM_EMAIL: "SAC <noreply@example.com>" },
+        "person@example.com",
+        "123456",
+        "fr",
+      ),
+      { ok: false, reason: "provider_unavailable" },
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
