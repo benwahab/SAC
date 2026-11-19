@@ -65,10 +65,12 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   assert.equal(recipientRead.data.isAuthor, false);
   assert.deepEqual(recipientRead.data.alert.recipientSnapshot.map(x => x.contactUserId).sort(), [contact, contact2].sort());
 
-  const acknowledgement = await post<{ recorded: boolean }>("/respond", { actor: contact, alertId, action: "acknowledge", now: now + 1 });
-  const duplicateAcknowledgement = await post<{ recorded: boolean }>("/respond", { actor: contact, alertId, action: "acknowledge", now: now + 1 });
-  assert.equal(acknowledgement.status, 200);
-  assert.equal(duplicateAcknowledgement.status, 200);
+  const acknowledgementAttempts = await Promise.all([
+    post<{ recorded: boolean }>("/respond", { actor: contact, alertId, action: "acknowledge", now: now + 1 }),
+    post<{ recorded: boolean }>("/respond", { actor: contact, alertId, action: "acknowledge", now: now + 1 }),
+  ]);
+  assert.deepEqual(acknowledgementAttempts.map(x => x.status), [200, 200]);
+  assert.ok(acknowledgementAttempts.every(x => x.data.recorded));
   const volunteer = await post<{ responsibilityAssigned: boolean }>("/respond", { actor: contact, alertId, action: "volunteer", now: now + 2 });
   assert.equal(volunteer.status, 200);
   assert.equal(volunteer.data.responsibilityAssigned, true);
