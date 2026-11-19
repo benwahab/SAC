@@ -3,7 +3,7 @@
 - **Date :** 19 novembre 2026
 - **Dépôt :** `benwahab/SAC`
 - **Branche :** `main`
-- **Statut :** parcours serveur d'enrôlement racine et première session implémenté dans le code ; validation CI et essais physiques non confirmés ; pas encore autorisé pour la production.
+- **Statut :** parcours serveur d'enrôlement racine présent mais désactivé par défaut ; première session uniquement après enrôlement ; validation CI et essais physiques non confirmés ; pas autorisé pour la production.
 
 ## 1. Parcours désormais raccordé
 
@@ -109,7 +109,11 @@ Commandes ajoutées dans `package.json` et étapes correspondantes dans `.github
 
 **Ces tests ont été écrits et raccordés, mais leur réussite n'est pas affirmée.** Aucune exécution locale de la suite ou compilation n'a été effectuée dans cet environnement. Le problème CI déjà signalé est laissé de côté à la demande du propriétaire.
 
-## 3. Configuration requise avant tout essai réel
+## 3. Verrouillage effectif avant tout essai réel
+
+Les deux routes d'enrôlement vérifient désormais `WEBAUTHN_ROOT_ENROLLMENT_ENABLED === "true"` après validation minimale de la requête. Sans cette valeur exacte, elles répondent `503 root_enrollment_not_approved` et ne consultent pas D1. La valeur est absente de toute configuration par défaut et n'a été configurée sur aucun environnement. Ce verrou est une protection supplémentaire, pas une approbation de sécurité : ne pas l'activer avant revue cryptographique indépendante, choix définitif du profil racine et essais physiques.
+
+## 4. Configuration requise avant tout essai réel
 
 Variables d'environnement Cloudflare à définir par environnement :
 - `WEBAUTHN_RP_ID` : RP ID exact, en minuscules, sans schéma ni port ;
@@ -121,16 +125,16 @@ Aucune valeur de domaine de production n'est inventée ou inscrite dans le dép�
 
 La migration 0007 est versionnée dans Git mais **n'a pas été appliquée à la base D1 distante**.
 
-## 4. Limites restantes — ne pas annoncer SAC comme terminé
+## 5. Limites restantes — ne pas annoncer SAC comme terminé
 
 1. Essais physiques sur Android/Chrome : non réalisés ; compatibilité réelle de l'authenticator à confirmer.
 2. `residentKey: discouraged` est le choix provisoire conservant le profil du smoke test ; le choix final doit être confirmé sur les appareils cibles.
 3. L'authentification WebAuthn par assertion (`navigator.credentials.get`) pour les connexions suivantes n'est pas encore implémentée. Le présent lot crée uniquement la première credential racine et la première session.
 4. Le contrôle de session est disponible via l'endpoint dédié, mais les futurs endpoints privés de contacts, SOS, GPS et données personnelles doivent encore être raccordés à ce contrôle avant exposition.
-5. Les variables Cloudflare réelles ne sont pas configurées et la migration distante n'est pas appliquée.
+5. Les variables Cloudflare réelles ne sont pas configurées, `WEBAUTHN_ROOT_ENROLLMENT_ENABLED` reste absent, et la migration distante n'est pas appliquée.
 6. Tests CI et build non confirmés.
 
-## 5. Conditions avant test utilisateur ou production
+## 6. Conditions avant test utilisateur ou production
 
 - Revue du code et exécution réussie des tests de l'enrôlement.
 - Configuration des origines et du RP ID réels.
