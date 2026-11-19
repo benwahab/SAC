@@ -181,19 +181,30 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     now: now + 800_000,
   });
   assert.deepEqual(smsWhileRetryPending.data, { evaluationsCreated: 0, evaluationsSuppressed: 0, smsTasksCreated: 0 });
-  const smsState = await post<{ evaluation: { status: string; threshold_reached_at: number }; rows: Array<{ recipient_account_id: string; status: string; scheduled_at: number }> }>("/sms-state", {
+  const smsStateWhileRetryPending = await post<{ evaluation: null; rows: unknown[] }>("/sms-state", {
     alertId: followup.data.alertId,
   });
-  assert.equal(smsState.status, 200);
-  assert.equal(smsState.data.evaluation.status, "queued");
-  assert.deepEqual(smsState.data.rows.map(x => x.recipient_account_id), [contact]);
-  assert.equal(smsState.data.rows[0].status, "pending");
-  assert.equal(smsState.data.rows[0].scheduled_at, now + 800_000);
+  assert.equal(smsStateWhileRetryPending.data.evaluation, null);
+  assert.equal(smsStateWhileRetryPending.data.rows.length, 0);
   const successfulRetry = await post<Record<string, number>>("/dispatch", {
     now: now + 815_000,
   });
   assert.equal(successfulRetry.status, 200);
   assert.deepEqual(successfulRetry.data, { claimed: 1, providerAccepted: 1, retryScheduled: 0, terminalFailures: 0, completionErrors: 0, smsEvaluationsCreated: 1, smsEvaluationsSuppressed: 0, smsTasksCreated: 1 });
+  const smsState = await post<{ evaluation: { status: string; threshold_reached_at: number }; rows: Array<{ recipient_account_id: string; status: string; scheduled_at: number }> }>("/sms-state", {
+    alertId: followup.data.alertId,
+  });
+  assert.equal(smsState.data.evaluation.status, "queued");
+  assert.deepEqual(smsState.data.rows.map(x => x.recipient_account_id), [contact]);
+  assert.equal(smsState.data.rows[0].status, "pending");
+  assert.equal(smsState.data.rows[0].scheduled_at, now + 800_000);
+  const followupPushState = await post<{ rows: Array<{ reminder_number: number; status: string; scheduled_at: number }> }>("/push-state", {
+    alertId: followup.data.alertId,
+  });
+  assert.deepEqual(followupPushState.data.rows.map(x => [x.reminder_number, x.status]), [
+    [0, "sent"], [1, "sent"], [2, "pending"],
+  ]);
+  assert.equal(followupPushState.data.rows[2].scheduled_at, now + 1_100_000);
   const closeFollowup = await post<{ closed: boolean }>("/close", {
     actor: owner, alertId: followup.data.alertId, now: now + 820_000,
   });
@@ -202,6 +213,10 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     alertId: followup.data.alertId,
   });
   assert.equal(smsStateAfterClose.data.rows[0].status, "cancelled");
+  const followupPushAfterClose = await post<{ rows: Array<{ reminder_number: number; status: string }> }>("/push-state", {
+    alertId: followup.data.alertId,
+  });
+  assert.equal(followupPushAfterClose.data.rows.find(x => x.reminder_number === 2)?.status, "cancelled");
 
   const exhaustionBase = now + 1_000_000;
   const exhaustionAlert = await post<{ alertId: string }>("/create", {
