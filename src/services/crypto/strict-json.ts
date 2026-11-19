@@ -9,6 +9,7 @@ export type StrictJsonValue =
   | { [key: string]: StrictJsonValue };
 
 const MAX_SUPPORTED_DEPTH = 128;
+const MAX_SUPPORTED_BYTES = 1_048_576;
 
 export interface StrictJsonLimits {
   /** Maximum UTF-8 size of the original JSON document. */
@@ -41,6 +42,7 @@ function validateLimits(limits: StrictJsonLimits): void {
     !limits ||
     !Number.isSafeInteger(limits.maxBytes) ||
     limits.maxBytes < 1 ||
+    limits.maxBytes > MAX_SUPPORTED_BYTES ||
     !Number.isSafeInteger(limits.maxDepth) ||
     limits.maxDepth < 0 ||
     limits.maxDepth > MAX_SUPPORTED_DEPTH
