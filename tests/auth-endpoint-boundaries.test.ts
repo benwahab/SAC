@@ -68,7 +68,9 @@ test("verify-email selects only the current, delivered, unconsumed OTP challenge
   }));
   const response = await (verifyEmail as never)({ request, env: selectionEnv } as never);
   assert.equal(response.status, 400);
+  assert.match(selection, /latest\.purpose = 'account_email_verification'/);
   assert.match(selection, /latest\.delivery_status = 'accepted'/);
+  assert.match(selection, /i\.is_primary = 1/);
   assert.match(selection, /latest\.invalidated_at IS NULL/);
   assert.match(selection, /latest\.consumed_at IS NULL/);
 });
