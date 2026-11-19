@@ -170,7 +170,7 @@ export async function closeSosAlertByAuthor(
   ) return fail("invalid_input");
 
   try {
-    const results = await db.batch([
+    await db.batch([
       db.prepare(
         `UPDATE alerts
          SET status = 'closed_by_author', closed_at = ?, closure_reason = ?
@@ -195,16 +195,42 @@ export async function closeSosAlertByAuthor(
          WHERE alert_id = ? AND ended_at IS NULL`,
       ).bind(now, input.alertId),
     ]);
+  } catch {
+    // A concurrent identical close may win the transaction first. Verify
+    // persisted state below rather than treating that race as a false failure.
+  }
 
-    if (results.length !== 3 || results.some((result) => !result.success)) {
-      return fail("alert_not_found_or_closed");
-    }
-    if (results[0].meta.changes !== 1 || results[1].meta.changes !== 1) {
-      return fail("alert_not_found_or_closed");
-    }
+  try {
+    const committed = await db.prepare(
+      `SELECT a.status, a.author_account_id, a.closed_at, a.closure_reason,
+         EXISTS (
+           SELECT 1 FROM alert_events e
+           WHERE e.alert_id = a.id
+             AND e.actor_account_id = a.author_account_id
+             AND e.event_type = 'closed_by_author'
+             AND e.occurred_at = a.closed_at
+         ) AS closure_event_recorded
+       FROM alerts a WHERE a.id = ? LIMIT 1`,
+    ).bind(input.alertId).first<{
+      status: string;
+      author_account_id: string;
+      closed_at: number | null;
+      closure_reason: AlertClosureReason | null;
+      closure_event_recorded: number;
+    }>();
+
+    if (
+      !committed ||
+      committed.status !== "closed_by_author" ||
+      committed.author_account_id !== input.authenticatedAccountId ||
+      committed.closed_at !== now ||
+      committed.closure_reason !== input.reason ||
+      committed.closure_event_recorded !== 1
+    ) return fail("alert_not_found_or_closed");
+
     return { ok: true, value: { closed: true, closedAt: now } };
   } catch {
-    return fail("alert_not_found_or_closed");
+    return fail("storage_unavailable");
   }
 }
 
