@@ -5,9 +5,9 @@ import {
   requestRootEnrollment,
   type RootEnrollmentCeremony,
 } from "../src/services/device/root-enrollment.ts";
-import type { WebAuthnCreationPort } from "../src/services/device/webauthn.ts";
+import type { RootCredentialCreationOptionsJSON, WebAuthnCreationPort } from "../src/services/device/webauthn.ts";
 
-const options = {
+const options: RootCredentialCreationOptionsJSON = {
   challenge: "A".repeat(42) + "Q",
   rp: { id: "sac.example", name: "SAC" },
   user: { id: "AQIDBA", name: "SAC-account", displayName: "Compte SAC" },
