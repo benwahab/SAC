@@ -70,6 +70,7 @@ export default {
         const rootPolicy = evaluateWebAuthnRootCredentialPolicy({
           credentialDeviceType: info.credentialDeviceType,
           credentialBackedUp: info.credentialBackedUp,
+          userVerified: info.userVerified,
         });
         if (!rootPolicy.accepted) {
           return jsonError("Credential rejected by SAC root policy");
