@@ -29,7 +29,8 @@
     "test:jcs-worker": "node --experimental-strip-types --test tests/jcs-worker-runtime.test.ts",
     "test:ecdsa": "node --experimental-strip-types --test tests/ecdsa-p256-interoperability.test.ts",
     "test:ecdsa-der": "node --experimental-strip-types --test tests/ecdsa-der-format.test.ts",
-    "test:p256-jwk": "node --experimental-strip-types --test tests/p256-jwk.test.ts"
+    "test:p256-jwk": "node --experimental-strip-types --test tests/p256-jwk.test.ts",
+    "test:webauthn-workers": "node --experimental-strip-types --test tests/webauthn-workers-smoke.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
