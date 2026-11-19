@@ -86,9 +86,10 @@ test(
 
     const seeded = await post<{
       ownerId: string; ownerEmail: string; contactId: string; contactEmail: string;
+      contact2Id: string; contact2Email: string; contact3Id: string; contact3Email: string;
     }>("/seed", {});
     assert.equal(seeded.status, 200);
-    const { ownerId, contactId, contactEmail } = seeded.data;
+    const { ownerId, contactId, contactEmail, contact2Id, contact2Email, contact3Id, contact3Email } = seeded.data;
 
     const now = Date.now();
     const created = await post<{
@@ -141,6 +142,46 @@ test(
     const reverseContacts = await post<{ contacts: unknown[] }>("/contacts", { ownerId: contactId });
     assert.equal(reverseContacts.status, 200);
     assert.equal(reverseContacts.data.contacts.length, 0);
+
+    // The free plan has two active trusted-contact slots. The limit is
+    // checked inside the same D1 transaction that accepts the invitation.
+    const secondNow = now + 10;
+    const secondInvitation = await post<{ invitationId: string; token: string }>("/create", {
+      ownerId,
+      destinationEmail: contact2Email,
+      expiresAt: now + 24 * 60 * 60 * 1000,
+      now: secondNow,
+    });
+    assert.equal(secondInvitation.status, 200);
+    const secondAccepted = await post<{ contactAccountId: string }>("/accept", {
+      contactId: contact2Id,
+      invitationId: secondInvitation.data.invitationId,
+      token: secondInvitation.data.token,
+      now: secondNow + 1,
+    });
+    assert.equal(secondAccepted.status, 200);
+    assert.equal(secondAccepted.data.contactAccountId, contact2Id);
+
+    const thirdNow = now + 20;
+    const thirdInvitation = await post<{ invitationId: string; token: string }>("/create", {
+      ownerId,
+      destinationEmail: contact3Email,
+      expiresAt: now + 24 * 60 * 60 * 1000,
+      now: thirdNow,
+    });
+    assert.equal(thirdInvitation.status, 200);
+    const overLimit = await post<{ error: string }>("/accept", {
+      contactId: contact3Id,
+      invitationId: thirdInvitation.data.invitationId,
+      token: thirdInvitation.data.token,
+      now: thirdNow + 1,
+    });
+    assert.equal(overLimit.status, 409);
+    assert.equal(overLimit.data.error, "contact_limit_reached");
+
+    const atLimit = await post<{ contacts: unknown[] }>("/contacts", { ownerId });
+    assert.equal(atLimit.status, 200);
+    assert.equal(atLimit.data.contacts.length, 2);
 
     const wrongOwnerRevoke = await post<{ error: string }>("/revoke", {
       ownerId: contactId,
