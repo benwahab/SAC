@@ -270,3 +270,183 @@ export async function getSosAlertForParticipant(
     return fail("storage_unavailable");
   }
 }
+
+
+export type SosResponseAction = "acknowledge" | "volunteer" | "withdraw";
+
+/**
+ * Records a recipient response and maintains the single active lead-responder
+ * period. Volunteer order is assigned by D1, never by a client timestamp.
+ */
+export async function respondToSosAlert(
+  db: SosDatabase,
+  cryptoProvider: Crypto,
+  input: {
+    readonly authenticatedAccountId: string;
+    readonly alertId: string;
+    readonly action: SosResponseAction;
+    readonly now?: number;
+  },
+): Promise<SosResult<{ readonly recorded: true; readonly responsibilityAssigned: boolean }>> {
+  const now = input.now ?? Date.now();
+  if (
+    !validId(input.authenticatedAccountId) ||
+    !validId(input.alertId) ||
+    !["acknowledge", "volunteer", "withdraw"].includes(input.action) ||
+    !Number.isSafeInteger(now) ||
+    now <= 0
+  ) return fail("invalid_input");
+
+  try {
+    const participant = await db.prepare(
+      `SELECT a.created_at
+       FROM alerts a
+       JOIN alert_recipients r ON r.alert_id = a.id
+       WHERE a.id = ? AND a.status = 'active'
+         AND r.recipient_account_id = ? AND a.created_at <= ?
+       LIMIT 1`,
+    ).bind(input.alertId, input.authenticatedAccountId, now).first<{ created_at: number }>();
+    if (!participant) return fail("alert_not_found_or_closed");
+
+    if (input.action === "acknowledge") {
+      const result = await db.prepare(
+        `INSERT INTO alert_events (id, alert_id, actor_account_id, event_type, occurred_at)
+         SELECT ?, ?, ?, 'acknowledged', ?
+         WHERE NOT EXISTS (
+           SELECT 1 FROM alert_events
+           WHERE alert_id = ? AND actor_account_id = ? AND event_type = 'acknowledged'
+         )`,
+      ).bind(
+        cryptoProvider.randomUUID(), input.alertId, input.authenticatedAccountId,
+        now, input.alertId, input.authenticatedAccountId,
+      ).run();
+      if (!result.success) return fail("storage_unavailable");
+      return { ok: true, value: { recorded: true, responsibilityAssigned: false } };
+    }
+
+    if (input.action === "volunteer") {
+      const existing = await db.prepare(
+        `SELECT
+           EXISTS(SELECT 1 FROM alert_events WHERE alert_id = ? AND actor_account_id = ? AND event_type = 'volunteered') AS volunteered,
+           EXISTS(SELECT 1 FROM alert_events WHERE alert_id = ? AND actor_account_id = ? AND event_type = 'withdrew') AS withdrew`,
+      ).bind(input.alertId, input.authenticatedAccountId, input.alertId, input.authenticatedAccountId)
+        .first<{ volunteered: number; withdrew: number }>();
+      if (!existing) return fail("storage_unavailable");
+      if (existing.withdrew) return fail("invalid_input");
+      if (existing.volunteered) {
+        const current = await db.prepare(
+          `SELECT 1 AS assigned FROM alert_responsibility_periods
+           WHERE alert_id = ? AND contact_account_id = ? AND ended_at IS NULL`,
+        ).bind(input.alertId, input.authenticatedAccountId).first<{ assigned: number }>();
+        return { ok: true, value: { recorded: true, responsibilityAssigned: Boolean(current) } };
+      }
+
+      const results = await db.batch([
+        db.prepare(
+          `INSERT INTO alert_events
+           (id, alert_id, actor_account_id, event_type, occurred_at, server_sequence)
+           SELECT ?, ?, ?, 'volunteered', ?,
+             COALESCE((SELECT MAX(server_sequence) FROM alert_events WHERE alert_id = ?), 0) + 1
+           WHERE EXISTS (SELECT 1 FROM alerts WHERE id = ? AND status = 'active')`,
+        ).bind(
+          cryptoProvider.randomUUID(), input.alertId, input.authenticatedAccountId,
+          now, input.alertId, input.alertId,
+        ),
+        db.prepare(
+          `INSERT INTO alert_responsibility_periods
+           (id, alert_id, contact_account_id, started_at, sequence)
+           SELECT ?, e.alert_id, e.actor_account_id, e.occurred_at, e.server_sequence
+           FROM alert_events e
+           WHERE e.alert_id = ? AND e.actor_account_id = ?
+             AND e.event_type = 'volunteered'
+             AND NOT EXISTS (
+               SELECT 1 FROM alert_responsibility_periods p
+               WHERE p.alert_id = e.alert_id AND p.ended_at IS NULL
+             )
+             AND NOT EXISTS (
+               SELECT 1 FROM alert_responsibility_periods p
+               WHERE p.alert_id = e.alert_id AND p.sequence = e.server_sequence
+             )`,
+        ).bind(cryptoProvider.randomUUID(), input.alertId, input.authenticatedAccountId),
+      ]);
+      if (results.some((result) => !result.success)) return fail("storage_unavailable");
+      if (results[0].meta.changes !== 1) return fail("alert_not_found_or_closed");
+      return {
+        ok: true,
+        value: { recorded: true, responsibilityAssigned: results[1].meta.changes === 1 },
+      };
+    }
+
+    const volunteered = await db.prepare(
+      `SELECT server_sequence FROM alert_events
+       WHERE alert_id = ? AND actor_account_id = ? AND event_type = 'volunteered'
+       LIMIT 1`,
+    ).bind(input.alertId, input.authenticatedAccountId).first<{ server_sequence: number }>();
+    if (!volunteered) return fail("invalid_input");
+    const alreadyWithdrew = await db.prepare(
+      `SELECT 1 AS present FROM alert_events
+       WHERE alert_id = ? AND actor_account_id = ? AND event_type = 'withdrew' LIMIT 1`,
+    ).bind(input.alertId, input.authenticatedAccountId).first<{ present: number }>();
+    if (alreadyWithdrew) return fail("invalid_input");
+
+    const results = await db.batch([
+      db.prepare(
+        `INSERT INTO alert_events (id, alert_id, actor_account_id, event_type, occurred_at)
+         SELECT ?, ?, ?, 'withdrew', ?
+         WHERE EXISTS (SELECT 1 FROM alerts WHERE id = ? AND status = 'active')
+           AND EXISTS (SELECT 1 FROM alert_events
+             WHERE alert_id = ? AND actor_account_id = ? AND event_type = 'volunteered')`,
+      ).bind(
+        cryptoProvider.randomUUID(), input.alertId, input.authenticatedAccountId, now,
+        input.alertId, input.alertId, input.authenticatedAccountId,
+      ),
+      db.prepare(
+        `UPDATE alert_responsibility_periods
+         SET ended_at = ?, end_reason = 'withdrawn'
+         WHERE alert_id = ? AND contact_account_id = ? AND ended_at IS NULL`,
+      ).bind(now, input.alertId, input.authenticatedAccountId),
+      db.prepare(
+        `INSERT INTO alert_responsibility_periods
+         (id, alert_id, contact_account_id, started_at, sequence)
+         SELECT ?, candidate.alert_id, candidate.actor_account_id, ?, candidate.server_sequence
+         FROM alert_events candidate
+         WHERE candidate.alert_id = ?
+           AND candidate.event_type = 'volunteered'
+           AND candidate.actor_account_id <> ?
+           AND NOT EXISTS (
+             SELECT 1 FROM alert_events w
+             WHERE w.alert_id = candidate.alert_id
+               AND w.actor_account_id = candidate.actor_account_id
+               AND w.event_type = 'withdrew'
+           )
+           AND NOT EXISTS (
+             SELECT 1 FROM alert_responsibility_periods p
+             WHERE p.alert_id = candidate.alert_id AND p.sequence = candidate.server_sequence
+           )
+           AND EXISTS (
+             SELECT 1 FROM alert_responsibility_periods ended
+             WHERE ended.alert_id = candidate.alert_id
+               AND ended.contact_account_id = ? AND ended.ended_at = ?
+               AND ended.end_reason = 'withdrawn'
+           )
+           AND NOT EXISTS (
+             SELECT 1 FROM alert_responsibility_periods current
+             WHERE current.alert_id = candidate.alert_id AND current.ended_at IS NULL
+           )
+         ORDER BY candidate.server_sequence ASC
+         LIMIT 1`,
+      ).bind(
+        cryptoProvider.randomUUID(), now, input.alertId,
+        input.authenticatedAccountId, input.authenticatedAccountId, now,
+      ),
+    ]);
+    if (results.some((result) => !result.success)) return fail("storage_unavailable");
+    if (results[0].meta.changes !== 1) return fail("invalid_input");
+    return {
+      ok: true,
+      value: { recorded: true, responsibilityAssigned: results[2].meta.changes === 1 },
+    };
+  } catch {
+    return fail("storage_unavailable");
+  }
+}
