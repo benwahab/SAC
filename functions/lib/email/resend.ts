@@ -92,6 +92,7 @@ export async function sendAccountVerificationCode(
     response = await fetch(RESEND_ENDPOINT, {
       method: "POST",
       signal: AbortSignal.timeout(8_000),
+      redirect: "error",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
