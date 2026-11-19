@@ -120,6 +120,12 @@ export default {
       ).bind(String(input.alertId)).first();
       return json({ evaluation, rows: rows.results });
     }
+    if (url.pathname === "/push-state") {
+      const rows = await env.DB.prepare(
+        "SELECT recipient_account_id,reminder_number,status,scheduled_at,attempt_count FROM alert_reminder_outbox WHERE alert_id=? ORDER BY recipient_account_id,reminder_number",
+      ).bind(String(input.alertId)).all();
+      return json({ rows: rows.results });
+    }
     if (url.pathname === "/claim") {
       const result = await claimDueSosReminders(env.DB, crypto, { now, batchSize: 10, leaseMilliseconds: 30_000 });
       return result.ok ? json(result.value) : json({ error: result.error }, 409);
