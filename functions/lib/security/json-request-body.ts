@@ -19,7 +19,7 @@ export async function readJsonRequestBody(
   if (declaredLength !== null) {
     // Content-Length doit être un entier décimal sûr. Une valeur mal formée
     // ne doit jamais être traitée comme une absence d'en-tête.
-    if (!/^\\d+$/.test(declaredLength)) {
+    if (!/^\d+$/.test(declaredLength)) {
       return { ok: false, reason: "invalid_content_length" };
     }
     const parsedLength = Number(declaredLength);
