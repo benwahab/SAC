@@ -57,16 +57,16 @@ export async function getPushSetupState(): Promise<PushSetupState> {
   if (!supported()) return "unsupported";
   if (Notification.permission === "denied") return "permission_denied";
   try {
+    await getPublicKey();
+  } catch {
+    return "not_configured";
+  }
+  try {
     const registration = await getRegistration();
     const subscription = await registration.pushManager.getSubscription();
     if (subscription) {
       await saveSubscription(subscription);
       return "subscribed";
-    }
-    try {
-      await getPublicKey();
-    } catch {
-      return "not_configured";
     }
     return "not_subscribed";
   } catch {
