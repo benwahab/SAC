@@ -42,7 +42,7 @@ export default {
       const ownerId = crypto.randomUUID();
       const contactId = crypto.randomUUID();
 
-      async function accountStatements(id: string, email: string, suffix: string) {
+      function accountStatements(id: string, email: string) {
         const identityId = crypto.randomUUID();
         const challengeId = crypto.randomUUID();
         return [
@@ -63,8 +63,8 @@ export default {
 
       try {
         await env.DB.batch([
-          ...await accountStatements(ownerId, ownerEmail, "owner"),
-          ...await accountStatements(contactId, contactEmail, "contact"),
+          ...accountStatements(ownerId, ownerEmail),
+          ...accountStatements(contactId, contactEmail),
         ]);
         return json({ ownerId, ownerEmail, contactId, contactEmail });
       } catch {
