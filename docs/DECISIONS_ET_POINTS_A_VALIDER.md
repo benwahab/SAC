@@ -1194,3 +1194,8 @@ Garanties et limites à respecter :
 **Périmètre de validation :** le choix produit de l'option A est acté. Les détails du profil WebAuthn, de l'enrôlement, du transcript, des vecteurs cryptographiques, des contrôles de rejeu, de l'atomicité D1, des sessions et des tests physiques restent à spécifier, vérifier et implémenter. Les documents candidats antérieurs restent des études techniques et ne deviennent pas automatiquement des contrats de production.
 
 **État d'implémentation au moment de la décision :** non implémenté de bout en bout. Cette validation ne signifie pas que la création de racine, l'approbation multi-appareils ou les parcours SOS sont déjà disponibles dans l'application.
+
+
+## Complément technique — enrôlement des appareils (19 novembre 2026)
+
+Les recommandations et blocages techniques liés à l'enrôlement WebAuthn, au modèle D1, aux sessions et à la restauration sont regroupés dans [ARBITRAGES_TECHNIQUES_ENROLEMENT_APPAREILS_V1.md](ARBITRAGES_TECHNIQUES_ENROLEMENT_APPAREILS_V1.md). Ce document est une proposition technique non validée ; il ne modifie aucune décision produit déjà actée et n'autorise aucune migration ou mise en production.
