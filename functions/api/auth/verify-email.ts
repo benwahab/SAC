@@ -63,6 +63,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
            FROM email_otp_challenges latest
            WHERE latest.account_id = a.id
              AND latest.identity_id = i.id
+             AND latest.delivery_status = 'accepted'
            ORDER BY latest.created_at DESC, latest.id DESC
            LIMIT 1
          )
