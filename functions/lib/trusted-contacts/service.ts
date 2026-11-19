@@ -12,6 +12,8 @@ export type ContactInvitationServiceError =
   | "invitation_not_created"
   | "invalid_or_expired_invitation"
   | "relationship_not_revoked"
+  | "relationship_already_active"
+  | "contact_limit_reached"
   | "storage_unavailable";
 
 export type ContactInvitationServiceResult<T> =
@@ -82,6 +84,20 @@ export async function createContactInvitation(
     if (!owner) return fail("account_not_eligible");
     if (owner.email === destinationEmail) return fail("self_invitation");
 
+    const existingRelationship = await db.prepare(
+      `SELECT 1 AS present
+       FROM trusted_contacts t
+       JOIN account_identities i ON i.account_id = t.contact_account_id
+       WHERE t.owner_account_id = ?
+         AND t.status = 'active'
+         AND i.channel = 'email'
+         AND i.is_primary = 1
+         AND i.verified_at IS NOT NULL
+         AND i.normalized_value = ?
+       LIMIT 1`,
+    ).bind(input.authenticatedAccountId, destinationEmail).first<{ present: number }>();
+    if (existingRelationship) return fail("relationship_already_active");
+
     const invitationId = cryptoProvider.randomUUID();
     const token = generateContactInvitationToken(cryptoProvider);
     const tokenDigest = await digestContactInvitationToken(cryptoProvider, token);
@@ -123,6 +139,7 @@ export async function acceptContactInvitation(
     readonly invitationId: string;
     readonly token: string;
     readonly permissionVersion: string;
+    readonly maxActiveContacts: 2 | 10;
     readonly now?: number;
   },
 ): Promise<ContactInvitationServiceResult<{ readonly ownerAccountId: string; readonly contactAccountId: string }>> {
@@ -131,6 +148,7 @@ export async function acceptContactInvitation(
     !input.authenticatedAccountId.trim() ||
     !input.invitationId.trim() ||
     !input.permissionVersion.trim() ||
+    (input.maxActiveContacts !== 2 && input.maxActiveContacts !== 10) ||
     !isSafeToken(input.token) ||
     !Number.isSafeInteger(now) ||
     now < 0
@@ -148,6 +166,9 @@ export async function acceptContactInvitation(
            AND permission_version = ?
            AND expires_at > ?
            AND inviter_account_id <> ?
+           AND (SELECT COUNT(*) FROM trusted_contacts t
+                WHERE t.owner_account_id = contact_invitations.inviter_account_id
+                  AND t.status = 'active') < ?
            AND EXISTS (
              SELECT 1
              FROM accounts a
@@ -167,6 +188,7 @@ export async function acceptContactInvitation(
         input.permissionVersion,
         now,
         input.authenticatedAccountId,
+        input.maxActiveContacts,
         input.authenticatedAccountId,
       ),
       db.prepare(
