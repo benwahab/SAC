@@ -25,6 +25,8 @@ jobs:
         run: npx wrangler d1 migrations apply sac-d1-enrollment-atomicity-test --local --config tests/wrangler.d1-atomicity.toml
       - name: Test D1 enrollment challenge atomicity, rollback and concurrent replay
         run: npm run test:d1-enrollment-atomicity
+      - name: Test independent anti-rollback anchor model and fail-closed recovery
+        run: npm run test:anti-rollback-model
       - name: Test full RFC 8785 Appendix B numeric vector set
         run: npm run test:jcs
       - name: Test strict JSON boundary parser and duplicate-key rejection
