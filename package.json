@@ -14,6 +14,7 @@
     "test:devices": "node --experimental-strip-types --test tests/device-lifecycle.test.ts",
     "test:certificates": "node --experimental-strip-types --test tests/device-certificate.test.ts",
     "test:sessions": "node --experimental-strip-types --test tests/session-authorization.test.ts",
+    "test:session-tokens": "node --experimental-strip-types --test tests/session-token.test.ts",
     "test:alerts": "node --experimental-strip-types --test tests/alert-lifecycle.test.ts",
     "test:responses": "node --experimental-strip-types --test tests/alert-responses.test.ts",
     "test:trips": "node --experimental-strip-types --test tests/trip-protection.test.ts",
