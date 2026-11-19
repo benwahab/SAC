@@ -225,6 +225,16 @@ class AlertD1SchemaTests(unittest.TestCase):
             "SELECT recipient_account_id,status FROM alert_sms_outbox WHERE id='sms-1'"
         ).fetchone()
         self.assertEqual(tuple(row), ("contact", "pending"))
+        closed = threshold + 1
+        self.db.execute(
+            """UPDATE alerts SET status='closed_by_author', closed_at=?,
+               closure_reason='completed' WHERE id='alert-1'""",
+            (closed,),
+        )
+        cancelled = self.db.execute(
+            "SELECT status FROM alert_sms_outbox WHERE id='sms-1'"
+        ).fetchone()[0]
+        self.assertEqual(cancelled, "cancelled")
 
     def test_prior_lead_assignment_suppresses_sms_after_withdrawal(self):
         created = self._alert(reminder_limit=1)
