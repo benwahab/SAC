@@ -39,7 +39,8 @@
     "test:contact-invitation-email": "node --experimental-strip-types --test tests/contact-invitation-email.test.ts",
     "test:sos-d1": "node --experimental-strip-types --test tests/d1-sos-service.integration.test.ts",
     "test:http-request-guard": "node --experimental-strip-types --test tests/http-request-guard.test.ts",
-    "test:json-request-body": "node --experimental-strip-types --test tests/json-request-body.test.ts"
+    "test:json-request-body": "node --experimental-strip-types --test tests/json-request-body.test.ts",
+    "test:webauthn-root-policy": "node --experimental-strip-types --test tests/webauthn-root-policy.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
