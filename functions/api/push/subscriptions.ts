@@ -86,8 +86,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const now = Date.now();
     const result = await env.DB.prepare(
       `INSERT INTO push_subscriptions
-         (id, account_id, device_id, endpoint_hash, encrypted_subscription, iv, status, created_at, updated_at, revoked_at)
-       VALUES (?, ?, ?, ?, ?, ?, 'active', ?, ?, NULL)
+         (id, account_id, device_id, endpoint_hash, encrypted_subscription, encryption_key_version, iv, status, created_at, updated_at, revoked_at)
+       VALUES (?, ?, ?, ?, ?, 'v1', ?, 'active', ?, ?, NULL)
        ON CONFLICT(endpoint_hash) DO UPDATE SET
          encrypted_subscription = excluded.encrypted_subscription,
          iv = excluded.iv,
