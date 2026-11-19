@@ -250,6 +250,11 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   });
   assert.equal(leadAssigned.status, 200);
   assert.equal(leadAssigned.data.responsibilityAssigned, true);
+  const leadWithdrawn = await post<{ recorded: boolean; responsibilityAssigned: boolean }>("/respond", {
+    actor: contact, alertId: suppressedAlert.data.alertId, action: "withdraw", now: suppressedBase + 2,
+  });
+  assert.equal(leadWithdrawn.status, 200);
+  assert.equal(leadWithdrawn.data.recorded, true);
   const suppressedEscalation = await post<{ evaluationsCreated: number; evaluationsSuppressed: number; smsTasksCreated: number }>("/sms-escalate", {
     now: suppressedBase + 300_000,
   });
