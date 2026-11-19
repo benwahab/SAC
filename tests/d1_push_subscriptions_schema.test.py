@@ -60,6 +60,15 @@ class PushSubscriptionSchemaTests(unittest.TestCase):
                 "UPDATE push_subscriptions SET device_id = 'other-device' WHERE id = 'subscription-1'"
             )
 
+    def test_device_has_at_most_one_active_push_endpoint(self):
+        self.insert_subscription()
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("""
+                INSERT INTO push_subscriptions
+                  (id, account_id, device_id, endpoint_hash, encrypted_subscription, iv, created_at, updated_at)
+                VALUES ('subscription-2', 'account-1', 'device-1', ?, ?, ?, 201, 201)
+            """, ("c" * 64, "encrypted-payload-" + "z" * 32, "d" * 16))
+
     def test_device_revocation_deletes_endpoint_and_encrypted_keys(self):
         self.insert_subscription()
         self.db.execute(
