@@ -301,14 +301,26 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   });
   assert.equal(leadWithdrawn.status, 200);
   assert.equal(leadWithdrawn.data.recorded, true);
-  const suppressedReminder = await post<Record<string, number>>("/dispatch", {
+  const suppressedDue = await post<Array<{ id: string; leaseToken: string; reminderNumber: number }>>("/claim", {
     now: suppressedBase + 300_000,
   });
-  assert.deepEqual(suppressedReminder.data, { claimed: 1, providerAccepted: 1, retryScheduled: 0, terminalFailures: 0, completionErrors: 0, smsEvaluationsCreated: 1, smsEvaluationsSuppressed: 1, smsTasksCreated: 0 });
-  const duplicateSuppressedEvaluation = await post<{ evaluationsCreated: number; evaluationsSuppressed: number; smsTasksCreated: number }>("/sms-escalate", {
-    now: suppressedBase + 300_000,
+  assert.equal(suppressedDue.data.length, 1);
+  assert.equal(suppressedDue.data[0].reminderNumber, 1);
+  const suppressedPushAccepted = await post<{ updated: boolean }>("/complete", {
+    reminderId: suppressedDue.data[0].id,
+    leaseToken: suppressedDue.data[0].leaseToken,
+    outcome: "sent",
+    now: suppressedBase + 300_001,
   });
-  assert.deepEqual(duplicateSuppressedEvaluation.data, { evaluationsCreated: 0, evaluationsSuppressed: 0, smsTasksCreated: 0 });
+  assert.equal(suppressedPushAccepted.data.updated, true);
+  const suppressedEvaluations = await Promise.all([
+    post<{ evaluationsCreated: number; evaluationsSuppressed: number; smsTasksCreated: number }>("/sms-escalate", { now: suppressedBase + 300_001 }),
+    post<{ evaluationsCreated: number; evaluationsSuppressed: number; smsTasksCreated: number }>("/sms-escalate", { now: suppressedBase + 300_001 }),
+  ]);
+  assert.deepEqual(suppressedEvaluations.map(x => x.status), [200, 200]);
+  assert.equal(suppressedEvaluations.reduce((sum, x) => sum + x.data.evaluationsCreated, 0), 1);
+  assert.equal(suppressedEvaluations.reduce((sum, x) => sum + x.data.evaluationsSuppressed, 0), 1);
+  assert.equal(suppressedEvaluations.reduce((sum, x) => sum + x.data.smsTasksCreated, 0), 0);
   const suppressedState = await post<{ evaluation: { status: string }; rows: unknown[] }>("/sms-state", {
     alertId: suppressedAlert.data.alertId,
   });
