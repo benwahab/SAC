@@ -868,7 +868,7 @@ export async function scheduleDueSosSmsEscalations(
 
       const statements = [
         db.prepare(
-          `INSERT INTO alert_sms_escalations
+          `INSERT OR IGNORE INTO alert_sms_escalations
            (alert_id, threshold_reached_at, evaluated_at, status)
            SELECT a.id, ?, ?, CASE WHEN EXISTS (
              SELECT 1 FROM alert_responsibility_periods p
