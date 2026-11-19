@@ -3,14 +3,14 @@ import { ArrowLeft, LogOut, MailPlus, RefreshCw, ShieldCheck, UserRoundMinus, Us
 import { getDeviceSession, logoutDeviceSession } from "./services/device/root-enrollment";
 
 type Contact = { accountId: string; email: string; createdAt: number };
-type Props = { onLogout: () => void };
+type SosAlert = { id: string; category: string; level: string; description: string | null; status: string; createdAt: number; closedAt: number | null; closureReason: string | null; participantRole: "author" | "recipient" };\ntype Props = { onLogout: () => void };
 
 export default function PrivateSpacePage({ onLogout }: Props) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState("");\n  const [alerts, setAlerts] = useState<SosAlert[]>([]);\n  const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);\n  const [category, setCategory] = useState("personal_danger");\n  const [level, setLevel] = useState("urgent");\n  const [reminderCount, setReminderCount] = useState(2);\n  const [description, setDescription] = useState("");
   const [error, setError] = useState("");
 
   const loadContacts = useCallback(async () => {
@@ -28,7 +28,7 @@ export default function PrivateSpacePage({ onLogout }: Props) {
         if (response.status === 401) onLogout();
         throw new Error("Impossible de charger les proches pour le moment.");
       }
-      setContacts(payload.contacts);
+      setContacts(payload.contacts);\n      setSelectedRecipients((current) => current.filter((id) => payload.contacts!.some((contact) => contact.accountId === id)));\n      const alertsResponse = await fetch("/api/alerts", { credentials: "same-origin", cache: "no-store" });\n      const alertsPayload = await alertsResponse.json() as { alerts?: SosAlert[] };\n      if (alertsResponse.ok && Array.isArray(alertsPayload.alerts)) setAlerts(alertsPayload.alerts);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Service momentanément indisponible.");
     } finally {
@@ -37,6 +37,39 @@ export default function PrivateSpacePage({ onLogout }: Props) {
   }, [onLogout]);
 
   useEffect(() => { void loadContacts(); }, [loadContacts]);
+
+  async function triggerSos(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy || selectedRecipients.length === 0) return;
+    if (!window.confirm("Confirmer le déclenchement de cette alerte privée auprès des proches sélectionnés ?")) return;
+    setBusy(true); setError(""); setMessage("");
+    try {
+      const response = await fetch("/api/alerts", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipientAccountIds: selectedRecipients, category, level,
+          customDescription: category === "custom_alert" ? description.trim() : null,
+          pushReminderCount: reminderCount }), cache: "no-store",
+      });
+      const payload = await response.json() as { created?: boolean; error?: string };
+      if (!response.ok || !payload.created) {
+        const messages: Record<string,string> = {
+          recipient_not_trusted: "Un proche sélectionné ne fait plus partie de votre cercle.",
+          recipient_limit_exceeded: "La limite de proches autorisée est dépassée.",
+          account_not_eligible: "Votre compte ne peut pas déclencher une alerte.",
+          invalid_input: "Vérifiez les informations de l’alerte et les destinataires.",
+        };
+        throw new Error(messages[payload.error ?? ""] ?? "L’alerte n’a pas pu être créée.");
+      }
+      setMessage("Alerte enregistrée. Cela ne confirme pas encore l’envoi ni la réception des notifications.");
+      setDescription("");
+      const refreshed = await fetch("/api/alerts", { credentials: "same-origin", cache: "no-store" });
+      const refreshedPayload = await refreshed.json() as { alerts?: SosAlert[] };
+      if (refreshed.ok && Array.isArray(refreshedPayload.alerts)) setAlerts(refreshedPayload.alerts);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Service momentanément indisponible.");
+    } finally { setBusy(false); }
+  }
 
   async function invite(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -126,6 +159,26 @@ export default function PrivateSpacePage({ onLogout }: Props) {
             <ul className="mt-4 divide-y divide-white/80 rounded-2xl border border-white/80 bg-white/45 px-4">
               {contacts.map((contact) => <li key={contact.accountId} className="flex items-center justify-between gap-3 py-4"><div className="min-w-0"><p className="truncate font-bold">{contact.email}</p><p className="mt-1 text-xs text-sac-muted">Proche vérifié</p></div><button type="button" disabled={busy} onClick={() => void revoke(contact.accountId)} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-sac-alert/20 bg-sac-alert/5 px-3 text-xs font-bold text-sac-alert disabled:opacity-50"><UserRoundMinus size={15}/>Retirer</button></li>)}
             </ul>}
+          <section className="mt-9 border-t border-white/80 pt-7">
+            <h2 className="text-lg font-extrabold">Déclencher une alerte SOS</h2>
+            <p className="mt-2 text-sm leading-6 text-sac-muted">L’alerte est privée et adressée uniquement aux proches choisis. Aucune localisation n’est obligatoire.</p>
+            {contacts.length === 0 ? <p className="mt-4 rounded-xl bg-white/55 p-4 text-sm text-sac-muted">Ajoutez d’abord au moins un proche vérifié.</p> : <form onSubmit={triggerSos} className="mt-4 space-y-4 rounded-2xl border border-white/90 bg-white/55 p-4">
+              <fieldset><legend className="mb-2 text-sm font-bold">Destinataires</legend>
+                <div className="space-y-2">{contacts.map((contact) => <label key={contact.accountId} className="flex min-h-11 items-center gap-3 rounded-xl bg-white/65 px-3 text-sm"><input type="checkbox" checked={selectedRecipients.includes(contact.accountId)} onChange={(event) => setSelectedRecipients((current) => event.target.checked ? [...current, contact.accountId].slice(0,2) : current.filter((id) => id !== contact.accountId))}/><span className="truncate">{contact.email}</span></label>)}</div>
+                <p className="mt-1 text-xs text-sac-muted">Maximum actuel : 2 proches sur l’offre gratuite.</p>
+              </fieldset>
+              <label className="block text-sm font-bold">Type d’urgence<select value={category} onChange={(event) => setCategory(event.target.value)} className="mt-2 min-h-11 w-full rounded-xl border border-white bg-white px-3 font-normal"><option value="personal_danger">Danger personnel</option><option value="accident">Accident</option><option value="home_intrusion">Intrusion au domicile</option><option value="medical_emergency">Urgence médicale</option><option value="lost_or_disoriented_person">Personne perdue ou désorientée</option><option value="custom_alert">Autre situation</option></select></label>
+              {category === "custom_alert" && <label className="block text-sm font-bold">Décrire la situation<textarea required maxLength={2000} value={description} onChange={(event) => setDescription(event.target.value)} className="mt-2 min-h-20 w-full rounded-xl border border-white bg-white p-3 font-normal"/></label>}
+              <label className="block text-sm font-bold">Niveau<select value={level} onChange={(event) => setLevel(event.target.value)} className="mt-2 min-h-11 w-full rounded-xl border border-white bg-white px-3 font-normal"><option value="preventive">Préventif</option><option value="urgent">Urgent</option><option value="critical">Critique</option></select></label>
+              <label className="block text-sm font-bold">Nombre de rappels push avant évaluation du SMS : {reminderCount}<input type="range" min="1" max="5" value={reminderCount} onChange={(event) => setReminderCount(Number(event.target.value))} className="mt-2 w-full"/></label>
+              <p className="text-xs leading-5 text-sac-muted">Un rappel est prévu toutes les 5 minutes. Ce nombre définit le seuil d’évaluation du SMS, pas la durée de l’alerte.</p>
+              <button type="submit" disabled={busy || selectedRecipients.length === 0 || (category === "custom_alert" && !description.trim())} className="min-h-12 w-full rounded-xl bg-sac-alert px-4 font-extrabold text-white disabled:opacity-50">Déclencher l’alerte SOS</button>
+            </form>}
+          </section>
+          <section className="mt-8 border-t border-white/80 pt-7">
+            <h2 className="text-lg font-extrabold">Mes alertes</h2>
+            {alerts.length === 0 ? <p className="mt-3 text-sm text-sac-muted">Aucune alerte enregistrée.</p> : <ul className="mt-3 space-y-2">{alerts.map((alert) => <li key={alert.id} className="rounded-xl border border-white/80 bg-white/55 p-3"><div className="flex items-center justify-between gap-2"><span className="text-sm font-bold">{alert.category.replaceAll("_"," ")}</span><span className={"rounded-full px-2 py-1 text-xs font-bold " + (alert.status === "active" ? "bg-sac-alert/10 text-sac-alert" : "bg-sac-confirm/10 text-sac-confirm")}>{alert.status === "active" ? "En cours" : "Clôturée"}</span></div><p className="mt-1 text-xs text-sac-muted">{alert.participantRole === "author" ? "Votre alerte" : "Alerte reçue"} · {new Date(alert.createdAt).toLocaleString()}</p>{alert.description && <p className="mt-2 text-sm">{alert.description}</p>}</li>)}</ul>}
+          </section>
           {message && <p role="status" className="mt-4 rounded-xl border border-sac-confirm/20 bg-sac-confirm/10 p-3 text-sm leading-6">{message}</p>}
           {error && <p role="alert" className="mt-4 rounded-xl border border-sac-alert/25 bg-sac-alert/5 p-3 text-sm leading-6 text-sac-alert">{error}</p>}
         </section>
