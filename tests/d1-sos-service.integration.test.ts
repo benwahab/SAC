@@ -168,6 +168,10 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     now: now + 500_000,
   });
   assert.deepEqual(initialFollowup.data, { claimed: 1, providerAccepted: 1, retryScheduled: 0, terminalFailures: 0, completionErrors: 0 });
+  const smsBeforeThreshold = await post<{ evaluationsCreated: number; evaluationsSuppressed: number; smsTasksCreated: number }>("/sms-escalate", {
+    now: now + 799_999,
+  });
+  assert.deepEqual(smsBeforeThreshold.data, { evaluationsCreated: 0, evaluationsSuppressed: 0, smsTasksCreated: 0 });
   const failedDelivery = await post<{ claimed: number; providerAccepted: number; retryScheduled: number; completionErrors: number }>("/dispatch", {
     now: now + 800_000, failRecipient: contact,
   });
