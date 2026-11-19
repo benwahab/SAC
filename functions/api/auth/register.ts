@@ -127,9 +127,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   );
 
   if (!delivery.ok) {
-    // Le compte reste en attente ; un renvoi ultérieur créera un nouveau défi
-    // et invalidera atomiquement celui-ci après le délai minimal.
-    return json({ error: "verification_email_unavailable", retryAfterSeconds: 60 }, 503);
+    // Ne pas révéler si l'adresse correspond à un nouveau compte : la même
+    // réponse générique est conservée. Le compte reste en attente et l'écran
+    // peut proposer un renvoi après le délai minimal de 60 secondes.
+    return json({ ...GENERIC_ACCEPTED, retryAfterSeconds: 60 }, 202);
   }
 
   return json({ ...GENERIC_ACCEPTED, retryAfterSeconds: 60 }, 202);
