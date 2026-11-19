@@ -41,13 +41,31 @@ export const onRequestGet: PagesFunction<Env, "alertId"> = async ({ request, env
     );
   }
 
-  return json({
-    events: result.value.map((event) => ({
-      id: event.id,
-      actor: event.actorAccountId === session.value.accountId ? "self" : "participant",
-      type: event.type,
-      occurredAt: event.occurredAt,
-      serverSequence: event.serverSequence,
-    })),
-  });
+  // Return only whether the current viewer holds responsibility. Never expose
+  // another participant's account identifier or contact details.
+  try {
+    const currentLead = await env.DB.prepare(
+      `SELECT p.contact_account_id
+       FROM alert_responsibility_periods p
+       JOIN alerts a ON a.id = p.alert_id
+       WHERE p.alert_id = ? AND p.ended_at IS NULL AND a.status = 'active'
+       LIMIT 1`,
+    ).bind(alertId).first<{ contact_account_id: string }>();
+
+    return json({
+      events: result.value.map((event) => ({
+        id: event.id,
+        actor: event.actorAccountId === session.value.accountId ? "self" : "participant",
+        type: event.type,
+        occurredAt: event.occurredAt,
+        serverSequence: event.serverSequence,
+      })),
+      responsibility: {
+        assigned: Boolean(currentLead),
+        isSelf: currentLead?.contact_account_id === session.value.accountId,
+      },
+    });
+  } catch {
+    return json({ error: "alert_service_unavailable" }, 503);
+  }
 };
