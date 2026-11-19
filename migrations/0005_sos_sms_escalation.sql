@@ -40,6 +40,15 @@ BEGIN
       AND NEW.threshold_reached_at = a.created_at + (a.push_reminder_limit * 300000)
       AND NEW.evaluated_at >= NEW.threshold_reached_at
       AND (
+        SELECT COUNT(*) FROM alert_reminder_outbox r
+        WHERE r.alert_id = a.id
+          AND r.reminder_number = a.push_reminder_limit
+          AND r.status IN ('sent', 'failed')
+      ) = (
+        SELECT COUNT(*) FROM alert_recipients r
+        WHERE r.alert_id = a.id
+      )
+      AND (
         (NEW.status = 'queued' AND NOT EXISTS (
           SELECT 1 FROM alert_responsibility_periods p
           WHERE p.alert_id = a.id
