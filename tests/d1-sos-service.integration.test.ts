@@ -89,9 +89,10 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     post<Array<{ id: string; leaseToken: string; attemptCount: number }>>("/claim", { now: now + 300_000 }),
   ]);
   assert.deepEqual(parallelClaims.map(x => x.status), [200, 200]);
-  assert.equal(parallelClaims.reduce((count, x) => count + x.data.length, 0), 1);
+  assert.equal(parallelClaims.reduce((count, x) => count + x.data.length, 0), 2);
   const due = { status: 200, data: parallelClaims.flatMap(x => x.data) };
-  assert.equal(due.data[0].attemptCount, 1);
+  assert.equal(due.data.length, 2);
+  assert.ok(due.data.every(item => item.attemptCount === 1));
   const duplicateClaim = await post<unknown[]>("/claim", { now: now + 300_001 });
   assert.equal(duplicateClaim.status, 200);
   assert.equal(duplicateClaim.data.length, 0);
