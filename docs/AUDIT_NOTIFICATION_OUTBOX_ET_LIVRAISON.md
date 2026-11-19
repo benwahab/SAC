@@ -228,3 +228,16 @@ Commits ajoutés sur `main` après la mise à jour précédente :
 **Configuration encore requise :** le secret Cloudflare `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` (32 octets base64url) n'est pas installé. Aucun secret n'a été créé ou modifié. En son absence, l'endpoint refuse l'enregistrement. La migration 0008 n'est pas appliquée à la base distante.
 
 **Limites actuelles :** l'interface PWA ne s'abonne pas encore au PushManager ; aucune clé VAPID ni aucun fournisseur/adaptateur de livraison n'est connecté ; aucun scheduler n'est déployé. Le stockage chiffré et son endpoint ne signifient donc pas que les notifications fonctionnent. La révocation d'appareil supprime les abonnements de ce dernier via trigger D1.
+
+
+### 5.4 Intégrité des abonnements et limites de livraison
+
+- `8894be834efc1e8419bd423d72a9dfebc81b1450` — le ciphertext AES-GCM est désormais lié en AAD à l'empreinte HMAC de l'endpoint ; le déchiffrement recalcule aussi cette empreinte.
+- `6e3098d4ebfe56a1f64a6d81adf5402e631f39ee` — test de modification/substitution de l'empreinte.
+- `424a22a8ff1f5a55fe5995cf80a1a812c5af8d31` — contrainte D1 : une seule souscription active par appareil.
+- `e5c6afbc2de1b887efce4029894487df2780d4cc` — remplacement de la souscription par batch D1 transactionnel.
+- `48ab344613ff802a6b5a2ec3613eabaab08637ad` — test de la limite par appareil.
+- `5505b3c00eaca1f9e82ada81cbccc63a749354ac` et `5ec34a1a65c7cddb72e26f669b711b4d2e9e4d89` — contrats et procédure de migration actualisés.
+- `23040fc631e74c667362e511e9c868fc6ff0f364` — exigence anti-SSRF avant tout appel vers un endpoint push enregistré.
+
+La réception d'un endpoint depuis un navigateur n'autorise jamais le Worker à lui faire confiance. Avant toute livraison, il faudra restreindre les destinations aux fournisseurs Web Push explicitement autorisés et bloquer les destinations locales/privées ainsi que les redirections non validées. Aucun appel réseau vers les endpoints n'existe dans cette tranche.
