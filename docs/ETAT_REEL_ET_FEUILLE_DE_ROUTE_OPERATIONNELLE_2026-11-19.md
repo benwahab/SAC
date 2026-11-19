@@ -287,3 +287,10 @@ Configuration réellement créée dans le compte Cloudflare connecté et relue a
 **État restant :** le projet Pages n'a pas encore de déploiement ; la base distante `sac-db` était encore à zéro table au dernier contrôle. Les migrations 0001 à 0007 ne sont pas appliquées. Aucun fournisseur e-mail, push ou SMS n'est connecté par cette opération. La création des variables Cloudflare ne rend donc pas encore l'inscription, la connexion, les invitations ou le SOS opérationnels en production.
 
 **Point d'attention :** la clé secrète OTP a été générée côté outil et envoyée directement à Cloudflare comme secret. Elle n'est ni récupérable ni affichée dans les réponses de lecture Cloudflare. Si elle doit être remplacée ultérieurement, en générer une nouvelle et effectuer une rotation coordonnée.
+
+
+### Configuration complémentaire des variables Pages (19 novembre 2026)
+
+Une relecture du projet Pages après la première configuration a permis d'ajouter également `APP_BASE_URL=https://sac-3xh.pages.dev` dans l'environnement de production. Cette valeur sert de base aux liens d'invitation SAC. Elle ne suffit pas à activer les invitations : la durée de vie proposée des invitations reste non validée, le fournisseur Resend n'a pas de clé API ni d'expéditeur SAC vérifié configurés, et la variable `CONTACT_PERMISSION_VERSION` n'est donc pas activée. Aucun TTL arbitraire n'a été choisi.
+
+La clé secrète OTP est bien envoyée en tant que secret Cloudflare ; l'API de lecture masque la valeur et ne permet pas de vérifier sa présence par le champ `value`. Le succès de l'écriture Cloudflare a été confirmé, mais le secret ne peut pas être relu en clair. La valeur n'est jamais copiée dans GitHub.
