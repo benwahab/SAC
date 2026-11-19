@@ -209,3 +209,22 @@ Les constats précédents décrivent l'état avant la tranche SOS ajoutée sur `
 - Les tests utilisent un adaptateur push simulé dans un Worker strictement réservé aux tests.
 
 **Conclusion mise à jour :** l'outbox et les règles de planification sont partiellement implémentées et testées localement. La livraison réelle, la planification périodique et les canaux push/SMS restent NO-GO jusqu'à l'intégration et aux essais des composants manquants.
+
+
+### 5.3 Abonnements Web Push — première tranche serveur
+
+Commits ajoutés sur `main` après la mise à jour précédente :
+
+- `4dbaa64e707f4fb901ccc77da16ade0047ebd37f` — migration `0008_push_subscriptions.sql` : table liée au compte et à l'appareil, empreinte HMAC unique, ciphertext, IV et version de clé.
+- `a138bda086e0a4bd87bbf98835dcd7b43881b9db` — chiffrement/déchiffrement AES-256-GCM avec clés dérivées HKDF et empreinte endpoint HMAC.
+- `8171f2b53a2fff0b711da3d7d738e5252c7ec80c` — endpoint `POST /api/push/subscriptions`, protégé par session d'appareil authentifiée et contrôle same-origin ; enregistrement ou suppression limitée à l'appareil courant.
+- `7eb91dcc37f19e8c676b3d0323a75c155f88ec8c` — tests unitaires de chiffrement, IV, isolation par clé et intégrité.
+- `efe0979d8a834cd63d28b3df85fbff08caa1d640` — commande `test:push-subscriptions`.
+- `ad26adf18d51606ca5900b4c0c33c41ee46db315` — health check exige la nouvelle table dans le schéma complet.
+- `ab5bd782a481b1b33065713885b65b3a14266167` — tests SQLite de contraintes, unicité et purge à la révocation de l'appareil.
+- `9dce3b7f5ce8c1188d3a1a0beb05c02c7ab856e1` — ajout des deux suites aux étapes CI.
+- `1ae14c40538d252ec599dcd2fcf4c7535ff7531a` — documentation migration et configuration du secret.
+
+**Configuration encore requise :** le secret Cloudflare `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` (32 octets base64url) n'est pas installé. Aucun secret n'a été créé ou modifié. En son absence, l'endpoint refuse l'enregistrement. La migration 0008 n'est pas appliquée à la base distante.
+
+**Limites actuelles :** l'interface PWA ne s'abonne pas encore au PushManager ; aucune clé VAPID ni aucun fournisseur/adaptateur de livraison n'est connecté ; aucun scheduler n'est déployé. Le stockage chiffré et son endpoint ne signifient donc pas que les notifications fonctionnent. La révocation d'appareil supprime les abonnements de ce dernier via trigger D1.
