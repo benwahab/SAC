@@ -282,6 +282,26 @@ class EmailOtpD1SchemaTests(unittest.TestCase):
         ).fetchone()
         self.assertEqual(old["invalidated_at"], self.now + 60_000)
 
+    def test_new_challenge_must_explicitly_start_pending(self):
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "otp_new_challenge_must_start_pending"):
+            self.db.execute(
+                """INSERT INTO email_otp_challenges
+                   (id, account_id, identity_id, purpose, digest, created_at, expires_at)
+                   VALUES ('otp-implicit-accepted', 'account-1', 'email-1',
+                           'account_email_verification', ?, ?, ?)""",
+                ("d" * 64, self.now, self.now + 600_000),
+            )
+
+    def test_failed_delivery_cannot_be_promoted_to_accepted(self):
+        self.create_challenge("otp-failed-terminal", self.now, "e" * 64, "pending")
+        self.db.execute(
+            "UPDATE email_otp_challenges SET delivery_status='failed' WHERE id='otp-failed-terminal'"
+        )
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "otp_invalid_challenge_transition"):
+            self.db.execute(
+                "UPDATE email_otp_challenges SET delivery_status='accepted' WHERE id='otp-failed-terminal'"
+            )
+
     def test_pending_code_cannot_consume_verification_attempts(self):
         self.create_challenge("otp-not-delivered", self.now, "a" * 64, "pending")
         with self.assertRaisesRegex(sqlite3.IntegrityError, "otp_invalid_challenge_transition"):
