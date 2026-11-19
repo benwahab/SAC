@@ -145,10 +145,10 @@ export async function createSosAlert(
 }
 
 /**
- * Author-only closure. The conditional event INSERT is coupled to changes()
- * from the preceding UPDATE, preventing duplicate closure events on races.
- * The D1 batch also ends the current responsibility period and the schema
- * trigger cancels pending reminder rows.
+ * Author-only closure. The event INSERT is guarded by the persisted terminal
+ * state and absence of a prior closure event, so concurrent retries cannot
+ * append a second closure event. The D1 batch also ends the current
+ * responsibility period and the schema trigger cancels pending reminder rows.
  */
 export async function closeSosAlertByAuthor(
   db: SosDatabase,
