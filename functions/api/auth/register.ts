@@ -119,19 +119,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ error: "registration_unavailable" }, 503);
   }
 
-  const delivery = await sendAccountVerificationCode(
-    env,
-    email,
-    code,
-    language,
-  );
-
-  if (!delivery.ok) {
-    // Ne pas révéler si l'adresse correspond à un nouveau compte : la même
-    // réponse générique est conservée. Le compte reste en attente et l'écran
-    // peut proposer un renvoi après le délai minimal de 60 secondes.
-    return json({ ...GENERIC_ACCEPTED, retryAfterSeconds: 60 }, 202);
-  }
+  // Le résultat du fournisseur ne doit pas révéler si l'adresse correspond
+  // à un nouveau compte. En cas d'échec, le compte reste en attente et le
+  // parcours peut proposer un renvoi après le délai minimal de 60 secondes.
+  await sendAccountVerificationCode(env, email, code, language);
 
   return json({ ...GENERIC_ACCEPTED, retryAfterSeconds: 60 }, 202);
 };
