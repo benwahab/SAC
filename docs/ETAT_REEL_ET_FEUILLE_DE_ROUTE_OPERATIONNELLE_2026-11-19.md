@@ -144,3 +144,19 @@ Le contrat `src/domain/account-lifecycle.ts` accepte maintenant les commandes de
 Un contrat métier pur a été ajouté dans `src/domain/contact-invitations.ts`, avec tests dans `tests/contact-invitations.test.ts`. Il couvre l'acceptation explicite par un compte actif avec adresse vérifiée correspondant à la destination, la vérification du hash présenté, la version de permissions, le refus, le retrait par l'invitant, l'expiration et la direction unique de la relation.
 
 Les durées, quotas, relances, permissions concrètes, révocation symétrique et droits après révocation pendant un SOS actif restent ouverts. Le contrat ne crée pas d'invitation, n'envoie aucun e-mail, ne persiste aucune relation et ne remplace pas une transaction D1 atomique. Les API et migrations restent bloquées jusqu'à résolution des arbitrages produit et du modèle relationnel.
+
+
+## 8. Cohérence clôture SOS / responsabilité du proche
+
+L'audit du contrat de réponses a identifié un écart : la transition de clôture de l'alerte existait dans `alert-lifecycle.ts`, tandis que l'historique du responsable principal était géré séparément dans `alert-responses.ts`. Rien ne garantissait qu'une alerte clôturée ne conserve pas une période de responsabilité ouverte.
+
+Correction ajoutée :
+- `closeAlertResponderState()` synchronise un état d'alerte clôturé (issu de `transitionAlert()`) avec la fin de l'unique période de responsabilité ouverte ;
+- la fin est horodatée exactement à `closedAt`, avec le motif `alert_closed` ;
+- le helper vérifie l'identité de l'alerte, l'auteur, sa date de création et l'instantané immuable des destinataires ;
+- il refuse une clôture antérieure au début de la responsabilité ;
+- un état d'alerte clôturé qui conserve une responsabilité ouverte est désormais invalide.
+
+Tests ajoutés dans `tests/alert-responses.test.ts` : clôture avec responsable, sans responsable, mauvais instantané, horodatage antérieur et état terminal incohérent.
+
+**Limite :** cette correction porte sur le contrat métier pur. La clôture, l'historique de responsabilité, l'événement d'audit et l'arrêt des rappels devront être persistés dans une seule transaction D1 lors de la future implémentation SOS. Aucun endpoint SOS ni envoi de notification n'est créé ici.
