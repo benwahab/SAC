@@ -1,0 +1,9 @@
+name = "sac-d1-enrollment-atomicity-test"
+main = "./workers/d1-enrollment-atomicity-worker.ts"
+compatibility_date = "2026-11-17"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sac-d1-enrollment-atomicity-test"
+database_id = "4f7c2f24-7f38-4a5a-9c82-3c1b82b15f67"
+migrations_dir = "./d1-atomicity/migrations"
