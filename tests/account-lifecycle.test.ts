@@ -201,3 +201,48 @@ test("un verrouillage technique de risque ne doit pas être confondu avec la sus
   assert.equal(active.status, "active");
   assert.equal(canAccountCloseExistingActivity(active.status), true);
 });
+
+
+test("refuse un enregistrement de compte malformé sans exception", () => {
+  for (const overrides of [
+    { accountId: null as never },
+    { status: null as never },
+    { createdAt: 42 as never },
+    { deletionRequestedAt: 42 as never },
+    { deletedAt: false as never },
+  ]) {
+    assert.deepEqual(
+      transitionAccountLifecycle(makeAccount(overrides), {
+        type: "request_deletion",
+        actorAccountId: "account-a",
+        at: requestedAt,
+      }),
+      { ok: false, error: "invalid_account" },
+    );
+  }
+});
+
+test("refuse un identifiant d'acteur malformé pour les transitions sensibles", () => {
+  assert.deepEqual(transitionAccountLifecycle(makeAccount(), {
+    type: "suspend_account",
+    actorAccountId: null as never,
+    actorRole: "super_admin",
+    at: requestedAt,
+  }), { ok: false, error: "actor_not_super_admin" });
+
+  assert.deepEqual(transitionAccountLifecycle(makeAccount(), {
+    type: "request_deletion",
+    actorAccountId: null as never,
+    at: requestedAt,
+  }), { ok: false, error: "actor_not_owner" });
+});
+
+test("refuse des compteurs d'activité non numériques sans exception", () => {
+  const pending = makeAccount({ status: "deletion_pending", deletionRequestedAt: requestedAt });
+  assert.deepEqual(transitionAccountLifecycle(pending, {
+    type: "finalize_deletion",
+    actorAccountId: "system",
+    at: finalizedAt,
+    activity: { activeAlerts: "0" as never, activeTrips: 0 },
+  }), { ok: false, error: "invalid_activity_counts" });
+});
