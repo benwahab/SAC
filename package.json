@@ -36,7 +36,8 @@
     "test:acl-ude-contract": "node --experimental-strip-types --test tests/acl-ude-contract-model.test.ts",
     "test:contact-invitations": "node --experimental-strip-types --test tests/contact-invitations.test.ts",
     "test:contact-invitations-d1": "node --experimental-strip-types --test tests/d1-contact-invitations.integration.test.ts",
-    "test:contact-invitation-email": "node --experimental-strip-types --test tests/contact-invitation-email.test.ts"
+    "test:contact-invitation-email": "node --experimental-strip-types --test tests/contact-invitation-email.test.ts",
+    "test:sos-d1": "node --experimental-strip-types --test tests/d1-sos-service.integration.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
