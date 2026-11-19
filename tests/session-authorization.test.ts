@@ -149,3 +149,46 @@ test("refuse tout accès de session si le compte n'est pas actif", () => {
     })), { ok: false, error: "account_not_active" });
   }
 });
+
+
+test("refuse les champs malformés du registre de session sans exception", () => {
+  for (const overrides of [
+    { sessionId: null as never },
+    { accountId: 12 as never },
+    { deviceId: null as never },
+    { tokenHash: null as never },
+    { status: null as never },
+    { createdAt: null as never },
+    { lastActivityAt: 12 as never },
+    { expiresAt: null as never },
+    { revokedAt: 12 as never },
+  ]) {
+    assert.deepEqual(
+      authorizeDeviceSession(makeSession(overrides), makeContext()),
+      { ok: false, error: "invalid_session_record" },
+    );
+  }
+});
+
+test("refuse une révocation antérieure à la dernière activité enregistrée", () => {
+  assert.deepEqual(authorizeDeviceSession(makeSession({
+    status: "revoked",
+    lastActivityAt: "2026-11-17T11:30:00.000Z",
+    revokedAt: "2026-11-17T11:20:00.000Z",
+  }), makeContext()), { ok: false, error: "invalid_session_record" });
+});
+
+test("refuse un contexte d'autorisation malformé sans exception", () => {
+  for (const overrides of [
+    { expectedAccountId: null as never },
+    { expectedDeviceId: 12 as never },
+    { accountStatus: null as never },
+    { deviceStatus: "unknown" as never },
+    { now: null as never },
+  ]) {
+    assert.deepEqual(
+      authorizeDeviceSession(makeSession(), makeContext(overrides)),
+      { ok: false, error: "invalid_authorization_context" },
+    );
+  }
+});
