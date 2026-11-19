@@ -3,6 +3,13 @@
 
 PRAGMA foreign_keys = ON;
 
+CREATE TABLE root_enrollment_rate_limits (
+  email_hash TEXT PRIMARY KEY NOT NULL CHECK (length(email_hash) = 64 AND email_hash NOT GLOB '*[^a-f0-9]*'),
+  window_started_at INTEGER NOT NULL CHECK (window_started_at > 0),
+  attempt_count INTEGER NOT NULL CHECK (attempt_count BETWEEN 1 AND 1000000),
+  updated_at INTEGER NOT NULL CHECK (updated_at >= window_started_at)
+);
+
 CREATE TABLE root_enrollment_ceremonies (
   id TEXT PRIMARY KEY NOT NULL,
   account_id TEXT NOT NULL,
