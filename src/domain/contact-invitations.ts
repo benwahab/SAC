@@ -1,3 +1,5 @@
+import type { ContactInvitationStatus } from "./sac.ts";
+
 /**
  * Contrat métier pur des invitations de proches SAC.
  *
@@ -5,7 +7,6 @@
  * consommation + création de relation restent des responsabilités serveur.
  * Aucun délai ou quota non validé n'est imposé ici.
  */
-export type ContactInvitationStatus = "pending" | "accepted" | "declined" | "revoked" | "expired";
 export type ContactAccountStatus = "pending_verification" | "active" | "suspended" | "deletion_pending" | "deleted";
 
 export interface ContactInvitationRecord {
@@ -100,7 +101,13 @@ function validInvitation(invitation: ContactInvitationRecord): boolean {
   if (invitation.status === "pending") {
     return invitation.recipientAccountId === null && invitation.decidedAt === null;
   }
-  return invitation.decidedAt !== null && validUtc(invitation.decidedAt) &&
+  if (invitation.status === "accepted" || invitation.status === "declined") {
+    return invitation.recipientAccountId !== null && invitation.recipientAccountId.trim().length > 0 &&
+      invitation.decidedAt !== null && validUtc(invitation.decidedAt) &&
+      Date.parse(invitation.decidedAt) >= Date.parse(invitation.createdAt);
+  }
+  return invitation.recipientAccountId === null &&
+    invitation.decidedAt !== null && validUtc(invitation.decidedAt) &&
     Date.parse(invitation.decidedAt) >= Date.parse(invitation.createdAt);
 }
 
