@@ -49,7 +49,9 @@
     "test:webauthn-root-options": "node --experimental-strip-types --test tests/webauthn-root-options.test.ts",
     "test:webauthn-origin": "node --experimental-strip-types --test tests/webauthn-origin.test.ts",
     "test:webauthn-root-verifier": "node --experimental-strip-types --test tests/webauthn-root-verifier.test.ts",
-    "test:d1-root-device-enrollment": "python3 tests/d1_root_device_enrollment_schema.test.py"
+    "test:d1-root-device-enrollment": "python3 tests/d1_root_device_enrollment_schema.test.py",
+    "test:root-enrollment-endpoints": "node --experimental-strip-types --test tests/root-enrollment-endpoints.test.ts",
+    "test:root-enrollment-client": "node --experimental-strip-types --test tests/root-enrollment-client.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
