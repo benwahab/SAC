@@ -35,6 +35,18 @@ Fichier : `src/services/device/webauthn.ts`
 
 Tests : `tests/webauthn-browser-adapter.test.ts`, commande `npm run test:webauthn-browser`.
 
+### Générateur serveur d'options d'enregistrement racine
+
+Fichier : `functions/lib/security/webauthn-root-options.ts`
+
+- Génère un challenge CSPRNG de 32 octets et les options JSON WebAuthn.
+- Fixe le RP ID au format DNS, la plateforme, la vérification utilisateur obligatoire, ES256 uniquement et l'attestation `none`.
+- Accepte une politique `residentKey` explicite en configuration, sans trancher la compatibilité Android.
+- Valide la taille du user handle et des credentials exclues.
+- Ne persiste pas le challenge et n'est pas exposé par une route HTTP. L'appelant futur devra enregistrer le challenge à usage unique dans D1 avant toute remise au navigateur.
+
+Test ajouté : `tests/webauthn-root-options.test.ts`, commande `npm run test:webauthn-root-options`, incluse dans CI.
+
 ## 2. Limites importantes
 
 L'adaptateur navigateur n'est pas encore raccordé à un endpoint d'enrôlement SAC. Il ne prouve pas à lui seul l'identité du compte, l'origine, le RP ID, la validité cryptographique de la réponse ni l'unicité de la racine. Ces vérifications appartiennent au serveur.
