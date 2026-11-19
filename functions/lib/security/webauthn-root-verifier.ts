@@ -63,7 +63,7 @@ function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
 
 export async function verifyRootRegistrationResponse(input: {
   response: unknown;
-  expectedChallenge: string;
+  expectedChallengeDigest: string;
   rpId: string;
   allowedOrigins: readonly string[];
   cryptoProvider: Pick<Crypto, "subtle">;
@@ -89,7 +89,20 @@ export async function verifyRootRegistrationResponse(input: {
     clientData = parsed as Record<string, unknown>;
   } catch { throw new Error("webauthn_client_data_invalid"); }
 
-  if (clientData.type !== "webauthn.create" || clientData.challenge !== input.expectedChallenge ||
+  let challengeMatches = false;
+  if (typeof clientData.challenge === "string") {
+    try {
+      const challengeBytes = decodeBase64Url(clientData.challenge, 64);
+      const challengeDigest = new Uint8Array(await input.cryptoProvider.subtle.digest("SHA-256", challengeBytes));
+      const expectedDigest = Uint8Array.from(
+        input.expectedChallengeDigest.match(/.{2}/g) ?? [],
+        (byte) => Number.parseInt(byte, 16),
+      );
+      challengeMatches = /^[a-f0-9]{64}$/.test(input.expectedChallengeDigest) &&
+        constantTimeEqual(challengeDigest, expectedDigest);
+    } catch { challengeMatches = false; }
+  }
+  if (clientData.type !== "webauthn.create" || !challengeMatches ||
       clientData.crossOrigin === true ||
       !isAllowedWebAuthnOrigin(clientData.origin, input.rpId, input.allowedOrigins)) {
     throw new Error("webauthn_client_data_binding_invalid");
