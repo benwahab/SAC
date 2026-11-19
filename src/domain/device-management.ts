@@ -31,6 +31,7 @@ export type DeviceTransitionError =
   | "invalid_event_timestamp"
   | "event_before_device_creation"
   | "event_before_verification"
+  | "event_before_last_activity"
   | "device_not_pending"
   | "approval_not_from_root"
   | "root_device_cannot_be_secondary"
@@ -51,6 +52,17 @@ function isCanonicalUtcTimestamp(value: string): boolean {
 
 function isValidDeviceRecord(device: DeviceRecord): boolean {
   if (
+    typeof device !== "object" ||
+    device === null ||
+    typeof device.deviceId !== "string" ||
+    typeof device.accountId !== "string" ||
+    typeof device.displayName !== "string" ||
+    typeof device.platform !== "string" ||
+    typeof device.status !== "string" ||
+    typeof device.createdAt !== "string" ||
+    (device.verifiedAt !== null && typeof device.verifiedAt !== "string") ||
+    (device.lastSeenAt !== null && typeof device.lastSeenAt !== "string") ||
+    (device.revokedAt !== null && typeof device.revokedAt !== "string") ||
     !device.deviceId.trim() ||
     !device.accountId.trim() ||
     !device.displayName.trim() ||
@@ -116,7 +128,7 @@ export function transitionDevice(
     return { ok: false, error: "invalid_event_type" };
   }
 
-  if (event.actorAccountId !== device.accountId) {
+  if (typeof event.actorAccountId !== "string" || event.actorAccountId !== device.accountId) {
     return { ok: false, error: "account_mismatch" };
   }
 
@@ -127,6 +139,9 @@ export function transitionDevice(
   if (Date.parse(event.at) < Date.parse(device.createdAt)) {
     return { ok: false, error: "event_before_device_creation" };
   }
+  if (device.lastSeenAt !== null && Date.parse(event.at) < Date.parse(device.lastSeenAt)) {
+    return { ok: false, error: "event_before_last_activity" };
+  }
 
   if (device.status === "revoked") {
     return { ok: false, error: "device_already_revoked" };
@@ -134,6 +149,8 @@ export function transitionDevice(
 
   if (event.type === "approve") {
     if (
+      typeof event.actorDeviceId !== "string" ||
+      typeof event.rootDeviceId !== "string" ||
       !event.actorDeviceId.trim() ||
       !event.rootDeviceId.trim() ||
       event.actorDeviceId !== event.rootDeviceId
