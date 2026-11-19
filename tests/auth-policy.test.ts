@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   evaluateSessionAge,
+  getSessionExpiresAt,
   PASSWORD_MIN_CODE_POINTS,
   SESSION_ABSOLUTE_LIMIT_MS,
   SESSION_IDLE_LIMIT_MS,
@@ -94,4 +95,33 @@ test("une activité ne peut pas être antérieure à la création ni postérieur
     createdAt,
     lastActivityAt: "2026-01-11T00:00:00.000Z",
   }, "2026-01-10T00:00:00.000Z"), { ok: false, error: "invalid_session_dates" });
+});
+
+
+test("calcule l'expiration de session comme la première des deux limites", () => {
+  assert.equal(getSessionExpiresAt({
+    createdAt,
+    lastActivityAt: "2026-01-20T00:00:00.000Z",
+  }), "2026-02-19T00:00:00.000Z");
+});
+
+test("la limite absolue de 90 jours prime sur une activité récente", () => {
+  assert.equal(getSessionExpiresAt({
+    createdAt,
+    lastActivityAt: "2026-03-30T23:59:00.000Z",
+  }), "2026-04-01T00:00:00.000Z");
+});
+
+test("une activité antérieure à la création ne produit aucune expiration", () => {
+  assert.equal(getSessionExpiresAt({
+    createdAt,
+    lastActivityAt: "2025-12-31T23:59:59.000Z",
+  }), null);
+});
+
+test("les dates malformées ne produisent aucune expiration", () => {
+  assert.equal(getSessionExpiresAt({
+    createdAt: "not-a-date",
+    lastActivityAt: "2026-01-02T00:00:00.000Z",
+  }), null);
 });
