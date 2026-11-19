@@ -99,6 +99,7 @@ export default {
     if (url.pathname === "/dispatch") {
       const result = await dispatchDueSosReminders(env.DB, crypto, {
         async send(envelope) {
+          if (input.throwRecipient === envelope.recipientAccountId) throw new Error("test-only provider failure");
           if (input.failRecipient === envelope.recipientAccountId) return false;
           return true;
         },
