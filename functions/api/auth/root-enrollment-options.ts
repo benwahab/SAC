@@ -57,7 +57,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   const now = Date.now();
-  const rateKey = await crypto.subtle.importKey("raw", new TextEncoder().encode(env.EMAIL_OTP_HMAC_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);\n  const emailHashBytes = new Uint8Array(await crypto.subtle.sign("HMAC", rateKey, new TextEncoder().encode("SAC:root-enrollment-rate:v1:" + email)));
+  const rateKey = await crypto.subtle.importKey("raw", new TextEncoder().encode(env.EMAIL_OTP_HMAC_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const emailHashBytes = new Uint8Array(await crypto.subtle.sign("HMAC", rateKey, new TextEncoder().encode("SAC:root-enrollment-rate:v1:" + email)));
   const emailHash = Array.from(emailHashBytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
   try {
     await env.DB.prepare(
