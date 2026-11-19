@@ -8,6 +8,7 @@ export default function InvitationAcceptancePage() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [token, setToken] = useState("");
+  const [invitationId, setInvitationId] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -23,6 +24,7 @@ export default function InvitationAcceptancePage() {
       setAuthenticated(false);
       return;
     }
+    setInvitationId(id);
     setToken(rawToken);
     window.history.replaceState(null, "", "/invitation/accept");
     void (async () => {
@@ -81,7 +83,7 @@ export default function InvitationAcceptancePage() {
     } finally { setBusy(false); }
   }
 
-  const returnTo = "/invitation/accept";
+  const returnTo = `/invitation/accept?id=${encodeURIComponent(invitationId)}&token=${encodeURIComponent(token)}`;
   const loginUrl = `/connexion?returnTo=${encodeURIComponent(returnTo)}`;
 
   return (
