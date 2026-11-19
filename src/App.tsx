@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ArrowUpRight, Download, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, Wifi, X } from "lucide-react";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
+import { completeRootEnrollment, requestRootEnrollment, type RootEnrollmentCeremony } from "./services/device/root-enrollment";
 
 
 type LoginPageProps = {
