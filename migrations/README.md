@@ -40,3 +40,30 @@ Commande de référence, **non exécutée** :
 `npx wrangler d1 migrations apply sac-db --remote`
 
 Elle nécessite une revue dédiée, la confirmation de l'environnement cible et l'autorisation explicite du propriétaire. Ne jamais appliquer une migration distante depuis cette documentation seule.
+
+## 0007 — credential racine, appareils et sessions
+
+`0007_root_device_enrollment.sql` ajoute le premier parcours serveur d'enrôlement :
+- cérémonie et challenge WebAuthn à usage unique, avec seule empreinte SHA-256 persistée ;
+- expiration après cinq minutes et cinq tentatives maximum ;
+- une seule racine par compte, liée à une credential P-256 ES256 non synchronisable ;
+- clé publique, compteur, type de credential et état de sauvegarde ;
+- session opaque liée au compte et à l'appareil, jeton brut uniquement dans un cookie `__Host-` HttpOnly/Secure/SameSite=Strict ;
+- événement d'audit de fin d'enrôlement dont le trigger refuse un parcours incomplet ;
+- limite de tentatives par empreinte d'adresse e-mail, sans conserver l'adresse dans cette table.
+
+Le parcours HTTP est exposé par :
+- `POST /api/auth/root-enrollment-options` : mot de passe + e-mail vérifié, création du challenge et options WebAuthn ;
+- `POST /api/auth/complete-root-enrollment` : vérification de l'attestation, consommation atomique du challenge, création de l'appareil, de la credential et de la première session ;
+- `GET /api/auth/session` : vérification D1 de la session et de l'état courant du compte/appareil ;
+- `POST /api/auth/logout` : révocation D1 et suppression du cookie.
+
+Configuration Worker requise : `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME` et `WEBAUTHN_ALLOWED_ORIGINS` (tableau JSON d'origines HTTPS exactes). En leur absence, le parcours échoue fermé. Aucun domaine de production n'est présumé dans le code.
+
+La vérification actuelle accepte exclusivement l'attestation WebAuthn `none`, la clé COSE EC2/P-256 ES256, UP=1, UV=1, BE=0 et BS=0. Les signatures d'attestation ne sont donc pas vérifiées (profil none) ; la possession de la clé privée sera prouvée lors de l'authentification WebAuthn ultérieure, qui reste une étape distincte à implémenter avant d'offrir la reconnexion par passkey.
+
+Vérifications ajoutées :
+- `npm run test:webauthn-root-verifier`
+- `npm run test:d1-root-device-enrollment`
+
+Cette migration n'a pas été appliquée à la base distante. Avant mise en production, configurer les origines réelles, appliquer les migrations après revue, puis réaliser des essais physiques Android/Chrome et vérifier la compatibilité du profil residentKey retenu.
