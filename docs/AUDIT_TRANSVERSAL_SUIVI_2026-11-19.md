@@ -186,3 +186,29 @@ Les commits suivants ont été poussés sur `main` :
 4. **D1 distante, notifications, GPS et déploiement :** inchangés. Aucune migration distante, activation fournisseur, activation GPS ou mise en production n'a été effectuée.
 
 **État après cette passe :** le parcours d'intervention SOS est maintenant relié à l'interface et le lien d'invitation reçu par e-mail possède un parcours explicite. La validation CI, la boîte de réception interne et les autres domaines de l'audit transversal restent ouverts ; SAC n'est pas déclaré prêt pour production.
+
+
+## 11. Diagnostic CI complémentaire — 19 novembre 2026
+
+Une lecture complémentaire des objets GitHub Actions a permis de préciser le constat sans identifier la cause racine :
+
+- Run le plus récent examiné : `44565787936`, commit `c50f4fd8473404a978180ef3b8312d904ed92b0d`.
+- Job `validate` : `135707009240`, conclusion `failure`.
+- Le job a commencé à `16:24:44Z` et s'est terminé à `16:24:47Z`.
+- GitHub retourne `runner_id: 0`, un nom de runner vide et `steps: []`.
+- Le check-run signale une annotation (`annotations_count: 1`), mais le point d'accès des annotations n'est pas disponible via l'interface de lecture utilisée.
+- Les huit exécutions récentes examinées sur `main` présentent la même absence d'étapes récupérables ; elles échouent toutes en quelques secondes.
+
+**Interprétation permise :** le job échoue avant qu'une étape du workflow soit rapportée comme exécutée. Ces éléments orientent le diagnostic vers le démarrage/dispatch du runner ou un autre problème d'infrastructure GitHub Actions. Ils ne démontrent pas une erreur dans le code, le lockfile, npm, TypeScript ou les tests.
+
+**Interprétation interdite :** conclure que le code compile, que les tests passent, ou que la cause exacte est un incident GitHub sans preuve supplémentaire. Le workflow ne doit pas être désactivé, contourné ou rendu non bloquant.
+
+### État actualisé des priorités
+
+- **P0 — diagnostic CI : toujours ouvert**, mais le constat est précisé : aucune étape ne démarre/est remontée et aucun runner n'est attribué dans les données consultées. La cause racine reste inconnue.
+- **Parcours SOS privé : corrections d'interface réalisées** dans les commits `10eef622` et `4e3f92f` ; le panneau charge le détail et la chronologie, et expose les actions du destinataire et de l'auteur. La validation automatique reste bloquée par l'état CI.
+- **Invitation reçue par lien : parcours d'aperçu, connexion, acceptation/refus ajouté** dans les commits `a80dea3`, `33dfe46`, `5ebec3b` et `5856a05`. Ce parcours n'est pas une boîte de réception interne.
+- **P1 — boîte de réception interne : toujours ouverte** ; ne pas créer une liste qui contourne la preuve du lien ou révèle des jetons.
+- **Autres domaines, D1 distante, notifications réelles, GPS et déploiement : inchangés et non certifiés.**
+
+Cette section complète les constats précédents ; les sections historiques restent conservées pour la traçabilité.
