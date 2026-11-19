@@ -259,7 +259,13 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     now: suppressedBase + 300_000,
   });
   assert.equal(suppressedEscalation.status, 200);
-  assert.deepEqual(suppressedEscalation.data, { evaluationsCreated: 1, evaluationsSuppressed: 1, smsTasksCreated: 0 });
+  assert.deepEqual(suppressedEscalation.data, { evaluationsCreated: 2, evaluationsSuppressed: 1, smsTasksCreated: 1 });
+  const exhaustionSmsState = await post<{ evaluation: { status: string }; rows: Array<{ recipient_account_id: string; status: string }> }>("/sms-state", {
+    alertId: exhaustionAlert.data.alertId,
+  });
+  assert.equal(exhaustionSmsState.data.evaluation.status, "queued");
+  assert.deepEqual(exhaustionSmsState.data.rows.map(x => x.recipient_account_id), [contact]);
+  assert.equal(exhaustionSmsState.data.rows[0].status, "pending");
   const suppressedState = await post<{ evaluation: { status: string }; rows: unknown[] }>("/sms-state", {
     alertId: suppressedAlert.data.alertId,
   });
