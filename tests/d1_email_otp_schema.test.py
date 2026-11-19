@@ -2,14 +2,14 @@ import sqlite3
 import unittest
 from pathlib import Path
 
-MIGRATION = Path(__file__).resolve().parents[1] / "migrations" / "0001_account_email_otp.sql"
+MIGRATIONS = [\n    Path(__file__).resolve().parents[1] / "migrations" / "0001_account_email_otp.sql",\n    Path(__file__).resolve().parents[1] / "migrations" / "0006_email_otp_delivery_state.sql",\n]
 
 
 class EmailOtpD1SchemaTests(unittest.TestCase):
     def setUp(self):
         self.db = sqlite3.connect(":memory:")
         self.db.row_factory = sqlite3.Row
-        self.db.executescript(MIGRATION.read_text(encoding="utf-8"))
+        for migration in MIGRATIONS:\n            self.db.executescript(migration.read_text(encoding="utf-8"))
         self.now = 1_800_000_000_000
         self.db.execute(
             "INSERT INTO accounts VALUES (?, 'pending_verification', 'fr', ?, ?, ?)",
