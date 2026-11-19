@@ -2,6 +2,7 @@ import { requireAuthenticatedDeviceSession } from "../../../lib/security/require
 import { guardSameOriginJsonPost } from "../../../lib/security/http-request-guard.ts";
 import { readJsonRequestBody } from "../../../lib/security/json-request-body.ts";
 import { createAndSendContactInvitation } from "../../../lib/trusted-contacts/invitation-delivery.ts";
+import { digestContactInvitationToken } from "../../../lib/security/contact-invitation-token.ts";
 import type { SacEmailLanguage } from "../../../lib/email/resend.ts";
 
 interface Env {
@@ -24,6 +25,58 @@ const HEADERS = {
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: HEADERS });
 }
+
+export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
+  const session = await requireAuthenticatedDeviceSession(request, env.DB);
+  if (!session.ok) return json({ error: session.status === 401 ? "authentication_required" : "invitation_service_unavailable" }, session.status);
+
+  const url = new URL(request.url);
+  const invitationId = url.searchParams.get("id") ?? "";
+  const token = url.searchParams.get("token") ?? "";
+  if (!/^[0-9a-f-]{36}$/i.test(invitationId) || !/^[A-Za-z0-9_-]{43}$/.test(token)) {
+    return json({ error: "invitation_not_found" }, 404);
+  }
+
+  try {
+    const digest = await digestContactInvitationToken(crypto, token);
+    const invitation = await env.DB.prepare(
+      `SELECT inviter_identity.normalized_value AS inviter_email, invitation.expires_at
+       FROM contact_invitations invitation
+       JOIN accounts recipient ON recipient.id = ? AND recipient.status = 'active'
+       JOIN account_identities recipient_identity
+         ON recipient_identity.account_id = recipient.id
+        AND recipient_identity.channel = 'email'
+        AND recipient_identity.is_primary = 1
+        AND recipient_identity.verified_at IS NOT NULL
+        AND recipient_identity.normalized_value = invitation.destination_email
+       JOIN accounts inviter ON inviter.id = invitation.inviter_account_id AND inviter.status = 'active'
+       JOIN account_identities inviter_identity
+         ON inviter_identity.account_id = inviter.id
+        AND inviter_identity.channel = 'email'
+        AND inviter_identity.is_primary = 1
+        AND inviter_identity.verified_at IS NOT NULL
+       WHERE invitation.id = ?
+         AND invitation.token_digest = ?
+         AND invitation.status = 'pending'
+         AND invitation.expires_at > ?
+       LIMIT 1`,
+    ).bind(session.value.accountId, invitationId, digest, Date.now()).first<{
+      inviter_email: string;
+      expires_at: number;
+    }>();
+
+    if (!invitation) return json({ error: "invitation_not_found" }, 404);
+    return json({
+      invitation: {
+        id: invitationId,
+        inviterEmail: invitation.inviter_email,
+        expiresAt: invitation.expires_at,
+      },
+    });
+  } catch {
+    return json({ error: "invitation_service_unavailable" }, 503);
+  }
+};
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const guard = guardSameOriginJsonPost(request);
