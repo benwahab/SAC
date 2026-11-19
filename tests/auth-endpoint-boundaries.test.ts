@@ -181,18 +181,15 @@ test("all public authentication endpoints reject methods other than POST", async
 });
 
 
-test("register returns the same generic response shape when an email or phone already exists", async () => {
+test("register returns the same generic response when database uniqueness rejects an existing identity", async () => {
   const duplicateEnv = {
     ...env,
     DB: {
       prepare() {
-        return {
-          bind() {
-            return {
-              first: async () => ({ present: 1 }),
-            };
-          },
-        };
+        return { bind() { return {}; } };
+      },
+      async batch() {
+        throw new Error("UNIQUE constraint failed: account_identities.channel, account_identities.normalized_value");
       },
     } as never,
   };
