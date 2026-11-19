@@ -198,6 +198,17 @@ test(
     assert.equal(overLimit.status, 409);
     assert.equal(overLimit.data.error, "contact_limit_reached");
 
+    // A recipient can explicitly decline even when the inviter has reached
+    // the active-contact quota; declining never creates a relationship.
+    const declined = await post<{ declined: boolean }>("/decline", {
+      contactId: contact3Id,
+      invitationId: thirdInvitation.data.invitationId,
+      token: thirdInvitation.data.token,
+      now: thirdNow + 2,
+    });
+    assert.equal(declined.status, 200);
+    assert.equal(declined.data.declined, true);
+
     const atLimit = await post<{ contacts: unknown[] }>("/contacts", { ownerId });
     assert.equal(atLimit.status, 200);
     assert.equal(atLimit.data.contacts.length, 2);
