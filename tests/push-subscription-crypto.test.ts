@@ -46,6 +46,8 @@ test("un secret différent ou un ciphertext altéré ne permet pas le déchiffre
   assert.equal(await decryptPushSubscription(encrypted, otherSecret), null);
   const altered = { ...encrypted, ciphertext: encrypted.ciphertext.slice(0, -1) + (encrypted.ciphertext.endsWith("A") ? "B" : "A") };
   assert.equal(await decryptPushSubscription(altered, secret), null);
+  const alteredFingerprint = { ...encrypted, endpointHash: "f".repeat(64) };
+  assert.equal(await decryptPushSubscription(alteredFingerprint, secret), null);
 });
 
 test("un secret absent ou de taille incorrecte échoue sans stockage", async () => {
