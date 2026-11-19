@@ -338,3 +338,18 @@ Cette logique doit être transactionnelle : si une étape échoue, aucune modifi
 **Condition supplémentaire bloquante :** prouver que le rôle de la passerelle SAC peut appeler la route UDE autorisée, mais ne peut pas écrire directement dans les routes natives, modifier les UDE, gérer les utilisateurs/roles, supprimer le registre ou altérer les politiques. Les administrateurs qui déploient le bundle et le RBAC doivent être séparés de l'identité d'exécution.
 
 L'exemple Microsoft ne constitue pas une preuve d'homologation pour SAC ; il permet de préparer un prototype contractuel beaucoup plus précis. Aucun code UDE SAC ni ressource Azure n'a été créé.
+
+
+## 13. Résidence et coût : précision issue des pages publiques (19 novembre 2026)
+
+Deux points doivent être traités comme critères éliminatoires et non comme simples optimisations :
+
+- **Réplication géographique imposée :** ACL utilise la paire régionale Azure et ne permet pas de désactiver cette réplication. Les données et métadonnées du registre sont répliquées vers la région jumelée ; une exigence de résidence dans un seul pays ou une seule région ne serait donc pas satisfaite par simple choix de la région primaire.
+- **Disponibilité régionale limitée et prix non chiffrable depuis la page publique :** la page tarifaire publique expose les unités de facturation (instance par heure et stockage par Go/mois), mais les valeurs ne sont pas publiées dans le tableau consulté et Microsoft indique que le service n'est disponible que dans un nombre limité de régions, invitant à contacter son représentant. Aucun tarif mensuel fiable ne peut donc être calculé aujourd'hui sans région, offre et devis.
+
+En conséquence, ne pas recommander une région « proche du Niger » sur la seule base de la géographie. Il faut d'abord obtenir de Microsoft la liste des régions où ACL et UDE sont effectivement disponibles pour le type d'abonnement concerné, identifier chaque région jumelée, confirmer que les deux régions sont acceptables pour SAC, puis obtenir un devis. Aucun choix régional ni budget n'est approuvé.
+
+Références :
+- Résidence et réplication ACL : https://learn.microsoft.com/en-us/azure/confidential-ledger/data-residency
+- Tarification ACL : https://azure.microsoft.com/en-us/pricing/details/confidential-ledger/
+- Paires régionales Azure : https://learn.microsoft.com/en-us/azure/reliability/regions-paired
