@@ -1,0 +1,9 @@
+name = "sac-sos-service-test"
+main = "./workers/sos-service-worker.ts"
+compatibility_date = "2026-11-17"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sac-sos-service-test"
+database_id = "ce9b15c1-6c24-4a62-ae7e-6b2d2f0a4a92"
+migrations_dir = "../migrations"
