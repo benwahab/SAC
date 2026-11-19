@@ -564,6 +564,16 @@ export async function claimDueSosReminders(
   const leaseToken = cryptoProvider.randomUUID() + cryptoProvider.randomUUID();
   const leaseUntil = now + leaseMilliseconds;
   try {
+    // Exhausted workers must not leave an expired lease stuck forever.
+    const exhausted = await db.prepare(
+      `UPDATE alert_reminder_outbox
+       SET status = 'failed', processed_at = ?, lease_until = NULL, lease_token = NULL
+       WHERE status = 'processing' AND lease_until <= ? AND attempt_count >= 5
+         AND EXISTS (SELECT 1 FROM alerts a
+           WHERE a.id = alert_reminder_outbox.alert_id AND a.status = 'active')`,
+    ).bind(now, now).run();
+    if (!exhausted.success) return fail("storage_unavailable");
+
     const result = await db.prepare(
       `UPDATE alert_reminder_outbox
        SET status = 'processing',
