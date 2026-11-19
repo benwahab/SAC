@@ -4,13 +4,13 @@ export default {
     extend: {
       colors: {
         sac: {
-          primary: "#FFE1C8",
-          "primary-strong": "#F38020",
+          primary: "#E85D04",
+          "primary-strong": "#E85D04",
           confirm: "#16804A",
           alert: "#C83245",
-          ink: "#29231F",
+          ink: "#24211F",
           muted: "#74675E",
-          canvas: "#FFF7F0",
+          canvas: "#FBFBFB",
         },
       },
       boxShadow: {
