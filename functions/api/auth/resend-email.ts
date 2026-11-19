@@ -10,7 +10,7 @@ interface Env {
   RESEND_FROM_EMAIL?: string;
 }
 
-const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" };
+const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" };
 const ACCEPTED = {
   accepted: true,
   message: "Si un compte en attente correspond à cette adresse, la demande sera traitée.",
