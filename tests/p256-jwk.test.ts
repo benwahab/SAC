@@ -5,6 +5,7 @@ import {
   isCanonicalP256PublicJwk,
 } from "../src/services/crypto/p256-jwk.ts";
 
+// These tests protect the exact base64url representation used by public-key fingerprints.
 const vectorJwk: JsonWebKey = {
   kty: "EC",
   crv: "P-256",
