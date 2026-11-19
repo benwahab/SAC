@@ -103,7 +103,11 @@ export default {
           return true;
         },
       }, { now, batchSize: 10, leaseMilliseconds: 30_000 });
-      return result.ok ? json(result.value) : json({ error: result.error }, 409);
+      if (result.ok) return json(result.value);
+      const alertState = await env.DB.prepare("SELECT id,status,closed_at,closure_reason FROM alerts WHERE id=?").bind(String(input.alertId)).first();
+      const eventState = await env.DB.prepare("SELECT event_type,actor_account_id,occurred_at FROM alert_events WHERE alert_id=? ORDER BY occurred_at,id").bind(String(input.alertId)).all();
+      const responsibilityState = await env.DB.prepare("SELECT contact_account_id,ended_at,end_reason FROM alert_responsibility_periods WHERE alert_id=?").bind(String(input.alertId)).all();
+      return json({ error: result.error, debug: { alertState, eventState: eventState.results, responsibilityState: responsibilityState.results } }, 409);
     }
     if (url.pathname === "/claim") {
       const result = await claimDueSosReminders(env.DB, crypto, { now, batchSize: 10, leaseMilliseconds: 30_000 });
