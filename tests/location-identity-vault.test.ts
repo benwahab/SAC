@@ -2,8 +2,6 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   getOrCreateLocationIdentityKeyPair,
-  getPinnedTrustedLocationFingerprint,
-  pinTrustedLocationFingerprint,
   type LocationIdentityKeyRecord,
   type LocationIdentityKeyStore,
 } from "../src/services/location/identity-vault.ts";
@@ -91,7 +89,6 @@ test("does not silently replace a corrupt stored key record", async () => {
     privateKey: {} as CryptoKey,
     publicKey: {} as CryptoKey,
     publicJwk: {},
-    pinnedContactFingerprints: {},
     createdAt: Date.now(),
   });
 
@@ -108,61 +105,4 @@ test("keeps different device identities separate for the same account", async ()
 
   assert.notDeepEqual(first.publicJwk, second.publicJwk);
   assert.notEqual(first.privateKey, second.privateKey);
-});
-
-
-test("stores a contact fingerprint locally only after independent comparison", async () => {
-  const store = new MemoryLocationIdentityKeyStore();
-  const fingerprint = "ABCD ".repeat(15) + "ABCD";
-  await pinTrustedLocationFingerprint({
-    accountId: "owner",
-    deviceId: "owner-device",
-    contactAccountId: "contact",
-    contactDeviceId: "contact-device",
-    fingerprint,
-    confirmedByIndependentChannel: true,
-  }, store);
-  assert.equal(
-    await getPinnedTrustedLocationFingerprint("owner", "owner-device", "contact", "contact-device", store),
-    fingerprint,
-  );
-});
-
-test("refuses to pin a fingerprint without independent confirmation", async () => {
-  const store = new MemoryLocationIdentityKeyStore();
-  await assert.rejects(
-    pinTrustedLocationFingerprint({
-      accountId: "owner",
-      deviceId: "owner-device",
-      contactAccountId: "contact",
-      contactDeviceId: "contact-device",
-      fingerprint: "ABCD ".repeat(15) + "ABCD",
-      confirmedByIndependentChannel: false as never,
-    }, store),
-    /vérification indépendante/,
-  );
-  assert.equal(await store.get("owner:owner-device"), null);
-});
-
-test("does not silently replace a previously pinned device fingerprint", async () => {
-  const store = new MemoryLocationIdentityKeyStore();
-  const first = "ABCD ".repeat(15) + "ABCD";
-  const second = "1234 ".repeat(15) + "1234";
-  await pinTrustedLocationFingerprint({
-    accountId: "owner", deviceId: "owner-device",
-    contactAccountId: "contact", contactDeviceId: "contact-device",
-    fingerprint: first, confirmedByIndependentChannel: true,
-  }, store);
-  await assert.rejects(
-    pinTrustedLocationFingerprint({
-      accountId: "owner", deviceId: "owner-device",
-      contactAccountId: "contact", contactDeviceId: "contact-device",
-      fingerprint: second, confirmedByIndependentChannel: true,
-    }, store),
-    /déjà épinglée/,
-  );
-  assert.equal(
-    await getPinnedTrustedLocationFingerprint("owner", "owner-device", "contact", "contact-device", store),
-    first,
-  );
 });
