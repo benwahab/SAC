@@ -134,14 +134,7 @@ function validKeyPairShape(
     record.publicKey.algorithm.name === "ECDSA" &&
     (record.publicKey.algorithm as EcKeyAlgorithm).namedCurve === "P-256" &&
     record.publicKey.usages.includes("verify") &&
-    isCanonicalP256PublicJwk(record.publicJwk) &&
-    record.pinnedContactFingerprints !== null &&
-    typeof record.pinnedContactFingerprints === "object" &&
-    !Array.isArray(record.pinnedContactFingerprints) &&
-    Object.entries(record.pinnedContactFingerprints).every(([key, value]) =>
-      typeof key === "string" && key.length > 0 &&
-      typeof value === "string" && /^(?:[0-9A-F]{4})(?: [0-9A-F]{4}){15}$/.test(value)
-    );
+    isCanonicalP256PublicJwk(record.publicJwk);
 }
 
 async function verifyStoredKeyPair(
