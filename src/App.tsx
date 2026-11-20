@@ -497,10 +497,6 @@ export default function App() {
               {t.heroTitle}<span className="block text-sac-primary-strong">{t.heroSecond}</span><span className="block">{t.heroThird}</span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-sac-muted sm:text-lg">{t.heroDescription}</p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <a href="/connexion?mode=register" className="sac-action sac-hero-primary inline-flex min-h-14 items-center justify-center gap-3 rounded-full px-7 text-sm font-extrabold text-white">{language === "fr" ? "Créer un compte" : language === "en" ? "Create an account" : "إنشاء حساب"} <span aria-hidden="true">↗</span></a>
-              <a href="/connexion" className="sac-action sac-hero-secondary inline-flex min-h-14 items-center justify-center gap-3 rounded-full px-7 text-sm font-bold text-white">{signInLabel} <span aria-hidden="true">→</span></a>
-            </div>
             <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-sac-ink">
               <span className="sac-inline-icon inline-flex items-center gap-2"><LockKeyhole size={16} className="text-sac-confirm" />{t.protectedData}</span>
               <span className="sac-inline-icon inline-flex items-center gap-2"><UsersRound size={16} className="text-sac-confirm" />{t.chosenContacts}</span>
@@ -566,7 +562,7 @@ export default function App() {
                     <p className="mt-1 text-sm text-sac-muted">2 {t.contacts}</p>
                   </button>
                   {openOffer === "free" && (
-                    <div id="sac-free-offer-details" role="region" aria-label={t.freePlan + " — " + t.offerDetails} className="sac-offer-popover absolute inset-x-0 top-full z-30 mt-2 rounded-2xl p-4">
+                    <div id="sac-free-offer-details" role="region" aria-label={t.freePlan + " — " + t.offerDetails} className="sac-offer-popover absolute inset-x-0 top-full z-[60] mt-3 rounded-2xl p-4">
                       <div className="flex items-center justify-between gap-3">
                         <h4 className="text-sm font-extrabold text-sac-ink">{t.offerIncluded}</h4>
                         <button type="button" onClick={() => setOpenOffer(null)} aria-label={t.closeOfferDetails} className="sac-offer-close rounded-full px-2 py-1 text-xs font-bold">{t.closeOfferDetails}</button>
