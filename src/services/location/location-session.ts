@@ -2,13 +2,11 @@ import { isCanonicalP256PublicJwk } from "../crypto/p256-jwk.ts";
 import {
   createLocationExchangeKeyPair,
   deriveLocationDirectionalKey,
-  fingerprintLocationIdentityKey,
   validateLocationExchangePublicKey,
   type LocationExchangeKeyPair,
 } from "./key-exchange.ts";
 import {
   getOrCreateLocationIdentityKeyPair,
-  getPinnedTrustedLocationFingerprint,
   type LocationIdentityKeyStore,
 } from "./identity-vault.ts";
 
@@ -204,41 +202,22 @@ export async function verifyLocationSessionBundle(
   }
 }
 
-export async function verifyPinnedLocationSessionBundle(
+/**
+ * Vérifie automatiquement l'identité d'un appareil authentifié par SAC.
+ * Le Worker transmet l'identité liée au ticket/session validés côté serveur.
+ * Aucun échange manuel d'empreinte n'est requis.
+ */
+export async function verifyAuthenticatedLocationSessionBundle(
   bundle: SignedLocationSessionBundle,
-  localAccountId: string,
-  localDeviceId: string,
+  authenticatedAccountId: string,
+  authenticatedDeviceId: string,
   expectedAlertId: string,
   expectedSessionId: string,
-  store?: LocationIdentityKeyStore,
   cryptoProvider: Crypto = globalThis.crypto,
 ): Promise<boolean> {
-  try {
-    if (!bundle) return false;
-    const pinned = await getPinnedTrustedLocationFingerprint(
-      localAccountId,
-      localDeviceId,
-      bundle.ownerId,
-      bundle.deviceId,
-      store,
-      cryptoProvider,
-    );
-    if (!pinned) return false;
-    if (!(await verifyLocationSessionBundle(
-      bundle,
-      bundle.ownerId,
-      bundle.deviceId,
-      expectedAlertId,
-      expectedSessionId,
-      cryptoProvider,
-    ))) return false;
-    const actual = await fingerprintLocationIdentityKey(bundle.identityPublicKey, cryptoProvider);
-    return actual === pinned;
-  } catch {
-    return false;
-  }
+  if (!bundle || bundle.ownerId !== authenticatedAccountId || bundle.deviceId !== authenticatedDeviceId) return false;
+  return verifyLocationSessionBundle(bundle, authenticatedAccountId, authenticatedDeviceId, expectedAlertId, expectedSessionId, cryptoProvider);
 }
-
 /** Encodes the signed bundle as a bounded opaque string suitable for relay. */
 export function encodeLocationSessionBundle(bundle: SignedLocationSessionBundle): string {
   if (!validBundleShape(bundle)) throw new Error("Bundle de session GPS invalide.");
@@ -324,16 +303,15 @@ export async function deriveLocationSessionDirectionalKey(input: {
     throw new Error("Le bundle de clé ne correspond pas à cette session GPS.");
   }
 
-  if (!(await verifyPinnedLocationSessionBundle(
+  if (!(await verifyLocationSessionBundle(
     remoteBundle,
-    localAccountId,
-    ownDeviceId,
+    remoteBundle.ownerId,
+    remoteBundle.deviceId,
     alertId,
     sessionId,
-    store,
     cryptoProvider,
   ))) {
-    throw new Error("La clé de ce proche n'est pas vérifiée sur cet appareil.");
+    throw new Error("L'identité de l'appareil distant n'a pas pu être authentifiée.");
   }
 
   const remotePublicKey = await cryptoProvider.subtle.importKey(
