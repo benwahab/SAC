@@ -271,6 +271,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
                VALUES ('rollback-attempt','rollback',1,?,'accepted',?,?)""",
             (self.now, self.now, self.now + 1),
         )
+        self.db.commit()
         self.db.execute(
             """CREATE TRIGGER test_force_parent_delete_failure
                BEFORE DELETE ON notification_device_deliveries
