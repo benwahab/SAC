@@ -4,7 +4,6 @@ import {
   deriveLocationSessionDirectionalKey,
   encodeLocationSessionBundle,
   verifyAuthenticatedLocationSessionBundle,
-  verifyLocationSessionBundle,
   type CreatedLocationSessionBundle,
 } from "./location-session.ts";
 import {
