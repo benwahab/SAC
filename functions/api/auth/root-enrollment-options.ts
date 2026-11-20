@@ -100,7 +100,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       userDisplayName: "Compte SAC",
       residentKey: "discouraged",
     }, crypto);
-    const challengeDigestBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", decodeChallenge(options.challenge)));
+    const challengeDigestBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", Uint8Array.from(decodeChallenge(options.challenge)).buffer));
     const challengeDigest = Array.from(challengeDigestBytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
     const expiresAt = now + 5 * 60 * 1000;
 
