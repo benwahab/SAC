@@ -24,7 +24,7 @@ interface RelayMessage {
 function decodeBase64Url(value: string): Uint8Array {
   const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
   const binary = atob(normalized + "=".repeat((4 - normalized.length % 4) % 4));
-  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  const bytes = new Uint8Array(binary.length);\n  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);\n  return bytes;
 }
 function decodeJsonPart(value: string): unknown {
   return JSON.parse(new TextDecoder().decode(decodeBase64Url(value)));
