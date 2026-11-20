@@ -498,8 +498,8 @@ export default function App() {
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-sac-muted sm:text-lg">{t.heroDescription}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <a href="/connexion?mode=register" className="sac-action sac-hero-primary inline-flex min-h-14 items-center justify-center gap-3 rounded-full px-7 text-sm font-extrabold text-white">{t.createAccount ?? (language === "fr" ? "Créer un compte" : language === "en" ? "Create an account" : "إنشاء حساب"){"}"} <span aria-hidden="true">↗</span></a>
-              <a href="/connexion" className="sac-action sac-hero-secondary inline-flex min-h-14 items-center justify-center gap-3 rounded-full px-7 text-sm font-bold text-white">{signInLabel{"}"} <span aria-hidden="true">→</span></a>
+              <a href="/connexion?mode=register" className="sac-action sac-hero-primary inline-flex min-h-14 items-center justify-center gap-3 rounded-full px-7 text-sm font-extrabold text-white">{language === "fr" ? "Créer un compte" : language === "en" ? "Create an account" : "إنشاء حساب"} <span aria-hidden="true">↗</span></a>
+              <a href="/connexion" className="sac-action sac-hero-secondary inline-flex min-h-14 items-center justify-center gap-3 rounded-full px-7 text-sm font-bold text-white">{signInLabel} <span aria-hidden="true">→</span></a>
             </div>
             <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-sac-ink">
               <span className="sac-inline-icon inline-flex items-center gap-2"><LockKeyhole size={16} className="text-sac-confirm" />{t.protectedData}</span>
@@ -533,11 +533,11 @@ export default function App() {
             </div>
             <div className="sac-art-float sac-art-float-top absolute left-5 top-[16%] z-20 flex items-center gap-3 rounded-2xl px-4 py-3 sm:left-8">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#E85D04]/20 text-[#FF9A5C]"><HeartHandshake size={21}/></span>
-              <span><b className="block text-xs text-white">{language === "fr" ? "Un lien de confiance" : language === "en" ? "A trusted connection" : "رابط موثوق"{"}"}</b><small className="mt-1 block text-[10px] text-white/55">{language === "fr" ? "Vos proches, votre choix" : language === "en" ? "Your people, your choice" : "أحباؤك، اختيارك"{"}"}</small></span>
+              <span><b className="block text-xs text-white">{language === "fr" ? "Un lien de confiance" : language === "en" ? "A trusted connection" : "رابط موثوق"}</b><small className="mt-1 block text-[10px] text-white/55">{language === "fr" ? "Vos proches, votre choix" : language === "en" ? "Your people, your choice" : "أحباؤك، اختيارك"}</small></span>
             </div>
             <div className="sac-art-float sac-art-float-bottom absolute bottom-[14%] right-4 z-20 flex items-center gap-3 rounded-2xl px-4 py-3 sm:right-7">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#E85D04]/20 text-[#FF9A5C]"><MapPin size={20}/></span>
-              <span><b className="block text-xs text-white">{language === "fr" ? "Alerte confidentielle" : language === "en" ? "Private alert" : "تنبيه خاص"{"}"}</b><small className="mt-1 block text-[10px] text-white/55">{language === "fr" ? "Uniquement à vos contacts" : language === "en" ? "Only to your contacts" : "لجهات اتصالك فقط"{"}"}</small></span>
+              <span><b className="block text-xs text-white">{language === "fr" ? "Alerte confidentielle" : language === "en" ? "Private alert" : "تنبيه خاص"}</b><small className="mt-1 block text-[10px] text-white/55">{language === "fr" ? "Uniquement à vos contacts" : language === "en" ? "Only to your contacts" : "لجهات اتصالك فقط"}</small></span>
             </div>
             <span className="sac-art-side-label absolute right-3 top-1/2 hidden -translate-y-1/2 rotate-90 text-[9px] font-black uppercase tracking-[.38em] sm:block">SÉCURITÉ • CONFIANCE • PROXIMITÉ</span>
           </div>
