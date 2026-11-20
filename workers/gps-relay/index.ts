@@ -236,8 +236,6 @@ export class GpsRelayRoom extends DurableObject<Env> {
     server.send(JSON.stringify({
       type: "connected",
       connectionId: identity.connectionId,
-      deviceId: identity.deviceId,
-      sessionId: identity.sessionId,
       role: identity.role,
     }));
     return new Response(null, {
