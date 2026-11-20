@@ -77,7 +77,7 @@ export function startPreciseLocationWatch(
           callbacks.onError("position_invalid");
           return;
         }
-        callbacks.onPosition({ latitude, longitude, accuracy, capturedAt });
+        callbacks.onPosition({ latitude, longitude, accuracy, capturedAt: Math.round(capturedAt) });
       },
       (error) => {
         if (stopped) return;
