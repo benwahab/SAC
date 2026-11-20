@@ -53,7 +53,7 @@ async function isActiveParticipant(
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    const match = url.pathname.match(/^\\/v1\\/alerts\\/([^/]+)\\/socket$/);
+    const match = url.pathname.match(/^\/v1\/alerts\/([^/]+)\/socket$/);
     if (!match) return json({ error: "not_found" }, 404);
 
     let alertId: string;
