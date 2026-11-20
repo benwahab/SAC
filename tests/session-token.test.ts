@@ -8,9 +8,17 @@ const cryptoProvider = webcrypto as unknown as Crypto;
 test("crée un jeton opaque canonique de 256 bits et une empreinte hexadécimale", async () => {
   const result = await createSessionToken(cryptoProvider);
   assert.match(result.token, /^[A-Za-z0-9_-]{43}$/);
-  assert.match(result.token, /[AQgw]$/);
+  assert.match(result.token, /[AEIMQUYcgkosw048]$/);
   assert.match(result.tokenHash, /^[a-f0-9]{64}$/);
   assert.equal(await hashSessionToken(cryptoProvider, result.token), result.tokenHash);
+});
+
+test("les suffixes Base64URL canoniques des jetons de 256 bits sont acceptés", async () => {
+  for (let i = 0; i < 32; i += 1) {
+    const result = await createSessionToken(cryptoProvider);
+    assert.match(result.token, /^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$/);
+    assert.equal(await hashSessionToken(cryptoProvider, result.token), result.tokenHash);
+  }
 });
 
 test("deux créations indépendantes produisent des jetons et empreintes distincts", async () => {
