@@ -187,3 +187,20 @@ Une rubrique de préparation apparaît dans l'espace privé : chaque utilisateur
 Le coffre IndexedDB passe à la version 2 et utilise une clé de stockage composée du compte et de l'appareil, afin de ne pas confondre les identités de plusieurs appareils du même compte.
 
 **Limite :** l'interface prépare et enregistre les empreintes, mais le transport des bundles, la vérification automatique lors de l'arrivée d'une annonce, l'accord ECDH par alerte et le chiffrement/déchiffrement GPS ne sont pas encore raccordés au relais. Le verrou E2EE reste fermé.
+
+
+## Client GPS SOS — état d'intégration au 20 novembre 2026
+
+Le parcours client est maintenant relié au panneau privé d'une alerte SOS active :
+- le client auteur obtient un ticket de relais lié à sa session et son appareil ;
+- le navigateur ne demande une position haute précision qu'après la connexion d'au moins un appareil destinataire dont l'empreinte locale est épinglée ;
+- les bundles ECDH éphémères sont signés avec la clé d'identité locale, liés à l'alerte/session et vérifiés contre l'empreinte enregistrée hors bande ;
+- les positions sont chiffrées séparément pour chaque connexion destinataire ; le relais ne reçoit que le paquet chiffré ;
+- les compteurs de séquence sont strictement croissants et les paquets rejoués sont écartés ;
+- les sessions expirent au plus tard après une heure ;
+- la fermeture depuis le panneau retire immédiatement le composant GPS local, arrête le watch et vide l'état de position avant l'appel réseau de clôture ;
+- l'API de clôture supprime les tickets de l'alerte puis demande au relais de fermer toutes les connexions ; le relais revalide aussi le statut D1 avant chaque message.
+
+Le relais Worker est publié sur son sous-domaine `workers.dev`. Le secret HMAC partagé a été créé et configuré dans le Worker et dans les variables de production Pages. L'URL publique est également configurée. **Le commutateur `GPS_RELAY_E2EE_READY` reste volontairement à `false`** tant que les tests d'intégration multi-appareils, les scénarios de clôture concurrente et la vérification sur téléphones réels n'ont pas été validés. La publication du Worker ne signifie donc pas que le partage GPS est activé.
+
+Le client reste dépendant des autorisations de géolocalisation du navigateur et d'une page PWA au premier plan. Aucun suivi en arrière-plan Android n'est promis par cette version web. Aucune vraie alerte, notification push ou SMS n'a été déclenché pendant les tests.
