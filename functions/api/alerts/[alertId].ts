@@ -17,5 +17,15 @@ export const onRequestGet: PagesFunction<Env, "alertId"> = async ({ request, env
     return json({ error: result.error === "alert_not_found_or_closed" ? "alert_not_found" : "alert_service_unavailable" },
       result.error === "alert_not_found_or_closed" ? 404 : 503);
   }
-  return json({ alert: result.value.alert, isAuthor: result.value.isAuthor });
+  // Ne jamais divulguer les identifiants de compte de l'auteur ou des
+  // autres destinataires à un participant. Le rôle de l'appelant est fourni
+  // séparément et seul le nombre de destinataires est nécessaire ici.
+  const { authorAccountId: _authorAccountId, recipientSnapshot, ...safeAlert } = result.value.alert;
+  return json({
+    alert: {
+      ...safeAlert,
+      recipientCount: recipientSnapshot.length,
+    },
+    isAuthor: result.value.isAuthor,
+  });
 };
