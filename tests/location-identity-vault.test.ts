@@ -43,7 +43,7 @@ test("creates and reuses a non-exportable signing identity key for one account",
 
 test("keeps identity keys isolated between accounts", async () => {
   const store = new MemoryLocationIdentityKeyStore();
-  const a = await getOrCreateLocationIdentityKeyPair("account-a", store);
+  const a = await getOrCreateLocationIdentityKeyPair("account-a", "device-a", store);
   const b = await getOrCreateLocationIdentityKeyPair("account-b", "device-a", store);
 
   assert.notDeepEqual(a.publicJwk, b.publicJwk);
@@ -54,7 +54,7 @@ test("handles concurrent first-use races by returning the one stored key", async
   const store = new MemoryLocationIdentityKeyStore();
   const [a, b] = await Promise.all([
     getOrCreateLocationIdentityKeyPair("account-race", "device-a", store),
-    getOrCreateLocationIdentityKeyPair("account-race", store),
+    getOrCreateLocationIdentityKeyPair("account-race", "device-a", store),
   ]);
 
   assert.deepEqual(a.publicJwk, b.publicJwk);
