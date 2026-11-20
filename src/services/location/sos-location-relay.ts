@@ -238,7 +238,7 @@ export class SosLocationRelayClient {
       this.options.identityStore,
     );
     this.sendOwnSessionBundle();
-    this.options.callbacks.onStatus("waiting_for_trusted_devices");
+    this.options.callbacks.onStatus("waiting_for_devices");
   }
 
   private sendOwnSessionBundle(): void {
@@ -296,7 +296,7 @@ export class SosLocationRelayClient {
           this.watch?.stop();
           this.watch = null;
           this.options.callbacks.onClear();
-          this.options.callbacks.onStatus("waiting_for_trusted_devices");
+          this.options.callbacks.onStatus("waiting_for_devices");
         }
       }
       return;
@@ -346,13 +346,6 @@ export class SosLocationRelayClient {
     }
 
     if (this.options.role === "recipient" && message.fromRole === "author") {
-      const trusted = true;
-      if (!trusted) {
-        this.options.callbacks.onError("contact_key_unverified");
-        this.options.callbacks.onStatus("waiting_for_author");
-        return;
-      }
-
       const sameSession = this.sessionId === remote.sessionId &&
         !!this.ownSession &&
         !!this.salt &&
@@ -461,7 +454,7 @@ export class SosLocationRelayClient {
       this.watch?.stop();
       this.watch = null;
       this.options.callbacks.onClear();
-      this.options.callbacks.onStatus("waiting_for_trusted_devices");
+      this.options.callbacks.onStatus("waiting_for_devices");
     }
   }
 
