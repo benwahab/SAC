@@ -5,7 +5,6 @@ export interface ParsedGpsWebSocketProtocols {
 
 const PUBLIC_PROTOCOL = "sac-gps-v1";
 const TICKET_PREFIX = "sac-gps-ticket.";
-const MAX_TICKET_LENGTH = 128;
 
 /** Parses the public protocol and one short-lived opaque ticket. */
 export function parseGpsWebSocketProtocols(
