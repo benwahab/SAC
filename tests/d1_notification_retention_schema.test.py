@@ -1,5 +1,6 @@
 import sqlite3
 import unittest
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,7 +25,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
         # are added only after the schema is in place.
         for migration in MIGRATIONS:
             self.db.executescript(migration.read_text(encoding="utf-8"))
-        self.now = 1_800_000_000_000
+        self.now = int(time.time() * 1000)
         self._seed_accounts_and_relationship()
         self._seed_alert_and_outbox()
         self.db.commit()
@@ -148,7 +149,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
 
     def test_attempt_limit_is_two_and_unique(self):
         self.db.execute(
-            """UPDATE alert_reminder_outbox SET cycle_terminal_at=? WHERE id='outbox'""",
+            """UPDATE alert_reminder_outbox SET processed_at=? WHERE id='outbox'""",
             (self.now,),
         )
         self._delivery()
@@ -175,7 +176,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
 
     def test_purge_is_child_first_bounded_and_never_deletes_business_outbox(self):
         for i in range(205):
-            self._delivery(f"delivery-{i:03d}", terminal_at=self.now - 2_592_000_000)
+            self._delivery(f"delivery-{i:03d}", terminal_at=self.now - 2_592_001_000)
         # Add one technical attempt to the first eligible delivery.
         self.db.execute(
             "UPDATE notification_device_deliveries SET attempt_count=1 WHERE id='delivery-000'"
@@ -184,7 +185,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
             """INSERT INTO notification_delivery_attempts
                (id,delivery_id,attempt_number,reserved_at,result,started_at,finished_at)
                VALUES ('attempt-000','delivery-000',1,?,'accepted',?,?)""",
-            (self.now - 2_592_000_000, self.now - 2_592_000_000, self.now - 2_592_000_000 + 1),
+            (self.now - 2_592_001_000, self.now - 2_592_001_000, self.now - 2_592_001_000 + 1),
         )
         cutoff = self.now
         # Mirror the two D1 batch statements: child rows first, then parents.
