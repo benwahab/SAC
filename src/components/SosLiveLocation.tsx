@@ -17,16 +17,16 @@ type Props = {
 const statusLabels: Record<SosLocationRelayStatus, string> = {
   connecting: "Connexion sécurisée en cours…",
   waiting_for_author: "En attente de la connexion sécurisée de l'auteur…",
-  waiting_for_trusted_devices: "En attente d'un appareil de proche vérifié…",
+  waiting_for_devices: "En attente de la connexion de vos proches…",
   receiving: "Réception d'une position chiffrée en direct.",
-  sharing: "Partage chiffré en direct avec les appareils vérifiés.",
+  sharing: "Partage chiffré en direct avec les appareils autorisés.",
   closed: "Partage GPS arrêté ou indisponible.",
 };
 
 const errorLabels: Record<SosLocationRelayError, string> = {
   gps_relay_not_ready: "Le service GPS chiffré n'est pas encore activé sur SAC.",
   authentication_required: "Votre session doit être renouvelée avant le partage GPS.",
-  contact_key_unverified: "Un appareil du cercle n'est pas vérifié. Aucune position ne lui est transmise.",
+  contact_key_unverified: "L’identité de l’appareil n’a pas pu être authentifiée automatiquement. Aucune position ne lui est transmise.",
   gps_permission_denied: "L'autorisation de localisation a été refusée sur cet appareil.",
   gps_unavailable: "La position GPS est momentanément indisponible.",
   relay_disconnected: "La connexion GPS sécurisée a été interrompue.",
