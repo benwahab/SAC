@@ -145,3 +145,12 @@ Les tests D1 couvrent désormais la liaison compte/appareil/session, le rejeu, l
 Après succès complet de la CI du commit `0756d86b27cffb54a14e8c49fe9281ffd26cf985`, la migration `0011_gps_ticket_device_binding.sql` a été appliquée à la base D1 distante `sac-db`. La table ne contenait aucun ticket au moment de la transition ; les tickets éphémères existants ont donc été supprimés sans perte de session GPS active. La table contient maintenant `device_id` et `session_id`, avec les clés étrangères attendues. Le journal D1 confirme l'entrée 11 et `PRAGMA foreign_key_check` ne retourne aucune anomalie.
 
 La CI suivante inclut une étape supplémentaire de bundle à blanc Wrangler du Worker et de validation des bindings Durable Objects avant tout déploiement réel. Le Worker n'est pas encore déployé et les variables de secret Pages ne sont pas configurées.
+
+
+## Verrou d'activation E2EE — 20 novembre 2026
+
+Un verrou explicite `GPS_RELAY_E2EE_READY` est ajouté côté Pages et Worker. Sa valeur doit être exactement `true` pour que :
+- l'endpoint Pages émette un ticket GPS ;
+- le Worker accepte une connexion WebSocket GPS.
+
+Toute valeur absente, vide, différente de `true` ou mal configurée garde le relais fermé. Le Worker peut donc être déployé et son Durable Object provisionné sans rendre possible un partage de position prématuré. Ce verrou ne sera basculé qu'après intégration du stockage local des clés non exportables, authentification/vérification des clés des proches, chiffrement E2EE et tests de bout en bout sur deux appareils. Il ne faut pas confondre le déploiement de l'infrastructure avec l'activation du GPS.
