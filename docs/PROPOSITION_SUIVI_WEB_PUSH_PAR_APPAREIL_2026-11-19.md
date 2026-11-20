@@ -1,7 +1,7 @@
 # SAC — Proposition de suivi Web Push par appareil
 
 **Date :** 19 novembre 2026  
-**Statut :** arbitrage partiel validé le 20 novembre 2026 ; la règle de reprise est approuvée, mais les autres points de conception restent ouverts. Aucun changement SQL distant ni déploiement Worker n'est autorisé par ce document.  
+**Statut :** arbitrages produit de reprise validés par le Super Admin le 20 novembre 2026 ; les détails techniques, la conservation et la migration restent à concevoir/valider. Aucun changement SQL distant ni déploiement Worker n'est autorisé par ce document.  
 **Périmètre :** reprise fiable des notifications Web Push lorsqu'un même compte SAC est connecté sur plusieurs appareils.
 
 ## 1. Décision produit déjà validée
@@ -145,6 +145,10 @@ Ne jamais conserver :
 - Une acceptation explicite du fournisseur (`accepted`) arrête immédiatement toute reprise pour cet appareil.
 - Un abonnement invalide (`permanent_failure`) est terminal et n'est jamais réessayé.
 - Après la seconde tentative, aucune troisième tentative n'est permise, même si le résultat demeure ambigu.
+- Si le résultat reste ambigu après la seconde tentative, enregistrer l'état terminal `unknown_exhausted` (« résultat inconnu après 2 tentatives ») pour cet appareil et ce rappel ; ne pas le convertir en acceptation ou en échec certain.
+- Cet état terminal n'empêche pas les autres appareils du même destinataire de terminer leur traitement.
+- Il ne bloque ni les rappels ultérieurs, qui restent indépendants et conservent leur cadence, ni le mécanisme SMS déjà prévu. Il ne modifie pas le seuil SMS choisi par le lanceur.
+- Si l'alerte est clôturée pendant l'attente de 15 secondes, annuler la seconde tentative ; aucun nouvel appel réseau ne doit être initié pour cette alerte clôturée.
 - Le plafond s'applique séparément à chaque rappel ; les rappels ultérieurs restent des tâches distinctes et conservent leur cadence métier.
 - Une acceptation fournisseur signifie uniquement acceptation de la requête, jamais livraison à l'appareil, affichage ou lecture.
 - Le risque de doublon lié à une réponse fournisseur perdue est accepté, mais limité à une seule reprise.
@@ -154,7 +158,7 @@ Ne jamais conserver :
 Aucune valeur ne doit être inventée pour les points suivants :
 1. durée de conservation des livraisons et tentatives ;
 2. comportement si le bail expire pendant l'appel réseau et prévention des écritures tardives ;
-3. règle de clôture de la tâche outbox si un appareil reste durablement inconnu après la deuxième tentative ;
+3. règle de réconciliation finale de la tâche outbox avec `unknown_exhausted` (le statut terminal par appareil est validé ; le détail de l'agrégation outbox reste à spécifier sans bloquer les autres appareils ni le cycle SMS) ;
 4. comportement si un abonnement est renouvelé sur le même appareil pendant une tâche en cours ;
 5. plafond d'appareils/abonnements par compte ;
 6. purge des journaux techniques et preuve d'absence de données sensibles.
@@ -163,13 +167,14 @@ La politique existante de cinq tentatives au niveau destinataire ne doit pas êt
 
 ## 7. Plan de réalisation après arbitrage
 
-1. Valider les états, l'idempotence, la conservation et le traitement de `unknown`.
-2. Mettre à jour la matrice de traçabilité D1 et les contrats d'opérations atomiques.
-3. Concevoir les contraintes SQL, index, clés étrangères et triggers.
-4. Ajouter la migration D1 seulement après validation explicite.
-5. Adapter le transport et le Worker pour persister chaque résultat par appareil.
-6. Ajouter les tests de concurrence, révocation pendant livraison, acceptation partielle, réponse perdue, bail expiré et reprise sans renvoi des appareils acceptés.
-7. Garder l'envoi réel désactivé tant que la configuration et l'autorisation de mise en service ne sont pas accordées.
+1. Décision produit validée : `unknown_exhausted` après deux tentatives, sans troisième envoi, sans blocage des autres appareils, rappels ultérieurs ou mécanisme SMS ; clôture SOS pendant l'attente annule la reprise.
+2. Finaliser les états techniques, l'idempotence, la conservation et le traitement des baux.
+3. Mettre à jour la matrice de traçabilité D1 et les contrats d'opérations atomiques.
+4. Concevoir les contraintes SQL, index, clés étrangères et triggers.
+5. Ajouter la migration D1 seulement après validation explicite.
+6. Adapter le transport et le Worker pour persister chaque résultat par appareil.
+7. Ajouter les tests de concurrence, révocation pendant livraison, acceptation partielle, réponse perdue, bail expiré, clôture pendant l'attente et reprise sans renvoi des appareils acceptés.
+8. Garder l'envoi réel désactivé tant que la configuration et l'autorisation de mise en service ne sont pas accordées.
 
 ## 8. Limites de ce document
 
