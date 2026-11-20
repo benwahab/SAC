@@ -4,6 +4,7 @@ import { DurableObject } from "cloudflare:workers";
 interface TicketClaims {
   alertId: string;
   accountId: string;
+  deviceId: string;
   role: "author" | "recipient";
   exp: number;
   scope: "connect" | "close";
@@ -24,6 +25,7 @@ interface RelayMessage {
 }
 interface SocketIdentity {
   accountId: string;
+  deviceId: string;
   role: "author" | "recipient";
   connectionId: string;
 }
@@ -75,6 +77,8 @@ async function verifyTicket(token: string, secret: string): Promise<TicketClaims
       !claims.alertId ||
       typeof claims.accountId !== "string" ||
       !claims.accountId ||
+      typeof claims.deviceId !== "string" ||
+      !claims.deviceId ||
       (claims.role !== "author" && claims.role !== "recipient") ||
       !Number.isSafeInteger(claims.exp) ||
       claims.exp <= Math.floor(Date.now() / 1000) ||
@@ -93,15 +97,18 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-async function isActiveParticipant(db: D1Database, alertId: string, accountId: string): Promise<boolean> {
+async function isActiveParticipant(
+  db: D1Database, alertId: string, accountId: string, deviceId: string,
+): Promise<boolean> {
   const row = await db.prepare(
     `SELECT 1 AS allowed FROM alerts a
+     JOIN devices d ON d.id = ? AND d.account_id = ? AND d.status = 'active'
      WHERE a.id = ? AND a.status = 'active'
        AND (a.author_account_id = ? OR EXISTS (
          SELECT 1 FROM alert_recipients r
          WHERE r.alert_id = a.id AND r.recipient_account_id = ?
        )) LIMIT 1`,
-  ).bind(alertId, accountId, accountId).first<{ allowed: number }>();
+  ).bind(deviceId, accountId, alertId, accountId, accountId).first<{ allowed: number }>();
   return row?.allowed === 1;
 }
 
@@ -142,8 +149,10 @@ export default {
         return json({ error: "forbidden" }, 403);
       }
       const closed = await env.DB.prepare(
-        "SELECT 1 AS ok FROM alerts WHERE id = ? AND author_account_id = ? AND status = 'closed_by_author' LIMIT 1",
-      ).bind(alertId, claims.accountId).first<{ ok: number }>();
+        `SELECT 1 AS ok FROM alerts a
+         JOIN devices d ON d.id = ? AND d.account_id = ? AND d.status = 'active'
+         WHERE a.id = ? AND a.author_account_id = ? AND a.status = 'closed_by_author' LIMIT 1`,
+      ).bind(claims.deviceId, claims.accountId, alertId, claims.accountId).first<{ ok: number }>();
       if (!closed) return json({ error: "alert_not_closed" }, 409);
       return room.fetch(new Request("https://gps-room.internal/close", { method: "POST" }));
     }
@@ -151,7 +160,7 @@ export default {
     if (request.method !== "GET" || request.headers.get("Upgrade")?.toLowerCase() !== "websocket") {
       return json({ error: "websocket_required" }, 426);
     }
-    if (!(await isActiveParticipant(env.DB, alertId, claims.accountId))) {
+    if (!(await isActiveParticipant(env.DB, alertId, claims.accountId, claims.deviceId))) {
       return json({ error: "alert_not_active_or_not_authorized" }, 403);
     }
 
@@ -161,9 +170,9 @@ export default {
     const ticketHash = Array.from(ticketDigest, (byte) => byte.toString(16).padStart(2, "0")).join("");
     const consumed = await env.DB.prepare(
       `DELETE FROM gps_relay_tickets
-       WHERE ticket_hash = ? AND alert_id = ? AND account_id = ? AND role = ?
+       WHERE ticket_hash = ? AND alert_id = ? AND account_id = ? AND device_id = ? AND role = ?
          AND expires_at > ?`,
-    ).bind(ticketHash, alertId, claims.accountId, claims.role, Date.now()).run();
+    ).bind(ticketHash, alertId, claims.accountId, claims.deviceId, claims.role, Date.now()).run();
     if (!consumed.success || consumed.meta.changes !== 1) {
       return json({ error: "ticket_expired_or_already_used" }, 401);
     }
@@ -171,6 +180,7 @@ export default {
     const headers = new Headers(request.headers);
     headers.set("X-SAC-Alert-ID", alertId);
     headers.set("X-SAC-Account-ID", claims.accountId);
+    headers.set("X-SAC-Device-ID", claims.deviceId);
     headers.set("X-SAC-Role", claims.role);
     return room.fetch(new Request(request, { headers }));
   },
@@ -192,17 +202,18 @@ export class GpsRelayRoom extends DurableObject<Env> {
 
     const alertId = request.headers.get("X-SAC-Alert-ID");
     const accountId = request.headers.get("X-SAC-Account-ID");
+    const deviceId = request.headers.get("X-SAC-Device-ID");
     const role = request.headers.get("X-SAC-Role");
-    if (!alertId || !accountId || (role !== "author" && role !== "recipient")) {
+    if (!alertId || !accountId || !deviceId || (role !== "author" && role !== "recipient")) {
       return json({ error: "unauthorized" }, 401);
     }
-    if (!(await isActiveParticipant(this.env.DB, alertId, accountId))) {
+    if (!(await isActiveParticipant(this.env.DB, alertId, accountId, deviceId))) {
       return json({ error: "alert_closed" }, 410);
     }
 
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
-    const identity: SocketIdentity = { accountId, role, connectionId: crypto.randomUUID() };
+    const identity: SocketIdentity = { accountId, deviceId, role, connectionId: crypto.randomUUID() };
     server.accept();
     this.sockets.set(server, identity);
 
@@ -215,6 +226,7 @@ export class GpsRelayRoom extends DurableObject<Env> {
     server.send(JSON.stringify({
       type: "connected",
       connectionId: identity.connectionId,
+      deviceId: identity.deviceId,
       role: identity.role,
     }));
     return new Response(null, {
@@ -228,7 +240,7 @@ export class GpsRelayRoom extends DurableObject<Env> {
     const identity = this.sockets.get(sender);
     if (!identity) return;
 
-    if (!(await isActiveParticipant(this.env.DB, alertId, identity.accountId))) {
+    if (!(await isActiveParticipant(this.env.DB, alertId, identity.accountId, identity.deviceId))) {
       this.closeRoom(4001, "alert_closed");
       return;
     }
