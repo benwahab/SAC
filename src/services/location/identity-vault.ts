@@ -58,7 +58,11 @@ function openDatabase(factory: IDBFactory = globalThis.indexedDB): Promise<IDBDa
 
 /** IndexedDB stores non-extractable CryptoKey objects, never location payloads. */
 export class IndexedDbLocationIdentityKeyStore implements LocationIdentityKeyStore {
-  constructor(private readonly factory: IDBFactory = globalThis.indexedDB) {}
+  private readonly factory: IDBFactory;
+
+  constructor(factory: IDBFactory = globalThis.indexedDB) {
+    this.factory = factory;
+  }
 
   async get(storageKey: string): Promise<LocationIdentityKeyRecord | null> {
     const database = await openDatabase(this.factory);
