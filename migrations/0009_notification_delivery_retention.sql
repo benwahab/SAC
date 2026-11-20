@@ -2,10 +2,6 @@
 -- Horodatages Unix UTC en millisecondes. Migration additive ; ne supprime aucune donnée existante.
 -- Cette migration n'est pas une autorisation d'application sur la D1 distante.
 
-ALTER TABLE alert_reminder_outbox
-  ADD COLUMN cycle_terminal_at INTEGER
-  CHECK (cycle_terminal_at IS NULL OR cycle_terminal_at >= created_at);
-
 CREATE TABLE notification_device_deliveries (
   id TEXT PRIMARY KEY NOT NULL,
   outbox_id TEXT NOT NULL,
@@ -162,7 +158,7 @@ BEGIN
   SELECT CASE WHEN EXISTS (
     SELECT 1 FROM notification_device_deliveries d
     WHERE d.id = OLD.delivery_id
-      AND (d.retention_expires_at IS NULL OR d.retention_expires_at > unixepoch('subsec') * 1000)
+      AND (d.retention_expires_at IS NULL OR d.retention_expires_at > CAST(strftime('%s', 'now') AS INTEGER) * 1000)
   ) THEN RAISE(ABORT, 'notification_attempt_retention_not_expired') END;
 END;
 
@@ -170,7 +166,7 @@ CREATE TRIGGER notification_delivery_no_delete
 BEFORE DELETE ON notification_device_deliveries
 BEGIN
   SELECT CASE WHEN OLD.retention_expires_at IS NULL
-    OR OLD.retention_expires_at > unixepoch('subsec') * 1000
+    OR OLD.retention_expires_at > CAST(strftime('%s', 'now') AS INTEGER) * 1000
     THEN RAISE(ABORT, 'notification_delivery_retention_not_expired') END;
   SELECT CASE WHEN EXISTS (
     SELECT 1 FROM notification_delivery_attempts a WHERE a.delivery_id = OLD.id
