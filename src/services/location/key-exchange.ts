@@ -8,6 +8,7 @@
  * Ce module n'est pas branché à l'application.
  */
 import { isCanonicalP256PublicJwk } from "../crypto/p256-jwk.ts";
+import { getPinnedTrustedLocationFingerprint, type LocationIdentityKeyStore } from "./identity-vault.ts";
 
 const encoder = new TextEncoder();
 const SALT_LENGTH = 32;
@@ -365,6 +366,40 @@ export async function verifyTrustedLocationKeyBundle(
     if (!(await verifyLocationKeyBundle(bundle, cryptoProvider))) return false;
     const actual = await fingerprintLocationIdentityKey(bundle.identityPublicKey, cryptoProvider);
     return actual === pinnedFingerprint;
+  } catch {
+    return false;
+  }
+}
+
+
+/** Verify a relayed key bundle against the fingerprint pinned on this local device. */
+export async function verifyPinnedTrustedLocationKeyBundle(
+  bundle: SignedLocationKeyBundle,
+  localAccountId: string,
+  localDeviceId: string,
+  store?: LocationIdentityKeyStore,
+  cryptoProvider: Crypto = globalThis.crypto,
+): Promise<boolean> {
+  try {
+    if (!bundle || typeof bundle.ownerId !== "string" || typeof bundle.deviceId !== "string") {
+      return false;
+    }
+    const pinnedFingerprint = await getPinnedTrustedLocationFingerprint(
+      localAccountId,
+      localDeviceId,
+      bundle.ownerId,
+      bundle.deviceId,
+      store,
+      cryptoProvider,
+    );
+    if (!pinnedFingerprint) return false;
+    return verifyTrustedLocationKeyBundle(
+      bundle,
+      bundle.ownerId,
+      bundle.deviceId,
+      pinnedFingerprint,
+      cryptoProvider,
+    );
   } catch {
     return false;
   }
