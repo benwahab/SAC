@@ -364,7 +364,6 @@ export default function App() {
   const [installHelp, setInstallHelp] = useState<"ios" | "android" | null>(null);
   const [installDialogOpen, setInstallDialogOpen] = useState(false);
   const [isAppleDevice, setIsAppleDevice] = useState(false);
-  const [isAndroidDevice, setIsAndroidDevice] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [openOffer, setOpenOffer] = useState<"free" | "premium" | null>(null);
   const [language, setLanguage] = useState<Language>(() => {
@@ -405,7 +404,6 @@ export default function App() {
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     const isAndroid = /Android/i.test(navigator.userAgent);
     setIsAppleDevice(isAppleMobile);
-    setIsAndroidDevice(isAndroid);
     const dismissed = () => { try { return window.sessionStorage.getItem("sac-install-dialog-dismissed") === "1"; } catch { return false; } };
     if (!standalone && (isAppleMobile || isAndroid) && !dismissed()) {
       setInstallHelp(isAppleMobile ? "ios" : "android");
