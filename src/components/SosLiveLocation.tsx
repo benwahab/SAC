@@ -26,7 +26,7 @@ const statusLabels: Record<SosLocationRelayStatus, string> = {
 const errorLabels: Record<SosLocationRelayError, string> = {
   gps_relay_not_ready: "Le service GPS chiffré n'est pas encore activé sur SAC.",
   authentication_required: "Votre session doit être renouvelée avant le partage GPS.",
-  contact_key_unverified: "L’identité de l’appareil n’a pas pu être authentifiée automatiquement. Aucune position ne lui est transmise.",
+  contact_identity_invalid: "L’identité de l’appareil n’a pas pu être authentifiée automatiquement. Aucune position ne lui est transmise.",
   gps_permission_denied: "L'autorisation de localisation a été refusée sur cet appareil.",
   gps_unavailable: "La position GPS est momentanément indisponible.",
   relay_disconnected: "La connexion GPS sécurisée a été interrompue.",
