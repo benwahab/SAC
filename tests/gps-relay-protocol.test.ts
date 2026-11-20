@@ -2,36 +2,29 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { parseGpsWebSocketProtocols } from "../workers/gps-relay/websocket-protocol.ts";
 
+const ticket = "a".repeat(43);
+
 test("accepts exactly the public protocol and one opaque ticket protocol", () => {
   assert.deepEqual(
-    parseGpsWebSocketProtocols("sac-gps-v1, sac-gps-ticket.eyJ0ZXN0IjoidGlja2V0In0.signature"),
-    {
-      protocol: "sac-gps-v1",
-      ticket: "eyJ0ZXN0IjoidGlja2V0In0.signature",
-    },
+    parseGpsWebSocketProtocols(`sac-gps-v1, sac-gps-ticket.${ticket}`),
+    { protocol: "sac-gps-v1", ticket },
   );
 });
 
-test("rejects a missing public protocol", () => {
-  assert.equal(parseGpsWebSocketProtocols("sac-gps-ticket.valid.signature"), null);
+test("rejects missing, duplicate or additional protocols", () => {
+  assert.equal(parseGpsWebSocketProtocols("sac-gps-ticket." + ticket), null);
+  assert.equal(parseGpsWebSocketProtocols(`sac-gps-v1, sac-gps-ticket.${ticket}, extra`), null);
+  assert.equal(parseGpsWebSocketProtocols(`sac-gps-v1, sac-gps-ticket.${ticket}, sac-gps-ticket.${ticket}`), null);
 });
 
-test("rejects missing or duplicate ticket protocols", () => {
-  assert.equal(parseGpsWebSocketProtocols("sac-gps-v1"), null);
-  assert.equal(parseGpsWebSocketProtocols("sac-gps-v1, sac-gps-ticket.a.b, sac-gps-ticket.c.d"), null);
-});
-
-test("rejects additional protocols instead of negotiating an unexpected one", () => {
-  assert.equal(parseGpsWebSocketProtocols("sac-gps-v1, sac-gps-ticket.a.b, extra"), null);
-});
-
-test("rejects an empty or oversized ticket", () => {
+test("rejects malformed, empty or oversized tickets", () => {
   assert.equal(parseGpsWebSocketProtocols("sac-gps-v1, sac-gps-ticket."), null);
-  assert.equal(parseGpsWebSocketProtocols("sac-gps-v1, sac-gps-ticket." + "a".repeat(4097)), null);
+  assert.equal(parseGpsWebSocketProtocols("sac-gps-v1, sac-gps-ticket." + "a".repeat(129)), null);
+  assert.equal(parseGpsWebSocketProtocols("sac-gps-v1, sac-gps-ticket." + "a".repeat(42) + "."), null);
 });
 
 test("rejects malformed protocol header values", () => {
   assert.equal(parseGpsWebSocketProtocols(null), null);
   assert.equal(parseGpsWebSocketProtocols(""), null);
-  assert.equal(parseGpsWebSocketProtocols("sac-gps-v1,,sac-gps-ticket.a.b"), null);
+  assert.equal(parseGpsWebSocketProtocols("sac-gps-v1,,sac-gps-ticket." + ticket), null);
 });
