@@ -152,9 +152,9 @@ class EmailOtpD1SchemaTests(unittest.TestCase):
         with self.assertRaisesRegex(sqlite3.IntegrityError, "otp_account_or_identity_not_eligible"):
             self.db.execute(
                 """INSERT INTO email_otp_challenges
-                   (id, account_id, identity_id, purpose, digest, created_at, expires_at)
+                   (id, account_id, identity_id, purpose, digest, created_at, expires_at, delivery_status)
                    VALUES ('otp-phone', 'account-1', 'phone-1',
-                           'account_email_verification', ?, ?, ?)""",
+                           'account_email_verification', ?, ?, ?, 'pending')""",
                 ("c" * 64, self.now, self.now + 600_000),
             )
 
