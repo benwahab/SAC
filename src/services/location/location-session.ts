@@ -15,7 +15,6 @@ import {
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 const MAX_BUNDLE_AGE_MS = 24 * 60 * 60 * 1000;
-const BASE64URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
 export interface SignedLocationSessionBundle {
   readonly version: 1;
@@ -41,6 +40,12 @@ function validContextId(value: unknown): value is string {
     value.trim().length > 0 &&
     value.length <= 256 &&
     [...value].every((character) => character.charCodeAt(0) >= 32 && character.charCodeAt(0) !== 127);
+}
+
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
 }
 
 function canonicalPayload(bundle: Omit<SignedLocationSessionBundle, "signature">): Uint8Array {
@@ -142,7 +147,7 @@ export async function createLocationSessionBundle(
   const signature = new Uint8Array(await cryptoProvider.subtle.sign(
     { name: "ECDSA", hash: "SHA-256" },
     identity.privateKey,
-    canonicalPayload(unsigned),
+    toArrayBuffer(canonicalPayload(unsigned)),
   ));
   const bundle: SignedLocationSessionBundle = { ...unsigned, signature };
   if (!(await verifyLocationSessionBundle(
@@ -181,8 +186,8 @@ export async function verifyLocationSessionBundle(
     return cryptoProvider.subtle.verify(
       { name: "ECDSA", hash: "SHA-256" },
       identityKey,
-      bundle.signature,
-      canonicalPayload({
+      toArrayBuffer(bundle.signature),
+      toArrayBuffer(canonicalPayload({
         version: bundle.version,
         ownerId: bundle.ownerId,
         deviceId: bundle.deviceId,
@@ -192,7 +197,7 @@ export async function verifyLocationSessionBundle(
         expiresAt: bundle.expiresAt,
         exchangePublicKey: bundle.exchangePublicKey,
         identityPublicKey: bundle.identityPublicKey,
-      }),
+      })),
     );
   } catch {
     return false;
