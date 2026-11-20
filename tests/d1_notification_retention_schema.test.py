@@ -242,6 +242,55 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
         with self.assertRaises(sqlite3.IntegrityError):
             self.db.execute("DELETE FROM notification_device_deliveries WHERE id='future'")
 
+    def test_failed_parent_delete_rolls_back_child_attempt_deletion(self):
+        self._delivery("rollback", terminal_at=self.now + 24 * 60 * 60 * 1000)
+        self.db.execute(
+            "UPDATE notification_device_deliveries SET attempt_count=1 WHERE id='rollback'"
+        )
+        self.db.execute(
+            """INSERT INTO notification_delivery_attempts
+               (id,delivery_id,attempt_number,reserved_at,result,started_at,finished_at)
+               VALUES ('rollback-attempt','rollback',1,?,'accepted',?,?)""",
+            (self.now, self.now, self.now + 1),
+        )
+        self.db.execute(
+            """CREATE TRIGGER test_force_parent_delete_failure
+               BEFORE DELETE ON notification_device_deliveries
+               BEGIN SELECT RAISE(ABORT, 'test_parent_delete_failure'); END"""
+        )
+        self.db.execute("BEGIN")
+        self.db.execute(
+            """DELETE FROM notification_delivery_attempts
+               WHERE delivery_id='rollback'"""
+        )
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "test_parent_delete_failure"):
+            self.db.execute(
+                "DELETE FROM notification_device_deliveries WHERE id='rollback'"
+            )
+        self.db.rollback()
+        self.assertEqual(
+            self.db.execute(
+                "SELECT COUNT(*) FROM notification_delivery_attempts WHERE delivery_id='rollback'"
+            ).fetchone()[0],
+            1,
+        )
+        self.assertEqual(
+            self.db.execute(
+                "SELECT COUNT(*) FROM notification_device_deliveries WHERE id='rollback'"
+            ).fetchone()[0],
+            1,
+        )
+
+    def test_technical_tables_do_not_expose_sensitive_payload_fields(self):
+        forbidden = {"endpoint", "payload", "gps", "latitude", "longitude", "description", "email"}
+        for table in ("notification_device_deliveries", "notification_delivery_attempts",
+                      "notification_retention_control"):
+            columns = {
+                row[1].lower()
+                for row in self.db.execute(f"PRAGMA table_info({table})").fetchall()
+            }
+            self.assertFalse(columns & forbidden, f"sensitive columns in {table}: {columns & forbidden}")
+
     def test_control_table_is_singleton_and_contains_aggregates_only(self):
         row = self.db.execute(
             "SELECT singleton_id,deleted_deliveries_last_run,deleted_attempts_last_run,overdue_rows FROM notification_retention_control"
