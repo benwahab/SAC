@@ -1,7 +1,7 @@
 # SAC — Proposition de suivi Web Push par appareil
 
 **Date :** 19 novembre 2026  
-**Statut :** proposition technique non approuvée — aucun changement SQL ou code autorisé par ce document.  
+**Statut :** arbitrage partiel validé le 20 novembre 2026 ; la règle de reprise est approuvée, mais les autres points de conception restent ouverts. Aucun changement SQL distant ni déploiement Worker n'est autorisé par ce document.  
 **Périmètre :** reprise fiable des notifications Web Push lorsqu'un même compte SAC est connecté sur plusieurs appareils.
 
 ## 1. Décision produit déjà validée
