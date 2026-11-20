@@ -94,3 +94,18 @@ La purge cible uniquement `notification_delivery_attempts` puis `notification_de
 Le singleton `notification_retention_control` ne conserve que des horodatages, des compteurs agrégés, un bail anti-concurrence et des codes d'erreur normalisés. Il ne contient aucun identifiant utilisateur ou contenu privé. La logique Worker qui remplit ce contrôle, exécute la purge horaire, gère les alertes et récupère le backlog après restauration reste à implémenter et tester séparément.
 
 Test local de schéma et de contrat : `npm run test:d1-notification-retention`. Le workflow CI `44800621093` a réussi le 20 novembre 2026 : la migration 0009 a été appliquée à la D1 locale isolée et les tests de rétention ont réussi. Cette migration n'a **pas** été appliquée à la D1 distante. Toute application distante nécessite une autorisation explicite distincte.
+
+
+## 0012 — défis de connexion de l'appareil racine
+
+`0012_root_authentication_challenges.sql` ajoute les défis à usage unique pour la reconnexion WebAuthn :
+- chaque défi est lié à un compte actif, à son appareil racine actif et à l'origine HTTPS exacte ;
+- seul le condensat SHA-256 du challenge est stocké ;
+- expiration maximale de cinq minutes et cinq tentatives au maximum ;
+- transitions du défi protégées par trigger ; challenge et compteur sont consommés atomiquement avec la mise à jour du compteur de credential et la création de session.
+
+Nouvelles routes :
+- `POST /api/auth/login-options` : vérifie l'e-mail et le mot de passe, puis émet un challenge pour la credential racine déjà enregistrée ;
+- `POST /api/auth/login` : vérifie l'assertion WebAuthn, le RP ID, l'origine, UP/UV, le compteur et la signature P-256, puis crée la session opaque.
+
+Le client PWA utilise `navigator.credentials.get()` après une action explicite de l'utilisateur. Le parcours d'enrôlement initial reste fermé par le verrou `WEBAUTHN_ROOT_ENROLLMENT_ENABLED` tant que sa revue de sécurité et ses essais physiques ne sont pas approuvés. Cette migration ne l'active pas.
