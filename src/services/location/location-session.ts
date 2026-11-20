@@ -285,7 +285,7 @@ export async function deriveLocationSessionDirectionalKey(input: {
   recipientDeviceId: string;
   ownDeviceId: string;
   expectedSalt: Uint8Array;
-}, localAccountId: string, store?: LocationIdentityKeyStore, cryptoProvider: Crypto = globalThis.crypto): Promise<CryptoKey> {
+}, cryptoProvider: Crypto = globalThis.crypto): Promise<CryptoKey> {
   const {
     ownPrivateKey, remoteBundle, authorAccountId, alertId, sessionId,
     senderDeviceId, recipientDeviceId, ownDeviceId, expectedSalt,
