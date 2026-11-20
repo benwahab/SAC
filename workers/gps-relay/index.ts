@@ -36,7 +36,7 @@ function decodeBase64Url(value: string): Uint8Array {
   return bytes;
 }
 
-function decodeJsonPart(value: string): unknown {
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {\n  const buffer = new ArrayBuffer(bytes.byteLength);\n  new Uint8Array(buffer).set(bytes);\n  return buffer;\n}\n\nfunction decodeJsonPart(value: string): unknown {
   return JSON.parse(new TextDecoder().decode(decodeBase64Url(value)));
 }
 
@@ -55,7 +55,7 @@ async function verifyTicket(token: string, secret: string): Promise<TicketClaims
     const valid = await crypto.subtle.verify(
       "HMAC",
       key,
-      decodeBase64Url(parts[1]),
+      toArrayBuffer(decodeBase64Url(parts[1])),
       new TextEncoder().encode(parts[0]),
     );
     if (!valid) return null;
