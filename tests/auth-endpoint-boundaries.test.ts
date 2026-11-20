@@ -11,8 +11,9 @@ const env = {
     },
   } as never,
   EMAIL_OTP_HMAC_SECRET: "x".repeat(32),
-  RESEND_API_KEY: "test-only",
-  RESEND_FROM_EMAIL: "noreply@sac.example",
+  BREVO_API_KEY: "test-only",
+  BREVO_FROM_EMAIL: "noreply@sac.example",
+  BREVO_FROM_NAME: "SAC",
 };
 
 function jsonRequest(path: string, body: string): Request {
