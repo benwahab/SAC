@@ -140,12 +140,13 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
             )
 
     def test_30_day_expiry_is_exact_and_uses_utc_milliseconds(self):
-        self._delivery(terminal_at=self.now)
+        terminal_at = self.now + 39 * 24 * 60 * 60 * 1000
+        self._delivery(terminal_at=terminal_at)
         expires = self.db.execute(
             "SELECT retention_expires_at FROM notification_device_deliveries"
         ).fetchone()[0]
-        self.assertEqual(expires, self.now + 2_592_000_000)
-        self.assertEqual(expires - self.now, 30 * 24 * 60 * 60 * 1000)
+        self.assertEqual(expires, terminal_at + 2_592_000_000)
+        self.assertEqual(expires - terminal_at, 30 * 24 * 60 * 60 * 1000)
 
     def test_nonterminal_or_unaggregated_delivery_is_not_purgeable(self):
         self._delivery(status="pending", terminal_at=None, expires_at=None)
