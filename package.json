@@ -60,7 +60,8 @@
     "test:gps-relay-protocol": "node --experimental-strip-types --test tests/gps-relay-protocol.test.ts",
     "test:gps-relay-build": "wrangler deploy --dry-run --outdir /tmp/sac-gps-relay-build --config workers/gps-relay/wrangler.toml",
     "test:gps-relay-readiness": "node --experimental-strip-types --test tests/gps-relay-readiness.test.ts",
-    "test:location-identity-vault": "node --experimental-strip-types --test tests/location-identity-vault.test.ts"
+    "test:location-identity-vault": "node --experimental-strip-types --test tests/location-identity-vault.test.ts",
+    "test:location-trust": "node --experimental-strip-types --test tests/location-trust.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
