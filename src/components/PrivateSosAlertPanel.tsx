@@ -47,6 +47,7 @@ export default function PrivateSosAlertPanel({ alertId, accountId, deviceId, par
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [gpsSharingEnabled, setGpsSharingEnabled] = useState(true);
 
   async function load() {
     setLoading(true);
@@ -80,7 +81,10 @@ export default function PrivateSosAlertPanel({ alertId, accountId, deviceId, par
     }
   }
 
-  useEffect(() => { void load(); }, [alertId]);
+  useEffect(() => {
+    setGpsSharingEnabled(true);
+    void load();
+  }, [alertId]);
 
   async function respond(action: "acknowledge" | "volunteer" | "withdraw") {
     if (busy) return;
@@ -127,6 +131,7 @@ export default function PrivateSosAlertPanel({ alertId, accountId, deviceId, par
       ? "Confirmer que la situation est terminée et clôturer cette alerte ?"
       : "Confirmer l’annulation et clôturer cette alerte ?";
     if (!window.confirm(prompt)) return;
+    setGpsSharingEnabled(false);
     setBusy(true); setError(""); setNotice("");
     try {
       const response = await fetch(`/api/alerts/${encodeURIComponent(alertId)}/close`, {
@@ -175,7 +180,7 @@ export default function PrivateSosAlertPanel({ alertId, accountId, deviceId, par
                 : "Aucun responsable principal n’a encore été désigné."}
           </p>}
           {detail.closedAt && <p className="mt-3 rounded-xl bg-sac-confirm/10 p-3 text-sm text-sac-ink">Clôturée le {new Date(detail.closedAt).toLocaleString()} · {detail.closureReason === "completed" ? "Situation terminée" : "Annulée"}</p>}
-          {active && <SosLiveLocation alertId={alertId} accountId={accountId} deviceId={deviceId} participantRole={participantRole} />}
+          {active && gpsSharingEnabled && <SosLiveLocation alertId={alertId} accountId={accountId} deviceId={deviceId} participantRole={participantRole} />}
           <div className="mt-4">
             <h4 className="flex items-center gap-2 text-sm font-extrabold"><Clock3 size={15}/>Chronologie</h4>
             {events.length === 0 ? <p className="mt-2 text-xs text-sac-muted">Aucun événement disponible.</p> : <ol className="mt-2 space-y-2">{events.map((event) => <li key={event.id} className="flex items-start gap-2 rounded-lg bg-white/75 p-2.5 text-xs"><span className="mt-0.5 text-sac-confirm"><CheckCircle2 size={14}/></span><span className="min-w-0 flex-1"><strong>{eventLabels[event.type]}</strong><span className="block text-sac-muted">{event.actor === "self" ? "Vous" : "Un participant"} · {new Date(event.occurredAt).toLocaleString()}</span></span></li>)}</ol>}
