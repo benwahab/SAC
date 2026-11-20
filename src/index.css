@@ -621,7 +621,40 @@ button:focus-visible, a:focus-visible { outline: 3px solid #E85D04; outline-offs
 .sac-auth-brand { color:#fff; padding:1rem 0; }
 .sac-auth-brand-mark { color:#FFC08F; border:1px solid rgba(255,190,145,.35); background:linear-gradient(145deg,rgba(255,255,255,.18),rgba(232,93,4,.17)); box-shadow:0 0 55px rgba(232,93,4,.24),inset 0 1px 0 rgba(255,255,255,.2); }
 .sac-auth-brand-orbit { border:1px solid rgba(255,177,120,.24); background:radial-gradient(circle,rgba(232,93,4,.24),rgba(255,255,255,.025) 62%,transparent 70%); box-shadow:0 0 80px rgba(232,93,4,.18),inset 0 0 45px rgba(232,93,4,.12); animation:sac-orbit-breathe 6s ease-in-out infinite; }
-.sac-auth-card { background:linear-gradient(145deg,rgba(255,255,255,.78),rgba(255,239,225,.57)) !important; border:1px solid rgba(255,255,255,.78); backdrop-filter:blur(28px) saturate(1.35); -webkit-backdrop-filter:blur(28px) saturate(1.35); box-shadow:0 34px 100px rgba(0,0,0,.38),0 0 55px rgba(232,93,4,.22),inset 0 1px 0 rgba(255,255,255,.96); }
+/* Ultra-clear premium glass: keep the card itself transparent, not milky/opaque. */
+.sac-auth-card {
+  background:linear-gradient(145deg,rgba(255,255,255,.105),rgba(255,255,255,.035) 52%,rgba(232,93,4,.045)) !important;
+  background-color:rgba(255,255,255,.045) !important;
+  border:1px solid rgba(255,255,255,.42) !important;
+  backdrop-filter:blur(34px) saturate(1.65) brightness(1.04);
+  -webkit-backdrop-filter:blur(34px) saturate(1.65) brightness(1.04);
+  box-shadow:0 34px 100px rgba(0,0,0,.42),0 0 55px rgba(232,93,4,.17),inset 0 1px 0 rgba(255,255,255,.62),inset 0 -1px 0 rgba(255,255,255,.08);
+  position:relative;
+  overflow:hidden;
+}
+.sac-auth-card::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(132deg,rgba(255,255,255,.13),transparent 28%,transparent 72%,rgba(232,93,4,.055));
+}
+.sac-auth-card:hover {
+  border-color:rgba(255,255,255,.58) !important;
+  box-shadow:0 40px 110px rgba(0,0,0,.46),0 0 68px rgba(232,93,4,.23),inset 0 1px 0 rgba(255,255,255,.72);
+}
+.sac-auth-card input {
+  background:rgba(255,255,255,.12) !important;
+  border-color:rgba(255,255,255,.32) !important;
+  color:#24211F;
+}
+.sac-auth-card input::placeholder { color:rgba(36,33,31,.58); }
+.sac-auth-card input:focus {
+  background:rgba(255,255,255,.2) !important;
+  border-color:#E85D04 !important;
+  box-shadow:0 0 0 4px rgba(232,93,4,.16),0 0 28px rgba(232,93,4,.2) !important;
+} border:1px solid rgba(255,255,255,.78); backdrop-filter:blur(28px) saturate(1.35); -webkit-backdrop-filter:blur(28px) saturate(1.35); box-shadow:0 34px 100px rgba(0,0,0,.38),0 0 55px rgba(232,93,4,.22),inset 0 1px 0 rgba(255,255,255,.96); }
 .sac-auth-card::before { background:linear-gradient(90deg,transparent,#E85D04 24%,#FFB27C 50%,#E85D04 76%,transparent) !important; box-shadow:0 0 22px rgba(232,93,4,.55); }
 .sac-auth-card > div:first-child > a { color:#25140D; }
 .sac-auth-card input { background:rgba(255,255,255,.76) !important; border-color:rgba(113,69,43,.18) !important; box-shadow:inset 0 1px 2px rgba(46,20,8,.035); }
