@@ -30,7 +30,7 @@ test("trusted contact email sends a one-time HTTPS invitation link", async () =>
   assert.deepEqual(requestBody?.to, [{ email: "person@example.ne" }]);
   assert.deepEqual(requestBody?.sender, { email: baseEnv.BREVO_FROM_EMAIL, name: baseEnv.BREVO_FROM_NAME });
   assert.match(String(requestBody?.htmlContent), /https:\/\/sac\.example\.ne\/invitation\/accept/);
-  assert.match(String(requestBody?.html), /A{43}/);
+  assert.match(String(requestBody?.htmlContent), /A{43}/);
 });
 
 test("missing provider configuration never attempts delivery", async () => {
