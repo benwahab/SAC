@@ -116,7 +116,7 @@ test("refuse une session après 30 jours consécutifs sans activité", () => {
   const session = makeSession({
     createdAt: "2026-01-01T00:00:00.000Z",
     lastActivityAt: "2026-01-01T00:00:00.000Z",
-    expiresAt: "2026-04-01T00:00:00.000Z",
+    expiresAt: "2026-01-31T00:00:00.000Z",
   });
   assert.deepEqual(authorizeDeviceSession(session, makeContext({
     now: "2026-01-31T00:00:00.000Z",
