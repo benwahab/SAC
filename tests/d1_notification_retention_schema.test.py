@@ -114,9 +114,9 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
             """INSERT INTO notification_device_deliveries
                (id,outbox_id,alert_id,recipient_account_id,device_id,subscription_id,
                 status,attempt_count,created_at,updated_at,cycle_terminal_at,retention_expires_at)
-               VALUES (?,'outbox','alert','contact','device-opaque','subscription-opaque',
+               VALUES (?,'outbox','alert','contact','device-opaque',?,
                 ?,0,?,?,?,?)""",
-            (delivery_id, status, self.now - 100, self.now - 100, terminal_at, expires_at),
+            (delivery_id, 'subscription-' + delivery_id, status, self.now - 100, self.now - 100, terminal_at, expires_at),
         )
 
     def test_30_day_expiry_is_exact_and_uses_utc_milliseconds(self):
@@ -128,7 +128,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
         self.assertEqual(expires - self.now, 30 * 24 * 60 * 60 * 1000)
 
     def test_nonterminal_or_unaggregated_delivery_is_not_purgeable(self):
-        self._delivery(status="processing", terminal_at=None, expires_at=None)
+        self._delivery(status="pending")
         count = self.db.execute(
             """SELECT COUNT(*) FROM notification_device_deliveries
                WHERE status IN ('accepted','permanent_failure','unknown_exhausted','cancelled')
@@ -148,10 +148,6 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
             )
 
     def test_attempt_limit_is_two_and_unique(self):
-        self.db.execute(
-            """UPDATE alert_reminder_outbox SET processed_at=? WHERE id='outbox'""",
-            (self.now,),
-        )
         self._delivery()
         self.db.execute(
             "UPDATE notification_device_deliveries SET attempt_count=1 WHERE id='delivery'"
