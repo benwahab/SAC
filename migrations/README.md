@@ -109,3 +109,6 @@ Nouvelles routes :
 - `POST /api/auth/login` : vérifie l'assertion WebAuthn, le RP ID, l'origine, UP/UV, le compteur et la signature P-256, puis crée la session opaque.
 
 Le client PWA utilise `navigator.credentials.get()` après une action explicite de l'utilisateur. Le parcours d'enrôlement initial reste fermé par le verrou `WEBAUTHN_ROOT_ENROLLMENT_ENABLED` tant que sa revue de sécurité et ses essais physiques ne sont pas approuvés. Cette migration ne l'active pas.
+
+
+**Application distante vérifiée — 20 novembre 2026, 23:18 UTC :** la migration `0012_root_authentication_challenges.sql` a été appliquée à `sac-db`. La table `root_authentication_challenges` est présente, l'entrée 12 est inscrite dans `d1_migrations` et `PRAGMA foreign_key_check` ne retourne aucune anomalie. Aucun enregistrement utilisateur n'a été créé ni modifié par cette migration.
