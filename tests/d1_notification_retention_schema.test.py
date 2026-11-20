@@ -15,6 +15,7 @@ MIGRATIONS = [
     ROOT / "migrations" / "0008_push_subscriptions.sql",
     ROOT / "migrations" / "0009_notification_delivery_retention.sql",
     ROOT / "migrations" / "0010_gps_relay_tickets.sql",
+    ROOT / "migrations" / "0011_gps_ticket_device_binding.sql",
 ]
 
 class NotificationRetentionSchemaTests(unittest.TestCase):
