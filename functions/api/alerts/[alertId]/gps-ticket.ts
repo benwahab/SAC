@@ -6,6 +6,7 @@ interface Env {
   DB: D1Database;
   GPS_RELAY_HMAC_SECRET?: string;
   GPS_RELAY_PUBLIC_URL?: string;
+  GPS_RELAY_E2EE_READY?: string;
 }
 const HEADERS = {
   "Cache-Control": "no-store",
@@ -43,6 +44,10 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
   const alertId = params.alertId;
   if (typeof alertId !== "string" || !alertId.trim() || alertId.length > 128) {
     return json({ error: "alert_not_found" }, 404);
+  }
+
+  if (env.GPS_RELAY_E2EE_READY !== "true") {
+    return json({ error: "gps_relay_not_ready" }, 503);
   }
 
   if (!env.GPS_RELAY_HMAC_SECRET || env.GPS_RELAY_HMAC_SECRET.length < 32 ||
