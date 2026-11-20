@@ -60,6 +60,10 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
                 (challenge, account_id, identity, "a" * 64, created, created + 600_000),
             )
             self.db.execute(
+                "UPDATE email_otp_challenges SET delivery_status='accepted' WHERE id=?",
+                (challenge,),
+            )
+            self.db.execute(
                 "UPDATE email_otp_challenges SET attempt_count=1, consumed_at=? WHERE id=?",
                 (created + 1, challenge),
             )
