@@ -166,3 +166,23 @@ export async function validateLocationExchangePublicKey(
     return false;
   }
 }
+
+/** Empreinte cryptographique canonique d'une clé publique d'identité. */
+export async function fingerprintLocationIdentityKey(
+  identityPublicKey: JsonWebKey,
+  cryptoProvider: Crypto = globalThis.crypto,
+): Promise<string> {
+  if (!isP256PublicJwk(identityPublicKey)) {
+    throw new Error("La clé d'identité publique P-256 est invalide.");
+  }
+  const canonical = encoder.encode(JSON.stringify([
+    "SAC:identity-fingerprint:v1",
+    identityPublicKey.kty,
+    identityPublicKey.crv,
+    identityPublicKey.x,
+    identityPublicKey.y,
+  ]));
+  const digest = new Uint8Array(await cryptoProvider.subtle.digest("SHA-256", canonical));
+  const hex = Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return hex.toUpperCase().match(/.{1,4}/g)!.join(" ");
+}
