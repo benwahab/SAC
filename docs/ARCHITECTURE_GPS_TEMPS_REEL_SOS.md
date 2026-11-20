@@ -226,3 +226,14 @@ Le mécanisme est désormais automatique :
 Le serveur SAC devient l'autorité d'authentification de la relation compte/appareil. Le chiffrement protège le contenu GPS du relais et des autres participants non autorisés ; il ne prétend pas protéger contre une compromission de l'autorité d'authentification SAC elle-même. Les contrôles de session, d'appareil, de rôle, de lien de confiance, de signature, d'expiration et de rejeu restent obligatoires.
 
 L'ancienne rubrique « Sécurité du partage GPS » avec empreinte à copier/saisir est retirée de l'espace privé, ainsi que le blocage lié à l'absence d'empreinte épinglée. Les utilisateurs n'ont rien à comparer, copier, saisir ou confirmer manuellement.
+
+
+### Déploiement de la suppression de l'étape manuelle — 20 novembre 2026
+
+- Le contrôle manuel d'empreinte a été retiré de l'espace privé et de la chaîne de dérivation ECDH.
+- Les annonces de clés du Worker portent maintenant l'identité du compte et de l'appareil issue du ticket SAC vérifié ; les clients contrôlent la correspondance et la signature du bundle.
+- Les tests unitaires de session, l'authentification automatique de l'identité, le typecheck et le build ont réussi dans la CI du commit `75e56a266b574ba070a7fb85228e48398ab21e1f`.
+- Le Worker `sac-gps-relay` a été redéployé avec le bundle CI validé, version Cloudflare 5. Son binding D1, son Durable Object, le secret HMAC et le verrou E2EE `true` sont présents.
+- La version Pages du commit `75e56a26` a terminé son déploiement de production avec succès. La configuration du secret Pages a ensuite été renouvelée pour correspondre au secret Worker ; un nouveau déploiement Pages est déclenché par cette mise à jour documentaire afin de charger la configuration dans l'environnement de production.
+
+Aucun utilisateur ne doit être invité à copier, comparer, saisir ou confirmer une empreinte. La seule autorisation demandée pour le GPS est l'autorisation de localisation du téléphone au moment de l'alerte SOS.
