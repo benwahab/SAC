@@ -352,6 +352,8 @@ export class GpsRelayRoom extends DurableObject<Env> {
       ...message,
       fromRole: identity.role,
       fromConnectionId: identity.connectionId,
+      fromAccountId: identity.accountId,
+      fromDeviceId: identity.deviceId,
     });
     for (const [socket, target] of this.sockets) {
       const isTarget = message.type !== "gps-encrypted" ||
