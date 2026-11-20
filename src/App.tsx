@@ -362,6 +362,7 @@ interface InstallPromptEvent extends Event {
 export default function App() {
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [installHelp, setInstallHelp] = useState<"ios" | "android" | null>(null);
+  const [installDialogOpen, setInstallDialogOpen] = useState(false);
   const [isAppleDevice, setIsAppleDevice] = useState(false);
   const [isAndroidDevice, setIsAndroidDevice] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -405,16 +406,22 @@ export default function App() {
     const isAndroid = /Android/i.test(navigator.userAgent);
     setIsAppleDevice(isAppleMobile);
     setIsAndroidDevice(isAndroid);
-    if (!standalone && isAppleMobile) setInstallHelp("ios");
+    const dismissed = () => { try { return window.sessionStorage.getItem("sac-install-dialog-dismissed") === "1"; } catch { return false; } };
+    if (!standalone && (isAppleMobile || isAndroid) && !dismissed()) {
+      setInstallHelp(isAppleMobile ? "ios" : "android");
+      setInstallDialogOpen(true);
+    }
 
     const handleBeforeInstall = (event: Event) => {
       event.preventDefault();
       setInstallPrompt(event as InstallPromptEvent);
+      if (!dismissed()) { setInstallHelp("android"); setInstallDialogOpen(true); }
     };
     const handleInstalled = () => {
       setIsInstalled(true);
       setInstallPrompt(null);
       setInstallHelp(null);
+      setInstallDialogOpen(false);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstall);
@@ -428,9 +435,11 @@ export default function App() {
   const installApp = async () => {
     if (!installPrompt) {
       if (isAppleDevice) {
-        setInstallHelp((current) => current === "ios" ? null : "ios");
+        setInstallHelp("ios");
+      setInstallDialogOpen(true);
       } else {
-        setInstallHelp((current) => current === "android" ? null : "android");
+        setInstallHelp("android");
+        setInstallDialogOpen(true);
       }
       return;
     }
@@ -438,11 +447,12 @@ export default function App() {
       await installPrompt.prompt();
       const choice = await installPrompt.userChoice;
       setInstallPrompt(null);
-      if (choice.outcome === "accepted") setIsInstalled(true);
-      else setInstallHelp("android");
+      if (choice.outcome === "accepted") { setIsInstalled(true); setInstallDialogOpen(false); }
+      else { setInstallHelp("android"); setInstallDialogOpen(true); }
     } catch {
       setInstallPrompt(null);
       setInstallHelp(isAppleDevice ? "ios" : "android");
+      setInstallDialogOpen(true);
     }
   };
 
@@ -464,12 +474,7 @@ export default function App() {
           <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-sac-muted">{t.appName}</span>
         </a>
         <div className="flex items-center gap-2 sm:gap-3">
-          {!isInstalled && (installPrompt || installHelp || isAppleDevice || isAndroidDevice) && (
-            <button type="button" onClick={() => void installApp()} className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-sac-confirm/25 bg-white/75 px-3 py-2 text-xs font-extrabold text-sac-ink shadow-glass hover:bg-white">
-              <Download size={14} />{t.installApp}
-            </button>
-          )}
-          <a href="/connexion" className="hidden rounded-full border border-white/90 bg-white/65 px-4 py-2 text-xs font-extrabold text-sac-ink shadow-glass hover:bg-white sm:inline-flex">{signInLabel}</a>
+          <a href="/connexion" className="inline-flex min-h-10 items-center justify-center rounded-full border border-white/25 bg-[#E85D04] px-4 py-2 text-xs font-extrabold text-white shadow-lg shadow-orange-950/20 hover:bg-[#F07825]">{signInLabel}</a>
           <div className="sac-language-switch flex items-center gap-1 rounded-full border border-white/90 bg-white/65 p-1 shadow-glass" role="group" aria-label={t.languageLabel} dir="ltr">
             {languages.map((item) => (
               <button
@@ -485,14 +490,19 @@ export default function App() {
           </div>
         </div>
       </header>
-      {installHelp && !isInstalled && (
-        <aside className="mx-auto -mt-2 mb-4 flex max-w-6xl items-start gap-3 px-5 sm:px-8" aria-live="polite">
-          <div className="sac-glass-card flex flex-1 items-start gap-3 rounded-2xl p-4 text-sm leading-6 text-sac-ink">
-            {installHelp === "ios" ? <Share2 size={19} className="mt-1 shrink-0 text-sac-confirm" /> : <Download size={19} className="mt-1 shrink-0 text-sac-confirm" />}
-            <p>{installHelp === "ios" ? t.installIosHelp : t.installAndroidHelp}</p>
-            <button type="button" onClick={() => setInstallHelp(null)} aria-label={t.close} className="ml-auto rounded-lg p-1 text-sac-muted hover:bg-white/70"><X size={16} /></button>
-          </div>
-        </aside>
+      {installDialogOpen && installHelp && !isInstalled && (
+        <div className="sac-install-overlay fixed inset-0 z-[100] flex items-center justify-center p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) { setInstallDialogOpen(false); try { window.sessionStorage.setItem("sac-install-dialog-dismissed", "1"); } catch {} } }}>
+          <section className="sac-install-dialog w-full max-w-md rounded-[1.75rem] p-6 sm:p-7" role="dialog" aria-modal="true" aria-labelledby="sac-install-title">
+            <div className="flex items-start justify-between gap-4">
+              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#E85D04]/10 text-[#E85D04]">{installHelp === "ios" ? <Share2 size={23}/> : <Download size={23}/>}</div>
+              <button type="button" onClick={() => { setInstallDialogOpen(false); try { window.sessionStorage.setItem("sac-install-dialog-dismissed", "1"); } catch {} }} aria-label={t.close} className="rounded-full border border-black/10 p-2 text-sac-muted hover:bg-black/5"><X size={18}/></button>
+            </div>
+            <h2 id="sac-install-title" className="mt-5 text-xl font-black text-sac-ink">{t.installApp}</h2>
+            <p className="mt-3 text-sm leading-7 text-sac-muted">{installHelp === "ios" ? t.installIosHelp : t.installAndroidHelp}</p>
+            <button type="button" onClick={() => void installApp()} className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#E85D04] px-4 text-sm font-extrabold text-white shadow-lg shadow-orange-900/20 hover:bg-[#F07825]"><Download size={17}/>{t.installApp}</button>
+            <button type="button" onClick={() => { setInstallDialogOpen(false); try { window.sessionStorage.setItem("sac-install-dialog-dismissed", "1"); } catch {} }} className="mt-2 min-h-11 w-full rounded-xl px-4 text-sm font-bold text-sac-muted hover:bg-black/5">{t.close}</button>
+          </section>
+        </div>
       )}
 
       <main>
