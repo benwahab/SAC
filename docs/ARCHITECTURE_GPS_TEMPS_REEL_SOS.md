@@ -19,6 +19,7 @@
 - exige une alerte active ;
 - exige que l'appelant soit l'auteur ou un destinataire du snapshot immuable ;
 - émet un ticket HMAC de portée `connect`, limité à l'alerte, au compte et à 120 secondes ;
+- stocke uniquement son empreinte SHA-256 dans `gps_relay_tickets`, avec alerte, compte, rôle et expiration ;
 - ne reçoit et n'écrit aucune coordonnée GPS.
 
 Secret nécessaire dans Pages et Worker : `GPS_RELAY_HMAC_SECRET` (au moins 32 caractères aléatoires). URL nécessaire côté Pages : `GPS_RELAY_PUBLIC_URL`.
@@ -27,7 +28,9 @@ Secret nécessaire dans Pages et Worker : `GPS_RELAY_HMAC_SECRET` (au moins 32 c
 
 Worker isolé `workers/gps-relay` :
 - route les connexions WebSocket vers un Durable Object par alerte ;
-- vérifie le ticket HMAC et le statut/participant dans D1 à la connexion ;
+- reçoit le ticket via un sous-protocole WebSocket dédié (`Sec-WebSocket-Protocol`), jamais dans l'URL ;
+- vérifie le ticket HMAC, puis consomme atomiquement son empreinte D1 : un rejeu du même ticket est refusé ;
+- revérifie le statut/participant dans D1 à la connexion ;
 - revérifie le statut et les droits avant chaque message ;
 - ne possède aucun binding de stockage GPS et n'écrit aucun payload dans le stockage Durable Object ;
 - refuse les messages contenant des champs évidents de position en clair ;
@@ -48,11 +51,13 @@ La réponse de clôture expose `gpsRelayRevocation` comme `confirmed` ou `pendin
 
 ## Ce qui manque avant une activation réelle
 
-1. Déployer le Worker et créer son namespace Durable Object après CI verte.
-2. Configurer le même secret aléatoire `GPS_RELAY_HMAC_SECRET` dans Pages et Worker, et `GPS_RELAY_PUBLIC_URL` dans Pages.
+1. Appliquer la migration `0010_gps_relay_tickets.sql` à D1 distante après validation CI.
+2. Déployer le Worker et créer son namespace Durable Object après CI verte.
+3. Configurer le même secret aléatoire `GPS_RELAY_HMAC_SECRET` dans Pages et Worker, et `GPS_RELAY_PUBLIC_URL` dans Pages.
 3. Ajouter le binding Worker/namespace à Pages ou conserver le Worker public avec authentification HMAC stricte.
 4. Implémenter côté navigateur la permission de géolocalisation, la gestion du cycle de vie de la permission, l'arrêt de `watchPosition` à la clôture, et l'état d'indisponibilité GPS.
-5. Implémenter un véritable chiffrement de bout en bout : ECDH éphémère par appareil/participant, dérivation HKDF, AES-GCM, IV unique, compteur anti-rejeu et rotation de clé. Le relais ne doit jamais recevoir de coordonnées en clair. La présente tranche ne réalise pas encore cette couche cliente.
+5. Raccorder le ticket à usage unique au client WebSocket et traiter les reconnexions avec un nouveau ticket.
+6. Implémenter un véritable chiffrement de bout en bout : ECDH éphémère par appareil/participant, dérivation HKDF, AES-GCM, IV unique, compteur anti-rejeu et rotation de clé. Le relais ne doit jamais recevoir de coordonnées en clair. La présente tranche ne réalise pas encore cette couche cliente.
 6. Gérer le renouvellement du ticket, la reconnexion après perte réseau, la déconnexion de chaque appareil, la révocation d'un proche, le changement de responsable et les états hors ligne.
 7. Ajouter des tests unitaires et d'intégration pour l'autorisation, le rejeu, le payload en clair, le chiffrement, la clôture concurrente, la fermeture de salle, la révocation et la reprise.
 8. Recette sur Android réel, avec deux comptes/appareils, réseau instable et vérification qu'aucune coordonnée ne figure dans D1, stockage DO, logs ou traces.
@@ -93,3 +98,16 @@ Conséquence : il n'active pas l'hibernation WebSocket de Durable Objects. C'est
 **Décision provisoire :** conserver les connexions non hibernatables pour le prototype sécurisé, sans sérialiser d'attachements et sans stockage de contenu GPS. Ajouter des tests d'éviction/fermeture et mesurer le coût avant toute optimisation. Si l'objet ou le processus est interrompu, les connexions doivent se terminer et les clients doivent réobtenir une autorisation sur l'alerte toujours active ; aucune session ni position ne doit être restaurée.
 
 Référence Cloudflare : https://developers.cloudflare.com/durable-objects/best-practices/websockets/ et https://developers.cloudflare.com/durable-objects/concepts/durable-object-lifecycle/.
+
+
+## Avancement technique — tickets WebSocket à usage unique
+
+Une tranche de durcissement a été ajoutée sur `main` :
+- migration additive `0010_gps_relay_tickets.sql` : stockage d'une empreinte SHA-256 du ticket et de métadonnées de portée/expiration uniquement ;
+- l'endpoint Pages émet un ticket HMAC de 120 secondes et enregistre son empreinte seulement si l'alerte est toujours active et l'appelant encore autorisé ;
+- le client doit présenter le ticket dans le sous-protocole `sac-gps-ticket.<ticket>`, avec `sac-gps-v1` ; le ticket n'est plus placé dans l'URL ;
+- le Worker vérifie le HMAC, consomme l'empreinte par un DELETE conditionnel atomique et refuse tout rejeu ;
+- le Worker ne sélectionne que le sous-protocole public `sac-gps-v1` dans la réponse WebSocket ;
+- tests de schéma D1 ajoutés pour usage unique, expiration, rôle, empreinte et absence de colonnes GPS.
+
+**Limite inchangée :** cette tranche n'active pas encore la géolocalisation du navigateur ni le partage chiffré vers les proches. La migration doit encore être appliquée à D1 distante, le Worker configuré/déployé et le client raccordé puis testé sur deux appareils. Le GPS reste donc non opérationnel en production à ce stade.
