@@ -812,3 +812,11 @@ html, body {
 @media (prefers-reduced-motion:reduce) {
   .sac-language-switch button { transition:none !important; animation:none !important; }
 }
+
+
+/* Keep the selected language identical on the login card and homepage. */
+.sac-auth-card .sac-language-switch button[aria-pressed="true"] {
+  background: #E85D04 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 5px 15px rgba(232,93,4,.28), inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
