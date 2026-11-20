@@ -30,11 +30,13 @@ CREATE TABLE notification_device_deliveries (
   FOREIGN KEY (outbox_id) REFERENCES alert_reminder_outbox(id) ON DELETE RESTRICT,
   UNIQUE (outbox_id, subscription_id),
   CHECK (
-    (status = 'processing' AND lease_until IS NOT NULL
+    (status = 'processing' AND attempt_count BETWEEN 1 AND 2
+      AND lease_until IS NOT NULL
       AND lease_token IS NOT NULL AND length(lease_token) >= 16)
     OR
     (status <> 'processing' AND lease_until IS NULL AND lease_token IS NULL)
   ),
+  CHECK (status <> 'retry_wait' OR next_attempt_at IS NOT NULL),
   CHECK (
     (cycle_terminal_at IS NULL AND retention_expires_at IS NULL)
     OR
@@ -106,6 +108,18 @@ CREATE TABLE notification_retention_control (
 );
 
 INSERT INTO notification_retention_control (singleton_id) VALUES (1);
+
+CREATE TRIGGER notification_delivery_outbox_guard
+BEFORE INSERT ON notification_device_deliveries
+WHEN NOT EXISTS (
+  SELECT 1 FROM alert_reminder_outbox o
+  WHERE o.id = NEW.outbox_id
+    AND o.alert_id = NEW.alert_id
+    AND o.recipient_account_id = NEW.recipient_account_id
+)
+BEGIN
+  SELECT RAISE(ABORT, 'notification_delivery_outbox_scope_mismatch');
+END;
 
 CREATE TRIGGER notification_delivery_retention_insert_guard
 BEFORE INSERT ON notification_device_deliveries
