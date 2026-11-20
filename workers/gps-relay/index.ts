@@ -36,7 +36,13 @@ function decodeBase64Url(value: string): Uint8Array {
   return bytes;
 }
 
-function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {\n  const buffer = new ArrayBuffer(bytes.byteLength);\n  new Uint8Array(buffer).set(bytes);\n  return buffer;\n}\n\nfunction decodeJsonPart(value: string): unknown {
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
+}
+
+function decodeJsonPart(value: string): unknown {
   return JSON.parse(new TextDecoder().decode(decodeBase64Url(value)));
 }
 
