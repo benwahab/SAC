@@ -450,3 +450,161 @@ button:focus-visible, a:focus-visible { outline: 3px solid #E85D04; outline-offs
  .sac-art-float small { font-size:9px; }
 }
 @media (prefers-reduced-motion:reduce) { .sac-art-phone { transform:none; } }
+
+
+/* Premium orange glow, layered offers, and consistent glass authentication. */
+.sac-auth-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 12% 18%, rgba(232,93,4,.30), transparent 42%),
+    radial-gradient(ellipse at 88% 82%, rgba(255,145,64,.22), transparent 38%),
+    linear-gradient(135deg, #211008 0%, #321608 48%, #160B06 100%) !important;
+}
+.sac-auth-page::before,
+.sac-auth-page::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: min(54vw, 34rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(232,93,4,.2);
+  filter: blur(90px);
+  pointer-events: none;
+}
+.sac-auth-page::before { top: -18%; left: -16%; }
+.sac-auth-page::after { right: -18%; bottom: -22%; background: rgba(255,164,91,.15); }
+.sac-auth-card {
+  background: linear-gradient(145deg, rgba(255,255,255,.70), rgba(255,244,233,.48)) !important;
+  border-color: rgba(255,255,255,.76);
+  box-shadow: 0 30px 90px rgba(13,7,4,.30), 0 0 44px rgba(232,93,4,.12), inset 0 1px 0 rgba(255,255,255,.92);
+  transition: transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s ease, border-color .4s ease;
+}
+.sac-auth-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255,190,145,.95);
+  box-shadow: 0 38px 100px rgba(13,7,4,.34), 0 0 58px rgba(232,93,4,.22), inset 0 1px 0 #fff;
+}
+.sac-auth-card input { background: rgba(255,255,255,.72); }
+.sac-auth-card input:focus { box-shadow: 0 0 0 4px rgba(232,93,4,.16), 0 0 24px rgba(232,93,4,.12); }
+
+/* Offer details stay above the following section on every viewport. */
+.sac-offers-section {
+  position: relative;
+  z-index: 30;
+  overflow: visible !important;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(232,93,4,.25), transparent 58%),
+    linear-gradient(180deg,#211008 0%,#2A1208 52%,#211008 100%);
+}
+.sac-offers-panel { position: relative; z-index: 31; overflow: visible; }
+.sac-offer-wrap { position: relative; z-index: 32; }
+.sac-offer-wrap:focus-within,
+.sac-offer-wrap:hover { z-index: 50; }
+.sac-offer-popover {
+  z-index: 60 !important;
+  border-color: rgba(255,192,148,.8);
+  box-shadow: 0 28px 70px rgba(8,4,2,.48), 0 0 34px rgba(232,93,4,.16), inset 0 1px 0 #fff;
+  animation: sac-popover-in .24s cubic-bezier(.2,.8,.2,1) both;
+}
+.sac-shell:has(.sac-header) {
+  background:
+    radial-gradient(ellipse at 50% 5%, rgba(232,93,4,.12), transparent 48%),
+    #160B06;
+}
+.sac-hero-layout {
+  background:
+    radial-gradient(ellipse at 76% 46%, rgba(232,93,4,.34), transparent 42%),
+    radial-gradient(ellipse at 5% 100%, rgba(232,93,4,.22), transparent 38%),
+    linear-gradient(110deg,#160B06 0%,#211008 55%,#321306 100%) !important;
+}
+.sac-hero-art {
+  border-color: rgba(255,178,119,.34);
+  background: radial-gradient(ellipse at 50% 48%,rgba(232,93,4,.38),transparent 58%), linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.02));
+  box-shadow: 0 34px 100px rgba(0,0,0,.34), 0 0 65px rgba(232,93,4,.14), inset 0 1px 0 rgba(255,255,255,.12);
+}
+.sac-art-glow { background: rgba(255,111,31,.31); filter: blur(82px); }
+.sac-art-emblem { box-shadow: 0 0 65px rgba(232,93,4,.28), inset 0 0 30px rgba(232,93,4,.18); }
+.sac-offers-section,
+.sac-shell:has(.sac-header) main > section.border-y,
+.sac-shell:has(.sac-header) main > section:not(.sac-hero-layout):not(.sac-offers-section) {
+  background-image: radial-gradient(ellipse at 50% 0%, rgba(232,93,4,.13), transparent 62%);
+}
+.sac-shell button:not(:disabled):hover,
+.sac-shell a[href].sac-action:hover {
+  box-shadow: 0 14px 30px rgba(232,93,4,.24), 0 0 22px rgba(232,93,4,.13);
+}
+.sac-shell button:not(:disabled):focus-visible,
+.sac-shell a[href]:focus-visible {
+  outline: 2px solid #FFB47A;
+  outline-offset: 4px;
+}
+.sac-action,
+.sac-shell button:not(:disabled) {
+  position: relative;
+  overflow: hidden;
+}
+.sac-action::after,
+.sac-shell button:not(:disabled)::after {
+  content: "";
+  position: absolute;
+  inset: -80% auto -80% -45%;
+  width: 34%;
+  transform: rotate(22deg) translateX(-220%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.34), transparent);
+  transition: transform .7s cubic-bezier(.2,.8,.2,1);
+  pointer-events: none;
+}
+.sac-action:hover::after,
+.sac-shell button:not(:disabled):hover::after { transform: rotate(22deg) translateX(520%); }
+
+@keyframes sac-popover-in {
+  from { opacity: 0; transform: translateY(8px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes sac-section-in {
+  from { opacity: .2; transform: translateY(26px); filter: saturate(.75); }
+  to { opacity: 1; transform: translateY(0); filter: saturate(1); }
+}
+@keyframes sac-hero-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.sac-hero-layout .sac-copy { animation: sac-hero-in .8s .08s both; }
+.sac-hero-art { animation: sac-hero-in .95s .18s both; }
+.sac-art-phone { animation: sac-phone-float 7s ease-in-out 1s infinite; }
+@keyframes sac-phone-float {
+  0%,100% { translate: 0 0; }
+  50% { translate: 0 -9px; }
+}
+@supports (animation-timeline: view()) {
+  .sac-shell:has(.sac-header) main > section:not(.sac-hero-layout) {
+    animation: sac-section-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 28%;
+  }
+  .sac-offer-card,
+  .sac-glass-card,
+  .sac-responsible-panel {
+    animation: sac-section-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 22%;
+  }
+}
+@media (hover: none) {
+  .sac-auth-card:hover { transform: none; }
+  .sac-offer-wrap { z-index: 40; }
+}
+@media (max-width: 639px) {
+  .sac-offer-popover { position: relative; inset: auto; margin-top: .65rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sac-hero-layout .sac-copy, .sac-hero-art, .sac-art-phone,
+  .sac-offer-popover, .sac-shell:has(.sac-header) main > section,
+  .sac-offer-card, .sac-glass-card, .sac-responsible-panel {
+    animation: none !important;
+  }
+  .sac-auth-card { transition: none !important; }
+}
