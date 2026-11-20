@@ -259,8 +259,15 @@ export class SosLocationRelayClient {
         return;
       }
       if (this.options.role === "author") {
-        try { await this.createAuthorSession(); }
-        catch { this.options.callbacks.onError("contact_key_unverified"); this.stop(); }
+        try {
+          await this.createAuthorSession();
+          if (message.participants?.some((participant) => participant.role === "recipient")) {
+            this.sendOwnSessionBundle();
+          }
+        } catch {
+          this.options.callbacks.onError("contact_key_unverified");
+          this.stop();
+        }
       } else {
         this.options.callbacks.onStatus("waiting_for_author");
       }
