@@ -43,6 +43,7 @@ export default {
           env.DB.prepare("INSERT INTO account_identities (id,account_id,channel,normalized_value,verified_at,is_primary,created_at) VALUES (?,?,'email',?,NULL,1,?)").bind(emailIdentity, id, email + "-" + id + "@example.ne", stamp),
           env.DB.prepare("INSERT INTO account_identities (id,account_id,channel,normalized_value,verified_at,is_primary,created_at) VALUES (?,?,'phone',?,NULL,1,?)").bind(phoneIdentity, id, "+227" + id.replaceAll("-", "").slice(0, 8), stamp),
           env.DB.prepare("INSERT INTO email_otp_challenges (id,account_id,identity_id,purpose,digest,attempt_count,max_attempts,created_at,expires_at,delivery_status) VALUES (?,?,?,'account_email_verification',?,0,6,?,?, 'pending')").bind(challenge, id, emailIdentity, "b".repeat(64), stamp, stamp + 600000),
+          env.DB.prepare("UPDATE email_otp_challenges SET delivery_status='accepted' WHERE id=?").bind(challenge),
           env.DB.prepare("UPDATE email_otp_challenges SET attempt_count=1,consumed_at=? WHERE id=?").bind(stamp + 1, challenge),
         );
       }
