@@ -70,6 +70,8 @@ jobs:
         run: npm run test:location-identity-vault
       - name: Test independently pinned trusted-contact location keys
         run: npm run test:location-trust
+      - name: Test ephemeral high-accuracy GPS watch lifecycle
+        run: npm run test:live-geolocation
       - name: Test encrypted Web Push subscription cryptography
         run: npm run test:push-subscriptions
       - name: Test D1 push subscription isolation and device revocation
