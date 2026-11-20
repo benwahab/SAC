@@ -1,11 +1,11 @@
 # SAC — Architecture technique du Web Push par appareil
 
 **Version :** 1.0 — 20 novembre 2026  
-**Statut :** conception technique consolidée ; règles produit de reprise validées ; implémentation, migration D1 et mise en service non réalisées.  
+**Statut :** conception technique consolidée ; migration D1 0009 appliquée ; Worker de purge technique déployé ; surveillance Cloudflare configurée, première exécution Cron encore à prouver ; livraison Push par appareil et envois réels non activés.  
 **Dépôt :** `benwahab/SAC`, branche `main`.  
 **Portée :** fiabiliser chaque livraison Web Push par appareil, sans modifier le cycle métier SOS ni activer l'envoi réel.
 
-> Ce document décrit la cible technique. Il n'autorise ni migration distante, ni création/déploiement de Worker ou Workflow, ni dépense, ni activation d'envois réels.
+> Les migrations validées peuvent être appliquées à la D1 distante après contrôles. Le Worker de purge technique est déployé séparément. Ce document n'autorise pas l'activation des envois Push/SMS réels ni la mise en service du Worker/Workflow de livraison SOS.
 
 ## 1. Décisions produit verrouillées
 
@@ -356,7 +356,7 @@ Les contraintes et triggers interdisent notamment les tentatives non réservées
 
 La migration ne modifie pas les lignes existantes et ne touche aucune donnée GPS. Le test `tests/d1_notification_retention_schema.test.py` applique la chaîne de migrations 0001 à 0009 dans une base SQLite isolée et vérifie les contraintes, la limite de lot de 200, la suppression enfant-avant-parent, le rollback transactionnel en cas d'échec, l'impossibilité d'étendre le fan-out après agrégation et la préservation de l'outbox métier. Il vérifie aussi l'absence de colonnes de contenu sensible. La commande est `npm run test:d1-notification-retention`, intégrée au workflow CI. Le workflow GitHub Actions `44800621093` a réussi le 20 novembre 2026, y compris l'application Wrangler de 0001 à 0009 sur la base locale isolée et les 12 tests du contrat de rétention.
 
-**État opérationnel mis à jour — 20 novembre 2026 :** la migration 0009 a été appliquée à la D1 distante `sac-db` et vérifiée dans `d1_migrations` (entrées 0001 à 0009), avec les trois tables, les index, les triggers et `PRAGMA foreign_key_check` sans anomalie. Le Worker isolé `sac-notification-retention-purge` a été créé et déployé via l'API Cloudflare, avec le binding D1 `DB` et le Cron `0 * * * *`. Il ne fait aucun envoi Push/SMS et ne touche qu'aux deux tables du registre de livraison technique. La CI GitHub des deux commits Worker est réussie (`44802075781` et `44802079697`). À la dernière lecture de D1, `last_started_at` et `last_success_at` étaient encore NULL : le Cron est enregistré mais son premier passage effectif n'est pas encore prouvé. Il faudra relire le singleton après le prochain déclenchement horaire et confirmer les journaux `SAC_RETENTION_PURGE_OK`. Les alertes sont actuellement émises dans les journaux Worker uniquement : aucun canal externe surveillé n'est configuré, donc la surveillance humaine reste à terminer.
+**État opérationnel mis à jour — 20 novembre 2026 :** la migration 0009 est appliquée à la D1 distante `sac-db` et vérifiée dans `d1_migrations` (entrées 0001 à 0009), avec les trois tables, index, triggers et `PRAGMA foreign_key_check` sans anomalie. Le Worker isolé `sac-notification-retention-purge` est déployé avec binding D1 `DB` et Cron `0 * * * *`. Il ne fait aucun envoi Push/SMS et ne touche qu'aux deux tables du registre de livraison technique. La CI GitHub des deux commits Worker est réussie (`44802075781` et `44802079697`). La surveillance Cloudflare du Worker est activée avec Real-Time Issues ; les logs persistants et les traces restent désactivés. Une politique d'alerte e-mail Cloudflare active (`d46dfe933bb44fb48e81167dda35c17b`) est configurée vers l'adresse du compte. La politique et les paramètres ont été relus via l'API. À la dernière lecture D1, `last_started_at` et `last_success_at` restent NULL : le Cron est enregistré, mais son premier passage effectif n'est pas encore prouvé. Vérifier les compteurs D1 et l'émission éventuelle d'un incident après le prochain déclenchement. L'alerte n'a pas encore été testée par un incident synthétique ; la réception effective de l'e-mail n'est donc pas certifiée.
 
 #### Tests obligatoires de purge
 
@@ -436,7 +436,8 @@ Sources officielles :
 - [ ] CI verte sur la version implémentée.
 - [x] Migration D1 distante 0009 appliquée et vérifiée.
 - [x] Worker isolé de purge D1 déployé avec Cron horaire et binding D1.
-- [ ] Premier passage Cron observé et compteurs `last_success_at` vérifiés (pas encore exécuté au dernier contrôle D1).
-- [ ] Canal d'alerte externe réellement surveillé configuré et testé.
+- [ ] Premier passage Cron observé et compteurs `last_success_at` vérifiés (NULL au dernier contrôle D1).
+- [x] Politique Cloudflare Real-Time Issue avec notification e-mail activée et relue via API (réception effective non encore testée).
 - [x] CI GitHub des deux commits du Worker isolé réussie (`44802075781`, `44802079697`).
+- [ ] Incident synthétique provoqué en environnement contrôlé pour vérifier l'alerte e-mail de bout en bout.
 - [ ] Configuration et recette réelle autorisées et vérifiées.
