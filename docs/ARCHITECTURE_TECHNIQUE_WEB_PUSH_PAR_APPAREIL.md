@@ -413,8 +413,8 @@ Sources officielles :
 - [x] Conservation des résultats techniques individuels D1 fixée à 30 jours après la fin du rappel ; purge automatique requise.
 - [x] Conservation des instances et historiques Workflow fixée à 7 jours maximum après la fin de l'exécution.
 - [x] Timeout réseau fournisseur fixé à 8 secondes maximum ; bail de traitement fixé à 30 secondes avec fencing token et consommation de la tentative après expiration.
-- [ ] Spécification opérationnelle détaillée de récupération après interruption et tests de concurrence.
-- [ ] Migration D1 écrite et testée localement.
+- [x] Spécification opérationnelle de purge D1 bornée, idempotente, surveillée et testable documentée (exécution horaire, lots de 200, conservation prudente en cas de doute, alertes et reprise après restauration).
+- [ ] Migration D1 écrite et testée localement, y compris index d'échéance, contrôle de rétention et contraintes de suppression.
 - [ ] Registre livraison/appareil implémenté.
 - [ ] Workflow et Cron de récupération implémentés.
 - [ ] Tests de concurrence et de clôture réussis.
