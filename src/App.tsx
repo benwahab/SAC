@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Download, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, X } from "lucide-react";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
-import { completeRootEnrollment, requestRootEnrollment, type RootEnrollmentCeremony } from "./services/device/root-enrollment";
+import { completeRootAuthentication, requestRootAuthentication, type RootAuthenticationOptions } from "./services/device/root-authentication";
 import PrivateSpacePage from "./PrivateSpacePage";
 import InvitationAcceptancePage from "./InvitationAcceptancePage";
 
@@ -22,7 +22,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       verify: "Vérifier mon adresse", resend: "Renvoyer un code",
       back: "Retour", home: "Retour à l’accueil", language: "Langue",
       private: "Espace privé", loginUnavailable: "Connectez-vous avec votre adresse vérifiée et votre mot de passe pour sécuriser ce téléphone.",
-      rootIntro: "Votre adresse e-mail est vérifiée. Authentifiez-vous pour enregistrer la clé racine sur cet appareil.", prepareRoot: "Préparer mon appareil", createRoot: "Créer la clé sécurisée", rootReady: "Les options sont prêtes. Confirmez maintenant la création de la clé sur votre téléphone.", rootSuccess: "Appareil enregistré. Votre session sécurisée est ouverte.", rootPreparing: "Préparation…", rootCreating: "Confirmation sur l’appareil…",
+      rootIntro: "Votre appareil sécurisé est prêt. Confirmez votre identité pour ouvrir votre session.", prepareRoot: "Se connecter", createRoot: "Confirmer sur cet appareil", rootReady: "Confirmez la connexion avec la clé sécurisée de ce téléphone.", rootSuccess: "Connexion sécurisée réussie. Votre session est ouverte.", rootPreparing: "Vérification…", rootCreating: "Confirmation sur l’appareil…",
       registerIntro: "Créez votre compte. Votre adresse e-mail doit être vérifiée avant toute activation.",
       verifyIntro: "Saisissez le code envoyé à votre adresse e-mail. Il est valable 10 minutes.",
       resendWait: "Vous pourrez demander un nouveau code dans", seconds: "s",
@@ -45,7 +45,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       verify: "Verify my email", resend: "Resend code",
       back: "Back", home: "Back to home", language: "Language",
       private: "Private space", loginUnavailable: "Sign in with your verified email and password to secure this phone.",
-      rootIntro: "Your email is verified. Sign in to register the root key on this device.", prepareRoot: "Prepare my device", createRoot: "Create secure key", rootReady: "Options are ready. Confirm key creation on your phone now.", rootSuccess: "Device registered. Your secure session is open.", rootPreparing: "Preparing…", rootCreating: "Confirm on your device…",
+      rootIntro: "Your secure device is ready. Confirm your identity to open your session.", prepareRoot: "Sign in", createRoot: "Confirm on this device", rootReady: "Confirm sign-in with this phone’s secure key.", rootSuccess: "Secure sign-in successful. Your session is open.", rootPreparing: "Checking…", rootCreating: "Confirm on your device…",
       registerIntro: "Create your account. Your email address must be verified before activation.",
       verifyIntro: "Enter the code sent to your email address. It is valid for 10 minutes.",
       resendWait: "You can request another code in", seconds: "s",
@@ -68,7 +68,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       verify: "التحقق من بريدي", resend: "إعادة إرسال الرمز",
       back: "رجوع", home: "العودة إلى الصفحة الرئيسية", language: "اللغة",
       private: "مساحة خاصة", loginUnavailable: "سجّل الدخول ببريدك الموثّق وكلمة المرور لتأمين هذا الهاتف.",
-      rootIntro: "تم التحقق من بريدك. سجّل الدخول لتسجيل المفتاح الأساسي على هذا الجهاز.", prepareRoot: "تهيئة جهازي", createRoot: "إنشاء المفتاح الآمن", rootReady: "الخيارات جاهزة. أكّد الآن إنشاء المفتاح على هاتفك.", rootSuccess: "تم تسجيل الجهاز وفتح جلستك الآمنة.", rootPreparing: "جارٍ التحضير…", rootCreating: "أكّد على جهازك…",
+      rootIntro: "جهازك الآمن جاهز. أكّد هويتك لفتح جلستك.", prepareRoot: "تسجيل الدخول", createRoot: "التأكيد على هذا الجهاز", rootReady: "أكّد تسجيل الدخول باستخدام المفتاح الآمن لهذا الهاتف.", rootSuccess: "تم تسجيل الدخول بأمان وفتح جلستك.", rootPreparing: "جارٍ التحقق…", rootCreating: "أكّد على جهازك…",
       registerIntro: "أنشئ حسابك. يجب التحقق من بريدك الإلكتروني قبل تفعيل الحساب.",
       verifyIntro: "أدخل الرمز المرسل إلى بريدك الإلكتروني. صلاحية الرمز 10 دقائق.",
       resendWait: "يمكنك طلب رمز جديد خلال", seconds: "ث",
@@ -85,7 +85,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     },
   }[language];
 
-  type Mode = "login" | "register" | "verify" | "enroll" | "complete";
+  type Mode = "login" | "register" | "verify" | "authenticate" | "complete";
   const [mode, setMode] = useState<Mode>(() => new URLSearchParams(window.location.search).get("mode") === "register" ? "register" : "login");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -97,7 +97,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
   const [error, setError] = useState("");
   const [resendAt, setResendAt] = useState<number | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState(0);
-  const [rootCeremony, setRootCeremony] = useState<RootEnrollmentCeremony | null>(null);
+  const [rootCeremony, setRootCeremony] = useState<RootAuthenticationOptions | null>(null);
   const rtl = language === "ar";
 
   useEffect(() => {
@@ -190,10 +190,10 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     setError("");
     setNotice("");
     try {
-      const ceremony = await requestRootEnrollment(email, password);
+      const ceremony = await requestRootAuthentication(email, password);
       setRootCeremony(ceremony);
       setPassword("");
-      setMode("enroll");
+      setMode("authenticate");
     } catch (reason) {
       setError(errorMessage(reason instanceof Error ? reason.message : undefined));
     } finally {
@@ -201,13 +201,13 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     }
   }
 
-  async function confirmRootEnrollment() {
+  async function confirmRootAuthentication() {
     if (!rootCeremony || busy) return;
     setBusy(true);
     setError("");
     setNotice("");
     try {
-      await completeRootEnrollment(rootCeremony);
+      await completeRootAuthentication(rootCeremony);
       setRootCeremony(null);
       setPassword("");
       setMode("complete");
@@ -291,11 +291,11 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
           </div>
         )}
 
-        {mode === "enroll" && rootCeremony && (
+        {mode === "authenticate" && rootCeremony && (
           <div className="mt-8 space-y-4">
             <p className="rounded-xl border border-sac-confirm/25 bg-sac-confirm/10 p-4 text-sm leading-6 text-sac-ink">{copy.rootIntro}</p>
             <p className="text-sm leading-6 text-sac-muted">{copy.rootReady}</p>
-            <button type="button" disabled={busy} onClick={confirmRootEnrollment} className={primaryButton}>{busy ? copy.rootCreating : copy.createRoot}</button>
+            <button type="button" disabled={busy} onClick={confirmRootAuthentication} className={primaryButton}>{busy ? copy.rootCreating : copy.createRoot}</button>
             <button type="button" disabled={busy} onClick={() => { setRootCeremony(null); setMode("login"); setError(""); setNotice(""); }} className="min-h-11 w-full rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 text-sm font-bold text-sac-ink">{copy.back}</button>
           </div>
         )}
