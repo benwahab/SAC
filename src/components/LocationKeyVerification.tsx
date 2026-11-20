@@ -64,7 +64,7 @@ export default function LocationKeyVerification({ accountId, deviceId, contacts 
   async function copyOwnFingerprint() {
     if (!ownFingerprint) return;
     try {
-      await navigator.clipboard.writeText(ownFingerprint);
+      await navigator.clipboard.writeText("Appareil : " + deviceId + "\nEmpreinte : " + ownFingerprint);
       setNotice("Votre empreinte a été copiée.");
       setError("");
     } catch {
@@ -122,7 +122,7 @@ export default function LocationKeyVerification({ accountId, deviceId, contacts 
           <>
             <p className="mt-2 break-all font-mono text-sm font-bold tracking-wide">{ownFingerprint}</p>
             <p className="mt-2 break-all text-[11px] text-sac-muted">Appareil : {deviceId}</p>
-            <button type="button" onClick={() => void copyOwnFingerprint()} className="mt-3 inline-flex min-h-9 items-center gap-2 rounded-lg border border-sac-primary-strong/15 bg-white px-3 text-xs font-bold"><Copy size={14}/>Copier mon empreinte</button>
+            <button type="button" onClick={() => void copyOwnFingerprint()} className="mt-3 inline-flex min-h-9 items-center gap-2 rounded-lg border border-sac-primary-strong/15 bg-white px-3 text-xs font-bold"><Copy size={14}/>Copier mes informations de vérification</button>
           </>
         ) : <p className="mt-2 text-sm text-sac-alert">Empreinte indisponible. Le partage GPS restera désactivé.</p>}
       </div>
