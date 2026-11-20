@@ -1,9 +1,7 @@
 /**
- * Primitive expérimentale d'accord de clé ECDH pour SAC.
- *
- * Accord de clé ECDH éphémère utilisé par le partage GPS SOS.
- * L'identité du pair est vérifiée séparément à partir de sa session SAC
- * authentifiée et de son bundle de session signé.
+ * Primitives cryptographiques ECDH/ECDSA utilisées par le partage GPS SOS.
+ * L'identité d'un pair distant est vérifiée par le bundle signé lié à sa
+ * session SAC authentifiée, sans échange manuel d'empreintes par l'utilisateur.
  */
 import { isCanonicalP256PublicJwk } from "../crypto/p256-jwk.ts";
 
@@ -167,7 +165,157 @@ export async function validateLocationExchangePublicKey(
   }
 }
 
-/** Empreinte cryptographique canonique d'une clé publique d'identité. */
+export interface SignedLocationKeyBundle {
+  readonly version: 2;
+  readonly ownerId: string;
+  readonly deviceId: string;
+  readonly exchangePublicKey: JsonWebKey;
+  readonly identityPublicKey: JsonWebKey;
+  readonly signature: Uint8Array;
+}
+
+export interface LocationIdentityKeyPair {
+  readonly publicKey: CryptoKey;
+  readonly privateKey: CryptoKey;
+}
+
+function canonicalBundlePayload(
+  ownerId: string,
+  deviceId: string,
+  exchangePublicKey: JsonWebKey,
+): Uint8Array {
+  requireContext(ownerId, "du propriétaire");
+  requireContext(deviceId, "de l'appareil");
+  if (!isP256PublicJwk(exchangePublicKey)) {
+    throw new Error("La clé publique ECDH P-256 est invalide.");
+  }
+  return encoder.encode(JSON.stringify([
+    "SAC:identity-key-bundle:v2",
+    ownerId,
+    deviceId,
+    exchangePublicKey.kty,
+    exchangePublicKey.crv,
+    exchangePublicKey.x,
+    exchangePublicKey.y,
+  ]));
+}
+
+/** Génère une clé de signature d'identité distincte de la clé ECDH. */
+export async function createLocationIdentityKeyPair(
+  cryptoProvider: Crypto = globalThis.crypto,
+): Promise<LocationIdentityKeyPair> {
+  const pair = await cryptoProvider.subtle.generateKey(
+    { name: "ECDSA", namedCurve: "P-256" },
+    false,
+    ["sign", "verify"],
+  );
+  return { publicKey: pair.publicKey, privateKey: pair.privateKey };
+}
+
+export async function signLocationKeyBundleWithPublicKey(
+  ownerId: string,
+  deviceId: string,
+  exchangePublicKey: CryptoKey,
+  identityPrivateKey: CryptoKey,
+  identityPublicKey: CryptoKey,
+  cryptoProvider: Crypto = globalThis.crypto,
+): Promise<SignedLocationKeyBundle> {
+  if (
+    exchangePublicKey.type !== "public" ||
+    identityPrivateKey.type !== "private" ||
+    identityPublicKey.type !== "public" ||
+    exchangePublicKey.usages.length !== 0 ||
+    !identityPrivateKey.usages.includes("sign") ||
+    !identityPublicKey.usages.includes("verify") ||
+    exchangePublicKey.algorithm.name !== "ECDH" ||
+    identityPrivateKey.algorithm.name !== "ECDSA" ||
+    identityPublicKey.algorithm.name !== "ECDSA" ||
+    (exchangePublicKey.algorithm as EcKeyAlgorithm).namedCurve !== "P-256" ||
+    (identityPrivateKey.algorithm as EcKeyAlgorithm).namedCurve !== "P-256" ||
+    (identityPublicKey.algorithm as EcKeyAlgorithm).namedCurve !== "P-256"
+  ) {
+    throw new Error("Types de clés incompatibles pour la signature.");
+  }
+  const exchangeJwk = await cryptoProvider.subtle.exportKey("jwk", exchangePublicKey);
+  const identityJwk = await cryptoProvider.subtle.exportKey("jwk", identityPublicKey);
+  const signature = await cryptoProvider.subtle.sign(
+    { name: "ECDSA", hash: "SHA-256" },
+    identityPrivateKey,
+    toArrayBuffer(canonicalBundlePayload(ownerId, deviceId, exchangeJwk)),
+  );
+  const bundle: SignedLocationKeyBundle = {
+    version: 2,
+    ownerId,
+    deviceId,
+    exchangePublicKey: exchangeJwk,
+    identityPublicKey: identityJwk,
+    signature: new Uint8Array(signature),
+  };
+  if (!(await verifyLocationKeyBundle(bundle, cryptoProvider))) {
+    throw new Error("La clé privée de signature ne correspond pas à la clé publique fournie.");
+  }
+  return bundle;
+}
+
+/**
+ * Vérifie la signature du lien identité/clé ECDH. Cela ne prouve pas à lui
+ * seul que le signataire est le vrai contact : comparer l'empreinte de
+ * identityPublicKey à une référence déjà vérifiée (QR/code de sécurité).
+ */
+export async function verifyLocationKeyBundle(
+  bundle: SignedLocationKeyBundle,
+  cryptoProvider: Crypto = globalThis.crypto,
+): Promise<boolean> {
+  try {
+    if (
+      typeof bundle !== "object" ||
+      bundle === null ||
+      bundle.version !== 2 ||
+      typeof bundle.ownerId !== "string" ||
+      !bundle.ownerId.trim() ||
+      bundle.ownerId.length > 256 ||
+      [...bundle.ownerId].some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127) ||
+      typeof bundle.deviceId !== "string" ||
+      !bundle.deviceId.trim() ||
+      bundle.deviceId.length > 256 ||
+      [...bundle.deviceId].some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127) ||
+      !isP256PublicJwk(bundle.identityPublicKey) ||
+      !isP256PublicJwk(bundle.exchangePublicKey) ||
+      !(bundle.signature instanceof Uint8Array) ||
+      bundle.signature.byteLength !== 64
+    ) {
+      return false;
+    }
+
+    // Ne pas supposer que tous les fournisseurs valident le point EC
+    // dès importKey : effectuer aussi un accord ECDH éphémère de contrôle.
+    if (!(await validateLocationExchangePublicKey(bundle.exchangePublicKey, cryptoProvider))) {
+      return false;
+    }
+
+    const identityKey = await cryptoProvider.subtle.importKey(
+      "jwk",
+      bundle.identityPublicKey,
+      { name: "ECDSA", namedCurve: "P-256" },
+      false,
+      ["verify"],
+    );
+    return cryptoProvider.subtle.verify(
+      { name: "ECDSA", hash: "SHA-256" },
+      identityKey,
+      toArrayBuffer(bundle.signature),
+      toArrayBuffer(canonicalBundlePayload(bundle.ownerId, bundle.deviceId, bundle.exchangePublicKey)),
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Empreinte courte à comparer par un canal indépendant (en personne ou
+ * appel vocal/vidéo). Ne jamais traiter une empreinte reçue du même serveur
+ * que la clé comme une preuve d'identité.
+ */
 export async function fingerprintLocationIdentityKey(
   identityPublicKey: JsonWebKey,
   cryptoProvider: Crypto = globalThis.crypto,
@@ -186,3 +334,8 @@ export async function fingerprintLocationIdentityKey(
   const hex = Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
   return hex.toUpperCase().match(/.{1,4}/g)!.join(" ");
 }
+
+/**
+ * Vérifie une clé de proche contre une empreinte déjà épinglée et comparée
+ * par un canal indépendant. Une signature auto-validée seule ne suffit pas.
+ */
