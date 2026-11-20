@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowUpRight, Download, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, X } from "lucide-react";
+import { Download, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, X } from "lucide-react";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
 import { completeRootEnrollment, requestRootEnrollment, type RootEnrollmentCeremony } from "./services/device/root-enrollment";
 import PrivateSpacePage from "./PrivateSpacePage";
@@ -252,7 +252,6 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
         <div className="flex items-start justify-between gap-4">
           <a href="/" className="flex flex-col" aria-label="SAC accueil">
             <span className="text-xl font-black tracking-[0.2em]">SAC</span>
-            <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-sac-muted">{copy.private}</span>
           </a>
           <div className="flex items-center gap-1 rounded-full border border-white/90 bg-white/70 p-1 shadow-glass" role="group" aria-label={copy.languageLabel} dir="ltr">
             {languages.map((item) => (
