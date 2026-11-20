@@ -335,19 +335,14 @@ export class SosLocationRelayClient {
         return;
       }
 
-      if (
-        this.sessionId === remote.sessionId &&
-        this.ownSession &&
-        this.authorKeys.has(message.fromConnectionId)
-      ) return;
+      const sameSession = this.sessionId === remote.sessionId &&
+        !!this.ownSession &&
+        !!this.salt &&
+        this.ownSession.bundle.expiresAt === remote.expiresAt &&
+        this.ownSession.bundle.salt.every((value, index) => value === remote.salt[index]);
+      if (sameSession && this.authorKeys.has(message.fromConnectionId)) return;
 
-      if (
-        this.sessionId !== remote.sessionId ||
-        !this.ownSession ||
-        !this.salt ||
-        this.ownSession.bundle.expiresAt !== remote.expiresAt ||
-        !this.ownSession.bundle.salt.every((value, index) => value === remote.salt[index])
-      ) {
+      if (!sameSession) {
         this.watch?.stop();
         this.watch = null;
         this.options.callbacks.onClear();
@@ -365,8 +360,8 @@ export class SosLocationRelayClient {
           remote.expiresAt,
           this.options.identityStore,
         );
-        this.sendOwnSessionBundle();
       }
+      this.sendOwnSessionBundle();
 
       const key = await deriveLocationSessionDirectionalKey({
         ownPrivateKey: this.ownSession.exchangePrivateKey,
