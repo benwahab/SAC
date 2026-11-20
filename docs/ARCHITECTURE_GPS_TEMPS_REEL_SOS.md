@@ -211,3 +211,18 @@ Le client reste dépendant des autorisations de géolocalisation du navigateur e
 Le verrou de disponibilité a été basculé à `true` dans le Worker `sac-gps-relay` et dans la configuration Pages de production. Le secret HMAC est présent dans les deux environnements sans être exposé dans le dépôt. Le sous-domaine Worker est activé. Le déploiement Pages de production correspondant au commit d'activation a terminé avec succès : `17aeec7a`.
 
 Le partage GPS E2EE est donc **activé côté production**. La validation CI du commit de configuration est en cours au moment de cette note ; les tests applicatifs et le build du commit précédent ont réussi. La première validation opérationnelle doit encore être faite avec deux appareils réels, deux sessions authentifiées et les empreintes des appareils mutuellement épinglées. En cas de refus de permission GPS, de clé non vérifiée ou de perte du relais, le partage échoue fermé et aucune coordonnée n'est transmise.
+
+
+## Décision produit : suppression de la vérification manuelle des empreintes — 20 novembre 2026
+
+La procédure de comparaison manuelle d'empreintes par appel/en personne, de copie d'identifiants d'appareil et d'épinglage local est supprimée. Elle n'est pas une exigence produit et ne doit jamais bloquer l'inscription d'un proche ou le partage GPS.
+
+Le mécanisme est désormais automatique :
+- le ticket WebSocket à usage unique est émis après authentification de la session SAC et vérification que le compte, l'appareil et la session sont autorisés pour cette alerte ;
+- le Worker ajoute lui-même à chaque annonce de clé l'identifiant du compte et de l'appareil issus du ticket vérifié (ces champs ne sont jamais acceptés depuis le client) ;
+- le client vérifie que le bundle signé correspond exactement à cette identité de compte/appareil authentifiée, ainsi qu'à l'alerte et à la session en cours ;
+- les clés ECDH restent éphémères et les positions restent chiffrées de bout en bout ; aucune étape manuelle n'est demandée aux proches.
+
+Le serveur SAC devient l'autorité d'authentification de la relation compte/appareil. Le chiffrement protège le contenu GPS du relais et des autres participants non autorisés ; il ne prétend pas protéger contre une compromission de l'autorité d'authentification SAC elle-même. Les contrôles de session, d'appareil, de rôle, de lien de confiance, de signature, d'expiration et de rejeu restent obligatoires.
+
+L'ancienne rubrique « Sécurité du partage GPS » avec empreinte à copier/saisir est retirée de l'espace privé, ainsi que le blocage lié à l'absence d'empreinte épinglée. Les utilisateurs n'ont rien à comparer, copier, saisir ou confirmer manuellement.
