@@ -68,6 +68,8 @@ jobs:
         run: npm run test:crypto
       - name: Test local non-exportable location identity key vault
         run: npm run test:location-identity-vault
+      - name: Test independently pinned trusted-contact location keys
+        run: npm run test:location-trust
       - name: Test encrypted Web Push subscription cryptography
         run: npm run test:push-subscriptions
       - name: Test D1 push subscription isolation and device revocation
