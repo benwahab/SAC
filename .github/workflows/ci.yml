@@ -70,6 +70,8 @@ jobs:
         run: npm run test:location-identity-vault
       - name: Test independently pinned trusted-contact location keys
         run: npm run test:location-trust
+      - name: Test signed per-alert ECDH session bundles and directional encryption
+        run: npm run test:location-session
       - name: Test ephemeral high-accuracy GPS watch lifecycle
         run: npm run test:live-geolocation
       - name: Test encrypted Web Push subscription cryptography
