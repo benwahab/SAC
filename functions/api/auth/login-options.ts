@@ -68,17 +68,24 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     if (!rate || rate.attempt_count > MAX_ATTEMPTS) return json({ error: "too_many_attempts" }, 429);
 
     const account = await env.DB.prepare(
-      `SELECT a.id, a.status, a.password_hash, d.id AS device_id, c.credential_id
+      `SELECT a.id, a.status, a.password_hash, d.id AS device_id, d.status AS device_status, c.credential_id
        FROM accounts a
        JOIN account_identities i ON i.account_id = a.id
-       JOIN devices d ON d.account_id = a.id AND d.status = 'active'
-       JOIN device_root_credentials c ON c.device_id = d.id AND c.account_id = a.id
+       LEFT JOIN devices d ON d.account_id = a.id
+       LEFT JOIN device_root_credentials c ON c.device_id = d.id AND c.account_id = a.id
        WHERE i.channel = 'email' AND i.is_primary = 1 AND i.verified_at IS NOT NULL
          AND i.normalized_value = ?
        LIMIT 1`,
-    ).bind(email).first<{ id: string; status: string; password_hash: string; device_id: string; credential_id: string }>();
+    ).bind(email).first<{ id: string; status: string; password_hash: string; device_id: string | null; device_status: string | null; credential_id: string | null }>();
     const matches = await verifyAccountPassword(crypto, body.password, account?.password_hash ?? DUMMY_PASSWORD_HASH);
     if (!account || account.status !== "active" || !matches) return json({ error: "invalid_credentials" }, 401);
+
+    if (!account.device_id && !account.device_status && !account.credential_id) {
+      return json({ error: "root_enrollment_required" }, 409);
+    }
+    if (account.device_status !== "active" || !account.credential_id) {
+      return json({ error: "root_device_unavailable" }, 409);
+    }
 
     const challenge = crypto.getRandomValues(new Uint8Array(32));
     const challengeDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", challenge));
