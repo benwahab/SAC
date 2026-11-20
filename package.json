@@ -59,7 +59,8 @@
     "test:d1-gps-relay-tickets": "python3 tests/d1_gps_relay_tickets_schema.test.py",
     "test:gps-relay-protocol": "node --experimental-strip-types --test tests/gps-relay-protocol.test.ts",
     "test:gps-relay-build": "wrangler deploy --dry-run --outdir /tmp/sac-gps-relay-build --config workers/gps-relay/wrangler.toml",
-    "test:gps-relay-readiness": "node --experimental-strip-types --test tests/gps-relay-readiness.test.ts"
+    "test:gps-relay-readiness": "node --experimental-strip-types --test tests/gps-relay-readiness.test.ts",
+    "test:location-identity-vault": "node --experimental-strip-types --test tests/location-identity-vault.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
