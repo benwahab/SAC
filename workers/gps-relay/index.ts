@@ -1,3 +1,4 @@
+import { isGpsRelayReady } from "./relay-readiness.ts";
 import { parseGpsWebSocketProtocols } from "./websocket-protocol.ts";
 import { DurableObject } from "cloudflare:workers";
 
@@ -15,6 +16,7 @@ interface Env {
   DB: D1Database;
   GPS_ROOMS: DurableObjectNamespace<GpsRelayRoom>;
   GPS_RELAY_HMAC_SECRET: string;
+  GPS_RELAY_E2EE_READY?: string;
 }
 interface RelayMessage {
   type: "heartbeat" | "key-announce" | "gps-encrypted";
@@ -132,6 +134,9 @@ export default {
     }
 
     const action = match[2];
+    if (action === "socket" && !isGpsRelayReady(env.GPS_RELAY_E2EE_READY)) {
+      return json({ error: "gps_relay_not_ready" }, 503);
+    }
     let token = "";
     if (action === "socket") {
       const offered = parseGpsWebSocketProtocols(request.headers.get("Sec-WebSocket-Protocol"));
