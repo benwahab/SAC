@@ -8,6 +8,8 @@ const encoder = new TextEncoder();
 export interface LocationIdentityKeyRecord {
   readonly version: 1;
   readonly accountId: string;
+  readonly deviceId: string;
+  readonly storageKey: string;
   readonly privateKey: CryptoKey;
   readonly publicKey: CryptoKey;
   readonly publicJwk: JsonWebKey;
@@ -15,8 +17,8 @@ export interface LocationIdentityKeyRecord {
 }
 
 export interface LocationIdentityKeyStore {
-  get(accountId: string): Promise<LocationIdentityKeyRecord | null>;
-  /** Must be atomic and reject when this account already has a record. */
+  get(storageKey: string): Promise<LocationIdentityKeyRecord | null>;
+  /** Must be atomic and reject when this account/device already has a record. */
   add(record: LocationIdentityKeyRecord): Promise<void>;
 }
 
@@ -45,7 +47,7 @@ function openDatabase(factory: IDBFactory = globalThis.indexedDB): Promise<IDBDa
     request.onupgradeneeded = () => {
       const database = request.result;
       if (!database.objectStoreNames.contains(STORE_NAME)) {
-        database.createObjectStore(STORE_NAME, { keyPath: "accountId" });
+        database.createObjectStore(STORE_NAME, { keyPath: "storageKey" });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -58,13 +60,13 @@ function openDatabase(factory: IDBFactory = globalThis.indexedDB): Promise<IDBDa
 export class IndexedDbLocationIdentityKeyStore implements LocationIdentityKeyStore {
   constructor(private readonly factory: IDBFactory = globalThis.indexedDB) {}
 
-  async get(accountId: string): Promise<LocationIdentityKeyRecord | null> {
+  async get(storageKey: string): Promise<LocationIdentityKeyRecord | null> {
     const database = await openDatabase(this.factory);
     try {
       const transaction = database.transaction(STORE_NAME, "readonly");
       const completed = transactionResult(transaction);
       const value = await requestResult(
-        transaction.objectStore(STORE_NAME).get(accountId) as IDBRequest<LocationIdentityKeyRecord | undefined>,
+        transaction.objectStore(STORE_NAME).get(storageKey) as IDBRequest<LocationIdentityKeyRecord | undefined>,
       );
       await completed;
       return value ?? null;
@@ -86,11 +88,18 @@ export class IndexedDbLocationIdentityKeyStore implements LocationIdentityKeySto
   }
 }
 
-function validKeyPairShape(record: LocationIdentityKeyRecord, accountId: string): boolean {
+function validKeyPairShape(
+  record: LocationIdentityKeyRecord,
+  accountId: string,
+  deviceId: string,
+  storageKey: string,
+): boolean {
   return record !== null &&
     typeof record === "object" &&
     record.version === 1 &&
     record.accountId === accountId &&
+    record.deviceId === deviceId &&
+    record.storageKey === storageKey &&
     Number.isSafeInteger(record.createdAt) &&
     record.createdAt > 0 &&
     record.privateKey?.type === "private" &&
@@ -108,10 +117,12 @@ function validKeyPairShape(record: LocationIdentityKeyRecord, accountId: string)
 async function verifyStoredKeyPair(
   record: LocationIdentityKeyRecord,
   accountId: string,
+  deviceId: string,
+  storageKey: string,
   cryptoProvider: Crypto,
 ): Promise<boolean> {
   try {
-    if (!validKeyPairShape(record, accountId)) return false;
+    if (!validKeyPairShape(record, accountId, deviceId, storageKey)) return false;
     const exported = await cryptoProvider.subtle.exportKey("jwk", record.publicKey);
     if (
       exported.kty !== record.publicJwk.kty ||
@@ -120,7 +131,7 @@ async function verifyStoredKeyPair(
       exported.y !== record.publicJwk.y
     ) return false;
 
-    const challenge = encoder.encode("SAC:location-identity-vault:v1:" + accountId);
+    const challenge = encoder.encode("SAC:location-identity-vault:v2:" + accountId + ":" + deviceId);
     const signature = await cryptoProvider.subtle.sign(
       { name: "ECDSA", hash: "SHA-256" },
       record.privateKey,
@@ -138,12 +149,13 @@ async function verifyStoredKeyPair(
 }
 
 /**
- * Loads or creates the account's local signing identity. The ECDSA private
- * CryptoKey is non-extractable and stored only in IndexedDB. ECDH transport
- * keys remain ephemeral and must be generated in memory for each SOS session.
+ * Loads or creates a signing identity scoped to one account and one device.
+ * The ECDSA private CryptoKey is non-extractable and stored only in IndexedDB.
+ * ECDH transport keys remain ephemeral and are generated in memory per SOS.
  */
 export async function getOrCreateLocationIdentityKeyPair(
   accountId: string,
+  deviceId: string,
   store: LocationIdentityKeyStore = new IndexedDbLocationIdentityKeyStore(),
   cryptoProvider: Crypto = globalThis.crypto,
 ): Promise<LocationIdentityKeyRecord> {
@@ -155,10 +167,19 @@ export async function getOrCreateLocationIdentityKeyPair(
   ) {
     throw new Error("L'identifiant du compte est invalide.");
   }
+  if (
+    typeof deviceId !== "string" ||
+    !deviceId.trim() ||
+    deviceId.length > 256 ||
+    [...deviceId].some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127)
+  ) {
+    throw new Error("L'identifiant de l'appareil est invalide.");
+  }
 
-  const existing = await store.get(accountId);
+  const storageKey = accountId + ":" + deviceId;
+  const existing = await store.get(storageKey);
   if (existing) {
-    if (!(await verifyStoredKeyPair(existing, accountId, cryptoProvider))) {
+    if (!(await verifyStoredKeyPair(existing, accountId, deviceId, storageKey, cryptoProvider))) {
       throw new Error("La clé d'identité locale est invalide. Le partage GPS reste désactivé.");
     }
     return existing;
@@ -173,6 +194,8 @@ export async function getOrCreateLocationIdentityKeyPair(
   const record: LocationIdentityKeyRecord = {
     version: 1,
     accountId,
+    deviceId,
+    storageKey,
     privateKey: pair.privateKey,
     publicKey: pair.publicKey,
     publicJwk,
@@ -185,8 +208,8 @@ export async function getOrCreateLocationIdentityKeyPair(
   } catch (insertError) {
     // Another tab may have won the atomic first-use race. Reuse only the
     // winner's verified key; never return the unpersisted local key pair.
-    const winner = await store.get(accountId);
-    if (winner && await verifyStoredKeyPair(winner, accountId, cryptoProvider)) {
+    const winner = await store.get(storageKey);
+    if (winner && await verifyStoredKeyPair(winner, accountId, deviceId, storageKey, cryptoProvider)) {
       return winner;
     }
     throw insertError;
