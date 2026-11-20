@@ -7,8 +7,6 @@ import {
   verifyLocationSessionBundle,
   deriveLocationSessionDirectionalKey,
 } from "../src/services/location/location-session.ts";
-import { fingerprintLocationIdentityKey } from "../src/services/location/key-exchange.ts";
-import { pinTrustedLocationFingerprint } from "../src/services/location/identity-vault.ts";
 import {
   type LocationIdentityKeyRecord,
   type LocationIdentityKeyStore,
@@ -99,22 +97,8 @@ test("author encrypts GPS for one recipient and only that recipient can decrypt"
   const recipient = await createLocationSessionBundle(
     "recipient", "recipient-device", "alert-1", "session-1", salt, expiresAt, recipientStore,
   );
-  await pinTrustedLocationFingerprint({
-    accountId: "author",
-    deviceId: "author-device",
-    contactAccountId: "recipient",
-    contactDeviceId: "recipient-device",
-    fingerprint: await fingerprintLocationIdentityKey(recipient.bundle.identityPublicKey),
-    confirmedByIndependentChannel: true,
-  }, authorStore);
-  await pinTrustedLocationFingerprint({
-    accountId: "recipient",
-    deviceId: "recipient-device",
-    contactAccountId: "author",
-    contactDeviceId: "author-device",
-    fingerprint: await fingerprintLocationIdentityKey(author.bundle.identityPublicKey),
-    confirmedByIndependentChannel: true,
-  }, recipientStore);
+  // Device identity is authenticated from the active SAC session and its signed bundle;
+  // no user-facing fingerprint exchange or manual pinning is required.
 
   const authorSendKey = await deriveLocationSessionDirectionalKey({
     ownPrivateKey: author.exchangePrivateKey,
@@ -126,7 +110,7 @@ test("author encrypts GPS for one recipient and only that recipient can decrypt"
     recipientDeviceId: "recipient-device",
     ownDeviceId: "author-device",
     expectedSalt: salt,
-  }, "author", authorStore);
+  });
   const recipientReceiveKey = await deriveLocationSessionDirectionalKey({
     ownPrivateKey: recipient.exchangePrivateKey,
     remoteBundle: author.bundle,
@@ -137,7 +121,7 @@ test("author encrypts GPS for one recipient and only that recipient can decrypt"
     recipientDeviceId: "recipient-device",
     ownDeviceId: "recipient-device",
     expectedSalt: salt,
-  }, "recipient", recipientStore);
+  });
 
   const location = JSON.stringify({ latitude: 13.5, longitude: 2.1, accuracy: 5, capturedAt: 123456 });
   const packet = await encryptLocationPayload(location, authorSendKey, "session-1");
