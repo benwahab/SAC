@@ -86,7 +86,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
   }[language];
 
   type Mode = "login" | "register" | "verify" | "enroll" | "complete";
-  const [mode, setMode] = useState<Mode>("login");
+  const [mode, setMode] = useState<Mode>(() => new URLSearchParams(window.location.search).get("mode") === "register" ? "register" : "login");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -498,11 +498,8 @@ export default function App() {
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-sac-muted sm:text-lg">{t.heroDescription}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <button type="button" disabled aria-describedby="sos-status" className="inline-flex min-h-14 cursor-not-allowed items-center justify-center gap-3 rounded-2xl border border-sac-alert/20 bg-sac-alert/10 px-7 text-base font-extrabold text-sac-alert opacity-80">
-                <ShieldCheck size={20} />{t.sosLabel}
-                <span className="rounded-full bg-white/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide">{t.preparing}</span>
-              </button>
-              <span className="text-sm leading-6 text-sac-muted" id="sos-status">{t.sosStatus}</span>
+              <a href="/connexion?mode=register" className="sac-action sac-hero-primary inline-flex min-h-14 items-center justify-center gap-3 rounded-full px-7 text-sm font-extrabold text-white">{t.createAccount ?? (language === "fr" ? "Créer un compte" : language === "en" ? "Create an account" : "إنشاء حساب"){"}"} <span aria-hidden="true">↗</span></a>
+              <a href="/connexion" className="sac-action sac-hero-secondary inline-flex min-h-14 items-center justify-center gap-3 rounded-full px-7 text-sm font-bold text-white">{signInLabel{"}"} <span aria-hidden="true">→</span></a>
             </div>
             <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-sac-ink">
               <span className="sac-inline-icon inline-flex items-center gap-2"><LockKeyhole size={16} className="text-sac-confirm" />{t.protectedData}</span>
@@ -510,9 +507,46 @@ export default function App() {
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-md">
-            <div className="absolute -inset-5 rounded-[2.5rem] bg-gradient-to-br from-sac-primary/80 via-white/70 to-sac-confirm/10 blur-xl" />
-            <div className="sac-glass-panel sac-offers-panel relative rounded-[2rem] p-6 sm:p-8">
+          <div className="sac-hero-art relative mx-auto flex min-h-[28rem] w-full max-w-[38rem] items-center justify-center overflow-hidden rounded-[2.2rem] p-5 sm:min-h-[36rem] sm:p-8">
+            <div className="sac-art-orbit sac-art-orbit-one" />
+            <div className="sac-art-orbit sac-art-orbit-two" />
+            <div className="sac-art-glow" />
+            <div className="sac-art-phone relative z-10 w-[min(68%,18rem)] rounded-[2.5rem] p-3">
+              <div className="sac-art-phone-screen flex min-h-[25rem] flex-col rounded-[2rem] p-5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black tracking-[.22em] text-white/65">SAC</span>
+                  <span className="sac-art-secure inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[9px] font-bold"><LockKeyhole size={11}/> {language === "fr" ? "PRIVÉ" : language === "en" ? "PRIVATE" : "خاص"}</span>
+                </div>
+                <div className="my-auto text-center">
+                  <div className="sac-art-emblem mx-auto grid h-28 w-28 place-items-center rounded-full">
+                    <ShieldCheck size={54} strokeWidth={1.45}/>
+                  </div>
+                  <p className="mt-7 text-[10px] font-bold uppercase tracking-[.2em] text-white/55">{language === "fr" ? "SÉCURITÉ DE VOS PROCHES" : language === "en" ? "YOUR LOVED ONES' SAFETY" : "سلامة أحبائك"}</p>
+                  <p className="mt-2 text-2xl font-semibold leading-tight text-white">{language === "fr" ? "Toujours proches.\nMême à distance." : language === "en" ? "Always close.\nEven from afar." : "دائماً قريبون،\nحتى عن بُعد."}</p>
+                </div>
+                <div className="sac-art-contact flex items-center gap-3 rounded-2xl p-3">
+                  <span className="grid h-10 w-10 place-items-center rounded-full bg-white/10"><UsersRound size={19}/></span>
+                  <span className="min-w-0 flex-1"><span className="block text-xs font-bold text-white">{language === "fr" ? "Cercle de confiance" : language === "en" ? "Trusted circle" : "دائرة الثقة"}</span><span className="mt-1 block text-[10px] text-white/55">{language === "fr" ? "Les personnes qui comptent" : language === "en" ? "The people who matter" : "الأشخاص المهمون"}</span></span>
+                  <span className="h-2 w-2 rounded-full bg-[#7ED6A0] shadow-[0_0_12px_#7ED6A0]"/>
+                </div>
+              </div>
+            </div>
+            <div className="sac-art-float sac-art-float-top absolute left-5 top-[16%] z-20 flex items-center gap-3 rounded-2xl px-4 py-3 sm:left-8">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#E85D04]/20 text-[#FF9A5C]"><HeartHandshake size={21}/></span>
+              <span><b className="block text-xs text-white">{language === "fr" ? "Un lien de confiance" : language === "en" ? "A trusted connection" : "رابط موثوق"{"}"}</b><small className="mt-1 block text-[10px] text-white/55">{language === "fr" ? "Vos proches, votre choix" : language === "en" ? "Your people, your choice" : "أحباؤك، اختيارك"{"}"}</small></span>
+            </div>
+            <div className="sac-art-float sac-art-float-bottom absolute bottom-[14%] right-4 z-20 flex items-center gap-3 rounded-2xl px-4 py-3 sm:right-7">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#E85D04]/20 text-[#FF9A5C]"><MapPin size={20}/></span>
+              <span><b className="block text-xs text-white">{language === "fr" ? "Alerte confidentielle" : language === "en" ? "Private alert" : "تنبيه خاص"{"}"}</b><small className="mt-1 block text-[10px] text-white/55">{language === "fr" ? "Uniquement à vos contacts" : language === "en" ? "Only to your contacts" : "لجهات اتصالك فقط"{"}"}</small></span>
+            </div>
+            <span className="sac-art-side-label absolute right-3 top-1/2 hidden -translate-y-1/2 rotate-90 text-[9px] font-black uppercase tracking-[.38em] sm:block">SÉCURITÉ • CONFIANCE • PROXIMITÉ</span>
+          </div>
+        </section>
+
+        <section className="sac-offers-section relative px-5 py-16 sm:px-8 sm:py-20">
+          <div className="mx-auto max-w-6xl">
+          <div className="sac-offers-panel relative mx-auto w-full max-w-4xl rounded-[2rem] p-6 sm:p-9">
+            <div className="relative">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-sac-primary-strong">{t.offersEyebrow}</p>
@@ -569,8 +603,8 @@ export default function App() {
               <p className="mt-5 text-xs leading-5 text-sac-muted">{t.freeSafety}</p>
             </div>
           </div>
+          </div>
         </section>
-
         <section className="border-y border-white/80 bg-white/45 backdrop-blur-xl">
           <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
             <div className="sac-copy max-w-2xl">
