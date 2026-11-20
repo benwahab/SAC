@@ -356,7 +356,7 @@ Les contraintes et triggers interdisent notamment les tentatives non réservées
 
 La migration ne modifie pas les lignes existantes et ne touche aucune donnée GPS. Le test `tests/d1_notification_retention_schema.test.py` applique la chaîne de migrations 0001 à 0009 dans une base SQLite isolée et vérifie les contraintes, la limite de lot de 200, la suppression enfant-avant-parent, le rollback transactionnel en cas d'échec, l'impossibilité d'étendre le fan-out après agrégation et la préservation de l'outbox métier. Il vérifie aussi l'absence de colonnes de contenu sensible. La commande est `npm run test:d1-notification-retention`, intégrée au workflow CI. Le workflow GitHub Actions `44800621093` a réussi le 20 novembre 2026, y compris l'application Wrangler de 0001 à 0009 sur la base locale isolée et les 12 tests du contrat de rétention.
 
-**État opérationnel mis à jour — 20 novembre 2026 :** la migration 0009 a été appliquée à la D1 distante `sac-db` et vérifiée dans `d1_migrations` (entrées 0001 à 0009), avec les trois tables, les index, les triggers et `PRAGMA foreign_key_check` sans anomalie. Le Worker isolé `sac-notification-retention-purge` a été créé et déployé via l'API Cloudflare, avec le binding D1 `DB` et le Cron `0 * * * *`. Il ne fait aucun envoi Push/SMS et ne touche qu'aux deux tables du registre de livraison technique. Le premier passage planifié n'a pas encore été observé ; vérifier `last_success_at`, les compteurs et les journaux après le prochain déclenchement horaire. Les alertes sont actuellement émises dans les journaux Worker uniquement : aucun canal externe surveillé n'est configuré, donc la surveillance humaine reste à terminer. La CI GitHub des deux commits Worker doit être confirmée séparément.
+**État opérationnel mis à jour — 20 novembre 2026 :** la migration 0009 a été appliquée à la D1 distante `sac-db` et vérifiée dans `d1_migrations` (entrées 0001 à 0009), avec les trois tables, les index, les triggers et `PRAGMA foreign_key_check` sans anomalie. Le Worker isolé `sac-notification-retention-purge` a été créé et déployé via l'API Cloudflare, avec le binding D1 `DB` et le Cron `0 * * * *`. Il ne fait aucun envoi Push/SMS et ne touche qu'aux deux tables du registre de livraison technique. La CI GitHub des deux commits Worker est réussie (`44802075781` et `44802079697`). À la dernière lecture de D1, `last_started_at` et `last_success_at` étaient encore NULL : le Cron est enregistré mais son premier passage effectif n'est pas encore prouvé. Il faudra relire le singleton après le prochain déclenchement horaire et confirmer les journaux `SAC_RETENTION_PURGE_OK`. Les alertes sont actuellement émises dans les journaux Worker uniquement : aucun canal externe surveillé n'est configuré, donc la surveillance humaine reste à terminer.
 
 #### Tests obligatoires de purge
 
@@ -436,6 +436,7 @@ Sources officielles :
 - [ ] CI verte sur la version implémentée.
 - [x] Migration D1 distante 0009 appliquée et vérifiée.
 - [x] Worker isolé de purge D1 déployé avec Cron horaire et binding D1.
-- [ ] Premier passage Cron observé et compteurs `last_success_at` vérifiés.
+- [ ] Premier passage Cron observé et compteurs `last_success_at` vérifiés (pas encore exécuté au dernier contrôle D1).
 - [ ] Canal d'alerte externe réellement surveillé configuré et testé.
+- [x] CI GitHub des deux commits du Worker isolé réussie (`44802075781`, `44802079697`).
 - [ ] Configuration et recette réelle autorisées et vérifiées.
