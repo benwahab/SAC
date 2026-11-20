@@ -1,3 +1,4 @@
+import { parseGpsWebSocketProtocols } from "./websocket-protocol.ts";
 import { DurableObject } from "cloudflare:workers";
 
 interface TicketClaims {
@@ -120,16 +121,11 @@ export default {
     const action = match[2];
     let token = "";
     if (action === "socket") {
-      const protocols = (request.headers.get("Sec-WebSocket-Protocol") ?? "")
-        .split(",").map((value) => value.trim()).filter(Boolean);
-      const ticketProtocols = protocols.filter((value) => value.startsWith("sac-gps-ticket."));
-      if (
-        request.method !== "GET" ||
-        !protocols.includes("sac-gps-v1") ||
-        ticketProtocols.length !== 1 ||
-        protocols.length !== 2
-      ) return json({ error: "invalid_websocket_protocol" }, 401);
-      token = ticketProtocols[0].slice("sac-gps-ticket.".length);
+      const offered = parseGpsWebSocketProtocols(request.headers.get("Sec-WebSocket-Protocol"));
+      if (request.method !== "GET" || !offered) {
+        return json({ error: "invalid_websocket_protocol" }, 401);
+      }
+      token = offered.ticket;
     } else {
       token = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ?? "";
     }
@@ -191,6 +187,8 @@ export class GpsRelayRoom extends DurableObject<Env> {
     if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket") {
       return json({ error: "upgrade_required" }, 426);
     }
+    const offered = parseGpsWebSocketProtocols(request.headers.get("Sec-WebSocket-Protocol"));
+    if (!offered) return json({ error: "invalid_websocket_protocol" }, 401);
 
     const alertId = request.headers.get("X-SAC-Alert-ID");
     const accountId = request.headers.get("X-SAC-Account-ID");
@@ -222,7 +220,7 @@ export class GpsRelayRoom extends DurableObject<Env> {
     return new Response(null, {
       status: 101,
       webSocket: client,
-      headers: { "Sec-WebSocket-Protocol": "sac-gps-v1" },
+      headers: { "Sec-WebSocket-Protocol": offered.protocol },
     });
   }
 
