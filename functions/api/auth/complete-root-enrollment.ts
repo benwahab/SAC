@@ -27,14 +27,6 @@ function originsFromEnv(value: string | undefined): string[] {
 function isUuid(value: unknown): value is string {
   return typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
-function b64UrlToBytes(value: string): Uint8Array {
-  const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
-  return Uint8Array.from(atob(base64 + "=".repeat((4 - base64.length % 4) % 4)), (c) => c.charCodeAt(0));
-}
-function digestHex(value: Uint8Array): string {
-  return Array.from(value, (byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const guard = guardSameOriginJsonPost(request);
   if (guard) return guard;
