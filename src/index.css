@@ -612,7 +612,10 @@ button:focus-visible, a:focus-visible { outline: 3px solid #E85D04; outline-offs
 
 /* Shared landing/auth art direction: warm illuminated glass. */
 .sac-auth-page {
-  background:radial-gradient(ellipse at 18% 22%,rgba(232,93,4,.38),transparent 42%),radial-gradient(ellipse at 82% 78%,rgba(255,153,84,.25),transparent 38%),linear-gradient(125deg,#160905 0%,#2A1007 48%,#160905 100%) !important;
+  background:
+    radial-gradient(ellipse at 76% 46%, rgba(179,65,13,.22), transparent 42%),
+    radial-gradient(ellipse at 5% 100%, rgba(232,93,4,.12), transparent 38%),
+    linear-gradient(110deg,#100905 0%,#170B06 55%,#210D05 100%) !important;
 }
 .sac-auth-layout { animation:sac-hero-in .75s ease-out both; }
 .sac-auth-brand { color:#fff; padding:1rem 0; }
@@ -648,3 +651,11 @@ button:focus-visible, a:focus-visible { outline: 3px solid #E85D04; outline-offs
  .sac-shell:has(.sac-header) main > section:not(.sac-hero-layout) article,
  .sac-shell:has(.sac-header) main > section:not(.sac-hero-layout) .sac-responsible-panel{animation:none!important}
 }
+
+
+/* Install prompt is a dismissible dialog; authentication remains the mobile primary action. */
+.sac-install-overlay { background:rgba(8,5,3,.72); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); animation:sac-install-fade .2s ease-out both; }
+.sac-install-dialog { border:1px solid rgba(255,255,255,.9); background:linear-gradient(145deg,rgba(255,255,255,.97),rgba(255,247,239,.94)); box-shadow:0 32px 90px rgba(0,0,0,.42),inset 0 1px 0 #fff; animation:sac-install-rise .28s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes sac-install-fade { from{opacity:0} to{opacity:1} }
+@keyframes sac-install-rise { from{opacity:0;transform:translateY(14px) scale(.98)} to{opacity:1;transform:translateY(0) scale(1)} }
+@media(prefers-reduced-motion:reduce){.sac-install-overlay,.sac-install-dialog{animation:none}}
