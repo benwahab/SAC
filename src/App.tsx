@@ -555,7 +555,7 @@ export default function App() {
                 </div>
                 <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sac-primary/70 text-sac-primary-strong"><ShieldCheck size={25} /></span>
               </div>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
                 <div className="sac-offer-wrap relative" onMouseEnter={() => setOpenOffer("free")} onMouseLeave={() => setOpenOffer(null)}>
                   <button type="button" aria-expanded={openOffer === "free"} aria-controls="sac-free-offer-details" onFocus={() => setOpenOffer("free")} onClick={() => setOpenOffer("free")} className="sac-offer-card sac-offer-free w-full rounded-2xl p-4 text-left">
                     <div className="flex items-center justify-between gap-3">
