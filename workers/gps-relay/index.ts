@@ -5,7 +5,7 @@ interface TicketClaims {
   accountId: string;
   role: "author" | "recipient";
   exp: number;
-  scope: "connect";
+  scope: "connect" | "close";
 }
 interface Env {
   DB: D1Database;
@@ -40,7 +40,7 @@ async function verifyTicket(token: string, secret: string): Promise<TicketClaims
     const valid = await crypto.subtle.verify("HMAC", key, decodeBase64Url(parts[1]), new TextEncoder().encode(parts[0]));
     if (!valid) return null;
     const claims = decodeJsonPart(parts[0]) as TicketClaims;
-    if (!claims || claims.scope !== "connect" || !claims.alertId || !claims.accountId ||
+    if (!claims || (claims.scope !== "connect" && claims.scope !== "close") || !claims.alertId || !claims.accountId ||
         (claims.role !== "author" && claims.role !== "recipient") ||
         !Number.isSafeInteger(claims.exp) || claims.exp < Math.floor(Date.now() / 1000)) return null;
     return claims;
