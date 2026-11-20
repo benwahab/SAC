@@ -44,12 +44,12 @@ function concat(...parts: Uint8Array[]): Uint8Array {
   return output;
 }
 
-async function hmac(keyBytes: Uint8Array, data: Uint8Array, cryptoProvider: Crypto): Promise<Uint8Array> {
+async function hmac(keyBytes: Uint8Array, data: Uint8Array, cryptoProvider: Crypto): Promise<Uint8Array<ArrayBuffer>> {
   const key = await cryptoProvider.subtle.importKey("raw", keyBytes as BufferSource, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   return new Uint8Array(await cryptoProvider.subtle.sign("HMAC", key, data as BufferSource));
 }
 
-async function hkdfExpand(prk: Uint8Array, info: Uint8Array, length: number, cryptoProvider: Crypto): Promise<Uint8Array> {
+async function hkdfExpand(prk: Uint8Array, info: Uint8Array, length: number, cryptoProvider: Crypto): Promise<Uint8Array<ArrayBuffer>> {
   const blocks: Uint8Array[] = [];
   let previous = new Uint8Array(0);
   let total = 0;
