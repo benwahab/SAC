@@ -583,7 +583,7 @@ export default function App() {
                     <p className="mt-1 text-sm text-sac-muted">10 {t.contacts}</p>
                   </button>
                   {openOffer === "premium" && (
-                    <div id="sac-premium-offer-details" role="region" aria-label={t.premiumPlan + " — " + t.offerDetails} className="sac-offer-popover absolute inset-x-0 top-full z-30 mt-2 rounded-2xl p-4">
+                    <div id="sac-premium-offer-details" role="region" aria-label={t.premiumPlan + " — " + t.offerDetails} className="sac-offer-popover absolute inset-x-0 top-full z-[60] mt-3 rounded-2xl p-4">
                       <div className="flex items-center justify-between gap-3">
                         <h4 className="text-sm font-extrabold text-sac-ink">{t.offerIncluded}</h4>
                         <button type="button" onClick={() => setOpenOffer(null)} aria-label={t.closeOfferDetails} className="sac-offer-close rounded-full px-2 py-1 text-xs font-bold">{t.closeOfferDetails}</button>
