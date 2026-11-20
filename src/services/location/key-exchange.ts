@@ -170,8 +170,9 @@ export async function validateLocationExchangePublicKey(
 }
 
 export interface SignedLocationKeyBundle {
-  readonly version: 1;
+  readonly version: 2;
   readonly ownerId: string;
+  readonly deviceId: string;
   readonly exchangePublicKey: JsonWebKey;
   readonly identityPublicKey: JsonWebKey;
   readonly signature: Uint8Array;
@@ -184,15 +185,18 @@ export interface LocationIdentityKeyPair {
 
 function canonicalBundlePayload(
   ownerId: string,
+  deviceId: string,
   exchangePublicKey: JsonWebKey,
 ): Uint8Array {
   requireContext(ownerId, "du propriétaire");
+  requireContext(deviceId, "de l'appareil");
   if (!isP256PublicJwk(exchangePublicKey)) {
     throw new Error("La clé publique ECDH P-256 est invalide.");
   }
   return encoder.encode(JSON.stringify([
-    "SAC:identity-key-bundle:v1",
+    "SAC:identity-key-bundle:v2",
     ownerId,
+    deviceId,
     exchangePublicKey.kty,
     exchangePublicKey.crv,
     exchangePublicKey.x,
@@ -214,6 +218,7 @@ export async function createLocationIdentityKeyPair(
 
 export async function signLocationKeyBundleWithPublicKey(
   ownerId: string,
+  deviceId: string,
   exchangePublicKey: CryptoKey,
   identityPrivateKey: CryptoKey,
   identityPublicKey: CryptoKey,
@@ -240,11 +245,12 @@ export async function signLocationKeyBundleWithPublicKey(
   const signature = await cryptoProvider.subtle.sign(
     { name: "ECDSA", hash: "SHA-256" },
     identityPrivateKey,
-    toArrayBuffer(canonicalBundlePayload(ownerId, exchangeJwk)),
+    toArrayBuffer(canonicalBundlePayload(ownerId, deviceId, exchangeJwk)),
   );
   const bundle: SignedLocationKeyBundle = {
-    version: 1,
+    version: 2,
     ownerId,
+    deviceId,
     exchangePublicKey: exchangeJwk,
     identityPublicKey: identityJwk,
     signature: new Uint8Array(signature),
@@ -268,11 +274,15 @@ export async function verifyLocationKeyBundle(
     if (
       typeof bundle !== "object" ||
       bundle === null ||
-      bundle.version !== 1 ||
+      bundle.version !== 2 ||
       typeof bundle.ownerId !== "string" ||
       !bundle.ownerId.trim() ||
       bundle.ownerId.length > 256 ||
       [...bundle.ownerId].some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127) ||
+      typeof bundle.deviceId !== "string" ||
+      !bundle.deviceId.trim() ||
+      bundle.deviceId.length > 256 ||
+      [...bundle.deviceId].some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127) ||
       !isP256PublicJwk(bundle.identityPublicKey) ||
       !isP256PublicJwk(bundle.exchangePublicKey) ||
       !(bundle.signature instanceof Uint8Array) ||
@@ -298,7 +308,7 @@ export async function verifyLocationKeyBundle(
       { name: "ECDSA", hash: "SHA-256" },
       identityKey,
       toArrayBuffer(bundle.signature),
-      toArrayBuffer(canonicalBundlePayload(bundle.ownerId, bundle.exchangePublicKey)),
+      toArrayBuffer(canonicalBundlePayload(bundle.ownerId, bundle.deviceId, bundle.exchangePublicKey)),
     );
   } catch {
     return false;
@@ -336,6 +346,7 @@ export async function fingerprintLocationIdentityKey(
 export async function verifyTrustedLocationKeyBundle(
   bundle: SignedLocationKeyBundle,
   expectedOwnerId: string,
+  expectedDeviceId: string,
   pinnedFingerprint: string,
   cryptoProvider: Crypto = globalThis.crypto,
 ): Promise<boolean> {
@@ -343,7 +354,10 @@ export async function verifyTrustedLocationKeyBundle(
     if (
       typeof expectedOwnerId !== "string" ||
       !expectedOwnerId.trim() ||
+      typeof expectedDeviceId !== "string" ||
+      !expectedDeviceId.trim() ||
       bundle?.ownerId !== expectedOwnerId ||
+      bundle?.deviceId !== expectedDeviceId ||
       typeof pinnedFingerprint !== "string" ||
       !/^(?:[0-9A-F]{4})(?: [0-9A-F]{4}){15}$/.test(pinnedFingerprint)
     ) return false;
