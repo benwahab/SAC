@@ -31,9 +31,9 @@ test("accepts a signed contact key only when its independently pinned fingerprin
 });
 
 test("rejects a valid self-signed key when the account identity does not match", async () => {
-  const { bundle, fingerprint } = await createBundle();
+  const { bundle, fingerprint, deviceId } = await createBundle();
   assert.equal(
-    await verifyTrustedLocationKeyBundle(bundle, "different-contact", fingerprint),
+    await verifyTrustedLocationKeyBundle(bundle, "different-contact", deviceId, fingerprint),
     false,
   );
 });
@@ -48,7 +48,7 @@ test("rejects a valid self-signed key when the independent fingerprint differs",
 });
 
 test("rejects malformed fingerprints and altered signatures", async () => {
-  const { bundle, fingerprint } = await createBundle();
+  const { bundle, fingerprint, deviceId } = await createBundle();
   assert.equal(await verifyTrustedLocationKeyBundle(bundle, "trusted-contact", deviceId, "not-a-fingerprint"), false);
   const altered = new Uint8Array(bundle.signature);
   altered[0] ^= 1;
