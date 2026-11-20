@@ -281,9 +281,89 @@ Les historiques Workflow ne doivent contenir que des identifiants internes opaqu
 
 Cette durée est indépendante de la purge D1 des livraisons et tentatives individuelles à 30 jours. Elle ne remplace pas cette purge.
 
+### Spécification opérationnelle — purge D1 automatique
+
+**Périmètre strict :** seules les lignes du registre technique `notification_delivery_attempts` et `notification_device_deliveries` sont concernées. La purge ne touche jamais `alert_reminder_outbox`, les dossiers SOS, les comptes, les abonnements actifs, les données GPS, ni aucune autre table.
+
+#### Déclenchement et cadence
+
+- Utiliser le Cron du Worker de notification déjà prévu dans l'architecture, sans créer un service supplémentaire.
+- Exécuter la purge une fois par heure, après le traitement normal des rappels, dans une étape isolée et protégée par `try/catch`.
+- La purge ne doit jamais retarder, bloquer ou faire échouer le traitement des alertes et des rappels.
+- Chaque exécution traite un lot borné (maximum **200 livraisons** par passage). Si le lot est plein, le passage suivant continue ; aucune suppression massive non bornée.
+- Le mécanisme est idempotent : relancer le même passage ne doit ni altérer les résultats métier ni supprimer une donnée hors périmètre.
+
+#### Point de départ des 30 jours
+
+- Le début de conservation est la date de fin du cycle complet du rappel, lorsque toutes les livraisons appareil ciblées sont terminales et que la ligne outbox destinataire a été agrégée.
+- À ce moment, enregistrer une seule fois un horodatage immuable `cycle_terminal_at` (ou équivalent) et calculer `retention_expires_at = cycle_terminal_at + 30 jours`.
+- Une livraison appareil ne doit **pas** démarrer son délai de conservation dès qu'elle devient terminale si d'autres appareils du même rappel sont encore en cours.
+- Une livraison sans appareil éligible doit être agrégée immédiatement et suivre la même règle de 30 jours à partir de cette agrégation.
+- Une ligne non terminale, une ligne sans horodatage fiable ou une ligne dont l'outbox n'a pas été agrégée est exclue de la purge. En cas de doute, conserver et signaler plutôt que supprimer.
+
+#### Suppression en deux phases, bornée et cohérente
+
+1. Sélectionner au plus 200 livraisons éligibles dont `retention_expires_at <= maintenant`, avec un index sur l'échéance et l'état terminal.
+2. Supprimer d'abord les tentatives liées à ces livraisons, puis les livraisons elles-mêmes, dans une transaction D1 (`batch`) ; ne pas utiliser de suppression en cascade implicite comme unique garantie.
+3. La suppression parent doit inclure une condition `NOT EXISTS` vérifiant qu'aucune tentative enfant ne subsiste.
+4. Si une étape échoue, la transaction est annulée ; le lot reste disponible pour le passage suivant. Ne jamais marquer une purge réussie si une seule des deux étapes a échoué.
+5. Les contraintes de clé étrangère et les index doivent être testés sur la migration locale avant toute demande d'application distante.
+6. La purge ne supprime jamais les lignes outbox métier : elles conservent leur historique métier selon leur propre politique de conservation.
+
+#### Preuve de couverture et surveillance
+
+Créer une petite ligne de contrôle technique unique (par exemple `notification_retention_control`, singleton) contenant uniquement :
+- date/heure du dernier passage réussi ;
+- nombre agrégé de lignes de livraisons et tentatives supprimées au dernier passage ;
+- nombre actuel de lignes arrivées à échéance mais non purgées ;
+- date de la plus ancienne échéance encore en attente ;
+- nombre de passages consécutifs en échec ;
+- code d'erreur technique normalisé, sans message brut.
+
+Cette ligne ne contient aucun identifiant de compte, identifiant SOS, endpoint, clé, payload, GPS ou donnée personnelle. Elle n'est pas un journal d'activité utilisateur.
+
+À chaque passage, le Worker :
+- met à jour les compteurs agrégés après la transaction ;
+- vérifie qu'il ne reste pas de lignes échues non supprimées ;
+- écrit un log structuré minimal avec date, durée, volumes agrégés, backlog et code d'état ;
+- ne journalise jamais les identifiants des lignes supprimées ni le contenu SQL lié à une donnée utilisateur.
+
+**Alertes obligatoires :**
+- échec d'une exécution : produire une erreur observable (avec code normalisé) afin que Cloudflare Workers Issues puisse la détecter ;
+- deux passages horaires consécutifs en échec : alerte de niveau élevé ;
+- présence d'une ligne échue depuis plus de 24 heures : alerte de niveau élevé ;
+- compteur de backlog qui augmente sur plusieurs passages : alerte de surveillance ;
+- absence de passage réussi depuis plus de 2 heures : alerte de niveau élevé.
+
+Les notifications d'alerte doivent être configurées vers un canal d'exploitation effectivement surveillé avant mise en service. Tant qu'aucun canal n'est configuré et testé, la purge ne peut pas être déclarée surveillée en production.
+
+#### Reprise après incident et protection contre les restaurations
+
+- Une panne du Cron ne remet pas le compteur de conservation à zéro : les échéances absolues restent inchangées et les passages suivants rattrapent le retard par lots.
+- Un lot partiellement traité doit être rejoué sans doublon ni perte de cohérence.
+- Une restauration D1 peut réintroduire des lignes déjà purgées dans le registre technique : après restauration, le contrôle doit relire les échéances et relancer la purge jusqu'à résorption du backlog.
+- Cette purge du registre Push n'est **pas** une preuve de suppression irréversible des GPS précis dans les sauvegardes ou D1 Time Travel. La règle GPS de 30 jours exige un mécanisme distinct, une preuve spécifique et une autorisation séparée.
+
+#### Tests obligatoires de purge
+
+- ligne à 29 jours : conservée ;
+- ligne à exactement 30 jours après `cycle_terminal_at` : éligible selon l'horloge UTC ;
+- cycle rappel non agrégé : conservé même si certains appareils sont terminaux depuis plus de 30 jours ;
+- tentative enfant supprimée avant sa livraison parent ;
+- échec entre les deux opérations : transaction annulée, aucune suppression partielle ;
+- lot supérieur à 200 : un seul lot borné traité, les suivants restent éligibles ;
+- répétition du même passage : aucun effet secondaire ;
+- panne Cron de plusieurs heures : rattrapage progressif sans modifier les échéances ;
+- restauration d'une sauvegarde contenant des lignes échues : repurge automatique ;
+- table hors périmètre (outbox, SOS, comptes, abonnements, GPS) : aucune ligne supprimée ;
+- backlog supérieur à 24 heures et deux échecs consécutifs : alertes déclenchées ;
+- absence de canal d'alerte configuré : recette de mise en service refusée.
+
+La cadence horaire, le lot de 200 et les seuils d'alerte sont des paramètres techniques initiaux prudents ; ils doivent être testés avec les quotas D1 du compte et ajustés avant activation, sans augmenter le périmètre des données supprimées.
+
 ### Points distincts à arbitrer
-- politique de métriques et logs expurgés, distincte du registre D1 ;
-- mécanisme opérationnel de purge (Cron/Worker existant ou tâche dédiée), avec preuve de couverture et alertes en cas d'échec.
+- choix et configuration du canal d'alerte réellement surveillé ;
+- validation des quotas D1 et de la charge de purge sur le plan Cloudflare réel.
 
 La conservation Cloudflare Workflow n'est pas une politique de conservation SAC. D1 doit appliquer sa propre purge à 30 jours, même si l'état Workflow est déjà expiré ou conservé plus longtemps.
 
