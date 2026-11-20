@@ -55,8 +55,8 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
             )
             self.db.execute(
                 """INSERT INTO email_otp_challenges
-                   (id,account_id,identity_id,purpose,digest,attempt_count,max_attempts,created_at,expires_at)
-                   VALUES (?,?,?,'account_email_verification',?,0,6,?,?)""",
+                   (id,account_id,identity_id,purpose,digest,attempt_count,max_attempts,created_at,expires_at,delivery_status)
+                   VALUES (?,?,?,'account_email_verification',?,0,6,?,?,'pending')""",
                 (challenge, account_id, identity, "a" * 64, created, created + 600_000),
             )
             self.db.execute(
