@@ -110,13 +110,14 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
     def _delivery(self, delivery_id="delivery", status="accepted", terminal_at=None, expires_at=None):
         terminal_at = terminal_at if terminal_at is not None else self.now
         expires_at = expires_at if expires_at is not None else terminal_at + 2_592_000_000
+        created_at = min(self.now - 100, terminal_at - 100)
         self.db.execute(
             """INSERT INTO notification_device_deliveries
                (id,outbox_id,alert_id,recipient_account_id,device_id,subscription_id,
                 status,attempt_count,created_at,updated_at,cycle_terminal_at,retention_expires_at)
                VALUES (?,'outbox','alert','contact','device-opaque',?,
                 ?,0,?,?,?,?)""",
-            (delivery_id, 'subscription-' + delivery_id, status, self.now - 100, self.now - 100, terminal_at, expires_at),
+            (delivery_id, 'subscription-' + delivery_id, status, created_at, created_at, terminal_at, expires_at),
         )
 
     def test_30_day_expiry_is_exact_and_uses_utc_milliseconds(self):
@@ -143,8 +144,8 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
             self.db.execute(
                 """INSERT INTO notification_delivery_attempts
                    (id,delivery_id,attempt_number,reserved_at,result,finished_at)
-                   VALUES ('attempt-1','delivery',1,?,?,?)""",
-                (self.now, "accepted", self.now + 1),
+                   VALUES ('attempt-1','delivery',1,?,'accepted',?,?)""",
+                (self.now, self.now, self.now + 1),
             )
 
     def test_attempt_limit_is_two_and_unique(self):
