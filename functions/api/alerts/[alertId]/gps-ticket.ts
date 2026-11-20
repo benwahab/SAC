@@ -74,6 +74,7 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
       role: row.participant_role,
       exp: Math.floor(expiresAt / 1000),
       scope: "connect",
+      jti: crypto.randomUUID(),
     });
     const ticketHash = await hashTicket(ticket);
 
