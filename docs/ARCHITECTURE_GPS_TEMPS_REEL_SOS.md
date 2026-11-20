@@ -204,3 +204,10 @@ Le parcours client est maintenant relié au panneau privé d'une alerte SOS acti
 Le relais Worker est publié sur son sous-domaine `workers.dev`. Le secret HMAC partagé a été créé et configuré dans le Worker et dans les variables de production Pages. L'URL publique est également configurée. **Le commutateur `GPS_RELAY_E2EE_READY` reste volontairement à `false`** tant que les tests d'intégration multi-appareils, les scénarios de clôture concurrente et la vérification sur téléphones réels n'ont pas été validés. La publication du Worker ne signifie donc pas que le partage GPS est activé.
 
 Le client reste dépendant des autorisations de géolocalisation du navigateur et d'une page PWA au premier plan. Aucun suivi en arrière-plan Android n'est promis par cette version web. Aucune vraie alerte, notification push ou SMS n'a été déclenché pendant les tests.
+
+
+## Activation en production — 20 novembre 2026
+
+Le verrou de disponibilité a été basculé à `true` dans le Worker `sac-gps-relay` et dans la configuration Pages de production. Le secret HMAC est présent dans les deux environnements sans être exposé dans le dépôt. Le sous-domaine Worker est activé. Le déploiement Pages de production correspondant au commit d'activation a terminé avec succès : `17aeec7a`.
+
+Le partage GPS E2EE est donc **activé côté production**. La validation CI du commit de configuration est en cours au moment de cette note ; les tests applicatifs et le build du commit précédent ont réussi. La première validation opérationnelle doit encore être faite avec deux appareils réels, deux sessions authentifiées et les empreintes des appareils mutuellement épinglées. En cas de refus de permission GPS, de clé non vérifiée ou de perte du relais, le partage échoue fermé et aucune coordonnée n'est transmise.
