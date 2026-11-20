@@ -1,3 +1,4 @@
+import { acceptsRootAssertionFlags } from "../../../src/domain/webauthn-assertion-policy.ts";
 import { guardSameOriginJsonPost } from "../../lib/security/http-request-guard.ts";
 import { readJsonRequestBody } from "../../lib/security/json-request-body.ts";
 import { isAllowedWebAuthnOrigin } from "../../lib/security/webauthn-origin.ts";
@@ -122,7 +123,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const rpHash = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(env.WEBAUTHN_RP_ID)));
     if (!equal(authData.slice(0, 32), rpHash)) throw new Error("rp_id_mismatch");
     const flags = authData[32];
-    if ((flags & 0x01) === 0 || (flags & 0x04) === 0 || (flags & 0x08) !== 0 || (flags & 0x10) !== 0 || (flags & 0x80) !== 0 || (flags & 0x62) !== 0) throw new Error("authenticator_flags_rejected");
+    if (!acceptsRootAssertionFlags(flags)) throw new Error("authenticator_flags_rejected");
     const signCount = new DataView(authData.buffer, authData.byteOffset, authData.byteLength).getUint32(33, false);
     if (challenge.sign_count > 0 && signCount <= challenge.sign_count) throw new Error("signature_counter_rejected");
 
