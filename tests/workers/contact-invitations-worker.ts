@@ -59,8 +59,11 @@ export default {
             "INSERT INTO account_identities (id,account_id,channel,normalized_value,verified_at,is_primary,created_at) VALUES (?,?,'email',?,NULL,1,?)",
           ).bind(identityId, id, email, now),
           env.DB.prepare(
-            "INSERT INTO email_otp_challenges (id,account_id,identity_id,purpose,digest,attempt_count,max_attempts,created_at,expires_at) VALUES (?,?,?,'account_email_verification',?,0,6,?,?)",
+            "INSERT INTO email_otp_challenges (id,account_id,identity_id,purpose,digest,attempt_count,max_attempts,created_at,expires_at,delivery_status) VALUES (?,?,?,'account_email_verification',?,0,6,?,?, 'pending')",
           ).bind(challengeId, id, identityId, "a".repeat(64), now - 1000, now + 600000),
+          env.DB.prepare(
+            "UPDATE email_otp_challenges SET delivery_status='accepted' WHERE id=?",
+          ).bind(challengeId),
           env.DB.prepare(
             "UPDATE email_otp_challenges SET attempt_count=1,consumed_at=? WHERE id=?",
           ).bind(now, challengeId),
