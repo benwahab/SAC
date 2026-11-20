@@ -25,7 +25,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
         # are added only after the schema is in place.
         for migration in MIGRATIONS:
             self.db.executescript(migration.read_text(encoding="utf-8"))
-        self.now = int(time.time() * 1000)
+        self.now = int(time.time() * 1000) - 40 * 24 * 60 * 60 * 1000
         self._seed_accounts_and_relationship()
         self._seed_alert_and_outbox()
         self.db.commit()
@@ -109,7 +109,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
 
     def _delivery(self, delivery_id="delivery", status="accepted", terminal_at="auto", expires_at="auto"):
         if terminal_at == "auto":
-            terminal_at = self.now
+            terminal_at = self.now + 39 * 24 * 60 * 60 * 1000
         if expires_at == "auto":
             expires_at = terminal_at + 2_592_000_000 if terminal_at is not None else None
         if terminal_at is not None:
@@ -182,7 +182,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
 
     def test_purge_is_child_first_bounded_and_never_deletes_business_outbox(self):
         for i in range(205):
-            self._delivery(f"delivery-{i:03d}", terminal_at=self.now - 2_592_001_000)
+            self._delivery(f"delivery-{i:03d}", terminal_at=self.now + 24 * 60 * 60 * 1000)
         # Add one technical attempt to the first eligible delivery.
         self.db.execute(
             "UPDATE notification_device_deliveries SET attempt_count=1 WHERE id='delivery-000'"
@@ -193,7 +193,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
                VALUES ('attempt-000','delivery-000',1,?,'accepted',?,?)""",
             (self.now - 2_592_001_000, self.now - 2_592_001_000, self.now - 2_592_001_000 + 1),
         )
-        cutoff = self.now
+        cutoff = self.now + 40 * 24 * 60 * 60 * 1000
         # Mirror the two D1 batch statements: child rows first, then parents.
         self.db.execute(
             """DELETE FROM notification_delivery_attempts
@@ -223,7 +223,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
         self.assertEqual(self.db.execute("SELECT COUNT(*) FROM alert_reminder_outbox").fetchone()[0], 1)
 
     def test_unexpired_and_orphan_attempts_block_parent_delete(self):
-        self._delivery("future", terminal_at=self.now)
+        self._delivery("future", terminal_at=self.now + 40 * 24 * 60 * 60 * 1000)
         self.db.execute(
             "UPDATE notification_device_deliveries SET attempt_count=1 WHERE id='future'"
         )
@@ -251,7 +251,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
         overdue = self.db.execute(
             """SELECT COUNT(*) FROM notification_device_deliveries
                WHERE retention_expires_at <= ?""",
-            (self.now,),
+            (self.now + 40 * 24 * 60 * 60 * 1000,),
         ).fetchone()[0]
         self.assertEqual(overdue, 1)
 
