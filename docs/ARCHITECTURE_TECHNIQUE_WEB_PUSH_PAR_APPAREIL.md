@@ -273,9 +273,15 @@ Seules les données techniques minimales sont conservées pendant cette période
 
 La durée de 30 jours concerne uniquement ce registre technique par appareil et ses tentatives. Elle ne définit pas la conservation des dossiers SOS, des autres journaux SAC ou des données GPS, qui restent régis par leurs propres règles.
 
-### Points distincts à arbitrer
+### Décision validée — Cloudflare Workflows
 
-- durée de conservation des instances et historiques Cloudflare Workflow ;
+Les instances et historiques Cloudflare Workflow liés aux livraisons Push sont conservés **7 jours maximum après la fin de chaque exécution**. La politique d'exploitation doit configurer ou appliquer cette limite selon les capacités réelles du compte Cloudflare. Si la plateforme impose une rétention supérieure, SAC ne doit pas y stocker de contenu sensible et doit documenter cette limite avant activation.
+
+Les historiques Workflow ne doivent contenir que des identifiants internes opaques, étapes, états, dates et erreurs techniques expurgées. Aucun contenu SOS, donnée personnelle non nécessaire, endpoint Push, clé d'abonnement, secret ou donnée GPS ne doit y être placé.
+
+Cette durée est indépendante de la purge D1 des livraisons et tentatives individuelles à 30 jours. Elle ne remplace pas cette purge.
+
+### Points distincts à arbitrer
 - politique de métriques et logs expurgés, distincte du registre D1 ;
 - mécanisme opérationnel de purge (Cron/Worker existant ou tâche dédiée), avec preuve de couverture et alertes en cas d'échec.
 
@@ -325,7 +331,7 @@ Sources officielles :
 - [x] Audit de l'architecture existante.
 - [x] Architecture cible et contrats conceptuels documentés.
 - [x] Conservation des résultats techniques individuels D1 fixée à 30 jours après la fin du rappel ; purge automatique requise.
-- [ ] Durée de conservation des instances et historiques Workflow.
+- [x] Conservation des instances et historiques Workflow fixée à 7 jours maximum après la fin de l'exécution.
 - [x] Timeout réseau fournisseur fixé à 8 secondes maximum ; bail de traitement fixé à 30 secondes avec fencing token et consommation de la tentative après expiration.
 - [ ] Spécification opérationnelle détaillée de récupération après interruption et tests de concurrence.
 - [ ] Migration D1 écrite et testée localement.
