@@ -60,3 +60,25 @@ La réponse de clôture expose `gpsRelayRevocation` comme `confirmed` ou `pendin
 ## Critère d'activation
 
 Le GPS de production reste désactivé jusqu'à réussite des points 1 à 8. Ce statut est un verrou de sécurité explicite, pas une décision de conserver le GPS 30 jours. Dès que la recette est passée, le partage GPS peut être activé uniquement pendant les alertes actives.
+
+
+## Revue de sécurité complémentaire — 20 novembre 2026, 21:22 (heure du Niger)
+
+### Vérifications confirmées
+
+- Commit serveur : `a795b283aae61370656010553cde2c14816dc850`.
+- Contrôle TypeScript/CI GitHub Actions `validate` : succès sur ce commit.
+- Déploiement Cloudflare Pages associé : succès, aperçu `60651649.sac-3xh.pages.dev`.
+- Ces deux résultats valident la compilation et le déploiement Pages, pas le déploiement du Worker GPS ni un partage GPS fonctionnel.
+
+### Blocages de sécurité identifiés avant toute mise en service
+
+1. Le ticket WebSocket est actuellement placé dans le paramètre d'URL `ticket`. Même s'il expire après 120 secondes, il peut être exposé par des journaux de requête ou des outils d'observabilité. Avant production, remplacer ce transport par un mécanisme d'échange à usage unique, ou démontrer explicitement que les URL complètes ne sont jamais journalisées et réduire encore la fenêtre d'utilisation.
+2. Les messages `key-announce` sont actuellement relayés comme données opaques. Le Worker ne prouve pas l'identité du propriétaire de la clé annoncée. Le client doit vérifier une signature d'identité et comparer l'empreinte à une référence obtenue par un canal indépendant ; aucune clé reçue du seul serveur ne peut être considérée comme fiable.
+3. Le Worker ne possède pas encore de tests d'intégration dédiés couvrant l'autorisation par rôle, les tickets rejoués, l'isolation entre salles, les messages malformés, les déconnexions et la clôture concurrente.
+4. Le navigateur n'utilise toujours pas `navigator.geolocation.watchPosition` dans le parcours SOS ; aucun paquet GPS réel ne doit donc être émis.
+5. Le Worker `sac-gps-relay` n'est pas confirmé comme déployé et son secret partagé avec Pages n'est pas configuré/validé.
+
+### Décision opérationnelle
+
+Le statut de la fonctionnalité reste **non activée en production**. Ne pas afficher de position fictive ni un indicateur « GPS actif ». La prochaine tranche doit traiter les tickets à usage unique et leur exposition, établir la confiance des clés par appareil, écrire les tests du relais, puis raccorder le navigateur. Le GPS ne sera activé qu'après une recette Android à deux appareils démontrant l'arrêt immédiat à la clôture et l'absence de coordonnées dans toute persistance ou journalisation SAC.
