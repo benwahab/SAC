@@ -32,7 +32,7 @@ async function makeFixture() {
     env: {
       PUSH_VAPID_PUBLIC_KEY: encodeBase64Url(publicRaw),
       PUSH_VAPID_PRIVATE_JWK: JSON.stringify(privateJwk),
-      PUSH_VAPID_SUBJECT: "https://sac-3xh.pages.dev",
+      PUSH_VAPID_SUBJECT: "mailto:benwahab111@gmail.com",
     },
   };
 }
@@ -78,7 +78,7 @@ test("Web Push construit un corps aes128gcm chiffré et un jeton VAPID signé", 
   const [header, claims, signature] = token.split(".");
   const decodedClaims = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(claims.replace(/-/g, "+").replace(/_/g, "/") + "=="), c => c.charCodeAt(0)))) as { aud: string; exp: number; sub: string };
   assert.equal(decodedClaims.aud, "https://fcm.googleapis.com");
-  assert.equal(decodedClaims.sub, "https://sac-3xh.pages.dev");
+  assert.equal(decodedClaims.sub, "mailto:benwahab111@gmail.com");
   const signingInput = encoder.encode(header + "." + claims);
   const signatureBytes = Uint8Array.from(atob(signature.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - signature.length % 4) % 4)), c => c.charCodeAt(0));
   const publicKey = await cryptoProvider.subtle.importKey("jwk", fixture.vapidPublicJwk, { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
