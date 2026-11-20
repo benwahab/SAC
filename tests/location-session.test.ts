@@ -5,6 +5,7 @@ import {
   decodeLocationSessionBundle,
   encodeLocationSessionBundle,
   verifyLocationSessionBundle,
+  verifyAuthenticatedLocationSessionBundle,
   deriveLocationSessionDirectionalKey,
 } from "../src/services/location/location-session.ts";
 import {
@@ -54,6 +55,23 @@ test("round-trips session bundles through the relay-safe opaque string format", 
     decoded!, "author", "device-a", "alert-1", "session-1",
   ), true);
   assert.equal(decodeLocationSessionBundle(encoded + "x"), null);
+});
+
+test("accepts a signed key automatically when its account and device match the authenticated SAC session", async () => {
+  const session = await createLocationSessionBundle(
+    "trusted-contact", "contact-device", "alert-1", "session-1",
+    crypto.getRandomValues(new Uint8Array(32)), Date.now() + 60_000,
+    new MemoryIdentityStore(),
+  );
+  assert.equal(await verifyAuthenticatedLocationSessionBundle(
+    session.bundle, "trusted-contact", "contact-device", "alert-1", "session-1",
+  ), true);
+  assert.equal(await verifyAuthenticatedLocationSessionBundle(
+    session.bundle, "other-account", "contact-device", "alert-1", "session-1",
+  ), false);
+  assert.equal(await verifyAuthenticatedLocationSessionBundle(
+    session.bundle, "trusted-contact", "other-device", "alert-1", "session-1",
+  ), false);
 });
 
 test("rejects a session bundle replayed into another alert or session", async () => {
