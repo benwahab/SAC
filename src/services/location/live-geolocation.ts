@@ -14,6 +14,7 @@ export type GeolocationFailure =
 export interface PreciseLocationCallbacks {
   onPosition(position: EphemeralPreciseLocation): void;
   onError(reason: GeolocationFailure): void;
+  onClear?(): void;
 }
 
 export interface GeolocationPort {
@@ -58,6 +59,7 @@ export function startPreciseLocationWatch(
       geolocation.clearWatch(watchId);
       watchId = null;
     }
+    callbacks.onClear?.();
   };
 
   try {
@@ -78,7 +80,10 @@ export function startPreciseLocationWatch(
         callbacks.onPosition({ latitude, longitude, accuracy, capturedAt });
       },
       (error) => {
-        if (!stopped) callbacks.onError(mapGeolocationError(error));
+        if (stopped) return;
+        const reason = mapGeolocationError(error);
+        callbacks.onError(reason);
+        if (reason === "permission_denied") stop();
       },
       { ...DEFAULT_OPTIONS, ...options },
     );
