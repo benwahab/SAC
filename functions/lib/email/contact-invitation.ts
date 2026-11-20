@@ -1,5 +1,4 @@
 import { sendBrevoTransactionalEmail } from "./brevo.ts";
-import { sendBrevoTransactionalEmail } from "./brevo.ts";
 import type { SacEmailLanguage } from "./verification.ts";
 
 export interface ContactInvitationEmailEnvironment {
@@ -139,7 +138,7 @@ export async function sendContactInvitationEmail(
       { recipientEmail, subject: template.subject, htmlContent: html },
       fetcher,
     );
-    return result.ok ? result : { ok: false, reason: result.reason };
+    return result.ok ? result : { ok: false, reason: result.reason === "invalid_recipient" ? "invalid_invitation" : result.reason };
   } catch {
     return { ok: false, reason: "provider_unavailable" };
   }

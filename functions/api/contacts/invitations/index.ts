@@ -10,7 +10,6 @@ interface Env {
   BREVO_API_KEY?: string;
   BREVO_FROM_EMAIL?: string;
   BREVO_FROM_NAME?: string;
-  BREVO_FROM_NAME?: string;
   APP_BASE_URL?: string;
   CONTACT_INVITATION_TTL_MS?: string;
   CONTACT_PERMISSION_VERSION?: string;
@@ -143,7 +142,6 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       {
         BREVO_API_KEY: env.BREVO_API_KEY,
         BREVO_FROM_EMAIL: env.BREVO_FROM_EMAIL,
-        BREVO_FROM_NAME: env.BREVO_FROM_NAME,
         BREVO_FROM_NAME: env.BREVO_FROM_NAME,
         APP_BASE_URL: env.APP_BASE_URL,
       },
