@@ -6,6 +6,7 @@ interface TicketClaims {
   role: "author" | "recipient";
   exp: number;
   scope: "connect" | "close";
+  jti?: string;
 }
 interface Env {
   DB: D1Database;
@@ -75,7 +76,8 @@ async function verifyTicket(token: string, secret: string): Promise<TicketClaims
       !claims.accountId ||
       (claims.role !== "author" && claims.role !== "recipient") ||
       !Number.isSafeInteger(claims.exp) ||
-      claims.exp <= Math.floor(Date.now() / 1000)
+      claims.exp <= Math.floor(Date.now() / 1000) ||
+      (claims.scope === "connect" && (typeof claims.jti !== "string" || claims.jti.length < 16 || claims.jti.length > 64))
     ) return null;
     return claims;
   } catch {
