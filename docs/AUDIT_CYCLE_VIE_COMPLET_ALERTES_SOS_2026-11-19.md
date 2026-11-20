@@ -129,3 +129,31 @@ Prouver l'effacement irréversible des coordonnées précises au bout de 30 jour
 ## Conclusion
 
 Le cycle métier de base est présent et plusieurs invariants sont bien protégés par D1. Il n'est cependant pas prêt à être activé avec des notifications réelles. Les priorités sont la course clôture/envoi, le suivi de livraison par appareil, la minimisation des données retournées et l'idempotence de l'accusé de réception. L'escalade SMS reste une file de tâches sans fournisseur d'envoi actif. Aucun changement de code ou de base n'a été effectué dans le cadre de cet audit.
+
+
+---
+
+## Addendum — état vérifié au 20 novembre 2026
+
+Cet addendum prévaut sur les constats historiques ci-dessus lorsqu'ils décrivent un point depuis corrigé.
+
+### Corrections apportées sur `main`
+
+- **Confidentialité du détail :** `functions/api/alerts/[alertId].ts` retire désormais `authorAccountId` et `recipientSnapshot` de la réponse publique authentifiée. La route renvoie seulement `recipientCount` avec le reste de la projection non identifiante. Le composant d'interface de suivi SOS ne dépend pas de ces identifiants.
+- **Clôture avant Push :** le sender vérifie maintenant que l'alerte est toujours `active` dans la requête de sélection des abonnements, puis refait une vérification juste avant chaque appel réseau. Cela réduit fortement la fenêtre de course. Une requête déjà remise au fournisseur externe ne peut cependant pas être rappelée ; une garantie absolue « aucun Push après clôture » n'est pas démontrable avec un appel réseau externe non transactionnel.
+- **Accusé de réception :** la conclusion initiale de l'audit était erronée sur ce point. La migration `0004_sos_reminder_leases.sql` crée déjà l'index unique partiel `alert_acknowledgement_once` sur `(alert_id, actor_account_id)` pour `acknowledged`. Cette garantie SQL est présente.
+- **Suivi multi-appareils :** le problème demeure. L'outbox reste agrégée par destinataire et le transport ne persiste pas encore un résultat indépendant par appareil. La proposition `PROPOSITION_SUIVI_WEB_PUSH_PAR_APPAREIL_2026-11-19.md` reste le document de référence ; ses arbitrages sur les résultats réseau ambigus, les reprises et la conservation doivent être validés avant la migration D1.
+
+### État d'exécution et de mise en service
+
+- Les tests de contrat, tests d'intégration D1 locale et build exécutés sur le commit `af1fd2126e8955c0e6b2cf7db26901c4cddba8fa` ont réussi dans GitHub Actions (run `44796247420`).
+- Le déploiement Pages de ce commit s'est terminé avec succès. Le commit suivant ne modifie que le libellé d'une étape CI.
+- Le Worker `sac-sos-notification-delivery` n'est toujours pas déployé ; aucun envoi Push réel n'est activé.
+- L'escalade SMS reste une file de tâches D1 sans fournisseur SMS réel.
+- La preuve d'effacement irréversible du GPS précis à J+30, y compris sauvegardes et D1 Time Travel, n'est toujours pas établie. GPS précis : **NO-GO**.
+- La limite `recipientLimit: 2` de l'endpoint de création n'a pas été changée : il faut d'abord vérifier l'entitlement Free/Premium réellement implémenté.
+- Aucune migration n'a été appliquée à la D1 distante dans le cadre de ces corrections.
+
+### Fournisseur e-mail
+
+Resend a été retiré du code, des tests, de la configuration Pages et des deux anciens documents spécifiques. Les parcours OTP et invitations utilisent désormais l'adaptateur Brevo. La clé `BREVO_API_KEY` est configurée comme secret Cloudflare ; l'adresse expéditrice vérifiée (`BREVO_FROM_EMAIL`) et le nom expéditeur (`BREVO_FROM_NAME`) restent à renseigner. Tant que ces deux valeurs ne sont pas définies, l'envoi est refusé proprement. Les règles métier OTP n'ont pas été modifiées.
