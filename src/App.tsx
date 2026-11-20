@@ -356,7 +356,7 @@ export default function App() {
   const [installHelp, setInstallHelp] = useState<"ios" | "android" | null>(null);
   const [isAppleDevice, setIsAppleDevice] = useState(false);
   const [isAndroidDevice, setIsAndroidDevice] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);\n  const [openOffer, setOpenOffer] = useState<"free" | "premium" | null>(null);
   const [language, setLanguage] = useState<Language>(() => {
     try {
       const saved = window.localStorage.getItem("sac-language");
@@ -522,22 +522,49 @@ export default function App() {
                 <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sac-primary/70 text-sac-primary-strong"><ShieldCheck size={25} /></span>
               </div>
               <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                <article className="sac-offer-card sac-offer-free rounded-2xl p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-base font-extrabold text-sac-ink">{t.freePlan}</h3>
-                    <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-extrabold text-sac-ink">{t.freeLabel}</span>
-                  </div>
-                  <p className="mt-3 text-3xl font-black tracking-tight text-sac-ink">{t.freePrice}</p>
-                  <p className="mt-1 text-sm text-sac-muted">2 {t.contacts}</p>
-                </article>
-                <article className="sac-offer-card sac-offer-premium rounded-2xl p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-base font-extrabold text-sac-ink">{t.premiumPlan}</h3>
-                    <span className="rounded-full bg-sac-primary-strong px-3 py-1 text-xs font-extrabold text-white">{t.recommendedLabel}</span>
-                  </div>
-                  <p className="mt-3 text-3xl font-black tracking-tight text-sac-ink">{t.premiumPrice}</p>
-                  <p className="mt-1 text-sm text-sac-muted">10 {t.contacts}</p>
-                </article>
+                <div className="sac-offer-wrap relative" onMouseEnter={() => setOpenOffer("free")} onMouseLeave={() => setOpenOffer(null)}>
+                  <button type="button" aria-expanded={openOffer === "free"} aria-controls="sac-free-offer-details" onFocus={() => setOpenOffer("free")} onClick={() => setOpenOffer("free")} className="sac-offer-card sac-offer-free w-full rounded-2xl p-4 text-left">
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="text-base font-extrabold text-sac-ink">{t.freePlan}</h3>
+                      <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-extrabold text-sac-ink">{t.freeLabel}</span>
+                    </div>
+                    <p className="mt-3 text-3xl font-black tracking-tight text-sac-ink">{t.freePrice}</p>
+                    <p className="mt-1 text-sm text-sac-muted">2 {t.contacts}</p>
+                  </button>
+                  {openOffer === "free" && (
+                    <div id="sac-free-offer-details" role="region" aria-label={t.freePlan + " — " + t.offerDetails} className="sac-offer-popover absolute inset-x-0 top-full z-30 mt-2 rounded-2xl p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <h4 className="text-sm font-extrabold text-sac-ink">{t.offerIncluded}</h4>
+                        <button type="button" onClick={() => setOpenOffer(null)} aria-label={t.closeOfferDetails} className="sac-offer-close rounded-full px-2 py-1 text-xs font-bold">{t.closeOfferDetails}</button>
+                      </div>
+                      <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-sac-ink">
+                        {t.freeOfferDetails.map((detail) => <li key={detail}>{detail}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                <div className="sac-offer-wrap relative" onMouseEnter={() => setOpenOffer("premium")} onMouseLeave={() => setOpenOffer(null)}>
+                  <button type="button" aria-expanded={openOffer === "premium"} aria-controls="sac-premium-offer-details" onFocus={() => setOpenOffer("premium")} onClick={() => setOpenOffer("premium")} className="sac-offer-card sac-offer-premium w-full rounded-2xl p-4 text-left">
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="text-base font-extrabold text-sac-ink">{t.premiumPlan}</h3>
+                      <span className="rounded-full bg-sac-primary-strong px-3 py-1 text-xs font-extrabold text-white">{t.recommendedLabel}</span>
+                    </div>
+                    <p className="mt-3 text-3xl font-black tracking-tight text-sac-ink">{t.premiumPrice}</p>
+                    <p className="mt-1 text-sm text-sac-muted">10 {t.contacts}</p>
+                  </button>
+                  {openOffer === "premium" && (
+                    <div id="sac-premium-offer-details" role="region" aria-label={t.premiumPlan + " — " + t.offerDetails} className="sac-offer-popover absolute inset-x-0 top-full z-30 mt-2 rounded-2xl p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <h4 className="text-sm font-extrabold text-sac-ink">{t.offerIncluded}</h4>
+                        <button type="button" onClick={() => setOpenOffer(null)} aria-label={t.closeOfferDetails} className="sac-offer-close rounded-full px-2 py-1 text-xs font-bold">{t.closeOfferDetails}</button>
+                      </div>
+                      <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-sac-ink">
+                        {t.premiumOfferDetails.map((detail) => <li key={detail}>{detail}</li>)}
+                      </ul>
+                      <p className="mt-3 border-t border-sac-primary-strong/15 pt-3 text-xs leading-5 text-sac-muted">{t.premiumPendingDetails}</p>
+                    </div>
+                  )}
+                </div>
               </div>
               <p className="mt-5 text-xs leading-5 text-sac-muted">{t.freeSafety}</p>
             </div>
