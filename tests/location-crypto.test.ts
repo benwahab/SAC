@@ -245,6 +245,7 @@ test("une clé ECDH signée est vérifiée avec la clé publique d'identité", a
   const identity = await createLocationIdentityKeyPair();
   const bundle = await signLocationKeyBundleWithPublicKey(
     "contact-bob",
+    "device-bob",
     contactExchange.publicKey,
     identity.privateKey,
     identity.publicKey,
@@ -258,7 +259,8 @@ test("une modification de l'identité déclarée invalide la signature", async (
   const exchange = await createLocationExchangeKeyPair();
   const identity = await createLocationIdentityKeyPair();
   const bundle = await signLocationKeyBundleWithPublicKey(
-    "contact-bob", exchange.publicKey, identity.privateKey, identity.publicKey,
+    "contact-bob",
+    "device-bob", exchange.publicKey, identity.privateKey, identity.publicKey,
   );
 
   assert.equal(
@@ -272,7 +274,8 @@ test("une substitution de clé ECDH invalide la signature du contact", async () 
   const substituted = await createLocationExchangeKeyPair();
   const identity = await createLocationIdentityKeyPair();
   const bundle = await signLocationKeyBundleWithPublicKey(
-    "contact-bob", exchange.publicKey, identity.privateKey, identity.publicKey,
+    "contact-bob",
+    "device-bob", exchange.publicKey, identity.privateKey, identity.publicKey,
   );
 
   assert.equal(
@@ -341,7 +344,8 @@ test("la signature refuse une clé privée et une clé publique d'identité qui 
 
   await assert.rejects(
     signLocationKeyBundleWithPublicKey(
-      "contact-bob",
+    "contact-bob",
+    "device-bob",
       exchange.publicKey,
       identityA.privateKey,
       identityB.publicKey,
@@ -360,7 +364,8 @@ test("la vérification d'un bundle mal formé retourne false sans lever d'except
   const exchange = await createLocationExchangeKeyPair();
   const identity = await createLocationIdentityKeyPair();
   const bundle = await signLocationKeyBundleWithPublicKey(
-    "contact-bob", exchange.publicKey, identity.privateKey, identity.publicKey,
+    "contact-bob",
+    "device-bob", exchange.publicKey, identity.privateKey, identity.publicKey,
   );
 
   assert.equal(
@@ -373,7 +378,8 @@ test("un bundle ne peut pas embarquer une clé privée dans son JWK public", asy
   const exchange = await createLocationExchangeKeyPair();
   const identity = await createLocationIdentityKeyPair();
   const bundle = await signLocationKeyBundleWithPublicKey(
-    "contact-bob", exchange.publicKey, identity.privateKey, identity.publicKey,
+    "contact-bob",
+    "device-bob", exchange.publicKey, identity.privateKey, identity.publicKey,
   );
   const identityJwk = await globalThis.crypto.subtle.exportKey("jwk", identity.publicKey);
 
@@ -425,8 +431,9 @@ test("un bundle correctement signé avec un point ECDH hors courbe est rejeté",
     y: "A".repeat(43),
   } satisfies JsonWebKey;
   const payload = new TextEncoder().encode(JSON.stringify([
-    "SAC:identity-key-bundle:v1",
+    "SAC:identity-key-bundle:v2",
     "contact-bob",
+    "device-bob",
     exchangePublicKey.kty,
     exchangePublicKey.crv,
     exchangePublicKey.x,
@@ -439,8 +446,9 @@ test("un bundle correctement signé avec un point ECDH hors courbe est rejeté",
   ));
 
   const accepted = await verifyLocationKeyBundle({
-    version: 1,
+    version: 2,
     ownerId: "contact-bob",
+    deviceId: "device-bob",
     exchangePublicKey,
     identityPublicKey,
     signature,
