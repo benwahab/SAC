@@ -247,7 +247,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
             self.db.execute("INSERT INTO notification_retention_control(singleton_id) VALUES (2)")
 
     def test_restore_backlog_remains_discoverable(self):
-        self._delivery("restored", terminal_at=self.now - 2_592_000_000)
+        self._delivery("restored", terminal_at=self.now + 24 * 60 * 60 * 1000)
         overdue = self.db.execute(
             """SELECT COUNT(*) FROM notification_device_deliveries
                WHERE retention_expires_at <= ?""",
