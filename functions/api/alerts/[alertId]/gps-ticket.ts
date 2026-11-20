@@ -71,6 +71,7 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
     const ticket = await signGpsRelayTicket(env.GPS_RELAY_HMAC_SECRET, {
       alertId: row.id,
       accountId: session.value.accountId,
+      deviceId: session.value.deviceId,
       role: row.participant_role,
       exp: Math.floor(expiresAt / 1000),
       scope: "connect",
@@ -81,8 +82,8 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
     await env.DB.prepare("DELETE FROM gps_relay_tickets WHERE expires_at <= ?").bind(now).run();
     const inserted = await env.DB.prepare(
       `INSERT INTO gps_relay_tickets
-         (ticket_hash, alert_id, account_id, role, created_at, expires_at)
-       SELECT ?, a.id, ?, ?, ?, ?
+         (ticket_hash, alert_id, account_id, device_id, role, created_at, expires_at)
+       SELECT ?, a.id, ?, ?, ?, ?, ?
        FROM alerts a
        WHERE a.id = ? AND a.status = 'active'
          AND (a.author_account_id = ? OR EXISTS (
@@ -90,7 +91,7 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          ))`,
     ).bind(
-      ticketHash, session.value.accountId, row.participant_role, now, expiresAt,
+      ticketHash, session.value.accountId, session.value.deviceId, row.participant_role, now, expiresAt,
       row.id, session.value.accountId, session.value.accountId,
     ).run();
 
