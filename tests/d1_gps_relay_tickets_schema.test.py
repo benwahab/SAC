@@ -25,9 +25,21 @@ class GpsRelayTicketSchemaTests(unittest.TestCase):
         self.db.execute("""INSERT INTO accounts
             (id,status,preferred_language,password_hash,created_at,updated_at)
             VALUES ('owner','pending_verification','fr','test',1000,1000)""")
+        self.db.execute("""INSERT INTO account_identities
+            (id,account_id,channel,normalized_value,verified_at,is_primary,created_at)
+            VALUES ('owner-email','owner','email','owner@example.ne',NULL,1,1000)""")
+        self.db.execute("""INSERT INTO email_otp_challenges
+            (id,account_id,identity_id,purpose,digest,attempt_count,max_attempts,
+             created_at,expires_at,delivery_status)
+            VALUES ('owner-otp','owner','owner-email','account_email_verification',
+                    ?,0,6,1000,601000,'pending')""", ("a" * 64,))
+        self.db.execute("UPDATE email_otp_challenges SET delivery_status='accepted' WHERE id='owner-otp'")
+        self.db.execute("UPDATE email_otp_challenges SET attempt_count=1,consumed_at=1001 WHERE id='owner-otp'")
+        self.db.execute("UPDATE account_identities SET verified_at=1001 WHERE id='owner-email'")
+        self.db.execute("UPDATE accounts SET status='active' WHERE id='owner'")
         self.db.execute("""INSERT INTO alerts
             (id,author_account_id,category,level,status,push_reminder_limit,created_at)
-            VALUES ('alert','owner','personal_danger','urgent','active',1,1000)""")
+            VALUES ('alert','owner','personal_danger','urgent','active',1,1002)""")
 
     def tearDown(self):
         self.db.close()
