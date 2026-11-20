@@ -102,7 +102,7 @@ class GpsRelayTicketSchemaTests(unittest.TestCase):
         with self.assertRaises(sqlite3.IntegrityError):
             self.db.execute("""INSERT INTO gps_relay_tickets
                 (ticket_hash,alert_id,account_id,device_id,session_id,role,created_at,expires_at)
-                VALUES (?, 'missing','owner','device-owner','author',1000,2000)""", ("d" * 64,))
+                VALUES (?, 'missing','owner','device-owner','owner-session','author',1000,2000)""", ("d" * 64,))
 
 
     def test_ticket_cannot_be_consumed_by_a_different_device(self):
@@ -110,10 +110,10 @@ class GpsRelayTicketSchemaTests(unittest.TestCase):
             (ticket_hash,alert_id,account_id,device_id,session_id,role,created_at,expires_at)
             VALUES (?, 'alert','owner','device-owner','owner-session','author',1000,121000)""", ("e" * 64,))
         wrong_device = self.db.execute("""DELETE FROM gps_relay_tickets
-            WHERE ticket_hash=? AND alert_id=? AND account_id=? AND device_id=?
+            WHERE ticket_hash=? AND alert_id=? AND account_id=? AND device_id=? AND session_id=?
               AND expires_at>?""", ("e" * 64, "alert", "owner", "other-device", "owner-session", 2000)).rowcount
         right_device = self.db.execute("""DELETE FROM gps_relay_tickets
-            WHERE ticket_hash=? AND alert_id=? AND account_id=? AND device_id=?
+            WHERE ticket_hash=? AND alert_id=? AND account_id=? AND device_id=? AND session_id=?
               AND expires_at>?""", ("e" * 64, "alert", "owner", "device-owner", "owner-session", 2000)).rowcount
         self.assertEqual(wrong_device, 0)
         self.assertEqual(right_device, 1)
