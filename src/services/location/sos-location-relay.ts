@@ -417,16 +417,22 @@ export class SosLocationRelayClient {
 
   private async sendLocation(location: EphemeralPreciseLocation): Promise<void> {
     if (this.stopped || !this.ownSession || !this.sessionId || !isLocation(location)) return;
+    if (Date.now() >= this.ownSession.bundle.expiresAt) {
+      this.stop();
+      this.options.callbacks.onError("relay_disconnected");
+      return;
+    }
     const payload = JSON.stringify(location);
     for (const [recipientConnectionId, target] of this.recipientKeys) {
       try {
+        const sequence = target.nextSequence++;
         const packet: EncryptedLocationPacket = await encryptLocationPayload(payload, target.key, this.sessionId);
         this.send({
           type: "gps-encrypted",
           recipientConnectionId,
           ciphertext: encodeBase64Url(packet.ciphertext),
           iv: encodeBase64Url(packet.iv),
-          sequence: target.nextSequence++,
+          sequence,
         });
       } catch {
         this.options.callbacks.onError("relay_disconnected");
@@ -454,6 +460,11 @@ export class SosLocationRelayClient {
     }
     const source = this.authorKeys.get(message.fromConnectionId);
     if (!source || message.sequence! <= source.lastSequence) return;
+    if (!this.ownSession || Date.now() >= this.ownSession.bundle.expiresAt) {
+      this.stop();
+      this.options.callbacks.onError("relay_disconnected");
+      return;
+    }
     try {
       const packet: EncryptedLocationPacket = {
         version: 1,
