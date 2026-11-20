@@ -9,22 +9,22 @@ import {
 class MemoryLocationIdentityKeyStore implements LocationIdentityKeyStore {
   private readonly records = new Map<string, LocationIdentityKeyRecord>();
 
-  async get(accountId: string): Promise<LocationIdentityKeyRecord | null> {
-    return this.records.get(accountId) ?? null;
+  async get(storageKey: string): Promise<LocationIdentityKeyRecord | null> {
+    return this.records.get(storageKey) ?? null;
   }
 
   async add(record: LocationIdentityKeyRecord): Promise<void> {
-    if (this.records.has(record.accountId)) {
+    if (this.records.has(record.storageKey)) {
       throw new Error("ConstraintError");
     }
-    this.records.set(record.accountId, record);
+    this.records.set(record.storageKey, record);
   }
 }
 
 test("creates and reuses a non-exportable signing identity key for one account", async () => {
   const store = new MemoryLocationIdentityKeyStore();
   const first = await getOrCreateLocationIdentityKeyPair("account-a", "device-a", store);
-  const second = await getOrCreateLocationIdentityKeyPair("account-a", store);
+  const second = await getOrCreateLocationIdentityKeyPair("account-a", "device-a", store);
 
   assert.equal(first.privateKey.type, "private");
   assert.equal(first.privateKey.extractable, false);
