@@ -1,7 +1,7 @@
 import { isCanonicalP256PublicJwk } from "../crypto/p256-jwk.ts";
 
 const DATABASE_NAME = "sac-location-identity";
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 const STORE_NAME = "identity-keys";
 const encoder = new TextEncoder();
 
@@ -13,6 +13,7 @@ export interface LocationIdentityKeyRecord {
   readonly privateKey: CryptoKey;
   readonly publicKey: CryptoKey;
   readonly publicJwk: JsonWebKey;
+  readonly pinnedContactFingerprints: Readonly<Record<string, string>>;
   readonly createdAt: number;
 }
 
@@ -20,6 +21,7 @@ export interface LocationIdentityKeyStore {
   get(storageKey: string): Promise<LocationIdentityKeyRecord | null>;
   /** Must be atomic and reject when this account/device already has a record. */
   add(record: LocationIdentityKeyRecord): Promise<void>;
+  put(record: LocationIdentityKeyRecord): Promise<void>;
 }
 
 function requestResult<T>(request: IDBRequest<T>): Promise<T> {
@@ -46,6 +48,12 @@ function openDatabase(factory: IDBFactory = globalThis.indexedDB): Promise<IDBDa
     const request = factory.open(DATABASE_NAME, DATABASE_VERSION);
     request.onupgradeneeded = () => {
       const database = request.result;
+      if (database.objectStoreNames.contains(STORE_NAME)) {
+        const existing = request.transaction?.objectStore(STORE_NAME);
+        if (existing?.keyPath !== "storageKey") {
+          database.deleteObjectStore(STORE_NAME);
+        }
+      }
       if (!database.objectStoreNames.contains(STORE_NAME)) {
         database.createObjectStore(STORE_NAME, { keyPath: "storageKey" });
       }
@@ -90,6 +98,18 @@ export class IndexedDbLocationIdentityKeyStore implements LocationIdentityKeySto
       database.close();
     }
   }
+
+  async put(record: LocationIdentityKeyRecord): Promise<void> {
+    const database = await openDatabase(this.factory);
+    try {
+      const transaction = database.transaction(STORE_NAME, "readwrite");
+      const completed = transactionResult(transaction);
+      const written = requestResult(transaction.objectStore(STORE_NAME).put(record));
+      await Promise.all([written, completed]);
+    } finally {
+      database.close();
+    }
+  }
 }
 
 function validKeyPairShape(
@@ -115,7 +135,14 @@ function validKeyPairShape(
     record.publicKey.algorithm.name === "ECDSA" &&
     (record.publicKey.algorithm as EcKeyAlgorithm).namedCurve === "P-256" &&
     record.publicKey.usages.includes("verify") &&
-    isCanonicalP256PublicJwk(record.publicJwk);
+    isCanonicalP256PublicJwk(record.publicJwk) &&
+    record.pinnedContactFingerprints !== null &&
+    typeof record.pinnedContactFingerprints === "object" &&
+    !Array.isArray(record.pinnedContactFingerprints) &&
+    Object.entries(record.pinnedContactFingerprints).every(([key, value]) =>
+      typeof key === "string" && key.length > 0 &&
+      typeof value === "string" && /^(?:[0-9A-F]{4})(?: [0-9A-F]{4}){15}$/.test(value)
+    );
 }
 
 async function verifyStoredKeyPair(
@@ -203,6 +230,7 @@ export async function getOrCreateLocationIdentityKeyPair(
     privateKey: pair.privateKey,
     publicKey: pair.publicKey,
     publicJwk,
+    pinnedContactFingerprints: {},
     createdAt: Date.now(),
   };
 
@@ -218,4 +246,70 @@ export async function getOrCreateLocationIdentityKeyPair(
     }
     throw insertError;
   }
+}
+
+
+export interface PinTrustedLocationFingerprintInput {
+  readonly accountId: string;
+  readonly deviceId: string;
+  readonly contactAccountId: string;
+  readonly contactDeviceId: string;
+  readonly fingerprint: string;
+  /** Must be set only after comparing the code over a separate voice/in-person channel. */
+  readonly confirmedByIndependentChannel: true;
+}
+
+/** Store a verified contact fingerprint locally; it is never sent to SAC servers. */
+export async function pinTrustedLocationFingerprint(
+  input: PinTrustedLocationFingerprintInput,
+  store: LocationIdentityKeyStore = new IndexedDbLocationIdentityKeyStore(),
+  cryptoProvider: Crypto = globalThis.crypto,
+): Promise<void> {
+  if (
+    !input ||
+    input.confirmedByIndependentChannel !== true ||
+    typeof input.contactAccountId !== "string" ||
+    !input.contactAccountId.trim() ||
+    typeof input.contactDeviceId !== "string" ||
+    !input.contactDeviceId.trim() ||
+    typeof input.fingerprint !== "string" ||
+    !/^(?:[0-9A-F]{4})(?: [0-9A-F]{4}){15}$/.test(input.fingerprint)
+  ) {
+    throw new Error("La vérification indépendante de l'empreinte du proche est obligatoire.");
+  }
+
+  const own = await getOrCreateLocationIdentityKeyPair(
+    input.accountId, input.deviceId, store, cryptoProvider,
+  );
+  const pinKey = input.contactAccountId + ":" + input.contactDeviceId;
+  const current = own.pinnedContactFingerprints[pinKey];
+  if (current && current !== input.fingerprint) {
+    throw new Error("Une empreinte est déjà épinglée pour cet appareil. Une nouvelle vérification explicite est nécessaire.");
+  }
+  if (current === input.fingerprint) return;
+
+  await store.put({
+    ...own,
+    pinnedContactFingerprints: {
+      ...own.pinnedContactFingerprints,
+      [pinKey]: input.fingerprint,
+    },
+  });
+}
+
+export async function getPinnedTrustedLocationFingerprint(
+  accountId: string,
+  deviceId: string,
+  contactAccountId: string,
+  contactDeviceId: string,
+  store: LocationIdentityKeyStore = new IndexedDbLocationIdentityKeyStore(),
+  cryptoProvider: Crypto = globalThis.crypto,
+): Promise<string | null> {
+  const storageKey = accountId + ":" + deviceId;
+  const record = await store.get(storageKey);
+  if (!record) return null;
+  if (!(await verifyStoredKeyPair(record, accountId, deviceId, storageKey, cryptoProvider))) {
+    throw new Error("La clé d'identité locale est invalide. Le partage GPS reste désactivé.");
+  }
+  return record.pinnedContactFingerprints[contactAccountId + ":" + contactDeviceId] ?? null;
 }
