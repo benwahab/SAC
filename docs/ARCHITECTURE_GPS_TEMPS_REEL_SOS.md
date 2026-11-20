@@ -82,3 +82,14 @@ Le GPS de production reste désactivé jusqu'à réussite des points 1 à 8. Ce 
 ### Décision opérationnelle
 
 Le statut de la fonctionnalité reste **non activée en production**. Ne pas afficher de position fictive ni un indicateur « GPS actif ». La prochaine tranche doit traiter les tickets à usage unique et leur exposition, établir la confiance des clés par appareil, écrire les tests du relais, puis raccorder le navigateur. Le GPS ne sera activé qu'après une recette Android à deux appareils démontrant l'arrêt immédiat à la clôture et l'absence de coordonnées dans toute persistance ou journalisation SAC.
+
+
+### Contrôle du cycle de vie Durable Objects — documentation Cloudflare consultée le 20 novembre 2026
+
+Le relais actuel utilise `server.accept()` et une table de connexions conservée uniquement dans la mémoire de l'instance. Il n'utilise ni `ctx.acceptWebSocket()`, ni `serializeAttachment()`, ni stockage SQLite/KV pour les connexions ou les paquets.
+
+Conséquence : il n'active pas l'hibernation WebSocket de Durable Objects. C'est cohérent avec l'objectif de ne jamais restaurer une session GPS à partir d'un état persistant, mais cela maintient l'objet actif pendant les connexions et doit être évalué en charge et en coût. Il ne faut pas migrer vers l'API hibernatable sans définir explicitement la fermeture des sockets lors d'une éviction : Cloudflare précise que l'état mémoire est réinitialisé lors de l'hibernation et que les WebSockets hibernatables peuvent rester connectés.
+
+**Décision provisoire :** conserver les connexions non hibernatables pour le prototype sécurisé, sans sérialiser d'attachements et sans stockage de contenu GPS. Ajouter des tests d'éviction/fermeture et mesurer le coût avant toute optimisation. Si l'objet ou le processus est interrompu, les connexions doivent se terminer et les clients doivent réobtenir une autorisation sur l'alerte toujours active ; aucune session ni position ne doit être restaurée.
+
+Référence Cloudflare : https://developers.cloudflare.com/durable-objects/best-practices/websockets/ et https://developers.cloudflare.com/durable-objects/concepts/durable-object-lifecycle/.
