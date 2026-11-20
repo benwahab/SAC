@@ -78,7 +78,7 @@ interface AuthorReceiveKey {
 }
 
 const HEARTBEAT_INTERVAL_MS = 15_000;
-const SESSION_LIFETIME_MS = 60 * 60 * 1000;
+const SESSION_LIFETIME_MS = 24 * 60 * 60 * 1000;
 
 function encodeBase64Url(bytes: Uint8Array): string {
   let binary = "";
@@ -179,7 +179,7 @@ export class SosLocationRelayClient {
         this.heartbeat = setInterval(() => this.send({ type: "heartbeat" }), HEARTBEAT_INTERVAL_MS);
       });
       this.socket.addEventListener("message", (event) => {
-        void this.handleMessage(event.data);
+        void this.handleMessage(event.data).catch(() => this.options.callbacks.onError("relay_disconnected"));
       });
       this.socket.addEventListener("close", () => {
         if (!this.stopped) {
@@ -280,7 +280,11 @@ export class SosLocationRelayClient {
     if (message.type === "participant-disconnected") {
       if (typeof message.connectionId === "string") {
         this.recipientKeys.delete(message.connectionId);
-        this.authorKeys.delete(message.connectionId);
+        const wasAuthor = this.authorKeys.delete(message.connectionId);
+        if (wasAuthor) {
+          this.options.callbacks.onClear();
+          this.options.callbacks.onStatus("waiting_for_author");
+        }
         if (this.options.role === "author" && this.recipientKeys.size === 0) {
           this.watch?.stop();
           this.watch = null;
@@ -332,13 +336,21 @@ export class SosLocationRelayClient {
       }
 
       if (
+        this.sessionId === remote.sessionId &&
+        this.ownSession &&
+        this.authorKeys.has(message.fromConnectionId)
+      ) return;
+
+      if (
         this.sessionId !== remote.sessionId ||
         !this.ownSession ||
         !this.salt ||
+        this.ownSession.bundle.expiresAt !== remote.expiresAt ||
         !this.ownSession.bundle.salt.every((value, index) => value === remote.salt[index])
       ) {
         this.watch?.stop();
         this.watch = null;
+        this.options.callbacks.onClear();
         this.authorKeys.clear();
         this.recipientKeys.clear();
         this.sessionId = remote.sessionId;
@@ -375,6 +387,11 @@ export class SosLocationRelayClient {
 
     if (this.options.role === "author" && message.fromRole === "recipient") {
       if (!this.ownSession || remote.sessionId !== this.sessionId || !this.salt) return;
+      if (
+        this.recipientKeys.has(message.fromConnectionId) &&
+        remote.expiresAt === this.ownSession.bundle.expiresAt &&
+        this.salt.every((value, index) => value === remote.salt[index])
+      ) return;
       const key = await deriveLocationSessionDirectionalKey({
         ownPrivateKey: this.ownSession.exchangePrivateKey,
         remoteBundle: remote,
