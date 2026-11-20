@@ -117,8 +117,8 @@ function mapTicketError(status: number, error: string | undefined): SosLocationR
 
 /**
  * Browser-only SOS location transport. It does not persist coordinates or
- * session keys. GPS tracking starts only after at least one recipient device
- * has presented a signature and fingerprint verified against a local pin.
+ * session keys. GPS tracking starts after at least one recipient device
+ * is authenticated by its active SAC account, device and session.
  */
 export class SosLocationRelayClient {
   private readonly fetcher: typeof fetch;
