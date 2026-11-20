@@ -154,3 +154,18 @@ Un verrou explicite `GPS_RELAY_E2EE_READY` est ajouté côté Pages et Worker. S
 - le Worker accepte une connexion WebSocket GPS.
 
 Toute valeur absente, vide, différente de `true` ou mal configurée garde le relais fermé. Le Worker peut donc être déployé et son Durable Object provisionné sans rendre possible un partage de position prématuré. Ce verrou ne sera basculé qu'après intégration du stockage local des clés non exportables, authentification/vérification des clés des proches, chiffrement E2EE et tests de bout en bout sur deux appareils. Il ne faut pas confondre le déploiement de l'infrastructure avec l'activation du GPS.
+
+
+## Relais Cloudflare déployé en mode dormant — 20 novembre 2026
+
+Le Worker `sac-gps-relay` a été déployé avec le bundle JavaScript compilé par Wrangler depuis la CI validée. Le binding D1 pointe vers `sac-db`, le Durable Object `GpsRelayRoom` a été provisionné (migration Worker `v1`) et le binding `GPS_RELAY_E2EE_READY` est explicitement défini à `false`. L'observabilité Cloudflare du Worker est désactivée pour ne pas collecter de traces ou de journaux de trafic GPS.
+
+Le Worker est donc présent sur le compte Cloudflare, mais il est volontairement inactif :
+- aucun secret HMAC n'est configuré dans le Worker ou Pages ;
+- `GPS_RELAY_PUBLIC_URL` n'est pas configurée dans Pages ;
+- le verrou E2EE reste à `false` ;
+- l'endpoint Pages refuse l'émission de tickets et le Worker refuse les connexions WebSocket.
+
+Adresse du Worker réservé : `https://sac-gps-relay.benwahab111.workers.dev`.
+
+Cette mise en place provisionne le relais sans ouvrir un canal de partage avant que le client navigateur, la géolocalisation réelle et l'authentification cryptographique des clés des proches soient terminés et testés.
