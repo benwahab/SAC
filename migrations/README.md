@@ -83,3 +83,14 @@ Tests ajoutés :
 - `python3 tests/d1_push_subscriptions_schema.test.py`.
 
 Cette migration a été appliquée à `sac-db` le 19 novembre 2026. Le fournisseur Web Push/VAPID, l'abonnement `PushManager` dans la PWA, le scheduler et l'adaptateur de livraison restent non configurés : le stockage chiffré est prêt côté schéma et API, mais aucune notification n'est envoyée.
+
+
+## 0009 — registre des livraisons Push par appareil et rétention technique
+
+`0009_notification_delivery_retention.sql` ajoute le schéma du registre par appareil, le journal des deux appels réseau maximum et le singleton de contrôle de purge. Les horodatages sont en millisecondes UTC. Les identifiants de souscription et d'appareil sont opaques ; aucune URL Push, clé de souscription, charge utile, donnée SOS ou GPS n'est stockée dans ces tables.
+
+La purge cible uniquement `notification_delivery_attempts` puis `notification_device_deliveries`, en lots bornés de 200, après expiration des 30 jours calculés depuis la fin agrégée du cycle. Les clés étrangères empêchent la suppression du parent tant que des tentatives existent ; les triggers refusent une suppression avant échéance. `alert_reminder_outbox`, les alertes, les comptes, les appareils, les souscriptions actives et les données GPS sont hors périmètre.
+
+Le singleton `notification_retention_control` ne conserve que des horodatages, des compteurs agrégés, un bail anti-concurrence et des codes d'erreur normalisés. Il ne contient aucun identifiant utilisateur ou contenu privé. La logique Worker qui remplit ce contrôle, exécute la purge horaire, gère les alertes et récupère le backlog après restauration reste à implémenter et tester séparément.
+
+Test local de schéma et de contrat : `npm run test:d1-notification-retention`. Cette migration n'a **pas** été appliquée à la D1 distante. Toute application distante nécessite une autorisation explicite distincte.
