@@ -40,7 +40,7 @@ async function deriveKeys(secret: string, cryptoProvider: Crypto): Promise<{
 } | null> {
   const raw = decodeBase64Url(secret);
   if (!raw || raw.byteLength !== 32) return null;
-  const material = await cryptoProvider.subtle.importKey("raw", raw, "HKDF", false, ["deriveKey"]);
+  const material = await cryptoProvider.subtle.importKey("raw", Uint8Array.from(raw).buffer, "HKDF", false, ["deriveKey"]);
   const [encryption, fingerprint] = await Promise.all([
     cryptoProvider.subtle.deriveKey(
       { name: "HKDF", hash: "SHA-256", salt: SALT, info: encoder.encode("AES-256-GCM") },
@@ -74,7 +74,7 @@ export async function encryptPushSubscription(
   const fingerprint = await cryptoProvider.subtle.sign("HMAC", keys.fingerprint, encoder.encode(payload.endpoint));
   const endpointHash = Array.from(new Uint8Array(fingerprint), (byte) => byte.toString(16).padStart(2, "0")).join("");
   const ciphertext = await cryptoProvider.subtle.encrypt(
-    { name: "AES-GCM", iv, additionalData: encoder.encode(endpointHash) },
+    { name: "AES-GCM", iv: Uint8Array.from(iv).buffer, additionalData: encoder.encode(endpointHash) },
     keys.encryption,
     plaintext,
   );
@@ -97,9 +97,9 @@ export async function decryptPushSubscription(
   if (!keys || !iv || iv.byteLength !== 12 || !ciphertext) return null;
   try {
     const plaintext = await cryptoProvider.subtle.decrypt(
-      { name: "AES-GCM", iv, additionalData: encoder.encode(encrypted.endpointHash) },
+      { name: "AES-GCM", iv: Uint8Array.from(iv).buffer, additionalData: encoder.encode(encrypted.endpointHash) },
       keys.encryption,
-      ciphertext,
+      Uint8Array.from(ciphertext).buffer,
     );
     const value: unknown = JSON.parse(new TextDecoder().decode(plaintext));
     if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
