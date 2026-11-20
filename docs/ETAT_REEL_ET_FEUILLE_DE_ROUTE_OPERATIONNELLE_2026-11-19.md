@@ -321,3 +321,22 @@ Cette mise à jour prévaut sur les anciens paragraphes de ce document qui indiq
 ### Décision de pilotage
 
 Ne pas déployer un Worker SOS ou un Workflow avant d'avoir terminé les tests d'intégration et de concurrence du registre par appareil, vérifié les secrets VAPID et la clé de chiffrement dans l'environnement Worker, validé l'agrégation outbox/SMS et assuré l'annulation lors de clôture/révocation. Ne pas déclencher de Push/SMS réels vers les proches pendant la recette technique. Ne pas activer la collecte GPS avant les preuves de suppression immédiate à la clôture et de non-résurrection après restauration. Les services payants ou fournisseurs externes nécessitent une vérification de coût et de configuration avant activation.
+
+
+## Vérification complémentaire — 20 novembre 2026, 20:08 UTC
+
+### Enrôlement racine WebAuthn
+
+- Le registre D1 distant confirme que `0007_root_device_enrollment.sql` est appliquée depuis le 19 novembre 2026 à 17:04:42 UTC ; les sept tables attendues sont présentes.
+- Le run GitHub Actions `44806442041` sur le commit `0931949533568a39396917e2613456f44d3f244c` est entièrement réussi : smoke test SimpleWebAuthn Workers, tests du vérificateur WebAuthn, origine/RP ID, endpoints, client PWA, atomicité D1 locale, anti-rollback, typecheck, build, tests D1, audit dépendances.
+- Cela confirme la qualité automatisée de cette tranche, mais pas une homologation cryptographique indépendante ni les essais physiques Android. Les endpoints restent fermés par le verrou `WEBAUTHN_ROOT_ENROLLMENT_ENABLED` et l'assertion WebAuthn de connexion ultérieure reste à implémenter.
+- L'ancienne mention indiquant que la migration 0007 n'était pas appliquée était obsolète ; elle a été corrigée dans `docs/ETAT_IMPLEMENTATION_WEBAUTHN_PWA_2026-11-19.md`.
+
+### Worker de purge technique
+
+- Une lecture du singleton `notification_retention_control` après le déclenchement horaire confirme désormais un premier passage réussi : `last_started_at=1795204847918`, `last_success_at=1795204848443`, soit le 20 novembre 2026 à 20:00:47.918 et 20:00:48.443 UTC.
+- Résultat : zéro livraison supprimée, zéro tentative supprimée, zéro ligne en retard, zéro échec consécutif et aucun code d'erreur. Le résultat est cohérent avec une table de test sans lignes arrivées à échéance ; il prouve l'exécution réussie du Worker, pas la suppression d'une donnée réelle expirée.
+
+### Déploiement documentaire Pages
+
+- Le commit documentaire `bf8ecded52e37db7db72126e01f3f934c22064a5` a déclenché un nouveau déploiement Pages de production `074eafe8-1214-41d1-ab75-ad88fee2dac8`. Au contrôle du 20:08 UTC, l'étape build était encore active ; ne pas le marquer déployé tant que l'étape deploy n'est pas en succès.
