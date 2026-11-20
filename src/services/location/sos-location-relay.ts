@@ -78,7 +78,7 @@ interface AuthorReceiveKey {
 }
 
 const HEARTBEAT_INTERVAL_MS = 15_000;
-const SESSION_LIFETIME_MS = 24 * 60 * 60 * 1000;
+const SESSION_LIFETIME_MS = 23 * 60 * 60 * 1000;
 
 function encodeBase64Url(bytes: Uint8Array): string {
   let binary = "";
