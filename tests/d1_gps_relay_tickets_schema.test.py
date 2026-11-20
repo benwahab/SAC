@@ -14,6 +14,7 @@ MIGRATIONS = [
     ROOT / "migrations" / "0008_push_subscriptions.sql",
     ROOT / "migrations" / "0009_notification_delivery_retention.sql",
     ROOT / "migrations" / "0010_gps_relay_tickets.sql",
+    ROOT / "migrations" / "0011_gps_ticket_device_binding.sql",
 ]
 
 class GpsRelayTicketSchemaTests(unittest.TestCase):
@@ -37,6 +38,9 @@ class GpsRelayTicketSchemaTests(unittest.TestCase):
         self.db.execute("UPDATE email_otp_challenges SET attempt_count=1,consumed_at=1001 WHERE id='owner-otp'")
         self.db.execute("UPDATE account_identities SET verified_at=1001 WHERE id='owner-email'")
         self.db.execute("UPDATE accounts SET status='active' WHERE id='owner'")
+        self.db.execute("""INSERT INTO devices
+            (id,account_id,status,auth_version,created_at,revoked_at)
+            VALUES ('device-owner','owner','active',1,1001,NULL)""")
         self.db.execute("""INSERT INTO alerts
             (id,author_account_id,category,level,status,push_reminder_limit,created_at)
             VALUES ('alert','owner','personal_danger','urgent','active',1,1002)""")
@@ -46,34 +50,34 @@ class GpsRelayTicketSchemaTests(unittest.TestCase):
 
     def test_ticket_hash_is_single_use(self):
         self.db.execute("""INSERT INTO gps_relay_tickets
-            (ticket_hash,alert_id,account_id,role,created_at,expires_at)
-            VALUES (?, 'alert','owner','author',1000,121000)""", ("a" * 64,))
+            (ticket_hash,alert_id,account_id,device_id,role,created_at,expires_at)
+            VALUES (?, 'alert','owner','device-owner','author',1000,121000)""", ("a" * 64,))
         consumed = self.db.execute("""DELETE FROM gps_relay_tickets
-            WHERE ticket_hash=? AND alert_id=? AND account_id=? AND role=?
-              AND expires_at>?""", ("a" * 64, "alert", "owner", "author", 2000)).rowcount
+            WHERE ticket_hash=? AND alert_id=? AND account_id=? AND device_id=? AND role=?
+              AND expires_at>?""", ("a" * 64, "alert", "owner", "device-owner", "author", 2000)).rowcount
         replay = self.db.execute("""DELETE FROM gps_relay_tickets
-            WHERE ticket_hash=? AND alert_id=? AND account_id=? AND role=?
-              AND expires_at>?""", ("a" * 64, "alert", "owner", "author", 2000)).rowcount
+            WHERE ticket_hash=? AND alert_id=? AND account_id=? AND device_id=? AND role=?
+              AND expires_at>?""", ("a" * 64, "alert", "owner", "device-owner", "author", 2000)).rowcount
         self.assertEqual(consumed, 1)
         self.assertEqual(replay, 0)
 
     def test_expired_ticket_cannot_be_consumed(self):
         self.db.execute("""INSERT INTO gps_relay_tickets
-            (ticket_hash,alert_id,account_id,role,created_at,expires_at)
-            VALUES (?, 'alert','owner','author',1000,2000)""", ("b" * 64,))
+            (ticket_hash,alert_id,account_id,device_id,role,created_at,expires_at)
+            VALUES (?, 'alert','owner','device-owner','author',1000,2000)""", ("b" * 64,))
         consumed = self.db.execute("""DELETE FROM gps_relay_tickets
-            WHERE ticket_hash=? AND expires_at>?""", ("b" * 64, 2000)).rowcount
+            WHERE ticket_hash=? AND device_id=? AND expires_at>?""", ("b" * 64, "device-owner", 2000)).rowcount
         self.assertEqual(consumed, 0)
 
     def test_ticket_rejects_invalid_hash_and_role(self):
         with self.assertRaises(sqlite3.IntegrityError):
             self.db.execute("""INSERT INTO gps_relay_tickets
-                (ticket_hash,alert_id,account_id,role,created_at,expires_at)
-                VALUES ('not-a-hash','alert','owner','author',1000,2000)""")
+                (ticket_hash,alert_id,account_id,device_id,role,created_at,expires_at)
+                VALUES ('not-a-hash','alert','owner','device-owner','author',1000,2000)""")
         with self.assertRaises(sqlite3.IntegrityError):
             self.db.execute("""INSERT INTO gps_relay_tickets
-                (ticket_hash,alert_id,account_id,role,created_at,expires_at)
-                VALUES (?, 'alert','owner','admin',1000,2000)""", ("c" * 64,))
+                (ticket_hash,alert_id,account_id,device_id,role,created_at,expires_at)
+                VALUES (?, 'alert','owner','device-owner','admin',1000,2000)""", ("c" * 64,))
 
     def test_table_contains_no_location_or_secret_material(self):
         columns = {row[1].lower() for row in self.db.execute(
@@ -81,14 +85,34 @@ class GpsRelayTicketSchemaTests(unittest.TestCase):
         forbidden = {"latitude", "longitude", "coordinates", "location", "payload",
                      "private_key", "public_key", "gps_data", "address"}
         self.assertFalse(columns & forbidden)
-        self.assertEqual(columns, {"ticket_hash", "alert_id", "account_id", "role",
+        self.assertEqual(columns, {"ticket_hash", "alert_id", "account_id", "device_id", "role",
                                    "created_at", "expires_at"})
 
     def test_ticket_is_bound_to_existing_alert_and_account(self):
         with self.assertRaises(sqlite3.IntegrityError):
             self.db.execute("""INSERT INTO gps_relay_tickets
-                (ticket_hash,alert_id,account_id,role,created_at,expires_at)
-                VALUES (?, 'missing','owner','author',1000,2000)""", ("d" * 64,))
+                (ticket_hash,alert_id,account_id,device_id,role,created_at,expires_at)
+                VALUES (?, 'missing','owner','device-owner','author',1000,2000)""", ("d" * 64,))
+
+
+    def test_ticket_cannot_be_consumed_by_a_different_device(self):
+        self.db.execute("""INSERT INTO gps_relay_tickets
+            (ticket_hash,alert_id,account_id,device_id,role,created_at,expires_at)
+            VALUES (?, 'alert','owner','device-owner','author',1000,121000)""", ("e" * 64,))
+        wrong_device = self.db.execute("""DELETE FROM gps_relay_tickets
+            WHERE ticket_hash=? AND alert_id=? AND account_id=? AND device_id=?
+              AND expires_at>?""", ("e" * 64, "alert", "owner", "other-device", 2000)).rowcount
+        right_device = self.db.execute("""DELETE FROM gps_relay_tickets
+            WHERE ticket_hash=? AND alert_id=? AND account_id=? AND device_id=?
+              AND expires_at>?""", ("e" * 64, "alert", "owner", "device-owner", 2000)).rowcount
+        self.assertEqual(wrong_device, 0)
+        self.assertEqual(right_device, 1)
+
+    def test_ticket_requires_an_existing_device_owned_by_the_account(self):
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("""INSERT INTO gps_relay_tickets
+                (ticket_hash,alert_id,account_id,device_id,role,created_at,expires_at)
+                VALUES (?, 'alert','owner','missing-device','author',1000,2000)""", ("f" * 64,))
 
 if __name__ == "__main__":
     unittest.main()
