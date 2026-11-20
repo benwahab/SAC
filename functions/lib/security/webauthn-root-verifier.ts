@@ -94,7 +94,7 @@ export async function verifyRootRegistrationResponse(input: {
   if (typeof clientData.challenge === "string") {
     try {
       const challengeBytes = decodeBase64Url(clientData.challenge, 64);
-      const challengeDigest = new Uint8Array(await input.cryptoProvider.subtle.digest("SHA-256", challengeBytes));
+      const challengeDigest = new Uint8Array(await input.cryptoProvider.subtle.digest("SHA-256", Uint8Array.from(challengeBytes).buffer));
       const expectedDigest = Uint8Array.from(
         input.expectedChallengeDigest.match(/.{2}/g) ?? [],
         (byte) => Number.parseInt(byte, 16),
