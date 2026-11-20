@@ -76,7 +76,7 @@ test("Web Push construit un corps aes128gcm chiffré et un jeton VAPID signé", 
   assert.ok(authorization?.startsWith("vapid t="));
   const token = authorization.slice("vapid t=".length).split(", k=")[0];
   const [header, claims, signature] = token.split(".");
-  const decodedClaims = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(claims.replace(/-/g, "+").replace(/_/g, "/") + "=="), c => c.charCodeAt(0)))) as { aud: string; exp: number; sub: string };
+  const decodedClaims = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(claims.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - claims.length % 4) % 4)), c => c.charCodeAt(0)))) as { aud: string; exp: number; sub: string };
   assert.equal(decodedClaims.aud, "https://fcm.googleapis.com");
   assert.equal(decodedClaims.sub, "mailto:benwahab111@gmail.com");
   const signingInput = encoder.encode(header + "." + claims);
