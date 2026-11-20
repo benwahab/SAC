@@ -23,7 +23,7 @@ class MemoryLocationIdentityKeyStore implements LocationIdentityKeyStore {
 
 test("creates and reuses a non-exportable signing identity key for one account", async () => {
   const store = new MemoryLocationIdentityKeyStore();
-  const first = await getOrCreateLocationIdentityKeyPair("account-a", store);
+  const first = await getOrCreateLocationIdentityKeyPair("account-a", "device-a", store);
   const second = await getOrCreateLocationIdentityKeyPair("account-a", store);
 
   assert.equal(first.privateKey.type, "private");
@@ -36,6 +36,7 @@ test("creates and reuses a non-exportable signing identity key for one account",
   assert.equal(first.publicJwk.kty, "EC");
   assert.equal(first.publicJwk.crv, "P-256");
   assert.equal(first.accountId, "account-a");
+  assert.equal(first.deviceId, "device-a");
   assert.equal(second.privateKey, first.privateKey);
   assert.equal(second.publicKey, first.publicKey);
 });
@@ -43,7 +44,7 @@ test("creates and reuses a non-exportable signing identity key for one account",
 test("keeps identity keys isolated between accounts", async () => {
   const store = new MemoryLocationIdentityKeyStore();
   const a = await getOrCreateLocationIdentityKeyPair("account-a", store);
-  const b = await getOrCreateLocationIdentityKeyPair("account-b", store);
+  const b = await getOrCreateLocationIdentityKeyPair("account-b", "device-a", store);
 
   assert.notDeepEqual(a.publicJwk, b.publicJwk);
   assert.notEqual(a.privateKey, b.privateKey);
@@ -52,7 +53,7 @@ test("keeps identity keys isolated between accounts", async () => {
 test("handles concurrent first-use races by returning the one stored key", async () => {
   const store = new MemoryLocationIdentityKeyStore();
   const [a, b] = await Promise.all([
-    getOrCreateLocationIdentityKeyPair("account-race", store),
+    getOrCreateLocationIdentityKeyPair("account-race", "device-a", store),
     getOrCreateLocationIdentityKeyPair("account-race", store),
   ]);
 
@@ -68,7 +69,7 @@ test("rejects an invalid account identifier before touching storage", async () =
   };
 
   await assert.rejects(
-    getOrCreateLocationIdentityKeyPair(" ", store),
+    getOrCreateLocationIdentityKeyPair(" ", "device-a", store),
     /identifiant du compte/,
   );
   assert.equal(called, false);
@@ -79,6 +80,8 @@ test("does not silently replace a corrupt stored key record", async () => {
   await store.add({
     version: 1,
     accountId: "account-corrupt",
+    deviceId: "device-corrupt",
+    storageKey: "account-corrupt:device-corrupt",
     privateKey: {} as CryptoKey,
     publicKey: {} as CryptoKey,
     publicJwk: {},
@@ -86,7 +89,16 @@ test("does not silently replace a corrupt stored key record", async () => {
   });
 
   await assert.rejects(
-    getOrCreateLocationIdentityKeyPair("account-corrupt", store),
+    getOrCreateLocationIdentityKeyPair("account-corrupt", "device-corrupt", store),
     /clé d'identité locale invalide/,
   );
+});
+
+test("keeps different device identities separate for the same account", async () => {
+  const store = new MemoryLocationIdentityKeyStore();
+  const first = await getOrCreateLocationIdentityKeyPair("account-a", "device-a", store);
+  const second = await getOrCreateLocationIdentityKeyPair("account-a", "device-b", store);
+
+  assert.notDeepEqual(first.publicJwk, second.publicJwk);
+  assert.notEqual(first.privateKey, second.privateKey);
 });
