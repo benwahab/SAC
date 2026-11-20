@@ -120,6 +120,8 @@ jobs:
         run: npm run test:d1-gps-relay-tickets
       - name: Test GPS WebSocket subprotocol negotiation and ticket boundaries
         run: npm run test:gps-relay-protocol
+      - name: Test fail-closed GPS E2EE activation gate
+        run: npm run test:gps-relay-readiness
       - name: Bundle GPS relay Worker and validate Durable Object bindings
         run: |
           npm run test:gps-relay-build
