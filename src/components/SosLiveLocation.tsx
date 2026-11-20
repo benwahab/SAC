@@ -39,22 +39,23 @@ export default function SosLiveLocation({ alertId, accountId, deviceId, particip
   const [location, setLocation] = useState<EphemeralPreciseLocation | null>(null);
 
   useEffect(() => {
+    let mounted = true;
     const client = new SosLocationRelayClient({
       alertId,
       accountId,
       deviceId,
       role: participantRole,
       callbacks: {
-        onStatus: setStatus,
-        onLocation: setLocation,
-        onClear: () => setLocation(null),
-        onError: setError,
+        onStatus: (value) => { if (mounted) setStatus(value); },
+        onLocation: (value) => { if (mounted) setLocation(value); },
+        onClear: () => { if (mounted) setLocation(null); },
+        onError: (value) => { if (mounted) setError(value); },
       },
     });
     void client.start();
     return () => {
+      mounted = false;
       client.stop();
-      setLocation(null);
     };
   }, [alertId, accountId, deviceId, participantRole]);
 
