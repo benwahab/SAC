@@ -94,6 +94,13 @@ async function purgeExpiredNotificationHistory(db: D1Database): Promise<void> {
     if (!recorded.success || recorded.meta.changes !== 1) {
       throw new Error("sac_notification_retention_control_update_failed");
     }
+
+    if (backlog.oldest_overdue_at !== null && backlog.oldest_overdue_at <= now - 86_400_000) {
+      console.error("sac_notification_retention_overdue_24h", {
+        overdueRows: backlog.overdue_rows,
+        oldestOverdueAt: backlog.oldest_overdue_at,
+      });
+    }
   } catch (error) {
     await db.prepare(`
       UPDATE notification_retention_control
@@ -103,6 +110,24 @@ async function purgeExpiredNotificationHistory(db: D1Database): Promise<void> {
           last_error_code = 'unknown_error'
       WHERE singleton_id = 1 AND lease_token = ?
     `).bind(leaseToken).run().catch(() => undefined);
+
+    const health = await db.prepare(`
+      SELECT consecutive_failures, last_success_at
+      FROM notification_retention_control
+      WHERE singleton_id = 1
+    `).first<{ consecutive_failures: number; last_success_at: number | null }>().catch(() => null);
+
+    if (health && health.consecutive_failures >= 2) {
+      console.error("sac_notification_retention_two_consecutive_failures", {
+        consecutiveFailures: health.consecutive_failures,
+      });
+    }
+    if (health?.last_success_at === null || (health?.last_success_at !== undefined && Date.now() - health.last_success_at > 7_200_000)) {
+      console.error("sac_notification_retention_no_success_2h", {
+        lastSuccessAt: health?.last_success_at ?? null,
+      });
+    }
+    console.error("sac_notification_retention_run_failed");
     throw error;
   }
 }
