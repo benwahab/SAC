@@ -9,4 +9,4 @@ database_id = "892ce876-f279-409c-8f9e-06b1dca66e9d"
 
 [vars]
 GPS_RELAY_PUBLIC_URL = "https://sac-gps-relay.benwahab111.workers.dev"
-GPS_RELAY_E2EE_READY = "false"
+GPS_RELAY_E2EE_READY = "true"
