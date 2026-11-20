@@ -123,7 +123,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
                    WHERE id='outbox' AND status='pending'""",
                 (terminal_at,),
             )
-        created_at = min(self.now - 100, terminal_at - 100)
+        created_at = min(self.now - 100, terminal_at - 100) if terminal_at is not None else self.now - 100
         self.db.execute(
             """INSERT INTO notification_device_deliveries
                (id,outbox_id,alert_id,recipient_account_id,device_id,subscription_id,
