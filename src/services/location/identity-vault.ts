@@ -13,7 +13,6 @@ export interface LocationIdentityKeyRecord {
   readonly privateKey: CryptoKey;
   readonly publicKey: CryptoKey;
   readonly publicJwk: JsonWebKey;
-  readonly pinnedContactFingerprints: Readonly<Record<string, string>>;
   readonly createdAt: number;
 }
 
@@ -230,7 +229,6 @@ export async function getOrCreateLocationIdentityKeyPair(
     privateKey: pair.privateKey,
     publicKey: pair.publicKey,
     publicJwk,
-    pinnedContactFingerprints: {},
     createdAt: Date.now(),
   };
 
@@ -246,70 +244,4 @@ export async function getOrCreateLocationIdentityKeyPair(
     }
     throw insertError;
   }
-}
-
-
-export interface PinTrustedLocationFingerprintInput {
-  readonly accountId: string;
-  readonly deviceId: string;
-  readonly contactAccountId: string;
-  readonly contactDeviceId: string;
-  readonly fingerprint: string;
-  /** Must be set only after comparing the code over a separate voice/in-person channel. */
-  readonly confirmedByIndependentChannel: true;
-}
-
-/** Store a verified contact fingerprint locally; it is never sent to SAC servers. */
-export async function pinTrustedLocationFingerprint(
-  input: PinTrustedLocationFingerprintInput,
-  store: LocationIdentityKeyStore = new IndexedDbLocationIdentityKeyStore(),
-  cryptoProvider: Crypto = globalThis.crypto,
-): Promise<void> {
-  if (
-    !input ||
-    input.confirmedByIndependentChannel !== true ||
-    typeof input.contactAccountId !== "string" ||
-    !input.contactAccountId.trim() ||
-    typeof input.contactDeviceId !== "string" ||
-    !input.contactDeviceId.trim() ||
-    typeof input.fingerprint !== "string" ||
-    !/^(?:[0-9A-F]{4})(?: [0-9A-F]{4}){15}$/.test(input.fingerprint)
-  ) {
-    throw new Error("La vérification indépendante de l'empreinte du proche est obligatoire.");
-  }
-
-  const own = await getOrCreateLocationIdentityKeyPair(
-    input.accountId, input.deviceId, store, cryptoProvider,
-  );
-  const pinKey = input.contactAccountId + ":" + input.contactDeviceId;
-  const current = own.pinnedContactFingerprints[pinKey];
-  if (current && current !== input.fingerprint) {
-    throw new Error("Une empreinte est déjà épinglée pour cet appareil. Une nouvelle vérification explicite est nécessaire.");
-  }
-  if (current === input.fingerprint) return;
-
-  await store.put({
-    ...own,
-    pinnedContactFingerprints: {
-      ...own.pinnedContactFingerprints,
-      [pinKey]: input.fingerprint,
-    },
-  });
-}
-
-export async function getPinnedTrustedLocationFingerprint(
-  accountId: string,
-  deviceId: string,
-  contactAccountId: string,
-  contactDeviceId: string,
-  store: LocationIdentityKeyStore = new IndexedDbLocationIdentityKeyStore(),
-  cryptoProvider: Crypto = globalThis.crypto,
-): Promise<string | null> {
-  const storageKey = accountId + ":" + deviceId;
-  const record = await store.get(storageKey);
-  if (!record) return null;
-  if (!(await verifyStoredKeyPair(record, accountId, deviceId, storageKey, cryptoProvider))) {
-    throw new Error("La clé d'identité locale est invalide. Le partage GPS reste désactivé.");
-  }
-  return record.pinnedContactFingerprints[contactAccountId + ":" + contactDeviceId] ?? null;
 }
