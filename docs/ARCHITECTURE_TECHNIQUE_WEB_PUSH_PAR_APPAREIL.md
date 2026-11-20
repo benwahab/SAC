@@ -356,7 +356,7 @@ Les contraintes et triggers interdisent notamment les tentatives non réservées
 
 La migration ne modifie pas les lignes existantes et ne touche aucune donnée GPS. Le test `tests/d1_notification_retention_schema.test.py` applique la chaîne de migrations 0001 à 0009 dans une base SQLite isolée et vérifie les contraintes, la limite de lot de 200, la suppression enfant-avant-parent, le rollback transactionnel en cas d'échec, l'impossibilité d'étendre le fan-out après agrégation et la préservation de l'outbox métier. Il vérifie aussi l'absence de colonnes de contenu sensible. La commande est `npm run test:d1-notification-retention`, intégrée au workflow CI. Le workflow GitHub Actions `44800621093` a réussi le 20 novembre 2026, y compris l'application Wrangler de 0001 à 0009 sur la base locale isolée et les 12 tests du contrat de rétention.
 
-**Important :** la migration 0009 a été appliquée uniquement à la D1 locale isolée de CI, jamais à la D1 distante `sac-db`. Le code Worker qui exécute la purge horaire et met à jour le singleton reste à implémenter ; aucune suppression automatique n'est active en production.
+**État opérationnel mis à jour — 20 novembre 2026 :** la migration 0009 a été appliquée à la D1 distante `sac-db` et vérifiée dans `d1_migrations` (entrées 0001 à 0009), avec les trois tables, les index, les triggers et `PRAGMA foreign_key_check` sans anomalie. Le Worker isolé `sac-notification-retention-purge` a été créé et déployé via l'API Cloudflare, avec le binding D1 `DB` et le Cron `0 * * * *`. Il ne fait aucun envoi Push/SMS et ne touche qu'aux deux tables du registre de livraison technique. Le premier passage planifié n'a pas encore été observé ; vérifier `last_success_at`, les compteurs et les journaux après le prochain déclenchement horaire. Les alertes sont actuellement émises dans les journaux Worker uniquement : aucun canal externe surveillé n'est configuré, donc la surveillance humaine reste à terminer. La CI GitHub des deux commits Worker doit être confirmée séparément.
 
 #### Tests obligatoires de purge
 
@@ -428,12 +428,14 @@ Sources officielles :
 - [x] Conservation des instances et historiques Workflow fixée à 7 jours maximum après la fin de l'exécution.
 - [x] Timeout réseau fournisseur fixé à 8 secondes maximum ; bail de traitement fixé à 30 secondes avec fencing token et consommation de la tentative après expiration.
 - [x] Spécification opérationnelle de purge D1 bornée, idempotente, surveillée et testable documentée (exécution horaire, lots de 200, conservation prudente en cas de doute, alertes et reprise après restauration).
-- [x] Migration D1 additive 0009 écrite et appliquée uniquement à la D1 locale isolée de CI.
+- [x] Migration D1 additive 0009 appliquée à la D1 distante `sac-db` et vérifiée.
 - [x] Tests de schéma, purge bornée, rollback, fan-out figé et confidentialité réussis en CI (`44800621093`).
 - [ ] Registre livraison/appareil implémenté.
 - [ ] Workflow et Cron de récupération implémentés.
 - [ ] Tests de concurrence et de clôture réussis.
 - [ ] CI verte sur la version implémentée.
-- [ ] Migration D1 distante autorisée et appliquée.
-- [ ] Worker/Workflow déployés après autorisation.
+- [x] Migration D1 distante 0009 appliquée et vérifiée.
+- [x] Worker isolé de purge D1 déployé avec Cron horaire et binding D1.
+- [ ] Premier passage Cron observé et compteurs `last_success_at` vérifiés.
+- [ ] Canal d'alerte externe réellement surveillé configuré et testé.
 - [ ] Configuration et recette réelle autorisées et vérifiées.
