@@ -75,7 +75,7 @@ async function verifyTicket(token: string, secret: string): Promise<TicketClaims
       !claims.accountId ||
       (claims.role !== "author" && claims.role !== "recipient") ||
       !Number.isSafeInteger(claims.exp) ||
-      claims.exp < Math.floor(Date.now() / 1000)
+      claims.exp <= Math.floor(Date.now() / 1000)
     ) return null;
     return claims;
   } catch {
@@ -116,9 +116,21 @@ export default {
     }
 
     const action = match[2];
-    const token = action === "socket"
-      ? url.searchParams.get("ticket") ?? ""
-      : request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+    let token = "";
+    if (action === "socket") {
+      const protocols = (request.headers.get("Sec-WebSocket-Protocol") ?? "")
+        .split(",").map((value) => value.trim()).filter(Boolean);
+      const ticketProtocols = protocols.filter((value) => value.startsWith("sac-gps-ticket."));
+      if (
+        request.method !== "GET" ||
+        !protocols.includes("sac-gps-v1") ||
+        ticketProtocols.length !== 1 ||
+        protocols.length !== 2
+      ) return json({ error: "invalid_websocket_protocol" }, 401);
+      token = ticketProtocols[0].slice("sac-gps-ticket.".length);
+    } else {
+      token = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+    }
     const claims = await verifyTicket(token, env.GPS_RELAY_HMAC_SECRET);
     const expectedScope = action === "socket" ? "connect" : "close";
     if (!claims || claims.alertId !== alertId || claims.scope !== expectedScope) {
@@ -143,6 +155,19 @@ export default {
     }
     if (!(await isActiveParticipant(env.DB, alertId, claims.accountId))) {
       return json({ error: "alert_not_active_or_not_authorized" }, 403);
+    }
+
+    const ticketDigest = new Uint8Array(await crypto.subtle.digest(
+      "SHA-256", new TextEncoder().encode(token),
+    ));
+    const ticketHash = Array.from(ticketDigest, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    const consumed = await env.DB.prepare(
+      `DELETE FROM gps_relay_tickets
+       WHERE ticket_hash = ? AND alert_id = ? AND account_id = ? AND role = ?
+         AND expires_at > ?`,
+    ).bind(ticketHash, alertId, claims.accountId, claims.role, Date.now()).run();
+    if (!consumed.success || consumed.meta.changes !== 1) {
+      return json({ error: "ticket_expired_or_already_used" }, 401);
     }
 
     const headers = new Headers(request.headers);
@@ -192,7 +217,11 @@ export class GpsRelayRoom extends DurableObject<Env> {
       connectionId: identity.connectionId,
       role: identity.role,
     }));
-    return new Response(null, { status: 101, webSocket: client });
+    return new Response(null, {
+      status: 101,
+      webSocket: client,
+      headers: { "Sec-WebSocket-Protocol": "sac-gps-v1" },
+    });
   }
 
   private async handleMessage(sender: WebSocket, alertId: string, raw: string | ArrayBuffer): Promise<void> {
