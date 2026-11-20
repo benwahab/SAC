@@ -8,7 +8,7 @@ function toBase64Url(bytes: Uint8Array): string {
 
 export async function signGpsRelayTicket(
   secret: string,
-  claims: { alertId: string; accountId: string; role: "author" | "recipient"; exp: number; scope: "connect" | "close"; jti?: string },
+  claims: { alertId: string; accountId: string; deviceId: string; role: "author" | "recipient"; exp: number; scope: "connect" | "close"; jti?: string },
 ): Promise<string> {
   if (secret.length < 32) throw new Error("gps_relay_secret_invalid");
   const payload = toBase64Url(encoder.encode(JSON.stringify(claims)));
