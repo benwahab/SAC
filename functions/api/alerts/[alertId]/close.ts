@@ -35,6 +35,14 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
       result.error === "alert_not_found_or_closed" ? 404 : 503);
   }
   let gpsRelayClosed = false;
+  let gpsTicketsRevoked = false;
+  try {
+    const revoked = await env.DB.prepare("DELETE FROM gps_relay_tickets WHERE alert_id = ?")
+      .bind(alertId).run();
+    gpsTicketsRevoked = revoked.success;
+  } catch {
+    // The alert is already closed; active-status checks still reject every ticket.
+  }
   if (env.GPS_RELAY_HMAC_SECRET && env.GPS_RELAY_HMAC_SECRET.length >= 32 && env.GPS_RELAY_PUBLIC_URL) {
     try {
       const ticket = await signGpsRelayTicket(env.GPS_RELAY_HMAC_SECRET, {
@@ -62,5 +70,6 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
     closed: true,
     closedAt: result.value.closedAt,
     gpsRelayRevocation: gpsRelayClosed ? "confirmed" : "pending_configuration_or_retry",
+    gpsTicketsRevoked,
   });
 };
