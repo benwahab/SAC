@@ -260,16 +260,25 @@ Tests D1/Workers/Workflow simulés, sans Push réel :
 
 Les tests doivent aussi prouver que les journaux ne contiennent ni endpoint, ni clés Push, ni contenu privé, ni GPS.
 
-## 9. Conservation et observabilité — décisions encore ouvertes
+## 9. Conservation et observabilité
 
-Ne pas inventer de durée de conservation avant arbitrage. À définir avant migration :
+### Décision validée
 
-- durée de conservation des lignes livraison et tentatives ;
-- politique de purge automatique et vérifiable ;
-- durée de conservation des instances Workflow (distincte de la conservation D1) ;
-- politique de métriques et logs expurgés.
+Les résultats techniques individuels de livraison par appareil et leurs tentatives sont conservés pendant **30 jours après la fin du rappel concerné**. Cette durée court à partir de la fin effective du cycle de rappel (tous les appareils ciblés sont dans un état terminal et l'outbox destinataire est agrégée), et non à partir de la création de la ligne.
 
-La conservation Cloudflare Workflow n'est pas une politique de conservation SAC. D1 doit conserver la preuve minimale nécessaire au suivi pendant la durée qui sera décidée, puis être purgée selon une politique dédiée.
+À l'issue de ces 30 jours, les lignes individuelles `notification_device_deliveries` et `notification_delivery_attempts` doivent être purgées automatiquement. La purge doit être idempotente, contrôlable et testée ; elle ne doit pas dépendre d'une suppression manuelle.
+
+Seules les données techniques minimales sont conservées pendant cette période : identifiants techniques internes nécessaires aux relations, statuts, dates, numéro de tentative et codes d'erreur normalisés/expurgés. Aucun endpoint Push, aucune clé `p256dh`/`auth`, aucun payload, aucun contenu SOS, aucune description libre, aucune donnée GPS, aucun secret et aucune réponse brute du fournisseur ne sont conservés dans ces tables.
+
+La durée de 30 jours concerne uniquement ce registre technique par appareil et ses tentatives. Elle ne définit pas la conservation des dossiers SOS, des autres journaux SAC ou des données GPS, qui restent régis par leurs propres règles.
+
+### Points distincts à arbitrer
+
+- durée de conservation des instances et historiques Cloudflare Workflow ;
+- politique de métriques et logs expurgés, distincte du registre D1 ;
+- mécanisme opérationnel de purge (Cron/Worker existant ou tâche dédiée), avec preuve de couverture et alertes en cas d'échec.
+
+La conservation Cloudflare Workflow n'est pas une politique de conservation SAC. D1 doit appliquer sa propre purge à 30 jours, même si l'état Workflow est déjà expiré ou conservé plus longtemps.
 
 Métriques minimales sans données personnelles : nombre de livraisons par état, taux d'acceptation fournisseur, taux `unknown_exhausted`, reprises, baux expirés, erreurs de création Workflow, âge des livraisons non terminales, erreurs d'agrégation outbox et tâches SMS en attente.
 
@@ -314,7 +323,8 @@ Sources officielles :
 - [x] Règles produit de reprise validées par le Super Admin.
 - [x] Audit de l'architecture existante.
 - [x] Architecture cible et contrats conceptuels documentés.
-- [ ] Arbitrage de la conservation D1 et Workflow.
+- [x] Conservation des résultats techniques individuels D1 fixée à 30 jours après la fin du rappel ; purge automatique requise.
+- [ ] Durée de conservation des instances et historiques Workflow.
 - [ ] Spécification définitive des baux et récupération après interruption.
 - [ ] Migration D1 écrite et testée localement.
 - [ ] Registre livraison/appareil implémenté.
