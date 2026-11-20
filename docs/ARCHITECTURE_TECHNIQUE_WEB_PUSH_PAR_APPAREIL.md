@@ -152,7 +152,7 @@ Une seule exécution peut obtenir cette réservation. Un second Worker ne doit j
 - Recharger l'abonnement actif à partir de son identifiant, vérifier son propriétaire et déchiffrer les clés en mémoire.
 - Revalider l'état actif du SOS immédiatement avant l'appel externe.
 - Conserver la politique actuelle de validation stricte des endpoints, sans redirection.
-- Appliquer un timeout réseau explicite inférieur au délai de reprise de 15 secondes, à définir et tester pour éviter qu'un premier appel toujours en vol chevauche la seconde tentative.
+- Appliquer un timeout réseau strict de **8 secondes maximum** par appel fournisseur. Le timeout doit être appliqué au niveau du transport et testé ; il doit interrompre l'attente locale sans supposer que le fournisseur n'a pas reçu la requête.
 - Ne pas laisser les retries automatiques de Cloudflare Workflows déclencher des appels Push supplémentaires. Les erreurs réseau doivent être converties en résultats normalisés ; le compteur D1, et lui seul, autorise le prochain appel.
 
 Résultat :
@@ -178,9 +178,10 @@ Si le premier résultat est `retry_wait` :
 ### Étape E — Résultat perdu ou bail expiré
 
 - Le jeton de bail est un fencing token : seule l'exécution détenant le jeton courant peut modifier la livraison.
+- La durée du bail de traitement est fixée à **30 secondes** à compter de la réservation atomique de l'appel. Elle couvre le timeout réseau de 8 secondes et laisse une marge pour la persistance du résultat et les retards d'exécution.
 - Un ancien Worker ne peut pas écrire sur une réservation plus récente.
 - Si une exécution s'interrompt après réservation et avant un résultat certain, la reprise ne rejoue jamais aveuglément le même numéro d'appel.
-- Après expiration du bail, l'état de la tentative inachevée est classé ambigu ; il consomme le numéro déjà réservé. Le Workflow peut alors attendre 15 secondes et réserver la seconde tentative si elle reste autorisée.
+- Après expiration du bail de 30 secondes, l'état de la tentative inachevée est classé ambigu ; il consomme le numéro déjà réservé. Le Workflow attend ensuite jusqu'à l'échéance de reprise de 15 secondes calculée depuis la fin/constat d'ambiguïté, puis peut réserver la seconde tentative si elle reste autorisée.
 - Si le second numéro avait déjà été réservé avant l'interruption, aucun troisième numéro ne peut être créé : état final `unknown_exhausted`.
 - Une acceptation fournisseur déjà obtenue mais non persistée reste un cas de doublon potentiel lors de l'unique reprise ; ce risque est explicitement accepté par la règle produit.
 
@@ -325,7 +326,8 @@ Sources officielles :
 - [x] Architecture cible et contrats conceptuels documentés.
 - [x] Conservation des résultats techniques individuels D1 fixée à 30 jours après la fin du rappel ; purge automatique requise.
 - [ ] Durée de conservation des instances et historiques Workflow.
-- [ ] Spécification définitive des baux et récupération après interruption.
+- [x] Timeout réseau fournisseur fixé à 8 secondes maximum ; bail de traitement fixé à 30 secondes avec fencing token et consommation de la tentative après expiration.
+- [ ] Spécification opérationnelle détaillée de récupération après interruption et tests de concurrence.
 - [ ] Migration D1 écrite et testée localement.
 - [ ] Registre livraison/appareil implémenté.
 - [ ] Workflow et Cron de récupération implémentés.
