@@ -195,8 +195,9 @@ export function createSosWebPushSender(
            FROM push_subscriptions p
            JOIN devices d ON d.id = p.device_id AND d.account_id = p.account_id AND d.status = 'active'
            JOIN accounts a ON a.id = p.account_id AND a.status = 'active'
-           WHERE p.account_id = ? AND p.status = 'active'`,
-        ).bind(envelope.recipientAccountId).all<StoredSubscription>();
+           WHERE p.account_id = ? AND p.status = 'active'
+             AND EXISTS (SELECT 1 FROM alerts a WHERE a.id = ? AND a.status = 'active')`,
+        ).bind(envelope.recipientAccountId, envelope.alertId).all<StoredSubscription>();
       } catch {
         return false;
       }
@@ -219,6 +220,13 @@ export function createSosWebPushSender(
           allResolved = false;
           continue;
         }
+        // Revalider l'état juste avant chaque appel externe : un rappel déjà
+        // réservé ne doit pas partir si l'auteur a clôturé le SOS entre-temps.
+        const activeAlert = await db.prepare(
+          "SELECT 1 AS active FROM alerts WHERE id = ? AND status = 'active' LIMIT 1",
+        ).bind(envelope.alertId).first<{ active: number }>();
+        if (!activeAlert) return false;
+
         const outcome = await sendWebPush(subscription, payload, env, { crypto: cryptoProvider, fetcher });
         if (outcome === "accepted") {
           accepted += 1;
