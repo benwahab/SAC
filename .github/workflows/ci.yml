@@ -39,6 +39,10 @@ jobs:
         run: npm run test:webauthn-root-verifier
       - name: Test root enrollment and session endpoint boundaries
         run: npm run test:root-enrollment-endpoints
+      - name: Test root authentication endpoint and first-device routing
+        run: npm run test:root-authentication-endpoints
+      - name: Test root WebAuthn assertion flag policy
+        run: npm run test:webauthn-assertion-policy
       - name: Test PWA root enrollment client flow
         run: npm run test:root-enrollment-client
       - name: Apply isolated D1 enrollment test migration (local only)
