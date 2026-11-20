@@ -93,4 +93,4 @@ La purge cible uniquement `notification_delivery_attempts` puis `notification_de
 
 Le singleton `notification_retention_control` ne conserve que des horodatages, des compteurs agrégés, un bail anti-concurrence et des codes d'erreur normalisés. Il ne contient aucun identifiant utilisateur ou contenu privé. La logique Worker qui remplit ce contrôle, exécute la purge horaire, gère les alertes et récupère le backlog après restauration reste à implémenter et tester séparément.
 
-Test local de schéma et de contrat : `npm run test:d1-notification-retention`. Cette migration n'a **pas** été appliquée à la D1 distante. Toute application distante nécessite une autorisation explicite distincte.
+Test local de schéma et de contrat : `npm run test:d1-notification-retention`. Le workflow CI `44800621093` a réussi le 20 novembre 2026 : la migration 0009 a été appliquée à la D1 locale isolée et les tests de rétention ont réussi. Cette migration n'a **pas** été appliquée à la D1 distante. Toute application distante nécessite une autorisation explicite distincte.
