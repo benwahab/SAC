@@ -248,7 +248,15 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
 
   return (
     <main className="sac-shell sac-auth-page flex min-h-screen items-center justify-center px-5 py-10 text-sac-ink" dir={rtl ? "rtl" : "ltr"}>
-      <section className="sac-glass-panel sac-auth-card w-full max-w-md rounded-[2rem] p-6 sm:p-9">
+      <div className="sac-auth-layout relative z-10 mx-auto grid w-full max-w-5xl items-center gap-8 lg:grid-cols-[1fr_minmax(0,28rem)] lg:gap-14">
+        <aside className="sac-auth-brand hidden lg:block">
+          <div className="sac-auth-brand-mark mb-7 grid h-16 w-16 place-items-center rounded-2xl"><ShieldCheck size={34} strokeWidth={1.5}/></div>
+          <p className="text-xs font-black uppercase tracking-[.28em] text-[#FFB27C]">SAC · SÉCURITÉ · CONFIANCE</p>
+          <h2 className="mt-5 max-w-xl text-5xl font-black leading-[1.08] tracking-tight text-white">{language === "fr" ? <>Toujours proches.<span className="block text-[#FF9857]">Même à distance.</span></> : language === "en" ? <>Always close.<span className="block text-[#FF9857]">Even from afar.</span></> : <>دائماً قريبون.<span className="block text-[#FF9857]">حتى عن بُعد.</span></>}</h2>
+          <p className="mt-6 max-w-md text-base leading-8 text-white/70">{language === "fr" ? "Un espace sécurisé pour rester relié aux personnes qui comptent, et leur transmettre une alerte lorsque vous en avez besoin." : language === "en" ? "A secure space to stay connected to the people who matter and reach them when you need help." : "مساحة آمنة للبقاء على اتصال بمن يهمك أمرهم وطلب المساعدة عند الحاجة."}</p>
+          <div className="sac-auth-brand-orbit mt-10 flex h-48 w-48 items-center justify-center rounded-full"><div className="grid h-28 w-28 place-items-center rounded-full border border-white/20 bg-white/10 text-[#FFB27C] shadow-[0_0_55px_rgba(232,93,4,.35)]"><HeartHandshake size={48} strokeWidth={1.35}/></div></div>
+        </aside>
+        <section className="sac-glass-panel sac-auth-card w-full max-w-md rounded-[2rem] p-6 sm:p-9">
         <div className="flex items-start justify-between gap-4">
           <a href="/" className="flex flex-col" aria-label="SAC accueil">
             <span className="text-xl font-black tracking-[0.2em]">SAC</span>
@@ -339,7 +347,8 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
         {notice && mode !== "complete" && <p role="status" aria-live="polite" className="mt-5 rounded-xl border border-sac-confirm/20 bg-sac-confirm/5 p-4 text-xs leading-6 text-sac-muted">{notice}</p>}
         {error && <p role="alert" aria-live="assertive" className="mt-4 rounded-xl border border-sac-alert/25 bg-sac-alert/5 p-4 text-xs leading-6 text-sac-alert">{error}</p>}
         {mode !== "login" && mode !== "complete" && <a href="/" className="mt-6 inline-flex min-h-10 items-center text-sm font-bold text-sac-confirm hover:underline">{copy.home}</a>}
-      </section>
+        </section>
+      </div>
     </main>
   );
 }
