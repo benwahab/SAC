@@ -325,3 +325,45 @@ button:focus-visible, a:focus-visible { outline: 3px solid #E85D04; outline-offs
 @media (max-width: 639px) {
   .sac-offer-popover { position: relative; top: auto; margin-top: .6rem; }
 }
+
+/* Connexion et inscription : carte de verre dépoli premium. */
+.sac-auth-card {
+  isolation: isolate; overflow: hidden; border: 1px solid rgba(255,255,255,.88);
+  background: radial-gradient(ellipse at 100% 0%, rgba(255,255,255,.88), transparent 42%), linear-gradient(145deg, rgba(255,255,255,.82), rgba(255,248,241,.68)) !important;
+  box-shadow: 0 32px 88px rgba(79,28,7,.28), 0 8px 24px rgba(79,28,7,.10), inset 0 1px 0 rgba(255,255,255,.98);
+  -webkit-backdrop-filter: blur(34px) saturate(165%); backdrop-filter: blur(34px) saturate(165%);
+}
+.sac-auth-card::before {
+  content: ""; display: block; height: 5px; margin: -1.5rem -1.5rem 1.65rem;
+  background: linear-gradient(90deg, #B92E27, #E85D04 55%, rgba(255,185,126,.7));
+}
+@media (min-width: 640px) { .sac-auth-card::before { margin: -2.25rem -2.25rem 2rem; } }
+.sac-auth-card > div:first-child > a { color: #24211F; letter-spacing: .22em; }
+.sac-auth-card h1 { letter-spacing: -.045em; color: #24211F; }
+.sac-auth-card label { display: block; margin-bottom: .55rem; color: #3D332D; font-size: .82rem; font-weight: 750; letter-spacing: .005em; }
+.sac-auth-card input {
+  min-height: 3.15rem; border: 1px solid rgba(117,82,60,.20); border-radius: .95rem;
+  background: rgba(255,255,255,.84); color: #24211F;
+  box-shadow: inset 0 1px 2px rgba(66,38,20,.035), 0 1px 0 rgba(255,255,255,.9);
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease, transform .2s ease;
+}
+.sac-auth-card input:hover { border-color: rgba(232,93,4,.38); background: #fff; }
+.sac-auth-card input:focus { border-color: #E85D04; background: #fff; box-shadow: 0 0 0 4px rgba(232,93,4,.12), 0 5px 16px rgba(110,47,13,.07); outline: none; }
+.sac-auth-card button[type="submit"] {
+  min-height: 3.2rem; border: 1px solid rgba(255,255,255,.22); border-radius: 1rem;
+  background: linear-gradient(112deg, #B92E27 0%, #D94A18 48%, #E85D04 100%); color: #fff;
+  font-weight: 800; letter-spacing: .01em; box-shadow: 0 12px 26px rgba(176,62,18,.24), inset 0 1px 0 rgba(255,255,255,.18);
+  transition: transform .22s ease, box-shadow .22s ease, filter .22s ease;
+}
+.sac-auth-card button[type="submit"]:not(:disabled):hover { transform: translateY(-2px); filter: saturate(1.12) brightness(1.05); box-shadow: 0 17px 32px rgba(176,62,18,.32), inset 0 1px 0 rgba(255,255,255,.22); }
+.sac-auth-card button[type="submit"]:disabled { box-shadow: none; }
+.sac-auth-card form + button, .sac-auth-card form button:not([type="submit"]) {
+  border: 1px solid rgba(183,83,36,.22); background: rgba(255,255,255,.62); color: #4A3428;
+  transition: background .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.sac-auth-card form + button:hover, .sac-auth-card form button:not([type="submit"]):hover { border-color: rgba(232,93,4,.42); background: rgba(255,239,226,.92); transform: translateY(-1px); }
+.sac-auth-card [role="group"] { border-color: rgba(255,255,255,.9); background: rgba(255,255,255,.56); }
+.sac-auth-card [role="status"] { color: #276447; }
+.sac-auth-card [role="alert"] { background: rgba(185,46,39,.07); }
+@media (max-width: 639px) { .sac-auth-page { padding-inline: .85rem; } .sac-auth-card { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .sac-auth-card input, .sac-auth-card button { transition: none !important; } }
