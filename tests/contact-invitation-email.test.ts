@@ -29,7 +29,7 @@ test("trusted contact email sends a one-time HTTPS invitation link", async () =>
   assert.deepEqual(result, { ok: true, messageId: "email-message-1" });
   assert.deepEqual(requestBody?.to, [{ email: "person@example.ne" }]);
   assert.deepEqual(requestBody?.sender, { email: baseEnv.BREVO_FROM_EMAIL, name: baseEnv.BREVO_FROM_NAME });
-  assert.match(String(requestBody?.html), /https:\/\/sac\.example\.ne\/invitation\/accept/);
+  assert.match(String(requestBody?.htmlContent), /https:\/\/sac\.example\.ne\/invitation\/accept/);
   assert.match(String(requestBody?.html), /A{43}/);
 });
 
