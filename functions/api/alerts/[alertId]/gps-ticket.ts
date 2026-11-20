@@ -1,12 +1,9 @@
 import { requireAuthenticatedDeviceSession } from "../../../lib/security/require-authenticated-device-session.ts";
 import { guardSameOriginJsonPost } from "../../../lib/security/http-request-guard.ts";
-import { signGpsRelayTicket } from "../../../lib/location/gps-relay-ticket.ts";
 
 interface Env {
   DB: D1Database;
-  GPS_RELAY_HMAC_SECRET?: string;
   GPS_RELAY_PUBLIC_URL?: string;
-  GPS_RELAY_E2EE_READY?: string;
 }
 const HEADERS = {
   "Cache-Control": "no-store",
@@ -20,13 +17,20 @@ function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: HEADERS });
 }
 
+function createOpaqueTicket(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
 async function hashTicket(ticket: string): Promise<string> {
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ticket)));
   return Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 /**
- * Émet un ticket éphémère à usage unique pour un participant de l'alerte active.
+ * Émet un ticket aléatoire à usage unique pour un participant de l'alerte active.
  * Seule son empreinte SHA-256 est conservée dans D1 ; aucune position n'est reçue.
  */
 export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, env, params }) => {
@@ -45,15 +49,7 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
   if (typeof alertId !== "string" || !alertId.trim() || alertId.length > 128) {
     return json({ error: "alert_not_found" }, 404);
   }
-
-  if (env.GPS_RELAY_E2EE_READY !== "true") {
-    return json({ error: "gps_relay_not_ready" }, 503);
-  }
-
-  if (!env.GPS_RELAY_HMAC_SECRET || env.GPS_RELAY_HMAC_SECRET.length < 32 ||
-      !env.GPS_RELAY_PUBLIC_URL) {
-    return json({ error: "gps_service_not_configured" }, 503);
-  }
+  if (!env.GPS_RELAY_PUBLIC_URL) return json({ error: "gps_service_not_configured" }, 503);
 
   try {
     const row = await env.DB.prepare(
@@ -73,16 +69,7 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
 
     const now = Date.now();
     const expiresAt = now + 120_000;
-    const ticket = await signGpsRelayTicket(env.GPS_RELAY_HMAC_SECRET, {
-      alertId: row.id,
-      accountId: session.value.accountId,
-      deviceId: session.value.deviceId,
-      sessionId: session.value.sessionId,
-      role: row.participant_role,
-      exp: Math.floor(expiresAt / 1000),
-      scope: "connect",
-      jti: crypto.randomUUID(),
-    });
+    const ticket = createOpaqueTicket();
     const ticketHash = await hashTicket(ticket);
 
     await env.DB.prepare("DELETE FROM gps_relay_tickets WHERE expires_at <= ?").bind(now).run();
