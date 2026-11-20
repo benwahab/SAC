@@ -44,7 +44,7 @@ test("un secret différent ou un ciphertext altéré ne permet pas le déchiffre
   assert.ok(encrypted);
   const otherSecret = secretFromBytes(Uint8Array.from({ length: 32 }, (_, index) => 255 - index));
   assert.equal(await decryptPushSubscription(encrypted, otherSecret), null);
-  const altered = { ...encrypted, ciphertext: encrypted.ciphertext.slice(0, -1) + (encrypted.ciphertext.endsWith("A") ? "B" : "A") };
+  const altered = { ...encrypted, ciphertext: (encrypted.ciphertext.startsWith("A") ? "B" : "A") + encrypted.ciphertext.slice(1) };
   assert.equal(await decryptPushSubscription(altered, secret), null);
   const alteredFingerprint = { ...encrypted, endpointHash: "f".repeat(64) };
   assert.equal(await decryptPushSubscription(alteredFingerprint, secret), null);
