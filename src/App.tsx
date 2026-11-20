@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Download, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, X } from "lucide-react";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
 import { completeRootAuthentication, requestRootAuthentication, type RootAuthenticationOptions } from "./services/device/root-authentication";
+import { completeRootEnrollment, requestRootEnrollment, type RootEnrollmentCeremony } from "./services/device/root-enrollment";
 import PrivateSpacePage from "./PrivateSpacePage";
 import InvitationAcceptancePage from "./InvitationAcceptancePage";
 
@@ -85,7 +86,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     },
   }[language];
 
-  type Mode = "login" | "register" | "verify" | "authenticate" | "complete";
+  type Mode = "login" | "register" | "verify" | "enroll" | "authenticate" | "complete";
   const [mode, setMode] = useState<Mode>(() => new URLSearchParams(window.location.search).get("mode") === "register" ? "register" : "login");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -98,6 +99,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
   const [resendAt, setResendAt] = useState<number | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const [rootCeremony, setRootCeremony] = useState<RootAuthenticationOptions | null>(null);
+  const [enrollmentCeremony, setEnrollmentCeremony] = useState<RootEnrollmentCeremony | null>(null);
   const rtl = language === "ar";
 
   useEffect(() => {
@@ -124,6 +126,8 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       case "invalid_authentication":
       case "authentication_expired_or_unavailable":
       case "webauthn_not_supported":
+      case "root_device_unavailable":
+      case "root_enrollment_not_approved":
         return language === "fr" ? "Identifiants incorrects ou appareil sécurisé indisponible sur ce téléphone." : language === "en" ? "Invalid credentials or secure device unavailable on this phone." : "بيانات الدخول غير صحيحة أو الجهاز الآمن غير متاح على هذا الهاتف.";
       case "too_many_attempts":
         return language === "fr" ? "Trop de tentatives. Réessayez dans 15 minutes." : language === "en" ? "Too many attempts. Try again in 15 minutes." : "محاولات كثيرة. حاول مرة أخرى بعد 15 دقيقة.";
@@ -197,10 +201,35 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     setError("");
     setNotice("");
     try {
-      const ceremony = await requestRootAuthentication(email, password);
-      setRootCeremony(ceremony);
-      setPassword("");
-      setMode("authenticate");
+      try {
+        const ceremony = await requestRootAuthentication(email, password);
+        setRootCeremony(ceremony);
+        setPassword("");
+        setMode("authenticate");
+      } catch (reason) {
+        if (!(reason instanceof Error) || reason.message !== "root_enrollment_required") throw reason;
+        const ceremony = await requestRootEnrollment(email, password);
+        setEnrollmentCeremony(ceremony);
+        setPassword("");
+        setMode("enroll");
+      }
+    } catch (reason) {
+      setError(errorMessage(reason instanceof Error ? reason.message : undefined));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function confirmRootEnrollment() {
+    if (!enrollmentCeremony || busy) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      await completeRootEnrollment(enrollmentCeremony);
+      setEnrollmentCeremony(null);
+      setMode("complete");
+      setNotice(copy.rootSuccess);
     } catch (reason) {
       setError(errorMessage(reason instanceof Error ? reason.message : undefined));
     } finally {
@@ -295,6 +324,15 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
               <button type="submit" disabled={busy || !email || !password} className={primaryButton}>{busy ? copy.rootPreparing : copy.prepareRoot}</button>
             </form>
             <button type="button" className="min-h-11 w-full rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 text-sm font-bold text-sac-ink" onClick={() => { setMode("register"); setError(""); setNotice(""); }}>{copy.create}</button>
+          </div>
+        )}
+
+        {mode === "enroll" && enrollmentCeremony && (
+          <div className="mt-8 space-y-4">
+            <p className="rounded-xl border border-sac-confirm/25 bg-sac-confirm/10 p-4 text-sm leading-6 text-sac-ink">{language === "fr" ? "Première connexion : enregistrez la clé sécurisée de ce téléphone. Votre compte doit déjà être activé par e-mail." : language === "en" ? "First sign-in: register this phone’s secure key. Your account must already be activated by email." : "تسجيل الدخول الأول: سجّل المفتاح الآمن لهذا الهاتف. يجب أن يكون حسابك مفعّلاً عبر البريد الإلكتروني."}</p>
+            <p className="text-sm leading-6 text-sac-muted">{copy.rootReady}</p>
+            <button type="button" disabled={busy} onClick={confirmRootEnrollment} className={primaryButton}>{busy ? copy.rootCreating : copy.createRoot}</button>
+            <button type="button" disabled={busy} onClick={() => { setEnrollmentCeremony(null); setMode("login"); setError(""); setNotice(""); }} className="min-h-11 w-full rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 text-sm font-bold text-sac-ink">{copy.back}</button>
           </div>
         )}
 
