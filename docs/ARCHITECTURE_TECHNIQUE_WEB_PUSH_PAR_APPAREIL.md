@@ -354,9 +354,9 @@ Le fichier additif `migrations/0009_notification_delivery_retention.sql` prépar
 
 Les contraintes et triggers interdisent notamment les tentatives non réservées, les numéros non séquentiels, les transitions hors état terminal, le démarrage de la rétention avant l'agrégation de l'outbox et la suppression d'une tentative ou livraison avant échéance. La suppression du parent est bloquée tant que des tentatives enfants existent. Les clés étrangères vers l'outbox sont en restriction ; aucun lien FK ne bloque la révocation/suppression d'un abonnement Push devenu invalide.
 
-La migration ne modifie pas les lignes existantes et ne touche aucune donnée GPS. Le test `tests/d1_notification_retention_schema.test.py` applique la chaîne de migrations 0001 à 0009 dans une base SQLite isolée et vérifie les contraintes, la limite de lot de 200, la suppression enfant-avant-parent et la préservation de l'outbox métier. La commande est `npm run test:d1-notification-retention`, intégrée au workflow CI.
+La migration ne modifie pas les lignes existantes et ne touche aucune donnée GPS. Le test `tests/d1_notification_retention_schema.test.py` applique la chaîne de migrations 0001 à 0009 dans une base SQLite isolée et vérifie les contraintes, la limite de lot de 200, la suppression enfant-avant-parent, le rollback transactionnel en cas d'échec, l'impossibilité d'étendre le fan-out après agrégation et la préservation de l'outbox métier. Il vérifie aussi l'absence de colonnes de contenu sensible. La commande est `npm run test:d1-notification-retention`, intégrée au workflow CI. Le workflow GitHub Actions `44800621093` a réussi le 20 novembre 2026, y compris l'application Wrangler de 0001 à 0009 sur la base locale isolée et les 12 tests du contrat de rétention.
 
-**Important :** écrire la migration et le test ne signifie pas qu'ils ont été exécutés sur la D1 distante. La migration 0009 n'a pas été appliquée à `sac-db`. Le code Worker qui exécute la purge horaire et met à jour le singleton reste à implémenter ; aucune suppression automatique n'est active en production.
+**Important :** la migration 0009 a été appliquée uniquement à la D1 locale isolée de CI, jamais à la D1 distante `sac-db`. Le code Worker qui exécute la purge horaire et met à jour le singleton reste à implémenter ; aucune suppression automatique n'est active en production.
 
 #### Tests obligatoires de purge
 
@@ -428,8 +428,8 @@ Sources officielles :
 - [x] Conservation des instances et historiques Workflow fixée à 7 jours maximum après la fin de l'exécution.
 - [x] Timeout réseau fournisseur fixé à 8 secondes maximum ; bail de traitement fixé à 30 secondes avec fencing token et consommation de la tentative après expiration.
 - [x] Spécification opérationnelle de purge D1 bornée, idempotente, surveillée et testable documentée (exécution horaire, lots de 200, conservation prudente en cas de doute, alertes et reprise après restauration).
-- [x] Migration D1 additive 0009 écrite ; test automatisé de schéma et de purge bornée ajouté à la CI.
-- [ ] Migration D1 et tests validés en CI ; vérification locale complète à confirmer.
+- [x] Migration D1 additive 0009 écrite et appliquée uniquement à la D1 locale isolée de CI.
+- [x] Tests de schéma, purge bornée, rollback, fan-out figé et confidentialité réussis en CI (`44800621093`).
 - [ ] Registre livraison/appareil implémenté.
 - [ ] Workflow et Cron de récupération implémentés.
 - [ ] Tests de concurrence et de clôture réussis.
