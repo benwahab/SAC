@@ -328,3 +328,30 @@ export async function fingerprintLocationIdentityKey(
   const hex = Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
   return hex.toUpperCase().match(/.{1,4}/g)!.join(" ");
 }
+
+/**
+ * Vérifie une clé de proche contre une empreinte déjà épinglée et comparée
+ * par un canal indépendant. Une signature auto-validée seule ne suffit pas.
+ */
+export async function verifyTrustedLocationKeyBundle(
+  bundle: SignedLocationKeyBundle,
+  expectedOwnerId: string,
+  pinnedFingerprint: string,
+  cryptoProvider: Crypto = globalThis.crypto,
+): Promise<boolean> {
+  try {
+    if (
+      typeof expectedOwnerId !== "string" ||
+      !expectedOwnerId.trim() ||
+      bundle?.ownerId !== expectedOwnerId ||
+      typeof pinnedFingerprint !== "string" ||
+      !/^(?:[0-9A-F]{4})(?: [0-9A-F]{4}){15}$/.test(pinnedFingerprint)
+    ) return false;
+
+    if (!(await verifyLocationKeyBundle(bundle, cryptoProvider))) return false;
+    const actual = await fingerprintLocationIdentityKey(bundle.identityPublicKey, cryptoProvider);
+    return actual === pinnedFingerprint;
+  } catch {
+    return false;
+  }
+}
