@@ -294,3 +294,30 @@ Configuration réellement créée dans le compte Cloudflare connecté et relue a
 Une relecture du projet Pages après la première configuration a permis d'ajouter également `APP_BASE_URL=https://sac-3xh.pages.dev` dans l'environnement de production. Cette valeur sert de base aux liens d'invitation SAC. Elle ne suffit pas à activer les invitations : la durée de vie proposée des invitations reste non validée, le fournisseur Resend n'a pas de clé API ni d'expéditeur SAC vérifié configurés, et la variable `CONTACT_PERMISSION_VERSION` n'est donc pas activée. Aucun TTL arbitraire n'a été choisi.
 
 La clé secrète OTP est bien envoyée en tant que secret Cloudflare ; l'API de lecture masque la valeur et ne permet pas de vérifier sa présence par le champ `value`. Le succès de l'écriture Cloudflare a été confirmé, mais le secret ne peut pas être relu en clair. La valeur n'est jamais copiée dans GitHub.
+
+
+## Addendum opérationnel — vérification Cloudflare du 20 novembre 2026
+
+Cette mise à jour prévaut sur les anciens paragraphes de ce document qui indiquaient que Pages n'était pas créé, que D1 était vide ou que les migrations 0001 à 0007 n'étaient pas appliquées.
+
+### Infrastructure effectivement observée
+
+- Le projet Cloudflare Pages `sac` existe et est relié au dépôt privé `benwahab/SAC`, branche de production `main`.
+- Le dernier déploiement de production observé est `1a5e3535-5d8e-40c9-ad27-761b2872fc88`, déclenché par le commit `afc229d1daf5d9aaa5cd6930e8b51645ade01b21`. Les étapes queued, initialize, clone_repo, build et deploy sont toutes en succès. URL du déploiement : https://1a5e3535.sac-3xh.pages.dev ; domaine Pages du projet : https://sac-3xh.pages.dev.
+- La base D1 distante `sac-db` contient maintenant les tables applicatives et les migrations 0001 à 0009. La table `d1_migrations` confirme les neuf migrations ; la migration 0009 a été appliquée le 20 novembre 2026 à 19:24:25 UTC.
+- Les tables `notification_device_deliveries`, `notification_delivery_attempts` et `notification_retention_control` sont présentes dans D1.
+- Le Worker séparé `sac-notification-retention-purge` est déployé avec binding D1 et Cron horaire `0 * * * *`. Sa surveillance Real-Time Issues et sa collecte de logs non persistants sont activées ; la politique d'alerte e-mail Cloudflare est activée. Les traces et la persistance des logs restent désactivées intentionnellement.
+- Au dernier contrôle du singleton D1, `last_started_at` et `last_success_at` sont encore NULL, avec zéro backlog et zéro échec. Le Cron est configuré, mais aucune exécution réussie n'est encore prouvée. Le prochain passage prévu à l'heure ronde doit être contrôlé.
+
+### Fonctions qui ne doivent pas être déclarées actives
+
+- La liste Cloudflare Workflows est vide : aucun Workflow SOS n'est déployé.
+- Le Worker source `workers/sos-notification-delivery` existe dans GitHub, mais le Worker correspondant n'existe pas dans le compte Cloudflare connecté. Il n'y a donc pas de livraison Push SOS opérationnelle.
+- Les valeurs des secrets Pages sont masquées par l'API ; leur présence dans la liste de configuration ne prouve ni leur validité, ni le fonctionnement du fournisseur. La configuration e-mail Brevo, l'expéditeur et les tests de délivrabilité restent à vérifier séparément.
+- Aucun fournisseur SMS n'est connecté et aucun SMS réel n'est envoyé.
+- Le GPS réel reste NO-GO. Le contrat produit `docs/CONTRAT_CONSERVATION_ALERTES_ET_PURGE.md` impose la suppression des positions précises à la clôture, puis la suppression de l'historique et de sa catégorie à J+30. L'audit GPS conclut qu'aucune preuve technique de non-résurrection après sauvegarde/restauration n'existe encore.
+- L'archivage automatique des documents générés/imprimés n'est pas encore une fonction de bout en bout vérifiée.
+
+### Décision de pilotage
+
+Ne pas déployer un Worker SOS ou un Workflow avant d'avoir terminé les tests d'intégration et de concurrence du registre par appareil, vérifié les secrets VAPID et la clé de chiffrement dans l'environnement Worker, validé l'agrégation outbox/SMS et assuré l'annulation lors de clôture/révocation. Ne pas déclencher de Push/SMS réels vers les proches pendant la recette technique. Ne pas activer la collecte GPS avant les preuves de suppression immédiate à la clôture et de non-résurrection après restauration. Les services payants ou fournisseurs externes nécessitent une vérification de coût et de configuration avant activation.
