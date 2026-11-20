@@ -135,19 +135,31 @@ Ne jamais conserver :
 - Aucun résultat de transport ne modifie la responsabilité humaine ou l'état métier du SOS.
 - La livraison multi-appareils reste « au moins une fois » face aux résultats réseau ambigus ; ne pas annoncer « exactement une fois ».
 
-## 6. Points à arbitrer avant toute migration
+## 6. Arbitrages validés et points encore ouverts
 
-Aucune valeur ne doit être inventée pour ces points :
+### 6.1 Règle validée par le Super Admin — 20 novembre 2026
+
+- **Deux tentatives maximum par abonnement/appareil et par rappel** : premier envoi, puis une seule nouvelle tentative.
+- La seconde tentative est autorisée après un résultat réseau ambigu (`unknown`) ou un échec temporaire confirmé (`retry_wait`).
+- **Délai avant la seconde tentative : 15 secondes** après l'échec ou le résultat ambigu du premier envoi.
+- Une acceptation explicite du fournisseur (`accepted`) arrête immédiatement toute reprise pour cet appareil.
+- Un abonnement invalide (`permanent_failure`) est terminal et n'est jamais réessayé.
+- Après la seconde tentative, aucune troisième tentative n'est permise, même si le résultat demeure ambigu.
+- Le plafond s'applique séparément à chaque rappel ; les rappels ultérieurs restent des tâches distinctes et conservent leur cadence métier.
+- Une acceptation fournisseur signifie uniquement acceptation de la requête, jamais livraison à l'appareil, affichage ou lecture.
+- Le risque de doublon lié à une réponse fournisseur perdue est accepté, mais limité à une seule reprise.
+
+### 6.2 Points encore ouverts avant migration
+
+Aucune valeur ne doit être inventée pour les points suivants :
 1. durée de conservation des livraisons et tentatives ;
-2. nombre maximal de tentatives par appareil ;
-3. délais et plafond de reprise par appareil ;
-4. traitement final des résultats `unknown` : attente, nouvelle tentative avec risque de doublon, ou arrêt après une limite ;
-5. règle de clôture de la tâche outbox si un appareil reste durablement inconnu ;
-6. comportement si un abonnement est renouvelé sur le même appareil pendant une tâche en cours ;
-7. plafond d'appareils/abonnements par compte ;
-8. purge des journaux techniques et preuve d'absence de données sensibles.
+2. comportement si le bail expire pendant l'appel réseau et prévention des écritures tardives ;
+3. règle de clôture de la tâche outbox si un appareil reste durablement inconnu après la deuxième tentative ;
+4. comportement si un abonnement est renouvelé sur le même appareil pendant une tâche en cours ;
+5. plafond d'appareils/abonnements par compte ;
+6. purge des journaux techniques et preuve d'absence de données sensibles.
 
-La politique existante de cinq tentatives au niveau destinataire ne doit pas être copiée automatiquement au niveau appareil : ces deux unités n'ont pas la même sémantique.
+La politique existante de cinq tentatives au niveau destinataire ne doit pas être copiée automatiquement au niveau appareil : les deux unités n'ont pas la même sémantique.
 
 ## 7. Plan de réalisation après arbitrage
 
