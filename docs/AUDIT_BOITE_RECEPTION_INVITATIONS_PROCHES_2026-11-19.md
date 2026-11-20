@@ -79,3 +79,18 @@ Cet audit ne valide aucune de ces propositions et ne choisit pas de fournisseur 
 - Aucune ressource Cloudflare modifiée.
 - Aucun e-mail, push ou SMS envoyé.
 - Aucun déploiement déclenché.
+
+
+## Mise à jour d'implémentation — 21 novembre 2026
+
+Une première boîte de suivi des invitations en attente a été ajoutée :
+
+- `GET /api/contacts/invitations/inbox` exige une session d'appareil authentifiée et retourne séparément les invitations reçues et envoyées encore en attente et non expirées.
+- Les invitations reçues sont recherchées uniquement via l'adresse e-mail principale vérifiée du compte connecté.
+- Les invitations envoyées sont limitées au compte invitant connecté.
+- Aucun jeton secret n'est exposé dans la réponse ; le jeton brut reste uniquement dans le lien e-mail.
+- L'écran « Mes proches » affiche les deux listes et les dates d'expiration.
+
+La réponse aux invitations reçues reste volontairement effectuée via le lien sécurisé envoyé par e-mail. La boîte SAC indique cette règle et ne crée pas de boutons Accepter/Refuser sans preuve de possession du jeton. Le parcours sécurisé existant reste inchangé.
+
+Aucune migration supplémentaire n'est nécessaire : la migration 0002 contient déjà l'index de recherche par adresse destinataire, statut et date de création. Aucun jeton ni contenu sensible n'est ajouté en base.
