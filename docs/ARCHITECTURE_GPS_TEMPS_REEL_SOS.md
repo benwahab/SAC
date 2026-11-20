@@ -169,3 +169,21 @@ Le Worker est donc présent sur le compte Cloudflare, mais il est volontairement
 Adresse du Worker réservé : `https://sac-gps-relay.benwahab111.workers.dev`.
 
 Cette mise en place provisionne le relais sans ouvrir un canal de partage avant que le client navigateur, la géolocalisation réelle et l'authentification cryptographique des clés des proches soient terminés et testés.
+
+
+## Identité locale des appareils et épinglage des proches — 20 novembre 2026
+
+Une première base client de confiance est ajoutée :
+- chaque couple compte/appareil possède une clé de signature ECDSA P-256 distincte ;
+- la clé privée est non exportable et conservée uniquement comme objet `CryptoKey` dans IndexedDB local ;
+- la clé ECDH de transport reste éphémère et doit être générée en mémoire pour chaque SOS ; elle n'est pas conservée dans IndexedDB ;
+- les bundles de clés sont désormais en version 2 et lient explicitement le compte et l'identifiant de l'appareil ;
+- un bundle signé n'est accepté qu'après comparaison de l'empreinte avec une empreinte épinglée localement pour ce compte/appareil ;
+- les empreintes épinglées restent locales à l'appareil et ne sont jamais envoyées au serveur ;
+- une empreinte existante ne peut pas être remplacée silencieusement.
+
+Une rubrique de préparation apparaît dans l'espace privé : chaque utilisateur peut copier son identifiant d'appareil et son empreinte ; pour chaque proche, il saisit les deux valeurs communiquées par celui-ci et doit confirmer les avoir comparées par un canal indépendant (appel vocal/vidéo ou rencontre). Cette étape est volontairement préalable au partage GPS chiffré : une signature auto-validée ou une clé relayée par le serveur ne prouve pas l'identité du proche.
+
+Le coffre IndexedDB passe à la version 2 et utilise une clé de stockage composée du compte et de l'appareil, afin de ne pas confondre les identités de plusieurs appareils du même compte.
+
+**Limite :** l'interface prépare et enregistre les empreintes, mais le transport des bundles, la vérification automatique lors de l'arrivée d'une annonce, l'accord ECDH par alerte et le chiffrement/déchiffrement GPS ne sont pas encore raccordés au relais. Le verrou E2EE reste fermé.
