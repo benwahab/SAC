@@ -20,6 +20,7 @@ function decodeBase64Url(value: string): Uint8Array {
   const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
   return Uint8Array.from(atob(base64 + "=".repeat((4 - base64.length % 4) % 4)), c => c.charCodeAt(0));
 }
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer { const out = new ArrayBuffer(bytes.byteLength); new Uint8Array(out).set(bytes); return out; }
 function encodeBase64Url(bytes: ArrayBuffer): string {
   const data = new Uint8Array(bytes);
   let binary = "";
@@ -46,13 +47,13 @@ export async function completeRootAuthentication(ceremony: RootAuthenticationOpt
   if (!ceremony?.challengeId || ceremony.expiresAt <= Date.now()) throw new Error("authentication_expired_or_unavailable");
   if (!globalThis.isSecureContext || typeof navigator.credentials?.get !== "function") throw new Error("webauthn_not_supported");
   const publicKey: PublicKeyCredentialRequestOptions = {
-    challenge: decodeBase64Url(ceremony.publicKey.challenge),
+    challenge: toArrayBuffer(decodeBase64Url(ceremony.publicKey.challenge)),
     rpId: ceremony.publicKey.rpId,
     timeout: ceremony.publicKey.timeout,
     userVerification: "required",
     allowCredentials: ceremony.publicKey.allowCredentials.map(item => ({
       type: "public-key",
-      id: decodeBase64Url(item.id).buffer,
+      id: toArrayBuffer(decodeBase64Url(item.id)),
     })),
   };
   const credential = await navigator.credentials.get({ publicKey });
