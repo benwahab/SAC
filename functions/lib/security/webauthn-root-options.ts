@@ -33,7 +33,7 @@ export interface RootRegistrationOptionsJSON {
   excludeCredentials?: Array<{
     type: "public-key";
     id: string;
-    transports?: AuthenticatorTransport[];
+    transports?: Array<"ble" | "hybrid" | "internal" | "nfc" | "usb">;
   }>;
 }
 
