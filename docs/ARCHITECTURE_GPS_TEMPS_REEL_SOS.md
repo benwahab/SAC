@@ -138,3 +138,10 @@ La migration additive `0011_gps_ticket_device_binding.sql` remplace la table de 
 Les tests D1 couvrent désormais la liaison compte/appareil/session, le rejeu, l'expiration, l'absence de colonnes de localisation et le refus d'une session révoquée. Les tests de négociation WebSocket couvrent l'offre de sous-protocoles et les limites du ticket.
 
 **État de cette tranche :** tests D1 GPS et WebSocket réussis dans la CI du commit `0756d86b27cffb54a14e8c49fe9281ffd26cf985` (typecheck également réussi). La CI complète doit finir avant l'application distante de la migration 0011. Le Worker n'est toujours pas déployé ; la géolocalisation navigateur et le chiffrement/authentification de clés restent à raccorder.
+
+
+## Migration distante 0011 — vérification du 20 novembre 2026
+
+Après succès complet de la CI du commit `0756d86b27cffb54a14e8c49fe9281ffd26cf985`, la migration `0011_gps_ticket_device_binding.sql` a été appliquée à la base D1 distante `sac-db`. La table ne contenait aucun ticket au moment de la transition ; les tickets éphémères existants ont donc été supprimés sans perte de session GPS active. La table contient maintenant `device_id` et `session_id`, avec les clés étrangères attendues. Le journal D1 confirme l'entrée 11 et `PRAGMA foreign_key_check` ne retourne aucune anomalie.
+
+La CI suivante inclut une étape supplémentaire de bundle à blanc Wrangler du Worker et de validation des bindings Durable Objects avant tout déploiement réel. Le Worker n'est pas encore déployé et les variables de secret Pages ne sont pas configurées.
