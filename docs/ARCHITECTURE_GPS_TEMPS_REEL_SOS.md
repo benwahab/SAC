@@ -111,3 +111,16 @@ Une tranche de durcissement a été ajoutée sur `main` :
 - tests de schéma D1 ajoutés pour usage unique, expiration, rôle, empreinte et absence de colonnes GPS.
 
 **Limite inchangée :** cette tranche n'active pas encore la géolocalisation du navigateur ni le partage chiffré vers les proches. La migration doit encore être appliquée à D1 distante, le Worker configuré/déployé et le client raccordé puis testé sur deux appareils. Le GPS reste donc non opérationnel en production à ce stade.
+
+
+## Vérification de la migration D1 distante — 20 novembre 2026
+
+La CI GitHub du commit `9011168f2ab5668b10d3e8503f4d0487897b1992` a terminé avec succès : tests de schéma GPS, typecheck, build et tests d'intégration SOS inclus.
+
+La migration `0010_gps_relay_tickets.sql` a ensuite été appliquée à la base D1 distante `sac-db` (`892ce876-f279-409c-8f9e-06b1dca66e9d`). La table `gps_relay_tickets`, son index d'expiration et l'entrée `d1_migrations` numéro 10 ont été créés. La vérification de la table de suivi avant application indiquait que seules les migrations 0001 à 0009 étaient présentes ; l'exécution distante a confirmé trois opérations SQL réussies.
+
+Le déploiement Pages de production correspondant au commit `9011168f` est terminé avec succès : `https://02de0faa.sac-3xh.pages.dev`.
+
+**État d'activation :** le Worker `sac-gps-relay` n'existe pas encore sur le compte Cloudflare et les variables Pages `GPS_RELAY_HMAC_SECRET` / `GPS_RELAY_PUBLIC_URL` ne sont pas configurées. Le client SOS n'appelle pas encore `watchPosition` et n'ouvre pas le WebSocket. Les primitives de chiffrement et d'échange de clés restent expérimentales ; aucune clé d'identité privée de localisation n'est encore provisionnée sur les appareils. Par conséquent, aucun partage GPS réel n'est actif malgré la migration et le déploiement Pages.
+
+**Prochaine tranche obligatoire avant activation :** provisionnement vérifiable des clés d'identité des appareils et de leur révocation, échange ECDH authentifié entre appareils, client de géolocalisation SOS avec effacement local immédiat à la clôture, puis déploiement du relais et test sur deux appareils réels. Ne pas envoyer de coordonnées en clair pour contourner ce blocage.
