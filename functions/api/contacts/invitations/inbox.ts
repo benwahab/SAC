@@ -1,4 +1,4 @@
-import { requireAuthenticatedDeviceSession } from "../../../../lib/security/require-authenticated-device-session.ts";
+import { requireAuthenticatedDeviceSession } from "../../../lib/security/require-authenticated-device-session.ts";
 
 interface Env { DB: D1Database; }
 
