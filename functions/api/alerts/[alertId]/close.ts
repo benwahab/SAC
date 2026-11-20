@@ -49,6 +49,7 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
         alertId,
         accountId: session.value.accountId,
         deviceId: session.value.deviceId,
+        sessionId: session.value.sessionId,
         role: "author",
         exp: Math.floor(Date.now() / 1000) + 60,
         scope: "close",
