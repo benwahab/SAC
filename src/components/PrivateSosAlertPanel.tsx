@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
+import SosLiveLocation from "./SosLiveLocation";
 import { CheckCircle2, Clock3, HandHeart, RefreshCw, ShieldCheck, UserRoundCheck, UserRoundX } from "lucide-react";
 
 type Props = {
   alertId: string;
+  accountId: string;
+  deviceId: string;
   participantRole: "author" | "recipient";
   status: string;
   onUpdated: () => void;
@@ -36,7 +39,7 @@ const eventLabels: Record<SosEvent["type"], string> = {
   closed_by_author: "Alerte clôturée par son auteur",
 };
 
-export default function PrivateSosAlertPanel({ alertId, participantRole, status, onUpdated }: Props) {
+export default function PrivateSosAlertPanel({ alertId, accountId, deviceId, participantRole, status, onUpdated }: Props) {
   const [detail, setDetail] = useState<AlertDetail | null>(null);
   const [events, setEvents] = useState<SosEvent[]>([]);
   const [responsibility, setResponsibility] = useState<ResponsibilityState | null>(null);
@@ -172,6 +175,7 @@ export default function PrivateSosAlertPanel({ alertId, participantRole, status,
                 : "Aucun responsable principal n’a encore été désigné."}
           </p>}
           {detail.closedAt && <p className="mt-3 rounded-xl bg-sac-confirm/10 p-3 text-sm text-sac-ink">Clôturée le {new Date(detail.closedAt).toLocaleString()} · {detail.closureReason === "completed" ? "Situation terminée" : "Annulée"}</p>}
+          {active && <SosLiveLocation alertId={alertId} accountId={accountId} deviceId={deviceId} participantRole={participantRole} />}
           <div className="mt-4">
             <h4 className="flex items-center gap-2 text-sm font-extrabold"><Clock3 size={15}/>Chronologie</h4>
             {events.length === 0 ? <p className="mt-2 text-xs text-sac-muted">Aucun événement disponible.</p> : <ol className="mt-2 space-y-2">{events.map((event) => <li key={event.id} className="flex items-start gap-2 rounded-lg bg-white/75 p-2.5 text-xs"><span className="mt-0.5 text-sac-confirm"><CheckCircle2 size={14}/></span><span className="min-w-0 flex-1"><strong>{eventLabels[event.type]}</strong><span className="block text-sac-muted">{event.actor === "self" ? "Vous" : "Un participant"} · {new Date(event.occurredAt).toLocaleString()}</span></span></li>)}</ol>}
