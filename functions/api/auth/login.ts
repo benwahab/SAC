@@ -57,6 +57,7 @@ function derToRaw(signature: Uint8Array): Uint8Array {
   raw.set(normalize(signature.slice(sStart)), 32);
   return raw;
 }
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer { const out = new ArrayBuffer(bytes.byteLength); new Uint8Array(out).set(bytes); return out; }
 function concat(a: Uint8Array, b: Uint8Array): Uint8Array {
   const out = new Uint8Array(a.length + b.length);
   out.set(a); out.set(b, a.length); return out;
@@ -108,7 +109,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const clientDataBytes = decodeBase64Url(response.clientDataJSON, 16_384);
     const clientData = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(clientDataBytes)) as Record<string, unknown>;
     const challengeBytes = decodeBase64Url(clientData.challenge, 64);
-    const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", challengeBytes));
+    const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", toArrayBuffer(challengeBytes)));
     const expectedDigest = Uint8Array.from(challenge.challenge_digest.match(/.{2}/g) ?? [], x => Number.parseInt(x, 16));
     if (clientData.type !== "webauthn.get" || clientData.origin !== challenge.origin ||
         (clientData.crossOrigin !== undefined && clientData.crossOrigin !== false) || !equal(digest, expectedDigest) ||
@@ -125,7 +126,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const signCount = new DataView(authData.buffer, authData.byteOffset, authData.byteLength).getUint32(33, false);
     if (challenge.sign_count > 0 && signCount <= challenge.sign_count) throw new Error("signature_counter_rejected");
 
-    const clientHash = new Uint8Array(await crypto.subtle.digest("SHA-256", clientDataBytes));
+    const clientHash = new Uint8Array(await crypto.subtle.digest("SHA-256", toArrayBuffer(clientDataBytes)));
     const signedData = concat(authData, clientHash);
     const x = fromBase64Url(challenge.public_key_x);
     const y = fromBase64Url(challenge.public_key_y);
@@ -135,7 +136,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       ext: true, key_ops: ["verify"],
     }, { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
     const signature = derToRaw(decodeBase64Url(response.signature, 1024));
-    const valid = await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, publicKey, signature, signedData);
+    const valid = await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, publicKey, toArrayBuffer(signature), toArrayBuffer(signedData));
     if (!valid || x.length !== 32 || y.length !== 32) throw new Error("signature_rejected");
 
     const session = await createSessionToken(crypto);
