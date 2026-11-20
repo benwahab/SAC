@@ -54,14 +54,17 @@ test("requests a fresh high-accuracy GPS fix and forwards only the current fix",
 test("does not forward positions after stop and stop is idempotent", () => {
   const geo = new FakeGeolocation();
   let received = 0;
+  let cleared = 0;
   const watch = startPreciseLocationWatch(geo, {
     onPosition: () => { received += 1; },
     onError: () => undefined,
+    onClear: () => { cleared += 1; },
   });
   watch.stop();
   watch.stop();
   geo.emit(13.5, 2.1);
   assert.equal(received, 0);
+  assert.equal(cleared, 1);
   assert.deepEqual(geo.cleared, [42]);
 });
 
@@ -76,6 +79,7 @@ test("rejects invalid coordinates and reports geolocation permission errors", ()
   assert.deepEqual(errors, ["position_invalid"]);
   geo.failure?.({ code: 1 } as GeolocationPositionError);
   assert.deepEqual(errors, ["position_invalid", "permission_denied"]);
+  assert.deepEqual(geo.cleared, [42]);
   watch.stop();
 });
 
@@ -85,11 +89,11 @@ test("uses no persisted storage and supports explicit cleanup after SOS closure"
   const watch = startPreciseLocationWatch(geo, {
     onPosition: (position) => { lastPosition = position; },
     onError: () => undefined,
+    onClear: () => { lastPosition = null; },
   });
   geo.emit(13.5, 2.1);
   assert.ok(lastPosition);
   watch.stop();
-  lastPosition = null;
   assert.equal(lastPosition, null);
   assert.deepEqual(geo.cleared, [42]);
 });
