@@ -107,9 +107,18 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
             (created + 300_000, created + 1),
         )
 
-    def _delivery(self, delivery_id="delivery", status="accepted", terminal_at=None, expires_at=None):
-        terminal_at = terminal_at if terminal_at is not None else self.now
-        expires_at = expires_at if expires_at is not None else terminal_at + 2_592_000_000
+    def _delivery(self, delivery_id="delivery", status="accepted", terminal_at="auto", expires_at="auto"):
+        if terminal_at == "auto":
+            terminal_at = self.now
+        if expires_at == "auto":
+            expires_at = terminal_at + 2_592_000_000 if terminal_at is not None else None
+        if terminal_at is not None:
+            self.db.execute(
+                """UPDATE alert_reminder_outbox
+                   SET status='sent', processed_at=?
+                   WHERE id='outbox' AND status='pending'""",
+                (terminal_at,),
+            )
         created_at = min(self.now - 100, terminal_at - 100)
         self.db.execute(
             """INSERT INTO notification_device_deliveries
@@ -129,7 +138,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
         self.assertEqual(expires - self.now, 30 * 24 * 60 * 60 * 1000)
 
     def test_nonterminal_or_unaggregated_delivery_is_not_purgeable(self):
-        self._delivery(status="pending")
+        self._delivery(status="pending", terminal_at=None, expires_at=None)
         count = self.db.execute(
             """SELECT COUNT(*) FROM notification_device_deliveries
                WHERE status IN ('accepted','permanent_failure','unknown_exhausted','cancelled')
