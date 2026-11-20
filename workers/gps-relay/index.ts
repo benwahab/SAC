@@ -89,7 +89,7 @@ export default {
 };
 
 export class GpsRelayRoom extends DurableObject<Env> {
-  private readonly sockets = new Map<WebSocket, { accountId: string; role: "author" | "recipient" }>();
+  private readonly sockets = new Map<WebSocket, { accountId: string; role: "author" | "recipient"; connectionId: string }>();
 
   async fetch(request: Request): Promise<Response> {
     if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket") return json({ error: "upgrade_required" }, 426);
@@ -102,7 +102,7 @@ export class GpsRelayRoom extends DurableObject<Env> {
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
     server.accept();
-    this.sockets.set(server, { accountId, role });
+    this.sockets.set(server, { accountId, role, connectionId: crypto.randomUUID() });
 
     server.addEventListener("message", (event) => {
       void this.handleMessage(server, alertId, event.data);
@@ -146,7 +146,7 @@ export class GpsRelayRoom extends DurableObject<Env> {
         return;
       }
     } else if (message.type === "gps-encrypted") {
-      if (typeof message.ciphertext !== "string" || message.ciphertext.length > 12_000 ||
+      if (typeof message.recipientConnectionId !== "string" || message.recipientConnectionId.length > 64 ||\n          typeof message.ciphertext !== "string" || message.ciphertext.length > 12_000 ||
           typeof message.iv !== "string" || message.iv.length > 64 ||
           !Number.isSafeInteger(message.sequence) || (message.sequence ?? 0) < 1) {
         sender.close(4002, "invalid_encrypted_payload");
