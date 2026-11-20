@@ -1,8 +1,11 @@
-import type { SacEmailLanguage } from "./resend.ts";
+import { sendBrevoTransactionalEmail } from "./brevo.ts";
+import { sendBrevoTransactionalEmail } from "./brevo.ts";
+import type { SacEmailLanguage } from "./verification.ts";
 
 export interface ContactInvitationEmailEnvironment {
-  readonly RESEND_API_KEY?: string;
-  readonly RESEND_FROM_EMAIL?: string;
+  readonly BREVO_API_KEY?: string;
+  readonly BREVO_FROM_EMAIL?: string;
+  readonly BREVO_FROM_NAME?: string;
   readonly APP_BASE_URL?: string;
 }
 
@@ -13,7 +16,7 @@ export type ContactInvitationEmailResult =
       readonly reason: "provider_not_configured" | "invalid_invitation" | "provider_rejected" | "provider_unavailable";
     };
 
-const ENDPOINT = "https://api.resend.com/emails";
+
 
 const copy: Record<SacEmailLanguage, {
   subject: string;
@@ -91,10 +94,11 @@ export async function sendContactInvitationEmail(
   },
   fetcher: typeof fetch = fetch,
 ): Promise<ContactInvitationEmailResult> {
-  const apiKey = env.RESEND_API_KEY?.trim();
-  const from = env.RESEND_FROM_EMAIL?.trim();
+  const apiKey = env.BREVO_API_KEY?.trim();
+  const from = env.BREVO_FROM_EMAIL?.trim();
+  const fromName = env.BREVO_FROM_NAME?.trim();
   const baseUrl = env.APP_BASE_URL?.trim();
-  if (!apiKey || !from || !baseUrl) return { ok: false, reason: "provider_not_configured" };
+  if (!apiKey || !from || !fromName || !baseUrl) return { ok: false, reason: "provider_not_configured" };
 
   const recipientEmail = input.recipientEmail.trim().toLowerCase();
   if (
@@ -130,29 +134,12 @@ export async function sendContactInvitationEmail(
 </html>`;
 
   try {
-    const response = await fetcher(ENDPOINT, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from,
-        to: [recipientEmail],
-        subject: template.subject,
-        html,
-      }),
-    });
-    if (!response.ok) return { ok: false, reason: "provider_rejected" };
-    const payload: unknown = await response.json();
-    if (
-      typeof payload === "object" &&
-      payload !== null &&
-      "id" in payload &&
-      typeof payload.id === "string" &&
-      payload.id.length > 0
-    ) return { ok: true, messageId: payload.id };
-    return { ok: false, reason: "provider_rejected" };
+    const result = await sendBrevoTransactionalEmail(
+      { BREVO_API_KEY: apiKey, BREVO_FROM_EMAIL: from, BREVO_FROM_NAME: fromName },
+      { recipientEmail, subject: template.subject, htmlContent: html },
+      fetcher,
+    );
+    return result.ok ? result : { ok: false, reason: result.reason };
   } catch {
     return { ok: false, reason: "provider_unavailable" };
   }

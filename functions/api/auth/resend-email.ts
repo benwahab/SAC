@@ -1,14 +1,15 @@
 import { guardSameOriginJsonPost } from "../../lib/security/http-request-guard.ts";
 import { readJsonRequestBody } from "../../lib/security/json-request-body.ts";
 import { normalizeRegistrationEmail } from "../../../src/domain/registration-policy.ts";
-import { sendAccountVerificationCode } from "../../lib/email/resend.ts";
+import { sendAccountVerificationCode } from "../../lib/email/verification.ts";
 import { digestEmailOtp, generateEmailOtpCode } from "../../lib/security/email-otp-code.ts";
 
 interface Env {
   DB: D1Database;
   EMAIL_OTP_HMAC_SECRET?: string;
-  RESEND_API_KEY?: string;
-  RESEND_FROM_EMAIL?: string;
+  BREVO_API_KEY?: string;
+  BREVO_FROM_EMAIL?: string;
+  BREVO_FROM_NAME?: string;
 }
 
 const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" };
@@ -29,8 +30,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     !env.DB ||
     !env.EMAIL_OTP_HMAC_SECRET ||
     env.EMAIL_OTP_HMAC_SECRET.length < 32 ||
-    !env.RESEND_API_KEY ||
-    !env.RESEND_FROM_EMAIL
+    !env.BREVO_API_KEY ||
+    !env.BREVO_FROM_EMAIL ||
+    !env.BREVO_FROM_NAME
   ) {
     return json({ error: "verification_service_not_configured" }, 503);
   }

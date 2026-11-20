@@ -7,7 +7,7 @@ import {
   sendContactInvitationEmail,
   type ContactInvitationEmailEnvironment,
 } from "../email/contact-invitation.ts";
-import type { SacEmailLanguage } from "../email/resend.ts";
+import type { SacEmailLanguage } from "../email/verification.ts";
 
 type InvitationDatabase = Pick<D1Database, "prepare" | "batch">;
 

@@ -3,8 +3,9 @@ import test from "node:test";
 import { sendContactInvitationEmail } from "../functions/lib/email/contact-invitation.ts";
 
 const baseEnv = {
-  RESEND_API_KEY: "test-api-key",
-  RESEND_FROM_EMAIL: "SAC <noreply@example.ne>",
+  BREVO_API_KEY: "test-api-key",
+  BREVO_FROM_EMAIL: "noreply@example.ne",
+  BREVO_FROM_NAME: "SAC",
   APP_BASE_URL: "https://sac.example.ne",
 };
 
@@ -19,15 +20,15 @@ const invitation = {
 test("trusted contact email sends a one-time HTTPS invitation link", async () => {
   let requestBody: Record<string, unknown> | undefined;
   const result = await sendContactInvitationEmail(baseEnv, invitation, async (input, init) => {
-    assert.equal(String(input), "https://api.resend.com/emails");
+    assert.equal(String(input), "https://api.brevo.com/v3/smtp/email");
     assert.equal(init?.method, "POST");
     requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
-    return Response.json({ id: "email-message-1" }, { status: 200 });
+    return Response.json({ messageId: "email-message-1" }, { status: 201 });
   });
 
   assert.deepEqual(result, { ok: true, messageId: "email-message-1" });
-  assert.deepEqual(requestBody?.to, ["person@example.ne"]);
-  assert.equal(requestBody?.from, baseEnv.RESEND_FROM_EMAIL);
+  assert.deepEqual(requestBody?.to, [{ email: "person@example.ne" }]);
+  assert.equal(requestBody?.sender, { email: baseEnv.BREVO_FROM_EMAIL, name: baseEnv.BREVO_FROM_NAME });
   assert.match(String(requestBody?.html), /https:\/\/sac\.example\.ne\/invitation\/accept/);
   assert.match(String(requestBody?.html), /A{43}/);
 });
@@ -35,7 +36,7 @@ test("trusted contact email sends a one-time HTTPS invitation link", async () =>
 test("missing provider configuration never attempts delivery", async () => {
   let called = false;
   const result = await sendContactInvitationEmail(
-    { ...baseEnv, RESEND_API_KEY: undefined },
+    { ...baseEnv, BREVO_API_KEY: undefined },
     invitation,
     async () => { called = true; return Response.json({ id: "unexpected" }); },
   );

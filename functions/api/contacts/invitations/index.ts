@@ -3,12 +3,14 @@ import { guardSameOriginJsonPost } from "../../../lib/security/http-request-guar
 import { readJsonRequestBody } from "../../../lib/security/json-request-body.ts";
 import { createAndSendContactInvitation } from "../../../lib/trusted-contacts/invitation-delivery.ts";
 import { digestContactInvitationToken } from "../../../lib/security/contact-invitation-token.ts";
-import type { SacEmailLanguage } from "../../../lib/email/resend.ts";
+import type { SacEmailLanguage } from "../../../lib/email/verification.ts";
 
 interface Env {
   DB: D1Database;
-  RESEND_API_KEY?: string;
-  RESEND_FROM_EMAIL?: string;
+  BREVO_API_KEY?: string;
+  BREVO_FROM_EMAIL?: string;
+  BREVO_FROM_NAME?: string;
+  BREVO_FROM_NAME?: string;
   APP_BASE_URL?: string;
   CONTACT_INVITATION_TTL_MS?: string;
   CONTACT_PERMISSION_VERSION?: string;
@@ -113,7 +115,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const permissionVersion = env.CONTACT_PERMISSION_VERSION?.trim();
   if (!Number.isSafeInteger(ttl) || ttl <= 0 ||
       !permissionVersion || permissionVersion.length > 128 ||
-      !env.RESEND_API_KEY || !env.RESEND_FROM_EMAIL || !env.APP_BASE_URL) {
+      !env.BREVO_API_KEY || !env.BREVO_FROM_EMAIL || !env.BREVO_FROM_NAME || !env.APP_BASE_URL) {
     return json({ error: "invitation_service_not_configured" }, 503);
   }
 
@@ -139,8 +141,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       env.DB,
       crypto,
       {
-        RESEND_API_KEY: env.RESEND_API_KEY,
-        RESEND_FROM_EMAIL: env.RESEND_FROM_EMAIL,
+        BREVO_API_KEY: env.BREVO_API_KEY,
+        BREVO_FROM_EMAIL: env.BREVO_FROM_EMAIL,
+        BREVO_FROM_NAME: env.BREVO_FROM_NAME,
+        BREVO_FROM_NAME: env.BREVO_FROM_NAME,
         APP_BASE_URL: env.APP_BASE_URL,
       },
       {
