@@ -158,6 +158,18 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
         ).fetchone()[0]
         self.assertEqual(count, 0)
 
+    def test_device_fanout_cannot_be_extended_after_outbox_aggregation(self):
+        self._delivery("first")
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "notification_delivery_outbox_scope_mismatch"):
+            self.db.execute(
+                """INSERT INTO notification_device_deliveries
+                   (id,outbox_id,alert_id,recipient_account_id,device_id,subscription_id,
+                    status,attempt_count,created_at,updated_at)
+                   VALUES ('late-device','outbox','alert','contact','device-late',
+                           'subscription-late','pending',0,?,?)""",
+                (self.now, self.now),
+            )
+
     def test_attempt_requires_reserved_number_and_sequence(self):
         self._delivery()
         with self.assertRaisesRegex(sqlite3.IntegrityError, "notification_attempt_not_reserved"):
@@ -213,7 +225,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
             """INSERT INTO notification_delivery_attempts
                (id,delivery_id,attempt_number,reserved_at,result,started_at,finished_at)
                VALUES ('attempt-000','delivery-000',1,?,'accepted',?,?)""",
-            (self.now - 2_592_001_000, self.now - 2_592_001_000, self.now - 2_592_001_000 + 1),
+            (terminal_at + 1, terminal_at + 1, terminal_at + 2),
         )
         cutoff = self.now + 40 * 24 * 60 * 60 * 1000
         # Mirror the two D1 batch statements: child rows first, then parents.
