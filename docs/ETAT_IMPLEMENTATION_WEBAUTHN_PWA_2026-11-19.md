@@ -146,3 +146,20 @@ La migration 0007 est appliquée à la base D1 distante `sac-db` : le registre `
 - Intégration obligatoire du contrôle de session à chaque route privée avant l'ouverture des fonctions métier.
 
 Aucun changement de ressource Cloudflare ni migration distante n'a été effectué pendant la vérification du 20 novembre ; la migration 0007 était déjà appliquée. Le déploiement Pages `0931949` a terminé avec succès.
+
+
+## Mise à jour corrective — 21 novembre 2026
+
+Le parcours d'authentification a été raccordé après la constatation d'une rupture entre la connexion et l'enrôlement initial :
+
+- Le client tente d'abord une reconnexion WebAuthn. Si le serveur confirme qu'aucune racine n'existe pour ce compte, il propose le parcours distinct d'enrôlement initial.
+- Les comptes avec un appareil révoqué ou une credential manquante sont refusés ; ils ne sont pas redirigés silencieusement vers un nouvel enrôlement.
+- L'assertion de reconnexion refuse désormais BE, BS, ED, AT et les bits réservés, en plus d'exiger UP et UV.
+- La politique des flags est isolée dans `src/domain/webauthn-assertion-policy.ts`, couverte par des tests et appelée par l'endpoint.
+- Les tests de routage premier appareil et de flags sont enregistrés dans `package.json` et le workflow CI.
+
+**Limite de l'activation de production :** le parcours est raccordé dans le code, mais le verrou `WEBAUTHN_ROOT_ENROLLMENT_ENABLED` n'a pas été activé sur Cloudflare. La configuration de production observée ne contient pas `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ALLOWED_ORIGINS` ni `EMAIL_OTP_HMAC_SECRET`. En outre, l'inscription e-mail exige `BREVO_API_KEY`, `BREVO_FROM_EMAIL` et `BREVO_FROM_NAME`, tous absents/vides dans la configuration lue. Aucune inscription réelle ne peut donc être finalisée à ce stade. Ne pas déclarer la connexion activée en production.
+
+La validation indépendante du vérificateur WebAuthn et un essai sur téléphone Android restent requis avant l'ouverture du verrou. L'attestation `none` vérifie le protocole et la possession ultérieure de la clé, mais ne constitue pas une attestation du fabricant ni une preuve de matériel certifié.
+
+La CI la plus récente pour le code de connexion initiale (`44836242596`) a réussi typecheck, migration D1 locale, build et audit des dépendances. Le workflow contenant les nouveaux tests de routage et de flags (`44836513513`) est en attente/en cours et doit être vérifié avant toute déclaration finale.
