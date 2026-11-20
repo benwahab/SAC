@@ -611,7 +611,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #E85D04; outline-offs
 
 
 /* Shared landing/auth art direction: warm illuminated glass. */
-.sac-auth-page {
+.sac-shell.sac-auth-page {
   background:
     radial-gradient(ellipse at 76% 46%, rgba(179,65,13,.22), transparent 42%),
     radial-gradient(ellipse at 5% 100%, rgba(232,93,4,.12), transparent 38%),
