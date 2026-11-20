@@ -97,7 +97,7 @@ test("does not silently replace a corrupt stored key record", async () => {
 
   await assert.rejects(
     getOrCreateLocationIdentityKeyPair("account-corrupt", "device-corrupt", store),
-    /clé d'identité locale invalide/,
+    /clé d'identité locale est invalide/,
   );
 });
 
