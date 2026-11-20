@@ -3,7 +3,8 @@ import {
   decodeLocationSessionBundle,
   deriveLocationSessionDirectionalKey,
   encodeLocationSessionBundle,
-  verifyPinnedLocationSessionBundle,
+  verifyAuthenticatedLocationSessionBundle,
+  verifyLocationSessionBundle,
   type CreatedLocationSessionBundle,
 } from "./location-session.ts";
 import {
@@ -20,7 +21,7 @@ import type { LocationIdentityKeyStore } from "./identity-vault.ts";
 export type SosLocationRelayStatus =
   | "connecting"
   | "waiting_for_author"
-  | "waiting_for_trusted_devices"
+  | "waiting_for_devices"
   | "receiving"
   | "sharing"
   | "closed";
@@ -58,6 +59,8 @@ interface RelayEnvelope {
   fromRole?: "author" | "recipient";
   connectionId?: string;
   fromConnectionId?: string;
+  fromAccountId?: string;
+  fromDeviceId?: string;
   participants?: Array<{ connectionId: string; role: "author" | "recipient" }>;
   publicKey?: string;
   recipientConnectionId?: string;
@@ -324,15 +327,26 @@ export class SosLocationRelayClient {
       return;
     }
 
+    if (!message.fromAccountId || !message.fromDeviceId ||
+      remote.ownerId !== message.fromAccountId || remote.deviceId !== message.fromDeviceId) {
+      this.options.callbacks.onError("contact_key_unverified");
+      return;
+    }
+
+    const identityValid = await verifyAuthenticatedLocationSessionBundle(
+      remote,
+      message.fromAccountId,
+      message.fromDeviceId,
+      this.options.alertId,
+      remote.sessionId,
+    );
+    if (!identityValid) {
+      this.options.callbacks.onError("contact_key_unverified");
+      return;
+    }
+
     if (this.options.role === "recipient" && message.fromRole === "author") {
-      const trusted = await verifyPinnedLocationSessionBundle(
-        remote,
-        this.options.accountId,
-        this.options.deviceId,
-        this.options.alertId,
-        remote.sessionId,
-        this.options.identityStore,
-      );
+      const trusted = true;
       if (!trusted) {
         this.options.callbacks.onError("contact_key_unverified");
         this.options.callbacks.onStatus("waiting_for_author");
@@ -378,7 +392,7 @@ export class SosLocationRelayClient {
         recipientDeviceId: this.options.deviceId,
         ownDeviceId: this.options.deviceId,
         expectedSalt: remote.salt,
-      }, this.options.accountId, this.options.identityStore);
+      });
       this.authorKeys.set(message.fromConnectionId, { key, lastSequence: 0 });
       this.options.callbacks.onStatus("receiving");
       return;
@@ -401,7 +415,7 @@ export class SosLocationRelayClient {
         recipientDeviceId: remote.deviceId,
         ownDeviceId: this.options.deviceId,
         expectedSalt: this.salt,
-      }, this.options.accountId, this.options.identityStore);
+      });
       this.recipientKeys.set(message.fromConnectionId, { key, nextSequence: 1 });
       this.options.callbacks.onStatus("sharing");
       this.ensureGpsWatch();
