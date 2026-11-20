@@ -742,3 +742,54 @@ button:focus-visible, a:focus-visible { outline: 3px solid #E85D04; outline-offs
     backdrop-filter:blur(24px) saturate(1.35);
   }
 }
+
+
+/* Startup must use the homepage canvas from the very first browser paint. */
+:root { background: #160B06 !important; }
+html, body {
+  background-color: #160B06 !important;
+  background-image:
+    radial-gradient(ellipse at 50% 5%, rgba(232,93,4,.12), transparent 48%),
+    linear-gradient(180deg, #160B06 0%, #160B06 100%) !important;
+}
+
+/* Remove the decorative orange strip above the authentication card. */
+.sac-auth-card::before {
+  content: none !important;
+  display: none !important;
+  margin: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* Language controls: clear, responsive feedback on hover, press and selection. */
+.sac-language-switch button {
+  position: relative;
+  transform: translateZ(0);
+  transition: transform .24s cubic-bezier(.2,.8,.2,1), color .22s ease,
+    background .22s ease, box-shadow .22s ease, filter .22s ease;
+  will-change: transform;
+}
+.sac-language-switch button:hover {
+  transform: translateY(-2px) scale(1.06);
+  filter: brightness(1.06);
+  box-shadow: 0 6px 16px rgba(232,93,4,.18);
+}
+.sac-language-switch button:active {
+  transform: translateY(1px) scale(.92);
+  box-shadow: 0 2px 7px rgba(232,93,4,.16);
+}
+.sac-language-switch button[aria-pressed="true"] {
+  animation: sac-language-selected .32s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes sac-language-selected {
+  0% { transform: scale(.88); }
+  65% { transform: scale(1.09); }
+  100% { transform: scale(1); }
+}
+@media (hover: none) {
+  .sac-language-switch button:hover { transform: none; box-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sac-language-switch button { transition: none !important; animation: none !important; }
+}
