@@ -27,7 +27,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       verifyIntro: "Saisissez le code envoyé à votre adresse e-mail. Il est valable 10 minutes.",
       resendWait: "Vous pourrez demander un nouveau code dans", seconds: "s",
       success: "Adresse e-mail vérifiée et compte activé. Connectez-vous pour enregistrer la clé sécurisée de votre téléphone.",
-      completeIntro: "Appareil sécurisé enregistré",
+      completeIntro: "Connexion sécurisée",
       genericAccepted: "Si cette adresse est éligible, vous recevrez les instructions de vérification.",
       serviceUnavailable: "Le service de vérification n’est pas encore configuré. Aucun compte n’a été activé.",
       invalidCode: "Code incorrect, expiré ou déjà utilisé. Vérifiez le code ou demandez-en un nouveau.",
@@ -50,7 +50,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       verifyIntro: "Enter the code sent to your email address. It is valid for 10 minutes.",
       resendWait: "You can request another code in", seconds: "s",
       success: "Email verified and account activated. Sign in to register your phone’s secure key.",
-      completeIntro: "Secure device registered",
+      completeIntro: "Secure sign-in",
       genericAccepted: "If this address is eligible, you will receive verification instructions.",
       serviceUnavailable: "The verification service is not configured yet. No account has been activated.",
       invalidCode: "The code is incorrect, expired, or already used. Check it or request a new one.",
@@ -73,7 +73,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       verifyIntro: "أدخل الرمز المرسل إلى بريدك الإلكتروني. صلاحية الرمز 10 دقائق.",
       resendWait: "يمكنك طلب رمز جديد خلال", seconds: "ث",
       success: "تم التحقق من البريد وتفعيل الحساب. سجّل الدخول لتسجيل المفتاح الآمن لهاتفك.",
-      completeIntro: "تم تسجيل الجهاز الآمن",
+      completeIntro: "تسجيل دخول آمن",
       genericAccepted: "إذا كان هذا العنوان مؤهلاً، فستصلك تعليمات التحقق.",
       serviceUnavailable: "خدمة التحقق غير مهيأة بعد. لم يتم تفعيل أي حساب.",
       invalidCode: "الرمز غير صحيح أو منتهي الصلاحية أو مستخدم مسبقاً. تحقق منه أو اطلب رمزاً جديداً.",
@@ -120,6 +120,13 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       case "invalid_or_expired_code": return copy.invalidCode;
       case "verification_service_not_configured":
       case "verification_email_unavailable": return copy.serviceUnavailable;
+      case "invalid_credentials":
+      case "invalid_authentication":
+      case "authentication_expired_or_unavailable":
+      case "webauthn_not_supported":
+        return language === "fr" ? "Identifiants incorrects ou appareil sécurisé indisponible sur ce téléphone." : language === "en" ? "Invalid credentials or secure device unavailable on this phone." : "بيانات الدخول غير صحيحة أو الجهاز الآمن غير متاح على هذا الهاتف.";
+      case "too_many_attempts":
+        return language === "fr" ? "Trop de tentatives. Réessayez dans 15 minutes." : language === "en" ? "Too many attempts. Try again in 15 minutes." : "محاولات كثيرة. حاول مرة أخرى بعد 15 دقيقة.";
       default: return copy.requestError;
     }
   }
