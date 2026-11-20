@@ -356,7 +356,8 @@ export default function App() {
   const [installHelp, setInstallHelp] = useState<"ios" | "android" | null>(null);
   const [isAppleDevice, setIsAppleDevice] = useState(false);
   const [isAndroidDevice, setIsAndroidDevice] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);\n  const [openOffer, setOpenOffer] = useState<"free" | "premium" | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [openOffer, setOpenOffer] = useState<"free" | "premium" | null>(null);
   const [language, setLanguage] = useState<Language>(() => {
     try {
       const saved = window.localStorage.getItem("sac-language");
