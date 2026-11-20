@@ -107,6 +107,44 @@ CREATE TABLE notification_retention_control (
 
 INSERT INTO notification_retention_control (singleton_id) VALUES (1);
 
+CREATE TRIGGER notification_delivery_retention_insert_guard
+BEFORE INSERT ON notification_device_deliveries
+WHEN NEW.cycle_terminal_at IS NOT NULL
+BEGIN
+  SELECT CASE WHEN NEW.status NOT IN ('accepted', 'permanent_failure', 'unknown_exhausted', 'cancelled')
+    THEN RAISE(ABORT, 'notification_retention_requires_terminal_delivery') END;
+  SELECT CASE WHEN NOT EXISTS (
+    SELECT 1 FROM alert_reminder_outbox o
+    WHERE o.id = NEW.outbox_id
+      AND o.alert_id = NEW.alert_id
+      AND o.recipient_account_id = NEW.recipient_account_id
+      AND o.status IN ('sent', 'failed')
+      AND o.processed_at = NEW.cycle_terminal_at
+  ) THEN RAISE(ABORT, 'notification_retention_requires_aggregated_outbox') END;
+END;
+
+CREATE TRIGGER notification_delivery_retention_start_guard
+BEFORE UPDATE OF cycle_terminal_at, retention_expires_at ON notification_device_deliveries
+WHEN NEW.cycle_terminal_at IS NOT NULL
+BEGIN
+  SELECT CASE WHEN NEW.status NOT IN ('accepted', 'permanent_failure', 'unknown_exhausted', 'cancelled')
+    THEN RAISE(ABORT, 'notification_retention_requires_terminal_delivery') END;
+  SELECT CASE WHEN NOT EXISTS (
+    SELECT 1 FROM alert_reminder_outbox o
+    WHERE o.id = NEW.outbox_id
+      AND o.alert_id = NEW.alert_id
+      AND o.recipient_account_id = NEW.recipient_account_id
+      AND o.status IN ('sent', 'failed')
+      AND o.processed_at = NEW.cycle_terminal_at
+  ) THEN RAISE(ABORT, 'notification_retention_requires_aggregated_outbox') END;
+  SELECT CASE WHEN EXISTS (
+    SELECT 1 FROM notification_device_deliveries other
+    WHERE other.outbox_id = NEW.outbox_id
+      AND other.id <> NEW.id
+      AND other.status NOT IN ('accepted', 'permanent_failure', 'unknown_exhausted', 'cancelled')
+  ) THEN RAISE(ABORT, 'notification_retention_waits_for_all_devices') END;
+END;
+
 CREATE TRIGGER notification_delivery_attempt_limit_guard
 BEFORE INSERT ON notification_delivery_attempts
 BEGIN
