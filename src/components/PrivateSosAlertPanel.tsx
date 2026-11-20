@@ -132,6 +132,7 @@ export default function PrivateSosAlertPanel({ alertId, accountId, deviceId, par
       : "Confirmer l’annulation et clôturer cette alerte ?";
     if (!window.confirm(prompt)) return;
     setGpsSharingEnabled(false);
+    setGpsSharingEnabled(false);
     setBusy(true); setError(""); setNotice("");
     try {
       const response = await fetch(`/api/alerts/${encodeURIComponent(alertId)}/close`, {
