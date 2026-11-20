@@ -5,7 +5,6 @@ import {
   encodeLocationSessionBundle,
   verifyPinnedLocationSessionBundle,
   type CreatedLocationSessionBundle,
-  type SignedLocationSessionBundle,
 } from "./location-session.ts";
 import {
   encryptLocationPayload,
@@ -128,7 +127,6 @@ export class SosLocationRelayClient {
   private ownSession: CreatedLocationSessionBundle | null = null;
   private sessionId = "";
   private salt: Uint8Array | null = null;
-  private authorConnectionId = "";
   private readonly recipientKeys = new Map<string, RecipientSendKey>();
   private readonly authorKeys = new Map<string, AuthorReceiveKey>();
   private stopped = false;
@@ -213,7 +211,6 @@ export class SosLocationRelayClient {
     this.ownSession = null;
     this.salt = null;
     this.sessionId = "";
-    this.authorConnectionId = "";
     this.options.callbacks.onClear();
     this.options.callbacks.onStatus("closed");
   }
@@ -350,7 +347,6 @@ export class SosLocationRelayClient {
         this.recipientKeys.clear();
         this.sessionId = remote.sessionId;
         this.salt = new Uint8Array(remote.salt);
-        this.authorConnectionId = message.fromConnectionId;
         this.ownSession = await createLocationSessionBundle(
           this.options.accountId,
           this.options.deviceId,
@@ -363,8 +359,10 @@ export class SosLocationRelayClient {
       }
       this.sendOwnSessionBundle();
 
+      const ownSession = this.ownSession;
+      if (!ownSession) return;
       const key = await deriveLocationSessionDirectionalKey({
-        ownPrivateKey: this.ownSession.exchangePrivateKey,
+        ownPrivateKey: ownSession.exchangePrivateKey,
         remoteBundle: remote,
         authorAccountId: remote.ownerId,
         alertId: this.options.alertId,
@@ -375,7 +373,6 @@ export class SosLocationRelayClient {
         expectedSalt: remote.salt,
       }, this.options.accountId, this.options.identityStore);
       this.authorKeys.set(message.fromConnectionId, { key, lastSequence: 0 });
-      this.authorConnectionId = message.fromConnectionId;
       this.options.callbacks.onStatus("receiving");
       return;
     }
