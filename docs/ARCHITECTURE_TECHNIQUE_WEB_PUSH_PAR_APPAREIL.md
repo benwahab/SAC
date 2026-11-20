@@ -344,6 +344,20 @@ Les notifications d'alerte doivent être configurées vers un canal d'exploitati
 - Une restauration D1 peut réintroduire des lignes déjà purgées dans le registre technique : après restauration, le contrôle doit relire les échéances et relancer la purge jusqu'à résorption du backlog.
 - Cette purge du registre Push n'est **pas** une preuve de suppression irréversible des GPS précis dans les sauvegardes ou D1 Time Travel. La règle GPS de 30 jours exige un mécanisme distinct, une preuve spécifique et une autorisation séparée.
 
+#### Schéma SQL préparé — migration 0009
+
+Le fichier additif `migrations/0009_notification_delivery_retention.sql` prépare :
+
+- `notification_device_deliveries` : état par appareil, identifiants opaques, compteur strict 0..2, bail, horodatage de fin de cycle et échéance de purge ;
+- `notification_delivery_attempts` : au plus deux tentatives par livraison, résultat normalisé, dates et durée ;
+- `notification_retention_control` : singleton de contrôle avec bail anti-concurrence, dates de passage, volumes agrégés, backlog et codes d'erreur normalisés.
+
+Les contraintes et triggers interdisent notamment les tentatives non réservées, les numéros non séquentiels, les transitions hors état terminal, le démarrage de la rétention avant l'agrégation de l'outbox et la suppression d'une tentative ou livraison avant échéance. La suppression du parent est bloquée tant que des tentatives enfants existent. Les clés étrangères vers l'outbox sont en restriction ; aucun lien FK ne bloque la révocation/suppression d'un abonnement Push devenu invalide.
+
+La migration ne modifie pas les lignes existantes et ne touche aucune donnée GPS. Le test `tests/d1_notification_retention_schema.test.py` applique la chaîne de migrations 0001 à 0009 dans une base SQLite isolée et vérifie les contraintes, la limite de lot de 200, la suppression enfant-avant-parent et la préservation de l'outbox métier. La commande est `npm run test:d1-notification-retention`, intégrée au workflow CI.
+
+**Important :** écrire la migration et le test ne signifie pas qu'ils ont été exécutés sur la D1 distante. La migration 0009 n'a pas été appliquée à `sac-db`. Le code Worker qui exécute la purge horaire et met à jour le singleton reste à implémenter ; aucune suppression automatique n'est active en production.
+
 #### Tests obligatoires de purge
 
 - ligne à 29 jours : conservée ;
@@ -414,7 +428,8 @@ Sources officielles :
 - [x] Conservation des instances et historiques Workflow fixée à 7 jours maximum après la fin de l'exécution.
 - [x] Timeout réseau fournisseur fixé à 8 secondes maximum ; bail de traitement fixé à 30 secondes avec fencing token et consommation de la tentative après expiration.
 - [x] Spécification opérationnelle de purge D1 bornée, idempotente, surveillée et testable documentée (exécution horaire, lots de 200, conservation prudente en cas de doute, alertes et reprise après restauration).
-- [ ] Migration D1 écrite et testée localement, y compris index d'échéance, contrôle de rétention et contraintes de suppression.
+- [x] Migration D1 additive 0009 écrite ; test automatisé de schéma et de purge bornée ajouté à la CI.
+- [ ] Migration D1 et tests validés en CI ; vérification locale complète à confirmer.
 - [ ] Registre livraison/appareil implémenté.
 - [ ] Workflow et Cron de récupération implémentés.
 - [ ] Tests de concurrence et de clôture réussis.
