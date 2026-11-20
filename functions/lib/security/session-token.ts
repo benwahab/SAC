@@ -16,7 +16,7 @@ function toBase64Url(bytes: Uint8Array): string {
 }
 
 function fromCanonicalBase64Url(value: string): Uint8Array | null {
-  if (!TOKEN_PATTERN.test(value) || !/[AQgw]$/.test(value)) return null;
+  if (!TOKEN_PATTERN.test(value) || !/[AEIMQUYcgkosw048]$/.test(value)) return null;
   try {
     const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
     const decoded = Uint8Array.from(atob(base64 + "="), (character) => character.charCodeAt(0));
