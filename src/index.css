@@ -608,3 +608,43 @@ button:focus-visible, a:focus-visible { outline: 3px solid #E85D04; outline-offs
   }
   .sac-auth-card { transition: none !important; }
 }
+
+
+/* Shared landing/auth art direction: warm illuminated glass. */
+.sac-auth-page {
+  background:radial-gradient(ellipse at 18% 22%,rgba(232,93,4,.38),transparent 42%),radial-gradient(ellipse at 82% 78%,rgba(255,153,84,.25),transparent 38%),linear-gradient(125deg,#160905 0%,#2A1007 48%,#160905 100%) !important;
+}
+.sac-auth-layout { animation:sac-hero-in .75s ease-out both; }
+.sac-auth-brand { color:#fff; padding:1rem 0; }
+.sac-auth-brand-mark { color:#FFC08F; border:1px solid rgba(255,190,145,.35); background:linear-gradient(145deg,rgba(255,255,255,.18),rgba(232,93,4,.17)); box-shadow:0 0 55px rgba(232,93,4,.24),inset 0 1px 0 rgba(255,255,255,.2); }
+.sac-auth-brand-orbit { border:1px solid rgba(255,177,120,.24); background:radial-gradient(circle,rgba(232,93,4,.24),rgba(255,255,255,.025) 62%,transparent 70%); box-shadow:0 0 80px rgba(232,93,4,.18),inset 0 0 45px rgba(232,93,4,.12); animation:sac-orbit-breathe 6s ease-in-out infinite; }
+.sac-auth-card { background:linear-gradient(145deg,rgba(255,255,255,.78),rgba(255,239,225,.57)) !important; border:1px solid rgba(255,255,255,.78); backdrop-filter:blur(28px) saturate(1.35); -webkit-backdrop-filter:blur(28px) saturate(1.35); box-shadow:0 34px 100px rgba(0,0,0,.38),0 0 55px rgba(232,93,4,.22),inset 0 1px 0 rgba(255,255,255,.96); }
+.sac-auth-card::before { background:linear-gradient(90deg,transparent,#E85D04 24%,#FFB27C 50%,#E85D04 76%,transparent) !important; box-shadow:0 0 22px rgba(232,93,4,.55); }
+.sac-auth-card > div:first-child > a { color:#25140D; }
+.sac-auth-card input { background:rgba(255,255,255,.76) !important; border-color:rgba(113,69,43,.18) !important; box-shadow:inset 0 1px 2px rgba(46,20,8,.035); }
+.sac-auth-card input:focus { border-color:#E85D04 !important; box-shadow:0 0 0 4px rgba(232,93,4,.15),0 0 28px rgba(232,93,4,.16) !important; }
+.sac-auth-card button[type="submit"],.sac-auth-card a[class*="bg-sac-primary-strong"] { background:linear-gradient(110deg,#C94B00,#E85D04 52%,#FF8B45) !important; box-shadow:0 12px 28px rgba(180,65,8,.25),inset 0 1px 0 rgba(255,255,255,.25); transition:transform .28s ease,box-shadow .28s ease,filter .28s ease; }
+.sac-auth-card button[type="submit"]:not(:disabled):hover { transform:translateY(-3px); box-shadow:0 18px 38px rgba(180,65,8,.34),0 0 26px rgba(232,93,4,.2),inset 0 1px 0 rgba(255,255,255,.3); }
+.sac-auth-card button:not([type="submit"]),.sac-auth-card a:not([class*="bg-sac-primary-strong"]) { transition:background .25s ease,border-color .25s ease,transform .25s ease,box-shadow .25s ease; }
+.sac-auth-card button:not([type="submit"]):hover,.sac-auth-card a:not([class*="bg-sac-primary-strong"]):hover { transform:translateY(-1px); background:rgba(255,244,235,.92); border-color:rgba(232,93,4,.42); box-shadow:0 8px 22px rgba(232,93,4,.12); }
+@keyframes sac-orbit-breathe { 0%,100%{transform:scale(1);filter:brightness(.95)} 50%{transform:scale(1.045);filter:brightness(1.18)} }
+
+/* Reliable entrance animation for all sections, including principles and commitment. */
+.sac-shell:has(.sac-header) main > section:not(.sac-hero-layout) { animation:sac-section-in .85s cubic-bezier(.2,.75,.25,1) both; }
+.sac-shell:has(.sac-header) main > section:nth-of-type(2) { animation-delay:.12s; }
+.sac-shell:has(.sac-header) main > section:nth-of-type(3) { animation-delay:.28s; }
+.sac-shell:has(.sac-header) main > section:nth-of-type(4) { animation-delay:.44s; }
+.sac-shell:has(.sac-header) main > section:nth-of-type(5) { animation-delay:.6s; }
+.sac-shell:has(.sac-header) main > section:not(.sac-hero-layout) .sac-copy,
+.sac-shell:has(.sac-header) main > section:not(.sac-hero-layout) article,
+.sac-shell:has(.sac-header) main > section:not(.sac-hero-layout) .sac-responsible-panel { animation:sac-hero-in .75s ease-out both; }
+.sac-shell:has(.sac-header) main > section:nth-of-type(2) article:nth-child(1){animation-delay:.18s}
+.sac-shell:has(.sac-header) main > section:nth-of-type(2) article:nth-child(2){animation-delay:.3s}
+.sac-shell:has(.sac-header) main > section:nth-of-type(2) article:nth-child(3){animation-delay:.42s}
+@media(max-width:1023px){.sac-auth-layout{max-width:32rem}.sac-auth-brand{display:none}}
+@media(prefers-reduced-motion:reduce){
+ .sac-auth-layout,.sac-auth-brand-orbit,.sac-shell:has(.sac-header) main > section:not(.sac-hero-layout),
+ .sac-shell:has(.sac-header) main > section:not(.sac-hero-layout) .sac-copy,
+ .sac-shell:has(.sac-header) main > section:not(.sac-hero-layout) article,
+ .sac-shell:has(.sac-header) main > section:not(.sac-hero-layout) .sac-responsible-panel{animation:none!important}
+}
