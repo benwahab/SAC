@@ -201,7 +201,7 @@ export default function PrivateSpacePage({ onLogout }: Props) {
               <p className="mt-1 text-xs text-sac-muted">{alert.participantRole === "author" ? "Votre alerte" : "Alerte reçue"} · {new Date(alert.createdAt).toLocaleString()}</p>
               {alert.description && <p className="mt-2 text-sm">{alert.description}</p>}
               <button type="button" onClick={() => setExpandedAlertId((current) => current === alert.id ? null : alert.id)} aria-expanded={expandedAlertId === alert.id} className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-sac-primary-strong/20 bg-white px-3 text-sm font-bold">{expandedAlertId === alert.id ? "Masquer le suivi" : "Consulter et agir"}</button>
-              {expandedAlertId === alert.id && <PrivateSosAlertPanel alertId={alert.id} participantRole={alert.participantRole} status={alert.status} onUpdated={() => void loadContacts()}/>}
+              {expandedAlertId === alert.id && sessionIdentity && <PrivateSosAlertPanel alertId={alert.id} accountId={sessionIdentity.accountId} deviceId={sessionIdentity.deviceId} participantRole={alert.participantRole} status={alert.status} onUpdated={() => void loadContacts()}/>}
             </li>)}</ul>}
           </section>
           {message && <p role="status" className="mt-4 rounded-xl border border-sac-confirm/20 bg-sac-confirm/10 p-3 text-sm leading-6">{message}</p>}
