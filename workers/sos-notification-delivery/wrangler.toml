@@ -3,7 +3,7 @@ main = "./index.ts"
 compatibility_date = "2026-11-17"
 
 [vars]
-PUSH_VAPID_SUBJECT = "https://sac-3xh.pages.dev"
+PUSH_VAPID_SUBJECT = "mailto:benwahab111@gmail.com"
 
 [[d1_databases]]
 binding = "DB"
