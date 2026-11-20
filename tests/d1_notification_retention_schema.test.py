@@ -143,7 +143,7 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
         with self.assertRaisesRegex(sqlite3.IntegrityError, "notification_attempt_not_reserved"):
             self.db.execute(
                 """INSERT INTO notification_delivery_attempts
-                   (id,delivery_id,attempt_number,reserved_at,result,finished_at)
+                   (id,delivery_id,attempt_number,reserved_at,result,started_at,finished_at)
                    VALUES ('attempt-1','delivery',1,?,'accepted',?,?)""",
                 (self.now, self.now, self.now + 1),
             )
