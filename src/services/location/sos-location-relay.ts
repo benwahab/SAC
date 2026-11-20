@@ -29,7 +29,7 @@ export type SosLocationRelayStatus =
 export type SosLocationRelayError =
   | "gps_relay_not_ready"
   | "authentication_required"
-  | "contact_key_unverified"
+  | "contact_identity_invalid"
   | "gps_permission_denied"
   | "gps_unavailable"
   | "relay_disconnected"
@@ -268,7 +268,7 @@ export class SosLocationRelayClient {
             this.sendOwnSessionBundle();
           }
         } catch {
-          this.options.callbacks.onError("contact_key_unverified");
+          this.options.callbacks.onError("contact_identity_invalid");
           this.stop();
         }
       } else {
@@ -323,13 +323,13 @@ export class SosLocationRelayClient {
 
     const remote = decodeLocationSessionBundle(message.publicKey);
     if (!remote || remote.alertId !== this.options.alertId) {
-      this.options.callbacks.onError("contact_key_unverified");
+      this.options.callbacks.onError("contact_identity_invalid");
       return;
     }
 
     if (!message.fromAccountId || !message.fromDeviceId ||
       remote.ownerId !== message.fromAccountId || remote.deviceId !== message.fromDeviceId) {
-      this.options.callbacks.onError("contact_key_unverified");
+      this.options.callbacks.onError("contact_identity_invalid");
       return;
     }
 
@@ -341,7 +341,7 @@ export class SosLocationRelayClient {
       remote.sessionId,
     );
     if (!identityValid) {
-      this.options.callbacks.onError("contact_key_unverified");
+      this.options.callbacks.onError("contact_identity_invalid");
       return;
     }
 
