@@ -116,6 +116,7 @@ WHEN NOT EXISTS (
   WHERE o.id = NEW.outbox_id
     AND o.alert_id = NEW.alert_id
     AND o.recipient_account_id = NEW.recipient_account_id
+    AND o.status IN ('pending', 'processing')
 )
 BEGIN
   SELECT RAISE(ABORT, 'notification_delivery_outbox_scope_mismatch');
