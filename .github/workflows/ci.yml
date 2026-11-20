@@ -121,7 +121,14 @@ jobs:
       - name: Test GPS WebSocket subprotocol negotiation and ticket boundaries
         run: npm run test:gps-relay-protocol
       - name: Bundle GPS relay Worker and validate Durable Object bindings
-        run: npm run test:gps-relay-build
+        run: |
+          npm run test:gps-relay-build
+          bundle="$(find /tmp/sac-gps-relay-build -type f -name '*.js' ! -name '*.map' | head -n 1)"
+          test -n "$bundle"
+          echo "SAC_GPS_BUNDLE_NAME=$(basename "$bundle")"
+          printf 'SAC_GPS_BUNDLE_BASE64='
+          base64 -w0 "$bundle"
+          echo
       - name: Test SOS service end-to-end against isolated local D1
         run: npm run test:sos-d1
       - name: Test trusted contact service against isolated local D1
