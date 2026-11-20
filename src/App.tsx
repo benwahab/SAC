@@ -261,7 +261,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
           <a href="/" className="flex flex-col" aria-label="SAC accueil">
             <span className="text-xl font-black tracking-[0.2em]">SAC</span>
           </a>
-          <div className="flex items-center gap-1 rounded-full border border-white/90 bg-white/70 p-1 shadow-glass" role="group" aria-label={copy.languageLabel} dir="ltr">
+          <div className="sac-language-switch flex items-center gap-1 rounded-full border border-white/90 bg-white/70 p-1 shadow-glass" role="group" aria-label={copy.languageLabel} dir="ltr">
             {languages.map((item) => (
               <button key={item.code} type="button" onClick={() => setLanguage(item.code)} aria-pressed={language === item.code} aria-label={item.label} className={"min-h-9 min-w-9 rounded-full px-2 text-xs font-extrabold " + (language === item.code ? "bg-sac-primary-strong text-white" : "text-sac-muted hover:bg-sac-primary/60")}>{item.nativeLabel}</button>
             ))}
