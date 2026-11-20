@@ -116,6 +116,15 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
             terminal_at = self.now + 39 * 24 * 60 * 60 * 1000
         if expires_at == "auto":
             expires_at = terminal_at + 2_592_000_000 if terminal_at is not None else None
+        created_at = min(self.now - 100, terminal_at - 100) if terminal_at is not None else self.now - 100
+        self.db.execute(
+            """INSERT INTO notification_device_deliveries
+               (id,outbox_id,alert_id,recipient_account_id,device_id,subscription_id,
+                status,attempt_count,created_at,updated_at,cycle_terminal_at,retention_expires_at)
+               VALUES (?,'outbox','alert','contact','device-opaque',?,
+                ?,0,?,?,NULL,NULL)""",
+            (delivery_id, 'subscription-' + delivery_id, status, created_at, created_at),
+        )
         if terminal_at is not None:
             self.db.execute(
                 """UPDATE alert_reminder_outbox
@@ -123,15 +132,12 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
                    WHERE id='outbox' AND status='pending'""",
                 (terminal_at,),
             )
-        created_at = min(self.now - 100, terminal_at - 100) if terminal_at is not None else self.now - 100
-        self.db.execute(
-            """INSERT INTO notification_device_deliveries
-               (id,outbox_id,alert_id,recipient_account_id,device_id,subscription_id,
-                status,attempt_count,created_at,updated_at,cycle_terminal_at,retention_expires_at)
-               VALUES (?,'outbox','alert','contact','device-opaque',?,
-                ?,0,?,?,?,?)""",
-            (delivery_id, 'subscription-' + delivery_id, status, created_at, created_at, terminal_at, expires_at),
-        )
+            self.db.execute(
+                """UPDATE notification_device_deliveries
+                   SET cycle_terminal_at=?, retention_expires_at=?
+                   WHERE id=?""",
+                (terminal_at, expires_at, delivery_id),
+            )
 
     def test_30_day_expiry_is_exact_and_uses_utc_milliseconds(self):
         self._delivery(terminal_at=self.now)
@@ -186,7 +192,18 @@ class NotificationRetentionSchemaTests(unittest.TestCase):
 
     def test_purge_is_child_first_bounded_and_never_deletes_business_outbox(self):
         for i in range(205):
-            self._delivery(f"delivery-{i:03d}", terminal_at=self.now + 24 * 60 * 60 * 1000)
+            self._delivery(f"delivery-{i:03d}", terminal_at=None, expires_at=None)
+        terminal_at = self.now + 24 * 60 * 60 * 1000
+        self.db.execute(
+            """UPDATE alert_reminder_outbox SET status='sent', processed_at=?
+               WHERE id='outbox'""",
+            (terminal_at,),
+        )
+        self.db.execute(
+            """UPDATE notification_device_deliveries
+               SET cycle_terminal_at=?, retention_expires_at=?""",
+            (terminal_at, terminal_at + 2_592_000_000),
+        )
         # Add one technical attempt to the first eligible delivery.
         self.db.execute(
             "UPDATE notification_device_deliveries SET attempt_count=1 WHERE id='delivery-000'"
