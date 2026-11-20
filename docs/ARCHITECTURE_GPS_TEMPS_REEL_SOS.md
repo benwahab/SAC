@@ -124,3 +124,17 @@ Le déploiement Pages de production correspondant au commit `9011168f` est termi
 **État d'activation :** le Worker `sac-gps-relay` n'existe pas encore sur le compte Cloudflare et les variables Pages `GPS_RELAY_HMAC_SECRET` / `GPS_RELAY_PUBLIC_URL` ne sont pas configurées. Le client SOS n'appelle pas encore `watchPosition` et n'ouvre pas le WebSocket. Les primitives de chiffrement et d'échange de clés restent expérimentales ; aucune clé d'identité privée de localisation n'est encore provisionnée sur les appareils. Par conséquent, aucun partage GPS réel n'est actif malgré la migration et le déploiement Pages.
 
 **Prochaine tranche obligatoire avant activation :** provisionnement vérifiable des clés d'identité des appareils et de leur révocation, échange ECDH authentifié entre appareils, client de géolocalisation SOS avec effacement local immédiat à la clôture, puis déploiement du relais et test sur deux appareils réels. Ne pas envoyer de coordonnées en clair pour contourner ce blocage.
+
+
+## Liaison ticket — appareil — session (20 novembre 2026)
+
+Le ticket de connexion WebSocket est maintenant lié à trois identifiants distincts :
+- le compte autorisé dans le snapshot de l'alerte ;
+- l'appareil enrôlé et encore actif ;
+- la session d'authentification précise, encore active et non expirée.
+
+La migration additive `0011_gps_ticket_device_binding.sql` remplace la table de tickets par une version contenant `device_id` et `session_id`, avec clés étrangères vers les appareils et sessions. Elle supprime les anciens tickets non consommés lors de cette transition. Le Worker revérifie le compte, l'appareil et la session lors du handshake et avant chaque message ; une session révoquée ou expirée ne peut donc plus continuer à utiliser le relais lors de son prochain message. Les identifiants de session ne sont pas exposés dans les messages WebSocket.
+
+Les tests D1 couvrent désormais la liaison compte/appareil/session, le rejeu, l'expiration, l'absence de colonnes de localisation et le refus d'une session révoquée. Les tests de négociation WebSocket couvrent l'offre de sous-protocoles et les limites du ticket.
+
+**État de cette tranche :** tests D1 GPS et WebSocket réussis dans la CI du commit `0756d86b27cffb54a14e8c49fe9281ffd26cf985` (typecheck également réussi). La CI complète doit finir avant l'application distante de la migration 0011. Le Worker n'est toujours pas déployé ; la géolocalisation navigateur et le chiffrement/authentification de clés restent à raccorder.
