@@ -226,6 +226,10 @@ export class GpsRelayRoom extends DurableObject<Env> {
       return json({ error: "alert_closed" }, 410);
     }
 
+    const existingParticipants = Array.from(this.sockets.values()).map((participant) => ({
+      connectionId: participant.connectionId,
+      role: participant.role,
+    }));
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
     const identity: SocketIdentity = { accountId, deviceId, sessionId, role, connectionId: crypto.randomUUID() };
@@ -235,19 +239,51 @@ export class GpsRelayRoom extends DurableObject<Env> {
     server.addEventListener("message", (event) => {
       void this.handleMessage(server, alertId, event.data);
     });
-    server.addEventListener("close", () => this.sockets.delete(server));
-    server.addEventListener("error", () => this.sockets.delete(server));
+    server.addEventListener("close", () => {
+      this.sockets.delete(server);
+      this.broadcastPresence(server, {
+        type: "participant-disconnected",
+        connectionId: identity.connectionId,
+        role: identity.role,
+      });
+    });
+    server.addEventListener("error", () => {
+      this.sockets.delete(server);
+      this.broadcastPresence(server, {
+        type: "participant-disconnected",
+        connectionId: identity.connectionId,
+        role: identity.role,
+      });
+    });
 
     server.send(JSON.stringify({
       type: "connected",
       connectionId: identity.connectionId,
       role: identity.role,
+      participants: existingParticipants,
     }));
+    this.broadcastPresence(server, {
+      type: "participant-connected",
+      connectionId: identity.connectionId,
+      role: identity.role,
+    });
     return new Response(null, {
       status: 101,
       webSocket: client,
       headers: { "Sec-WebSocket-Protocol": offered.protocol },
     });
+  }
+
+  private broadcastPresence(except: WebSocket, message: Record<string, string>): void {
+    const payload = JSON.stringify(message);
+    for (const socket of this.sockets.keys()) {
+      if (socket === except || socket.readyState !== WebSocket.OPEN) continue;
+      try {
+        socket.send(payload);
+      } catch {
+        this.sockets.delete(socket);
+      }
+    }
   }
 
   private async handleMessage(sender: WebSocket, alertId: string, raw: string | ArrayBuffer): Promise<void> {
