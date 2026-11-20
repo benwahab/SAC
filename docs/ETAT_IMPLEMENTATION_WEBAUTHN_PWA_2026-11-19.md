@@ -3,7 +3,7 @@
 - **Date :** 19 novembre 2026
 - **Dépôt :** `benwahab/SAC`
 - **Branche :** `main`
-- **Statut :** parcours serveur d'enrôlement racine présent mais désactivé par défaut ; première session uniquement après enrôlement ; validation CI et essais physiques non confirmés ; pas autorisé pour la production.
+- **Statut vérifié le 20 novembre 2026 :** enrôlement racine et première session présents dans le code ; migration 0007 appliquée à D1 distante ; suite CI WebAuthn et build réussis sur le commit documentaire `0931949` (run `44806442041`) ; enrôlement toujours fermé par défaut ; aucun essai physique Android ni authentification WebAuthn par assertion complète ; pas autorisé pour la production.
 
 ## 1. Parcours désormais raccordé
 
@@ -109,11 +109,11 @@ Commandes ajoutées dans `package.json` et étapes correspondantes dans `.github
 - `npm run test:root-enrollment-client`
 - `npm run test:d1-root-device-enrollment`
 
-**Ces tests ont été écrits et raccordés, mais leur réussite n'est pas affirmée.** Aucune exécution locale de la suite ou compilation n'a été effectuée dans cet environnement. Le problème CI déjà signalé est laissé de côté à la demande du propriétaire.
+**Vérification CI du 20 novembre 2026 :** le run GitHub Actions `44806442041` est terminé avec succès. Les étapes SimpleWebAuthn Workers smoke, politique racine, adaptateur navigateur, options serveur, origine/RP ID, vérificateur cryptographique, endpoints d'enrôlement, client PWA, atomicité D1 locale, anti-rollback, `npm run typecheck`, tests D1 d'enrôlement et `npm run build` sont toutes en succès. Cette CI valide les tests automatisés dans l'environnement isolé ; elle ne remplace pas les essais physiques Android ni une revue cryptographique indépendante.
 
 ## 3. Verrouillage effectif avant tout essai réel
 
-Les deux routes d'enrôlement vérifient désormais `WEBAUTHN_ROOT_ENROLLMENT_ENABLED === "true"` après validation minimale de la requête. Sans cette valeur exacte, elles répondent `503 root_enrollment_not_approved` et ne consultent pas D1. La valeur est absente de toute configuration par défaut et n'a été configurée sur aucun environnement. Ce verrou est une protection supplémentaire, pas une approbation de sécurité : ne pas l'activer avant revue cryptographique indépendante, choix définitif du profil racine et essais physiques.
+Les deux routes d'enrôlement vérifient désormais `WEBAUTHN_ROOT_ENROLLMENT_ENABLED === "true"` après validation minimale de la requête. Sans cette valeur exacte, elles répondent `503 root_enrollment_not_approved` et ne consultent pas D1. La variable `WEBAUTHN_ROOT_ENROLLMENT_ENABLED` n'apparaît pas dans la configuration de production observée et l'enrôlement reste fermé. Ne pas activer ce verrou avant revue cryptographique indépendante et essais physiques. Ce verrou est une protection supplémentaire, pas une approbation de sécurité : ne pas l'activer avant revue cryptographique indépendante, choix définitif du profil racine et essais physiques.
 
 ## 4. Configuration requise avant tout essai réel
 
@@ -125,7 +125,7 @@ Variables d'environnement Cloudflare à définir par environnement :
 
 Aucune valeur de domaine de production n'est inventée ou inscrite dans le dépôt. Si ces variables ne sont pas configurées, les endpoints échouent fermé.
 
-La migration 0007 est versionnée dans Git mais **n'a pas été appliquée à la base D1 distante**. Le contrôle `GET /api/health` exige maintenant également les sept tables de l'enrôlement racine et des sessions (`root_enrollment_*`, `devices`, `device_root_credentials`, `device_sessions`, `device_enrollment_events`) : une base sans cette migration est explicitement signalée `schema_incomplete`, et non `connected`.
+La migration 0007 est appliquée à la base D1 distante `sac-db` : le registre `d1_migrations` indique `0007_root_device_enrollment.sql` appliquée le 19 novembre 2026 à 17:04:42 UTC. Les sept tables de l'enrôlement racine et des sessions sont présentes et ont été relues dans `sqlite_master`. La migration 0009 est également appliquée. Le point de contrôle de disponibilité doit être testé via la route réellement exposée ; l'URL `/api/health` a renvoyé 404 lors de la vérification du 20 novembre et ne doit pas être considérée comme un endpoint disponible.
 
 ## 5. Limites restantes — ne pas annoncer SAC comme terminé
 
@@ -133,7 +133,7 @@ La migration 0007 est versionnée dans Git mais **n'a pas été appliquée à la
 2. `residentKey: discouraged` est le choix provisoire conservant le profil du smoke test ; le choix final doit être confirmé sur les appareils cibles.
 3. L'authentification WebAuthn par assertion (`navigator.credentials.get`) pour les connexions suivantes n'est pas encore implémentée. Le présent lot crée uniquement la première credential racine et la première session.
 4. Le contrôle de session est disponible via l'endpoint dédié, mais les futurs endpoints privés de contacts, SOS, GPS et données personnelles doivent encore être raccordés à ce contrôle avant exposition.
-5. Les variables Cloudflare réelles ne sont pas configurées, `WEBAUTHN_ROOT_ENROLLMENT_ENABLED` reste absent, et la migration distante n'est pas appliquée.
+5. Le RP ID, le nom RP, la liste d'origines et le secret HMAC doivent encore être vérifiés dans l'environnement Cloudflare ; `WEBAUTHN_ROOT_ENROLLMENT_ENABLED` reste absent/fermé ; la migration 0007 est appliquée à D1 distante.
 6. Tests CI et build non confirmés.
 
 ## 6. Conditions avant test utilisateur ou production
@@ -145,4 +145,4 @@ La migration 0007 est versionnée dans Git mais **n'a pas été appliquée à la
 - Implémentation et tests du parcours d'assertion WebAuthn pour les connexions suivantes.
 - Intégration obligatoire du contrôle de session à chaque route privée avant l'ouverture des fonctions métier.
 
-Aucun déploiement, changement de ressources Cloudflare ou migration distante n'a été exécuté dans ce lot.
+Aucun changement de ressource Cloudflare ni migration distante n'a été effectué pendant la vérification du 20 novembre ; la migration 0007 était déjà appliquée. Le déploiement Pages `0931949` a terminé avec succès.
