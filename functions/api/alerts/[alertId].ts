@@ -20,7 +20,8 @@ export const onRequestGet: PagesFunction<Env, "alertId"> = async ({ request, env
   // Ne jamais divulguer les identifiants de compte de l'auteur ou des
   // autres destinataires à un participant. Le rôle de l'appelant est fourni
   // séparément et seul le nombre de destinataires est nécessaire ici.
-  const { authorAccountId: _authorAccountId, recipientSnapshot, ...safeAlert } = result.value.alert;
+  const { authorAccountId, recipientSnapshot, ...safeAlert } = result.value.alert;
+  void authorAccountId;
   return json({
     alert: {
       ...safeAlert,
