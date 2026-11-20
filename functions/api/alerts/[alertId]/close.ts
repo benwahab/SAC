@@ -48,6 +48,7 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
       const ticket = await signGpsRelayTicket(env.GPS_RELAY_HMAC_SECRET, {
         alertId,
         accountId: session.value.accountId,
+        deviceId: session.value.deviceId,
         role: "author",
         exp: Math.floor(Date.now() / 1000) + 60,
         scope: "close",
