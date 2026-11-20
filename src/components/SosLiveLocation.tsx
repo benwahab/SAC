@@ -78,7 +78,7 @@ export default function SosLiveLocation({ alertId, accountId, deviceId, particip
         </div>
       )}
       <p className="mt-3 text-[11px] leading-4 text-sac-muted">
-        Les coordonnées sont chiffrées entre appareils vérifiés. Elles ne sont pas conservées dans l'historique et sont effacées à la clôture de l'alerte.
+        Les coordonnées sont chiffrées entre appareils authentifiés par SAC. Elles ne sont pas conservées dans l'historique et sont effacées à la clôture de l'alerte.
       </p>
     </section>
   );
