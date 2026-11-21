@@ -49,7 +49,15 @@ Cet audit distingue trois niveaux :
 - Correction des contrastes de la page de connexion et du bouton « Connexion » de l’en-tête.
 - Aucun violet ni bleu nuit comme couleur principale.
 
-### 4. Tests et outillage
+### 4. Console administrative
+
+- Application des migrations `0013`, `0014` et `0015` à la D1 distante, avec enregistrement dans `d1_migrations`.
+- Ajout d’un verrou optimiste sur `version` et d’un jeton de mutation unique pour empêcher qu’une requête concurrente remplace les permissions d’une mission déjà modifiée.
+- Ajout d’événements d’audit pour les consultations de missions, la recherche de comptes et la lecture du journal.
+- Centralisation des textes de la console dans `src/i18n/translations.ts` et ajout d’un état d’accès refusé distinct.
+- Ajout du test `test_stale_mutation_cannot_replace_permissions`.
+
+### 5. Tests et outillage
 
 - Ajout de `tests/gps-relay-protocol.test.ts` et `tests/gps-relay-readiness.test.ts`.
 - Suppression du script `test:location-trust`, qui pointait vers un fichier de test inexistant.
@@ -69,6 +77,10 @@ Cet audit distingue trois niveaux :
 - `npm run test:push-subscriptions` : 5/5 OK.
 - `npm run test:d1-notification-retention` : 12/12 OK.
 - `npm run test:d1-gps-relay-tickets` : 9/9 OK.
+- `npm run test:d1-admin-missions` : 6/6 OK.
+- `npm run test:d1-super-admin-bootstrap` : 6/6 OK.
+- `npm run test:super-admin-guard` : 4/4 OK.
+- `SAC quality checks` : vert sur `aa541db` (run `44877250023`).
 
 ## Ce qui reste non prouvé
 
@@ -81,7 +93,7 @@ Les points suivants ne doivent pas être déclarés opérationnels sans preuve r
 - **Sauvegardes mobiles et destruction J+30** : les exclusions Android/iOS restent des mesures de réduction du risque, pas une preuve d’effacement irréversible. Aucun test natif n’a été exécuté.
 - **Conformité juridique Niger** : l’ancienne HAPDP n’est pas une autorité opérationnelle actuelle. Les textes authentiques et les circuits ministériels restent à vérifier. Aucune formalité n’a été déposée.
 - **Récupération de racine** : interdite en V1 ; aucun parcours de remplacement de racine n’est activé.
-- **Console administrative et permissions nominatives** : les contrats documentaires ne valent pas implémentation. Aucun rôle, endpoint ou migration administrative n’a été ajouté.
+- **Console administrative réelle** : les migrations, rôles, missions et journal sont présents, mais aucun compte Super Admin réel n’a encore été activé ni testé de bout en bout.
 - **Idempotence du déclenchement SOS** : non implémentée dans cette session ; un double envoi côté client reste un risque à traiter.
 - **Observabilité de production** : les crons et les Workers existent, mais aucun tableau de bord ni alerte d’exploitation n’a été validé.
 
