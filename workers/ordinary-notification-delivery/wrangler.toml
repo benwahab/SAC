@@ -2,14 +2,9 @@ name = "sac-ordinary-notification-delivery"
 main = "./index.ts"
 compatibility_date = "2026-11-17"
 
-[secrets]
-required = [
-  "PUSH_SUBSCRIPTION_ENCRYPTION_KEY",
-  "PUSH_VAPID_PUBLIC_KEY",
-  "PUSH_VAPID_PRIVATE_JWK",
-  "PUSH_VAPID_SUBJECT",
-]
-
+# Runtime requires PUSH_SUBSCRIPTION_ENCRYPTION_KEY, PUSH_VAPID_PUBLIC_KEY,
+# PUSH_VAPID_PRIVATE_JWK and PUSH_VAPID_SUBJECT. The Worker stays idle while
+# they are absent, so notifications remain pending instead of failing.
 [[d1_databases]]
 binding = "DB"
 database_name = "sac-db"
