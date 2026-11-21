@@ -112,3 +112,12 @@ Le client PWA utilise `navigator.credentials.get()` après une action explicite 
 
 
 **Application distante vérifiée — 20 novembre 2026, 23:18 UTC :** la migration `0012_root_authentication_challenges.sql` a été appliquée à `sac-db`. La table `root_authentication_challenges` est présente, l'entrée 12 est inscrite dans `d1_migrations` et `PRAGMA foreign_key_check` ne retourne aucune anomalie. Aucun enregistrement utilisateur n'a été créé ni modifié par cette migration.
+
+
+## 0013 — attribution initiale du Super Admin
+
+`0013_super_admin_bootstrap.sql` réserve le rôle unique `super_admin` à l'identité e-mail principale `benwahab111@gmail.com`. Le rôle est attribué par un trigger D1 uniquement lorsque cette identité est vérifiée par le parcours OTP e-mail existant. Une adresse simplement déclarée, un compte non vérifié ou une identité différente ne peut pas obtenir ce rôle. Un index unique garantit qu'un seul Super Admin initial existe.
+
+La migration effectue aussi un rattrapage idempotent si l'adresse était déjà vérifiée au moment de son application. Elle ne crée aucun compte, ne définit aucun mot de passe et n'active pas le parcours WebAuthn racine.
+
+Test isolé : `npm run test:d1-super-admin-bootstrap`. Cette migration est locale au dépôt et à la CI ; elle n'a pas été appliquée à la D1 distante. Toute application distante exige une autorisation explicite distincte.
