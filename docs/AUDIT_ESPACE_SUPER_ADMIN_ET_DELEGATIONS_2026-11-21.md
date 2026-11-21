@@ -70,3 +70,22 @@ La migration `0013_super_admin_bootstrap.sql` et son test D1 isolé sont ajouté
 ## 7. Garde d'autorisation Super Admin
 
 Le helper `functions/lib/security/require-super-admin-session.ts` est ajouté. Il vérifie d'abord la session appareil, puis le rôle persistant `account_roles` côté D1. Une session citoyenne ordinaire reçoit 403 ; une indisponibilité D1 provoque un refus fermé 503. Les API d'administration futures devront obligatoirement passer par ce garde. Tests : `npm run test:super-admin-guard`.
+
+
+## 8. Implémentation initiale des missions et délégations
+
+Les éléments suivants sont maintenant intégrés dans `main` :
+
+- `0014_admin_missions_and_audit.sql` : missions, permissions explicites, états, échéance, version et journal append-only ;
+- `GET/POST /api/admin/missions` : lecture et création réservées au Super Admin ;
+- `POST /api/admin/missions/:missionId` : modification, suspension, reprise et révocation ;
+- `GET /api/admin/accounts` : recherche des comptes actifs dont l'e-mail principal est vérifié ;
+- `GET /api/admin/audit` : lecture des événements du journal, réservée au Super Admin ;
+- `require-mission-permission.ts` : garde de délégation vérifiant la session, l'état actif, l'échéance, le périmètre exact et la permission explicite ;
+- `src/AdminDashboard.tsx`, accessible à `/administration` : interface ordinateur/tablette pour gérer les missions et consulter les événements récents.
+
+Les permissions disponibles sont volontairement limitées à consulter, créer, modifier, traiter, exporter et supprimer. Aucune permission de déléguer, de créer une mission ou de modifier une autre délégation n'est exposée aux collaborateurs.
+
+Les missions révoquées ne peuvent pas être reprises ou modifiées. Les événements du journal ne peuvent être ni mis à jour ni supprimés au niveau D1. Les refus de permission déléguée produisent un événement de refus sans enregistrer l'identifiant de mission non fiable fourni par le client.
+
+**Limites actuelles :** la garde de permission est prête à être intégrée aux futures API métier, mais les API métier déléguées ne sont pas encore toutes raccordées à cette garde. L'interface ne permet pas encore d'exporter le journal. La migration 0014, comme la migration 0013, n'a pas été appliquée à la D1 distante. La présence du code dans Git ne signifie donc pas que ces fonctions sont déjà actives en production.
