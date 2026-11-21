@@ -62,6 +62,13 @@ function statusLabel(copy: PrivateCopy, status: string): string {
   return copy.reminderStatusActive;
 }
 
+function occurrenceStatusLabel(copy: PrivateCopy, status: string): string {
+  if (status === "notified") return copy.occurrenceNotified;
+  if (status === "completed") return copy.occurrenceCompleted;
+  if (status === "cancelled") return copy.occurrenceCancelled;
+  return copy.occurrenceScheduled;
+}
+
 function localDate(offsetDays = 0): string {
   const date = new Date();
   date.setUTCDate(date.getUTCDate() + offsetDays);
@@ -268,7 +275,7 @@ export default function Reminders({ copy, language, go }: ScreenProps) {
               {unread.slice(0, 5).map((notification) => (
                 <li key={notification.id} className="flex items-center justify-between gap-3 py-2">
                   <span className="min-w-0">
-                    <span className="block truncate text-sm font-bold">{notification.kind === "reminder_due" ? copy.reminderKindOther : notification.kind}</span>
+                    <span className="block truncate text-sm font-bold">{notification.kind === "reminder_due" ? copy.notificationReminderDue : copy.notificationsTitle}</span>
                     <span className="block text-xs text-sac-muted tnum">{formatDate(notification.scheduledAt, language, locale)}</span>
                   </span>
                   <button type="button" onClick={() => void markRead(notification.id)} className="min-h-10 shrink-0 text-xs font-bold text-sac-ember">{copy.notificationsMarkRead}</button>
@@ -388,7 +395,7 @@ export default function Reminders({ copy, language, go }: ScreenProps) {
                                   <button type="button" disabled={busy} aria-label={copy.reminderComplete} onClick={() => void closeOccurrence(occurrence, "completed")} className="grid size-9 place-items-center rounded-full bg-sac-confirm/10 text-sac-confirm"><Check size={16} /></button>
                                   <button type="button" disabled={busy} aria-label={copy.reminderDismissOccurrence} onClick={() => void closeOccurrence(occurrence, "cancelled")} className="grid size-9 place-items-center rounded-full bg-sac-alert/10 text-sac-alert"><Trash2 size={16} /></button>
                                 </span>
-                              ) : <span className="text-sac-muted">{occurrence.status}</span>}
+                              ) : <span className="text-sac-muted">{occurrenceStatusLabel(copy, occurrence.status)}</span>}
                             </li>
                           ))}
                         </ul>

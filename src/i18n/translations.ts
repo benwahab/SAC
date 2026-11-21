@@ -226,6 +226,11 @@ const privateFr = {
   reminderQuotaError: "La limite de votre offre est atteinte.",
   reminderActionError: "L’action n’a pas pu être enregistrée.",
   reminderOccurrenceError: "L’occurrence n’a pas pu être mise à jour.",
+  notificationReminderDue: "Rappel",
+  occurrenceScheduled: "Planifiée",
+  occurrenceNotified: "Notifiée",
+  occurrenceCompleted: "Terminée",
+  occurrenceCancelled: "Annulée",
 };
 
 export type PrivateCopy = Record<keyof typeof privateFr, string>;
@@ -332,6 +337,11 @@ const privateEn: PrivateCopy = {
   reminderQuotaError: "Your plan limit has been reached.",
   reminderActionError: "The action could not be saved.",
   reminderOccurrenceError: "The occurrence could not be updated.",
+  notificationReminderDue: "Reminder",
+  occurrenceScheduled: "Scheduled",
+  occurrenceNotified: "Notified",
+  occurrenceCompleted: "Completed",
+  occurrenceCancelled: "Cancelled",
 };
 
 const privateAr: PrivateCopy = {
@@ -436,6 +446,11 @@ const privateAr: PrivateCopy = {
   reminderQuotaError: "تم بلوغ حد باقتك.",
   reminderActionError: "تعذّر حفظ الإجراء.",
   reminderOccurrenceError: "تعذّر تحديث الموعد.",
+  notificationReminderDue: "تذكير",
+  occurrenceScheduled: "مجدول",
+  occurrenceNotified: "تم إشعاره",
+  occurrenceCompleted: "مكتمل",
+  occurrenceCancelled: "ملغى",
 };
 
 export const privateTranslations: Record<Language, PrivateCopy> = { fr: privateFr, en: privateEn, ar: privateAr };
