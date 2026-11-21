@@ -13,7 +13,7 @@ Cet audit distingue trois niveaux :
 ## Infrastructure vérifiée
 
 - Projet Cloudflare Pages : `sac`, URL de production `https://sac-3xh.pages.dev`.
-- Dernier déploiement de production de cette session : `https://57bf3193.sac-3xh.pages.dev` (alias de production actif).
+- Dernier déploiement de production vérifié pendant l’audit : `f71f74d9-2f19-472d-9e83-07b8a05a0dc5` (commit `3498a96`), servi par l’alias `https://sac-3xh.pages.dev`.
 - Base D1 : `sac-db`, identifiant `892ce876-f279-409c-8f9e-06b1dca66e9d`.
 - Migrations distantes appliquées : `0001` à `0012`, dont les tables de compte, identités, alertes, destinataires, événements, outbox SMS/rappels, responsabilité, tickets GPS, abonnements push et rétention des notifications.
 - Worker GPS : `sac-gps-relay`, version déployée `b184406b-118e-4821-a818-0cd06d5bb98d`, bindings `DB`, `GPS_ROOMS`, `GPS_RELAY_E2EE_READY=true`.
@@ -83,6 +83,33 @@ Les points suivants ne doivent pas être déclarés opérationnels sans preuve r
 - **Console administrative et permissions nominatives** : les contrats documentaires ne valent pas implémentation. Aucun rôle, endpoint ou migration administrative n’a été ajouté.
 - **Idempotence du déclenchement SOS** : non implémentée dans cette session ; un double envoi côté client reste un risque à traiter.
 - **Observabilité de production** : les crons et les Workers existent, mais aucun tableau de bord ni alerte d’exploitation n’a été validé.
+
+## Administration et gouvernance
+
+Le dépôt contient désormais une console Super Admin, des routes `/api/admin/accounts`, `/api/admin/missions`, `/api/admin/missions/[missionId]` et `/api/admin/audit`, ainsi que les migrations `0013_super_admin_bootstrap.sql` et `0014_admin_missions_and_audit.sql`.
+
+Points vérifiés :
+
+- Le garde `requireSuperAdminSession` vérifie d’abord une session appareil authentifiée, puis le rôle `super_admin` dans D1. Aucun rôle fourni par le client n’est accepté.
+- Les routes d’écriture utilisent `guardSameOriginJsonPost`, un corps JSON borné et des validations de permission, de périmètre et d’échéance.
+- Le journal `admin_audit_events` est protégé par des triggers D1 qui refusent modification et suppression.
+- Le rôle Super Admin est unique et lié à une identité e-mail vérifiée.
+
+Points non résolus :
+
+- Les migrations `0013` et `0014` ne sont pas appliquées à la D1 distante. La console renverra `503 admin_service_unavailable` tant qu’elles ne le sont pas. Une migration distante crée un rôle privilégié et exige une autorisation explicite distincte.
+- Le bootstrap est lié à l’adresse `benwahab111@gmail.com`. C’est une décision d’exploitation sensible qui doit être confirmée et documentée comme telle.
+- La mise à jour d’une mission ne vérifie pas la version ni le nombre de lignes modifiées. Une révocation concurrente peut donc laisser un remplacement de permissions partiel. Ce point doit être corrigé avant toute production.
+- Les consultations `/api/admin/accounts` et `/api/admin/audit` ne créent pas d’événement d’audit de consultation, alors que le contrat de protection des accès internes l’exige.
+- Les textes de la console sont définis localement dans `src/AdminDashboard.tsx` au lieu d’être centralisés dans `src/i18n/translations.ts`.
+- La console n’a pas été testée avec un compte Super Admin réel, une session WebAuthn réelle et une base D1 migrée.
+
+## CI et déploiement
+
+- `SAC quality checks` est vert sur les commits `9f6e429`, `86a0bf3` et doit être vérifié sur `3498a96`.
+- Le workflow manuel `Deploy SAC SOS notification Worker` a été rendu non bloquant lorsque les secrets GitHub `CLOUDFLARE_API_TOKEN` ou `PUSH_*` ne sont pas configurés. Il publie un avertissement et laisse le Worker sur sa version Cloudflare existante.
+- Le Worker de notification a été déployé manuellement avec ses secrets Cloudflare ; le workflow GitHub ne peut pas les recréer sans les secrets de dépôt, que le jeton de l’agent n’a pas le droit d’écrire.
+- Le déploiement Pages est automatique depuis `main` et le dernier déploiement de production sert bien la CSP avec `wss://sac-gps-relay.benwahab111.workers.dev`.
 
 ## Verdict
 
