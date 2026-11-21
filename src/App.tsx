@@ -20,6 +20,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     fr: {
       title: "Bienvenue sur SAC", subtitle: "Votre espace personnel sécurisé.",
       email: "Adresse e-mail", phone: "Téléphone avec indicatif international",
+      firstName: "Prénom", lastName: "Nom", invalidName: "Le prénom ou le nom contient des caractères interdits.",
       password: "Mot de passe", confirmPassword: "Confirmer le mot de passe", passwordMismatch: "Les deux mots de passe ne correspondent pas.", code: "Code de vérification à 6 chiffres",
       signIn: "Connexion", create: "Créer un compte", register: "Créer mon compte",
       verify: "Vérifier mon adresse", resend: "Renvoyer un code",
@@ -43,6 +44,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     en: {
       title: "Welcome to SAC", subtitle: "Your secure personal space.",
       email: "Email address", phone: "Phone with international country code",
+      firstName: "First name", lastName: "Last name", invalidName: "The first or last name contains forbidden characters.",
       password: "Password", confirmPassword: "Confirm password", passwordMismatch: "The passwords do not match.", code: "6-digit verification code",
       signIn: "Sign in", create: "Create an account", register: "Create my account",
       verify: "Verify my email", resend: "Resend code",
@@ -66,6 +68,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     ar: {
       title: "مرحباً بك في SAC", subtitle: "مساحتك الشخصية الآمنة.",
       email: "البريد الإلكتروني", phone: "رقم الهاتف مع رمز الدولة الدولي",
+      firstName: "الاسم الأول", lastName: "اسم العائلة", invalidName: "الاسم الأول أو اسم العائلة يحتوي على أحرف ممنوعة.",
       password: "كلمة المرور", confirmPassword: "تأكيد كلمة المرور", passwordMismatch: "كلمتا المرور غير متطابقتين.", code: "رمز التحقق المكوّن من 6 أرقام",
       signIn: "تسجيل الدخول", create: "إنشاء حساب", register: "إنشاء حسابي",
       verify: "التحقق من بريدي", resend: "إعادة إرسال الرمز",
@@ -92,6 +95,8 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
   const [mode, setMode] = useState<Mode>(() => new URLSearchParams(window.location.search).get("mode") === "register" ? "register" : "login");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [registerPasswordVisible, setRegisterPasswordVisible] = useState(false);
@@ -121,6 +126,8 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     switch (codeValue) {
       case "invalid_email": return copy.invalidEmail;
       case "invalid_phone": return copy.invalidPhone;
+      case "invalid_first_name":
+      case "invalid_last_name": return copy.invalidName;
       case "password_too_short": return copy.passwordShort;
       case "invalid_language": return copy.invalidLanguage;
       case "invalid_or_expired_code": return copy.invalidCode;
@@ -153,7 +160,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, phone, password, language }),
+        body: JSON.stringify({ email, phone, password, language, firstName, lastName }),
       });
       const payload = await response.json() as { error?: string; message?: string; retryAfterSeconds?: number };
       if (!response.ok) {
@@ -329,6 +336,16 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
 
         {mode === "register" && (
           <form className="mt-8 space-y-4" onSubmit={submitRegistration}>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-2 block text-sm font-bold" htmlFor="sac-register-first-name">{copy.firstName}</label>
+                <input id="sac-register-first-name" autoComplete="given-name" required maxLength={80} value={firstName} onChange={(event) => setFirstName(event.target.value)} className={inputClass} />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-bold" htmlFor="sac-register-last-name">{copy.lastName}</label>
+                <input id="sac-register-last-name" autoComplete="family-name" required maxLength={80} value={lastName} onChange={(event) => setLastName(event.target.value)} className={inputClass} />
+              </div>
+            </div>
             <div>
               <label className="mb-2 block text-sm font-bold" htmlFor="sac-register-email">{copy.email}</label>
               <input id="sac-register-email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} className={inputClass} />

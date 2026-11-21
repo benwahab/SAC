@@ -3,6 +3,8 @@ import test from "node:test";
 import { validateRegistrationInput } from "../src/domain/registration-policy.ts";
 
 const valid = {
+  firstName: "Amina",
+  lastName: "Diallo",
   email: "  Person.Example+SAC@Example.NE  ",
   phone: "+227 90 00 00 00",
   password: "correct horse battery",
@@ -13,12 +15,20 @@ test("normalise l'adresse e-mail et le téléphone international", () => {
   assert.deepEqual(validateRegistrationInput(valid), {
     ok: true,
     value: {
+      firstName: "Amina",
+      lastName: "Diallo",
       email: "person.example+sac@example.ne",
       phone: "+22790000000",
       password: "correct horse battery",
       language: "fr",
     },
   });
+});
+
+test("exige un prénom et un nom valides", () => {
+  assert.deepEqual(validateRegistrationInput({ ...valid, firstName: "" }), { ok: false, error: "invalid_first_name" });
+  assert.deepEqual(validateRegistrationInput({ ...valid, lastName: "  " }), { ok: false, error: "invalid_last_name" });
+  assert.deepEqual(validateRegistrationInput({ ...valid, firstName: "<script>" }), { ok: false, error: "invalid_first_name" });
 });
 
 test("refuse les adresses e-mail mal formées", () => {

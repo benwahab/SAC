@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import test from "node:test";
 
@@ -8,6 +11,7 @@ const PORT = 8803;
 const BASE = `http://127.0.0.1:${PORT}`;
 const CONFIG = "tests/wrangler.reminder-service.toml";
 const WRANGLER = "node_modules/wrangler/bin/wrangler.js";
+const STATE = mkdtempSync(join(tmpdir(), "sac-d1-"));
 
 async function command(args: string[]): Promise<string> {
   const child = spawn(process.execPath, [WRANGLER, ...args], { stdio: ["ignore", "pipe", "pipe"] });
@@ -41,15 +45,16 @@ type Detail = {
 };
 
 test("reminder service persists, isolates, closes and dispatches ordinary notifications in isolated D1", { timeout: 180_000 }, async (t) => {
-  const applied = await command(["d1", "migrations", "apply", "sac-reminder-service-test", "--local", "--config", CONFIG]);
+  const applied = await command(["d1", "migrations", "apply", "sac-reminder-service-test", "--local", "--persist-to", STATE, "--config", CONFIG]);
   assert.match(applied, /success|applied|No migrations/i);
 
-  const child = spawn(process.execPath, [WRANGLER, "dev", "--local", "--config", CONFIG, "--port", String(PORT)], {
+  const child = spawn(process.execPath, [WRANGLER, "dev", "--local", "--persist-to", STATE, "--config", CONFIG, "--port", String(PORT)], {
     stdio: ["ignore", "pipe", "pipe"],
   });
   let output = "";
   child.stdout?.on("data", (chunk: Buffer) => output += chunk.toString());
   child.stderr?.on("data", (chunk: Buffer) => output += chunk.toString());
+  t.after(() => rmSync(STATE, { recursive: true, force: true }));
   t.after(async () => {
     if (child.exitCode === null) {
       child.kill("SIGTERM");

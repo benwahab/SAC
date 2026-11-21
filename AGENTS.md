@@ -159,3 +159,15 @@ Avant toute conception ou évolution de la clôture exceptionnelle d'une alerte 
 
 
 Pour tout travail sur le cycle de suppression, lire `docs/RECOMMANDATIONS_ARBITRAGE_FINAL_SUPPRESSION_COMPTES.md` avec `docs/CONTRAT_PROPOSE_SUPPRESSION_COMPTE_ET_CAS_PARTICULIERS.md`. Les recommandations restent non approuvées : ne pas les coder, ne pas créer de sixième état et ne pas modifier D1 sans arbitrage et autorisation distincte. Préserver les cinq états validés, la suspension sans session générale, la non-clôture automatique des alertes/trajets et la règle de purge GPS.
+
+## Mémoire technique — compte, profils et relations réciproques (2026-11-21)
+
+- Les migrations `0018_account_profiles_privacy_proximity.sql` et `0019_account_contact_change_guards.sql` ajoutent profils, confidentialité, annuaire, invitations de proximité, relations réciproques, permissions par relation, changements d'e-mail/téléphone contrôlés par défi et journal d'activité append-only.
+- Les relations `close_relations` / « Mes proches » sont distinctes des `trusted_contacts` utilisés comme destinataires SOS. Ne pas les fusionner sans arbitrage produit et validation de sécurité : l'acceptation d'une relation de proximité ne vaut pas consentement à recevoir des alertes SOS.
+- Les tests D1 d'intégration doivent utiliser un état local isolé (`--persist-to` vers un répertoire temporaire). Sans cela, les données de exécutions précédentes provoquent des collisions d'unicité.
+- `npm run test:webauthn-workers` exige la dépendance temporaire `@simplewebauthn/server@14.1.0`, installée par la CI avec `npm install --no-save --package-lock=false`. Elle n'est pas une dépendance applicative.
+- Le cache des photos de profil est `private, no-cache` et les URL de photo ne sont renvoyées que si une photo existe réellement et si la confidentialité ou la permission de relation l'autorise.
+- Le changement de téléphone est contrôlé par un OTP envoyé à l'e-mail vérifié ; le numéro reste « déclaré, non vérifié ». Aucun OTP SMS n'est implémenté.
+- Les migrations 0018 et 0019 ne sont pas appliquées à la base D1 distante par le code ou les tests locaux ; leur application exige une autorisation distincte.
+- `src/domain/account-lifecycle.ts` supporte désormais les cinq états (`pending_verification`, `active`, `suspended`, `deletion_pending`, `deleted`) ; la phrase antérieure indiquant qu'il n'en supporte que trois est obsolète.
+- L'acceptation d'une invitation de proximité ne partage automatiquement ni la photo ni les coordonnées. Chaque permission doit être accordée explicitement, conformément à `docs/CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md`.

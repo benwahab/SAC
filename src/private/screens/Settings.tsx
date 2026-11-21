@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { KeyRound, LogOut, ShieldCheck, Smartphone, MonitorSmartphone } from "lucide-react";
+import { KeyRound, LogOut, ShieldCheck, Smartphone, MonitorSmartphone, UserRound, UsersRound } from "lucide-react";
 import PushNotificationSettings from "../../components/PushNotificationSettings";
 import { languages, type Language } from "../../i18n/translations";
 import { completeRootEnrollment, logoutDeviceSession, requestRootEnrollmentFromSession } from "../../services/device/root-enrollment";
@@ -14,7 +14,7 @@ type SessionInfo = {
   current: boolean;
 };
 
-export default function Settings({ copy, language, setLanguage, onLogout, securityKeyConfigured, onSecurityKeyConfigured }: ScreenProps & { setLanguage: (l: Language) => void; onLogout: () => void; securityKeyConfigured: boolean; onSecurityKeyConfigured: () => void }) {
+export default function Settings({ copy, language, go, setLanguage, onLogout, securityKeyConfigured, onSecurityKeyConfigured }: ScreenProps & { setLanguage: (l: Language) => void; onLogout: () => void; securityKeyConfigured: boolean; onSecurityKeyConfigured: () => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
@@ -107,6 +107,16 @@ export default function Settings({ copy, language, setLanguage, onLogout, securi
     <>
       <Halo title={copy.settingsTitle} eyebrow={copy.privateSpace} />
       <Sheet>
+        <Card>
+          <h2 className="flex items-center gap-2 font-extrabold"><UserRound size={18} />{copy.settingsAccountTitle}</h2>
+          <p className="mt-1 text-sm leading-6 text-sac-muted">{copy.settingsAccountText}</p>
+          <button type="button" onClick={() => go({ name: "account" })} className="mt-3 inline-flex min-h-12 items-center justify-center rounded-[14px] bg-sac-primary px-4 text-sm font-extrabold text-white">{copy.settingsAccountOpen}</button>
+        </Card>
+        <Card>
+          <h2 className="flex items-center gap-2 font-extrabold"><UsersRound size={18} />{copy.settingsAlertContactsTitle}</h2>
+          <p className="mt-1 text-sm leading-6 text-sac-muted">{copy.settingsAlertContactsText}</p>
+          <button type="button" onClick={() => go({ name: "alertContacts" })} className="mt-3 inline-flex min-h-12 items-center justify-center rounded-[14px] border border-sac-primary/30 bg-white px-4 text-sm font-bold text-sac-ember">{copy.settingsAlertContactsOpen}</button>
+        </Card>
         <Card className={securityKeyConfigured ? "" : "!border-sac-alert/30 !bg-sac-alert/5"}>
           <h2 className="flex items-center gap-2 font-extrabold"><KeyRound size={18} />{copy.securityKeyTitle}</h2>
           {securityKeyConfigured ? (

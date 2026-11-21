@@ -1,10 +1,13 @@
 import { BellRing, ChevronRight, KeyRound, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
 import { fillCopy, localeFor } from "../../i18n/translations";
-import type { Contact, ScreenProps, SosAlert } from "../types";
+import type { CloseContact, Contact, OwnProfile, ScreenProps, SosAlert } from "../types";
 import { formatDate } from "../types";
-import { Avatar, Card, Halo, LevelBadge, Notice, Sheet, StatusBadge, ghostBtn } from "../ui";
+import { Card, Halo, LevelBadge, Notice, ProfileAvatar, Sheet, StatusBadge, ghostBtn } from "../ui";
 
-export default function Dashboard({ copy, language, go, contacts, alerts, loading, error, securityKeyConfigured }: ScreenProps & { contacts: Contact[]; alerts: SosAlert[]; loading: boolean; error: string; securityKeyConfigured: boolean }) {
+export default function Dashboard({ copy, language, go, contacts, closeContacts, ownProfile, alerts, loading, error, securityKeyConfigured }: ScreenProps & {
+  contacts: Contact[]; closeContacts: CloseContact[]; ownProfile: OwnProfile | null;
+  alerts: SosAlert[]; loading: boolean; error: string; securityKeyConfigured: boolean;
+}) {
   const locale = localeFor(language);
   const active = alerts.filter((a) => a.status === "active");
   const received = active.find((a) => a.participantRole === "recipient");
@@ -17,6 +20,11 @@ export default function Dashboard({ copy, language, go, contacts, alerts, loadin
       <Halo title={copy.dashTitle} eyebrow="SAC" ><p className="mt-1 max-w-xs text-sm font-medium text-white/90">{copy.dashSubtitle}</p></Halo>
       <Sheet>
         {error && <Notice kind="error">{error}</Notice>}
+        <button type="button" onClick={() => go({ name: "account" })} className="flex min-h-16 items-center gap-3 rounded-[20px] border border-[#F0EAE5] bg-white p-3 text-start shadow-card">
+          <ProfileAvatar photoUrl={ownProfile?.photoUrl} name={ownProfile ? `${ownProfile.firstName} ${ownProfile.lastName}` : "?"} />
+          <span className="min-w-0 flex-1"><span className="block truncate font-extrabold">{ownProfile ? `${ownProfile.firstName} ${ownProfile.lastName}` : copy.accountTitle}</span><span className="block text-xs text-sac-muted">{copy.dashAccount}</span></span>
+          <ChevronRight size={18} className="shrink-0 text-sac-muted rtl:rotate-180" />
+        </button>
         {loading ? <p className="py-6 text-center text-sm text-sac-muted">{copy.loading}</p> : focus ? (
           <Card className={received ? "border-2 !border-sac-alert" : "border-2 !border-sac-primary"}>
             <div className="flex items-center justify-between gap-2"><LevelBadge level={focus.level} label={String(level(focus.level))} /><span className="text-xs font-bold text-sac-muted tnum">{formatDate(focus.createdAt, language, locale)}</span></div>
@@ -55,10 +63,11 @@ export default function Dashboard({ copy, language, go, contacts, alerts, loadin
         <Card>
           <div className="flex items-center justify-between"><h2 className="flex items-center gap-2 font-extrabold"><UsersRound size={18} />{copy.dashCircle}</h2>
             <button type="button" onClick={() => go({ name: "contacts" })} className="min-h-12 px-2 text-sm font-bold text-sac-ember">{copy.dashSeeAll}</button></div>
-          {contacts.length === 0 ? <p className="mt-1 text-sm text-sac-muted">{copy.dashCircleEmpty}</p> : <>
-            <p className="mt-1 text-sm text-sac-muted tnum">{fillCopy(copy.dashCircleCount, { n: contacts.length })}</p>
-            <div className="mt-3 flex -space-x-2 rtl:space-x-reverse">{contacts.slice(0, 5).map((c) => <Avatar key={c.accountId} email={c.email} />)}</div></>}
-          <button type="button" onClick={() => go({ name: "invite" })} className={"mt-4 " + ghostBtn + " w-full"}><UserPlus size={16} />{copy.dashInvite}</button>
+          {closeContacts.length === 0 ? <p className="mt-1 text-sm text-sac-muted">{copy.dashCircleEmpty}</p> : <>
+            <p className="mt-1 text-sm text-sac-muted tnum">{fillCopy(copy.dashCircleCount, { n: closeContacts.length })}</p>
+            <div className="mt-3 flex -space-x-2 rtl:space-x-reverse">{closeContacts.slice(0, 5).map((c) => <ProfileAvatar key={c.accountId} photoUrl={c.photoUrl} name={c.firstName} />)}</div></>}
+          <button type="button" onClick={() => go({ name: "contacts" })} className={"mt-4 " + ghostBtn + " w-full"}><UserPlus size={16} />{copy.dashInvite}</button>
+          {contacts.length > 0 && <p className="mt-2 text-xs text-sac-muted">{copy.contactsAlertContacts} · {contacts.length}</p>}
         </Card>
         <Card>
           <h2 className="font-extrabold">{copy.dashRecent}</h2>

@@ -50,6 +50,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   const body = input as Record<string, unknown>;
   const validation = validateRegistrationInput({
+    firstName: body.firstName,
+    lastName: body.lastName,
     email: body.email,
     phone: body.phone,
     password: body.password,
@@ -57,7 +59,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   });
   if (!validation.ok) return json({ error: validation.error }, 400);
 
-  const { email, phone, password, language } = validation.value;
+  const { firstName, lastName, email, phone, password, language } = validation.value;
 
   // Le calcul du vérificateur est effectué avant de connaître le résultat
   // des contraintes d'unicité : aucune branche rapide ne révèle l'existence
@@ -97,6 +99,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       env.DB.prepare(
         "INSERT INTO account_identities (id, account_id, channel, normalized_value, verified_at, is_primary, created_at) VALUES (?, ?, 'phone', ?, NULL, 1, ?)",
       ).bind(phoneIdentityId, accountId, phone, now),
+      env.DB.prepare(
+        "INSERT INTO account_profiles (account_id, first_name, last_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+      ).bind(accountId, firstName, lastName, now, now),
+      env.DB.prepare(
+        "INSERT INTO account_privacy_settings (account_id, search_by_name, search_by_email, photo_visible_in_search, photo_visible_to_contacts, updated_at) VALUES (?, 0, 0, 0, 1, ?)",
+      ).bind(accountId, now),
       env.DB.prepare(
         "INSERT INTO email_otp_challenges (id, account_id, identity_id, purpose, digest, attempt_count, max_attempts, created_at, expires_at, delivery_status) VALUES (?, ?, ?, 'account_email_verification', ?, 0, 6, ?, ?, 'pending')",
       ).bind(challengeId, accountId, emailIdentityId, digest, now, expiresAt),

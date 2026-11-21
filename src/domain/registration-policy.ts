@@ -1,8 +1,11 @@
 import { validateAccountPassword } from "./auth-policy.ts";
+import { validateProfileNames } from "./account-profile.ts";
 
 export type SacLanguage = "fr" | "en" | "ar";
 
 export interface RegistrationInput {
+  readonly firstName: unknown;
+  readonly lastName: unknown;
   readonly email: unknown;
   readonly phone: unknown;
   readonly password: unknown;
@@ -10,6 +13,8 @@ export interface RegistrationInput {
 }
 
 export interface NormalizedRegistrationInput {
+  readonly firstName: string;
+  readonly lastName: string;
   readonly email: string;
   readonly phone: string;
   readonly password: string;
@@ -21,6 +26,8 @@ export type RegistrationValidation =
   | {
       readonly ok: false;
       readonly error:
+        | "invalid_first_name"
+        | "invalid_last_name"
         | "invalid_email"
         | "invalid_phone"
         | "password_required"
@@ -75,6 +82,11 @@ export function normalizeRegistrationPhone(value: unknown): string | null {
 
 /** Valide les données de formulaire sans créer de compte ni prouver une identité. */
 export function validateRegistrationInput(input: RegistrationInput): RegistrationValidation {
+  const names = validateProfileNames({ firstName: input.firstName, lastName: input.lastName });
+  if (!names.ok) {
+    return { ok: false, error: names.error === "invalid_last_name" ? "invalid_last_name" : "invalid_first_name" };
+  }
+
   const email = normalizeRegistrationEmail(input.email);
   if (!email) return { ok: false, error: "invalid_email" };
 
@@ -91,6 +103,8 @@ export function validateRegistrationInput(input: RegistrationInput): Registratio
   return {
     ok: true,
     value: {
+      firstName: names.value.firstName,
+      lastName: names.value.lastName,
       email,
       phone,
       password: input.password as string,

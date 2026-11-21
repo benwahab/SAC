@@ -89,12 +89,15 @@ test("verify-email rejects oversized payloads before database access", async () 
 
 test("register rejects invalid email, phone, password and language before database access", async () => {
   const valid = {
+    firstName: "Amina",
+    lastName: "Diallo",
     email: "person@example.com",
     phone: "+22790000000",
     password: "une phrase de passe assez longue",
     language: "fr",
   };
   const invalidInputs = [
+    { ...valid, firstName: "" },
     { ...valid, email: "invalid" },
     { ...valid, phone: "90000000" },
     { ...valid, password: "court" },
@@ -223,6 +226,8 @@ test("register returns the same generic response when database uniqueness reject
     } as never,
   };
   const request = jsonRequest("register", JSON.stringify({
+    firstName: "Amina",
+    lastName: "Diallo",
     email: "person@example.com",
     phone: "+22790000000",
     password: "une phrase de passe assez longue",

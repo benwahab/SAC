@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AlertTriangle, ArrowLeft, Clock3, History, Home, Settings, ShieldCheck, UsersRound } from "lucide-react";
 import BrandLogo from "../components/BrandLogo";
 import type { PrivateCopy } from "../i18n/translations";
@@ -51,6 +51,15 @@ export function StatusBadge({ active, label }: { active: boolean; label: string 
 
 export function Avatar({ email }: { email: string }) {
   return <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-sac-primary/10 text-base font-extrabold text-sac-deep" aria-hidden="true">{email.slice(0, 1).toUpperCase()}</span>;
+}
+
+export function ProfileAvatar({ photoUrl, name, size = "md" }: { photoUrl?: string | null; name: string; size?: "sm" | "md" | "lg" }) {
+  const dimension = size === "lg" ? "size-24 text-3xl" : size === "sm" ? "size-10 text-sm" : "size-12 text-base";
+  const [failed, setFailed] = useState(false);
+  useEffect(() => { setFailed(false); }, [photoUrl]);
+  return photoUrl && !failed
+    ? <img src={photoUrl} alt="" onError={() => setFailed(true)} className={dimension + " shrink-0 rounded-full border border-white bg-sac-sand object-cover shadow-sm"} />
+    : <span className={dimension + " flex shrink-0 items-center justify-center rounded-full bg-sac-primary/10 font-extrabold text-sac-deep"} aria-hidden="true">{(name.trim().slice(0, 1) || "?").toUpperCase()}</span>;
 }
 
 export const fieldClass = "min-h-12 w-full rounded-[14px] border border-[#E8DCD3] bg-white px-4 text-base text-sac-ink outline-none focus:border-sac-primary focus:ring-4 focus:ring-sac-primary/15";

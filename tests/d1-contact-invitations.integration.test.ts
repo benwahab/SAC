@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import test from "node:test";
 
@@ -8,6 +11,7 @@ const PORT = 8801;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 const CONFIG = "tests/wrangler.contact-invitations.toml";
 const WRANGLER = "node_modules/wrangler/bin/wrangler.js";
+const STATE = mkdtempSync(join(tmpdir(), "sac-d1-"));
 
 async function runCommand(args: string[], timeoutMs = 90_000): Promise<string> {
   const child = spawn(process.execPath, [WRANGLER, ...args], {
@@ -49,20 +53,21 @@ test(
   async (t) => {
     const migrationOutput = await runCommand([
       "d1", "migrations", "apply", "sac-contact-invitations-test",
-      "--local", "--config", CONFIG,
+      "--local", "--persist-to", STATE, "--config", CONFIG,
     ]);
     assert.match(migrationOutput, /success|applied|No migrations/i);
 
     const child = spawn(
       process.execPath,
-      [WRANGLER, "dev", "--local", "--config", CONFIG, "--port", String(PORT)],
+      [WRANGLER, "dev", "--local", "--persist-to", STATE, "--config", CONFIG, "--port", String(PORT)],
       { stdio: ["ignore", "pipe", "pipe"] },
     );
     let output = "";
     child.stdout?.on("data", (chunk: Buffer) => { output += chunk.toString(); });
     child.stderr?.on("data", (chunk: Buffer) => { output += chunk.toString(); });
 
-    t.after(async () => {
+    t.after(() => rmSync(STATE, { recursive: true, force: true }));
+  t.after(async () => {
       if (child.exitCode === null && !child.killed) {
         child.kill("SIGTERM");
         await Promise.race([once(child, "exit"), delay(3_000)]);

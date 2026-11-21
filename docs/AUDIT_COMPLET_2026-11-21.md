@@ -301,3 +301,49 @@ Une session ouverte avec le seul mot de passe peut accéder aux fonctions de l�
 - `npm run test:session-guard` : 4/4 OK après correction du mock TypeScript pour Node 24.
 - `npm run typecheck` : OK.
 - `npm run build` : OK.
+
+## Mise à jour du 21 novembre 2026 — compte, profils, annuaire et proches
+
+### Périmètre livré et vérifié localement
+
+Le socle compte a été étendu au-delà de l’authentification :
+
+- **Profil** : prénom et nom obligatoires à l’inscription, édition depuis l’écran Compte, photo PNG/JPEG/WebP limitée à 300 Ko et servie uniquement après contrôle d’accès.
+- **Confidentialité** : recherche par nom et par e-mail désactivée par défaut ; visibilité de la photo dans l’annuaire désactivée par défaut ; photo non partagée automatiquement avec les proches.
+- **Annuaire** : recherche authentifiée par nom ou e-mail, limitée à 20 résultats et à 30 recherches par minute et par compte ; seuls les comptes actifs, disposant d’un profil complet et ayant activé le mode de recherche correspondant sont retournés.
+- **Invitations réciproques** : création, acceptation, refus et annulation ; une seule invitation en attente par paire ; expiration à 14 jours ; 20 invitations sortantes en attente au maximum ; 10 invitations par heure et par compte.
+- **Proches** : relation réciproque unique après acceptation ; suppression par l’un ou l’autre membre ; droits explicites et révocables pour la photo et les coordonnées ; aucun droit déduit du lien familial ou de l’appartenance à un groupe.
+- **Compte** : changement d’e-mail ou de téléphone par mot de passe actuel puis code à 6 chiffres envoyé à l’adresse e-mail de sécurité ; changement de mot de passe ; demande de suppression avec mot de passe.
+- **Sécurité des changements** : un changement d’e-mail révoque les autres sessions, invalide les défis OTP et les changements de contact en attente ; un changement de mot de passe révoque les autres sessions ; une demande de suppression révoque sessions, appareils, proches fiables, invitations et relations, puis place le compte en `deletion_pending`.
+- **Migrations** : `0018_account_profiles_privacy_proximity.sql` et `0019_account_contact_change_guards.sql` ajoutent les tables, index, contraintes, déclencheurs d’intégrité et la journalisation `account_activity_log`.
+
+### Défauts corrigés pendant l’audit
+
+- La recherche annuaire affichait encore une invitation expirée comme `invitation_sent` ou `invitation_received` ; la requête filtre désormais `expires_at > now`.
+- La photo de profil était partagée avec les proches par défaut ; les droits sont maintenant explicites et révoqués par défaut.
+- Le changement d’e-mail ne supprimait pas les défis OTP et changements de contact antérieurs ; ils sont invalidés dans la même transaction.
+- Un défi de changement de téléphone pouvait être confirmé via l’endpoint de changement d’e-mail ; le canal attendu est désormais vérifié avant consommation.
+- L’avatar de secours affichait l’initiale du prénom seul ; il utilise désormais prénom et nom avec une initiale pertinente.
+- La limite de photo était dupliquée dans l’interface ; elle est centralisée dans `MAX_PROFILE_PHOTO_BYTES`.
+- Le libellé de suppression annonçait une suppression immédiate alors que le statut est `deletion_pending` ; le message indique maintenant une demande enregistrée.
+
+### Vérifications exécutées
+
+- `npm run test:account-social-d1` : 1/1 OK, y compris recherche, confidentialité, photo autorisée/refusée, invitation, acceptation, droits réciproques, retrait, ré-invitation et suppression de compte.
+- Suite complète : **68 scripts PASS, 0 FAIL**.
+- `npm run typecheck` : OK pour l’application, les Functions et les Workers.
+- `npm run build` : OK ; avertissement de taille de bundle à 516 Ko, sans erreur.
+
+### Limites qui restent non prouvées
+
+- Les migrations `0018` et `0019` ne sont **pas** déclarées appliquées à la D1 distante dans cette session. Elles doivent être appliquées après sauvegarde et vérification, jamais par `time-travel restore`.
+- Aucun parcours réel Brevo (réception du code de changement d’e-mail ou de téléphone) n’a été exécuté ici ; l’envoi reste dépendant des secrets Pages et de la boîte réelle.
+- Aucun test avec un second compte réel, un appareil réel ou une photo réelle n’a été exécuté.
+- La suppression de compte reste une demande `deletion_pending` : aucune purge physique, aucune procédure de restauration et aucune preuve de non-résurrection ne sont fournies.
+- Aucune notification de sécurité à l’ancienne adresse e-mail n’est envoyée après un changement d’e-mail ; ce point reste une recommandation non implémentée.
+- La recherche par nom dépend du comportement `LIKE` de SQLite et peut être insensible à la casse uniquement pour l’ASCII ; les accents ne sont pas normalisés.
+- Aucun contrôle anti-abus par IP, aucune limitation distribuée globale et aucune supervision des échecs D1/Brevo ne sont ajoutés.
+
+### Verdict de cette mise à jour
+
+Le socle compte et social est désormais implémenté, typé, testé localement et relié à l’interface FR/EN/AR. Il ne doit pas être présenté comme opérationnel en production avant application contrôlée des migrations, vérification des secrets Brevo, test réel à deux comptes et validation de la suppression/purge.

@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import test from "node:test";
 
@@ -8,6 +11,7 @@ const PORT = 8802;
 const BASE = `http://127.0.0.1:${PORT}`;
 const CONFIG = "tests/wrangler.sos-service.toml";
 const WRANGLER = "node_modules/wrangler/bin/wrangler.js";
+const STATE = mkdtempSync(join(tmpdir(), "sac-d1-"));
 
 async function command(args: string[]): Promise<string> {
   const child = spawn(process.execPath, [WRANGLER, ...args], { stdio: ["ignore", "pipe", "pipe"] });
@@ -24,12 +28,13 @@ async function post<T>(path: string, data: unknown): Promise<{ status: number; d
 }
 
 test("SOS service persists alerts, enforces participants, processes reminders and closes safely in isolated D1", { timeout: 180_000 }, async (t) => {
-  const applied = await command(["d1", "migrations", "apply", "sac-sos-service-test", "--local", "--config", CONFIG]);
+  const applied = await command(["d1", "migrations", "apply", "sac-sos-service-test", "--local", "--persist-to", STATE, "--config", CONFIG]);
   assert.match(applied, /success|applied|No migrations/i);
-  const child = spawn(process.execPath, [WRANGLER, "dev", "--local", "--config", CONFIG, "--port", String(PORT)], { stdio: ["ignore", "pipe", "pipe"] });
+  const child = spawn(process.execPath, [WRANGLER, "dev", "--local", "--persist-to", STATE, "--config", CONFIG, "--port", String(PORT)], { stdio: ["ignore", "pipe", "pipe"] });
   let output = "";
   child.stdout?.on("data", (x: Buffer) => output += x.toString());
   child.stderr?.on("data", (x: Buffer) => output += x.toString());
+  t.after(() => rmSync(STATE, { recursive: true, force: true }));
   t.after(async () => { if (child.exitCode === null) { child.kill("SIGTERM"); await Promise.race([once(child, "exit"), delay(3000)]); } });
   let ready = false;
   for (let i = 0; i < 200; i++) {

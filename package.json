@@ -76,7 +76,8 @@
     "test:d1-admin-missions": "python3 tests/d1_admin_missions_schema.test.py",
     "test:extensions-domain": "node --experimental-strip-types --test tests/reminder-schedule.test.ts tests/family-group.test.ts tests/ordinary-notification.test.ts tests/reminder-service.test.ts",
     "test:ordinary-notification-worker-build": "wrangler deploy --dry-run --outdir /tmp/sac-ordinary-notification-delivery-build --config workers/ordinary-notification-delivery/wrangler.toml",
-    "test:reminder-d1": "node --experimental-strip-types --test tests/d1-reminder-service.integration.test.ts"
+    "test:reminder-d1": "node --experimental-strip-types --test tests/d1-reminder-service.integration.test.ts",
+    "test:account-social-d1": "node --experimental-strip-types --test tests/d1-account-social.integration.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

@@ -21,6 +21,14 @@ const REQUIRED_TABLES = [
   "device_sessions",
   "device_enrollment_events",
   "push_subscriptions",
+  "account_profiles",
+  "account_privacy_settings",
+  "proximity_invitations",
+  "close_relations",
+  "close_relation_permissions",
+  "account_contact_change_challenges",
+  "account_action_rate_limits",
+  "account_activity_log",
 ] as const;
 
 const HEADERS = {

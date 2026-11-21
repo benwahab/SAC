@@ -43,7 +43,7 @@ export default function Sos({ copy, go, setNotice, contacts, refresh }: ScreenPr
       <Halo title={copy.sosTitle} eyebrow={copy.privateSpace} tone="alert"><p className="mt-1 text-sm text-white/90">{copy.sosIntro}</p></Halo>
       <Sheet>
         {contacts.length === 0 ? (
-          <Card className="text-center"><p className="font-bold">{copy.sosNeedContact}</p><button type="button" onClick={() => go({ name: "invite" })} className={"mt-3 " + primaryBtn}>{copy.sosAddContact}</button></Card>
+          <Card className="text-center"><p className="font-bold">{copy.sosNeedContact}</p><button type="button" onClick={() => go({ name: "alertContacts" })} className={"mt-3 " + primaryBtn}>{copy.sosAddContact}</button></Card>
         ) : (
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
             <Card><fieldset><legend className="mb-2 text-sm font-extrabold">{copy.sosRecipients}</legend>

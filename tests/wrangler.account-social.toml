@@ -1,0 +1,9 @@
+name = "sac-account-social-test"
+main = "./workers/account-social-worker.ts"
+compatibility_date = "2026-11-17"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sac-account-social-test-v2"
+database_id = "1c8e2a3f-4b5d-4e6f-9012-2b3c4d5e6f70"
+migrations_dir = "../migrations"
