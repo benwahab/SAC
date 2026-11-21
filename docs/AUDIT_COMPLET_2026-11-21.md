@@ -133,6 +133,10 @@ Le premier essai d’inscription a échoué avec `registration_unavailable`. Deu
 
 Après correction, une inscription de diagnostic a créé un compte `pending_verification` et Brevo a accepté l’e-mail (`delivery_status = accepted`). Les comptes de diagnostic ont ensuite été supprimés ; la base est revenue à zéro.
 
+Le parcours complet a ensuite été validé avec une boîte temporaire : inscription, réception de l’e-mail Brevo, extraction du code, puis `POST /api/auth/verify-email` a retourné `{ verified: true, accountActivated: true }`. Le compte temporaire a été supprimé. Le code OTP n’a jamais été journalisé ni conservé.
+
+Lors du test du compte réel `benwahab111@gmail.com`, l’ancien défi avait `attempt_count = 4` : le code saisi ne correspondait pas. Un nouveau défi a été émis par le parcours de renvoi, l’ancien a été invalidé, et le nouveau défi est `accepted` avec `attempt_count = 0`.
+
 ## Décision de test et remise à zéro
 
 Décision retenue : les tests de bout en bout sont réalisés sur le domaine existant `https://sac-3xh.pages.dev`, avec la base `sac-db` actuelle. La remise à zéro interviendra après les tests.
