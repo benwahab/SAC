@@ -74,6 +74,11 @@ Cet audit distingue trois niveaux :
 - `npm audit --omit=dev --audit-level=high` : 0 vulnérabilité.
 - `npm audit --audit-level=high` : 0 vulnérabilité.
 
+### 6. Connexion
+
+- Ajout d’un bouton œil pour afficher ou masquer le mot de passe sur la page de connexion.
+- Libellés accessibles FR/EN/AR centralisés dans `src/i18n/translations.ts`, avec `aria-pressed` et positionnement adapté au sens RTL.
+
 ## Résultats de tests exécutés
 
 - `npm run typecheck` : OK (application, Functions, Workers).

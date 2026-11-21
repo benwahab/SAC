@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Download, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, X } from "lucide-react";
+import { Download, Eye, EyeOff, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, X } from "lucide-react";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
 import { completeRootAuthentication, requestRootAuthentication, type RootAuthenticationOptions } from "./services/device/root-authentication";
 import { completeRootEnrollment, requestRootEnrollment, type RootEnrollmentCeremony } from "./services/device/root-enrollment";
@@ -92,6 +92,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -320,7 +321,12 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
               </div>
               <div>
                 <label className="mb-2 block text-sm font-bold" htmlFor="sac-login-password">{copy.password}</label>
-                <input id="sac-login-password" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} />
+                <div className="relative">
+                  <input id="sac-login-password" type={passwordVisible ? "text" : "password"} autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass + (rtl ? " pl-12" : " pr-12")} />
+                  <button type="button" onClick={() => setPasswordVisible((visible) => !visible)} aria-label={passwordVisible ? translations[language].hidePassword : translations[language].showPassword} aria-pressed={passwordVisible} aria-controls="sac-login-password" title={passwordVisible ? translations[language].hidePassword : translations[language].showPassword} className={"absolute top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-sac-muted transition hover:bg-sac-primary/60 hover:text-sac-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sac-confirm/40 " + (rtl ? "left-1" : "right-1")}>
+                    {passwordVisible ? <EyeOff aria-hidden="true" size={20} /> : <Eye aria-hidden="true" size={20} />}
+                  </button>
+                </div>
               </div>
               <button type="submit" disabled={busy || !email || !password} className={primaryButton}>{busy ? copy.rootPreparing : copy.prepareRoot}</button>
             </form>

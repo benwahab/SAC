@@ -1,7 +1,7 @@
 export type Language = "fr" | "en" | "ar";
 
 export interface Translation {
-  appName: string; tagline: string; privateApp: string; languageLabel: string;
+  appName: string; tagline: string; privateApp: string; languageLabel: string; showPassword: string; hidePassword: string;
   offersEyebrow: string; offersTitle: string; offersSubtitle: string; freeLabel: string; recommendedLabel: string; freePrice: string; premiumPrice: string;
   offerDetails: string; offerIncluded: string; closeOfferDetails: string; freeOfferDetails: string[]; premiumOfferDetails: string[]; premiumPendingDetails: string;
   trustEyebrow: string; heroTitle: string; heroSecond: string; heroThird: string;
@@ -28,7 +28,7 @@ export function isLanguage(value: string | null): value is Language {
 export const translations: Record<Language, Translation> = {
   fr: {
     appName: "Sécurité · Alerte · Citoyenne", tagline: "Votre sécurité. Vos proches. Votre décision.",
-    privateApp: "Application privée", languageLabel: "Langue",
+    privateApp: "Application privée", languageLabel: "Langue", showPassword: "Afficher le mot de passe", hidePassword: "Masquer le mot de passe",
     offersEyebrow: "Choisissez votre formule", offersTitle: "Nos offres", offersSubtitle: "Les essentiels restent accessibles à tous.", freeLabel: "Essentielle", recommendedLabel: "Plus de liberté", freePrice: "Gratuit", premiumPrice: "Premium",
     offerDetails: "Détails de la formule", offerIncluded: "Inclus dans cette formule", closeOfferDetails: "Fermer les détails",
     freeOfferDetails: ["Jusqu’à 2 contacts de confiance", "Accès aux fonctions essentielles d’alerte et de SOS", "Accès aux fonctions fondamentales de protection des trajets"],
@@ -59,7 +59,7 @@ export const translations: Record<Language, Translation> = {
   },
   en: {
     appName: "Safety · Alert · Citizen", tagline: "Your safety. Your loved ones. Your decision.",
-    privateApp: "Private app", languageLabel: "Language",
+    privateApp: "Private app", languageLabel: "Language", showPassword: "Show password", hidePassword: "Hide password",
     offersEyebrow: "Choose your plan", offersTitle: "Our plans", offersSubtitle: "Essential safety stays accessible to everyone.", freeLabel: "Essential", recommendedLabel: "More freedom", freePrice: "Free", premiumPrice: "Premium",
     offerDetails: "Plan details", offerIncluded: "Included in this plan", closeOfferDetails: "Close details",
     freeOfferDetails: ["Up to 2 trusted contacts", "Access to essential alerts and SOS features", "Access to core trip-protection features"],
@@ -90,7 +90,7 @@ export const translations: Record<Language, Translation> = {
   },
   ar: {
     appName: "السلامة · التنبيه · المواطنة", tagline: "سلامتك. أحباؤك. قرارك.",
-    privateApp: "تطبيق خاص", languageLabel: "اللغة",
+    privateApp: "تطبيق خاص", languageLabel: "اللغة", showPassword: "إظهار كلمة المرور", hidePassword: "إخفاء كلمة المرور",
     offersEyebrow: "اختر باقتك", offersTitle: "باقاتنا", offersSubtitle: "تظل أساسيات السلامة متاحة للجميع.", freeLabel: "أساسية", recommendedLabel: "حرية أكبر", freePrice: "مجاناً", premiumPrice: "مميزة",
     offerDetails: "تفاصيل الباقة", offerIncluded: "المزايا المتضمنة في هذه الباقة", closeOfferDetails: "إغلاق التفاصيل",
     freeOfferDetails: ["حتى جهتي اتصال موثوقتين", "الوصول إلى وظائف التنبيه والاستغاثة الأساسية", "الوصول إلى الوظائف الأساسية لحماية الرحلات"],
