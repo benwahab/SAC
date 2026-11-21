@@ -18,7 +18,8 @@ Cet audit distingue trois niveaux :
 - Migrations distantes appliquées : `0001` à `0015`, dont les tables de compte, identités, alertes, destinataires, événements, outbox SMS/rappels, responsabilité, tickets GPS, abonnements push, rétention des notifications, rôles Super Admin, missions déléguées et journal administratif append-only.
 - Worker GPS : `sac-gps-relay`, version déployée `b184406b-118e-4821-a818-0cd06d5bb98d`, bindings `DB`, `GPS_ROOMS`, `GPS_RELAY_E2EE_READY=true`.
 - Worker de livraison SOS : `sac-sos-notification-delivery`, version déployée `e53280e6-5a72-4eed-b28a-7a737e05e3ce`, crons `* * * * *` et `0 * * * *`, binding D1 `sac-db`.
-- Secrets Pages présents : `BREVO_API_KEY`, `EMAIL_OTP_HMAC_SECRET`, `GPS_RELAY_HMAC_SECRET`, `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PRIVATE_JWK`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_SUBJECT`, entre autres.
+- Secrets Pages présents : `BREVO_API_KEY`, `EMAIL_OTP_HMAC_SECRET`, `GPS_RELAY_HMAC_SECRET`, `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PRIVATE_JWK`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_SUBJECT`, `BREVO_FROM_NAME`, `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ALLOWED_ORIGINS`, `WEBAUTHN_ROOT_ENROLLMENT_ENABLED`, `APP_BASE_URL`.
+- `BREVO_FROM_EMAIL` n’est pas encore défini : l’inscription répond `503 verification_service_not_configured` et aucun compte n’est créé.
 - Secrets du Worker de notification configurés lors du déploiement : chiffrement des abonnements push, paire VAPID P-256 et sujet VAPID.
 - `GET /api/health` retourne `200` avec `{"ok":true,"service":"sac-api","database":"connected"}`.
 - `GET /api/push/vapid-public-key` retourne la clé publique VAPID active ; elle correspond à la clé privée utilisée par le Worker.
@@ -88,7 +89,7 @@ Les points suivants ne doivent pas être déclarés opérationnels sans preuve r
 
 - **Parcours complet sur appareil réel** : création de compte, OTP e-mail réel, enrôlement WebAuthn, session multi-appareils, déclenchement SOS, réception push, ouverture du lien et clôture.
 - **Livraison push réelle** : le Worker est déployé et ses crons sont enregistrés, mais aucun abonnement push actif n’existait au moment de l’audit. La livraison vers un fournisseur réel n’est donc pas prouvée.
-- **Livraison e-mail réelle** : Brevo est configuré, mais l’arrivée d’un OTP dans une boîte réelle n’a pas été testée.
+- **Livraison e-mail réelle** : `BREVO_API_KEY` est présent, mais l’adresse expéditrice vérifiée `BREVO_FROM_EMAIL` manque ; aucun OTP ne peut être envoyé tant qu’elle n’est pas configurée.
 - **GPS de bout en bout** : le relais est actif et les tests de protocole passent, mais une session navigateur réelle avec deux appareils et consentement utilisateur n’a pas été exécutée.
 - **Sauvegardes mobiles et destruction J+30** : les exclusions Android/iOS restent des mesures de réduction du risque, pas une preuve d’effacement irréversible. Aucun test natif n’a été exécuté.
 - **Conformité juridique Niger** : l’ancienne HAPDP n’est pas une autorité opérationnelle actuelle. Les textes authentiques et les circuits ministériels restent à vérifier. Aucune formalité n’a été déposée.
