@@ -61,7 +61,11 @@ export async function sendBrevoTransactionalEmail(
       }),
     });
   } catch { return { ok: false, reason: "provider_unavailable" }; }
-  if (!response.ok) return { ok: false, reason: "provider_rejected" };
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    console.error("brevo_rejected", response.status, detail.slice(0, 500));
+    return { ok: false, reason: "provider_rejected" };
+  }
   const payload = await readBoundedJson(response);
   if (typeof payload === "object" && payload !== null && "messageId" in payload &&
       typeof payload.messageId === "string" && payload.messageId.length > 0) {

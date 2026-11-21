@@ -116,6 +116,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   // Le défi reste pending jusqu'à l'acceptation du fournisseur. Un échec
   // d'envoi ne crée donc jamais un code vérifiable qui n'a pas été livré.
   const delivery = await sendAccountVerificationCode(env, email, code, language);
+  if (!delivery.ok) console.error("register_email_failed", delivery.reason);
   const deliveryStatus = delivery.ok ? "accepted" : "failed";
 
   try {
