@@ -121,3 +121,14 @@ Le client PWA utilise `navigator.credentials.get()` après une action explicite 
 La migration effectue aussi un rattrapage idempotent si l'adresse était déjà vérifiée au moment de son application. Elle ne crée aucun compte, ne définit aucun mot de passe et n'active pas le parcours WebAuthn racine.
 
 Test isolé : `npm run test:d1-super-admin-bootstrap`. Cette migration est locale au dépôt et à la CI ; elle n'a pas été appliquée à la D1 distante. Toute application distante exige une autorisation explicite distincte.
+
+
+## 0014 — missions déléguées et journal administratif
+
+`0014_admin_missions_and_audit.sql` ajoute les missions attribuées à un compte actif, leur périmètre explicite (`scope_key`), leur état (active, suspendue, révoquée), leur échéance et leur version. Les permissions sont stockées séparément et limitées à consulter, créer, modifier, traiter, exporter et supprimer. Aucun droit de délégation n'existe dans ce modèle.
+
+Le journal `admin_audit_events` enregistre l'acteur, l'appareil, la mission, l'action, le périmètre, la permission utilisée, le résultat et l'heure. Des triggers D1 refusent toute modification ou suppression d'un événement. La migration ne crée aucune mission et n'attribue aucun accès.
+
+API initiale : `GET/POST /api/admin/missions` et `POST /api/admin/missions/:missionId` (suspendre, reprendre, révoquer ou remplacer l'attribution, le périmètre, l'échéance et les permissions). Chaque route exige une session appareil valide et le rôle persistant Super Admin. Les délégués ne disposent d'aucune route de création ou de gestion de mission.
+
+Test isolé : `python3 tests/d1_admin_missions_schema.test.py`. Cette migration n'a pas été appliquée à la D1 distante ; toute migration distante nécessite une autorisation explicite.
