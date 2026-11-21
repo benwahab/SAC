@@ -19,10 +19,10 @@ Cet audit distingue trois niveaux :
 - Worker GPS : `sac-gps-relay`, version déployée `b184406b-118e-4821-a818-0cd06d5bb98d`, bindings `DB`, `GPS_ROOMS`, `GPS_RELAY_E2EE_READY=true`.
 - Worker de livraison SOS : `sac-sos-notification-delivery`, version déployée `e53280e6-5a72-4eed-b28a-7a737e05e3ce`, crons `* * * * *` et `0 * * * *`, binding D1 `sac-db`.
 - Secrets Pages présents : `EMAIL_OTP_HMAC_SECRET`, `GPS_RELAY_HMAC_SECRET`, `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PRIVATE_JWK`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_SUBJECT`, `BREVO_FROM_EMAIL`, `BREVO_FROM_NAME`, `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ALLOWED_ORIGINS`, `WEBAUTHN_ROOT_ENROLLMENT_ENABLED`, `APP_BASE_URL`.
-- `BREVO_API_KEY` est déclaré dans la configuration Pages mais n’est pas disponible au runtime : le diagnostic renvoie `brevoApiKeyPresent:false`. L’inscription reste donc en `503 verification_service_not_configured`.
+- `BREVO_API_KEY` est maintenant chargé au runtime. Un envoi de test via Brevo a retourné `201` avec un `messageId`, ce qui prouve que la clé et l’expéditeur sont acceptés par le fournisseur. Les endpoints de gestion `/v3/account` et `/v3/senders` retournent `403` car la clé est restreinte à l’envoi transactionnel ; cela n’empêche pas l’envoi.
 - `EMAIL_OTP_HMAC_SECRET` a été régénéré avec une longueur conforme ; l’ancienne valeur ne satisfaisait pas le contrôle de longueur du code.
 - `WEBAUTHN_ALLOWED_ORIGINS` est configuré comme tableau JSON `["https://sac-3xh.pages.dev"]`, format attendu par le serveur.
-- `BREVO_FROM_EMAIL` est configuré à `benwahab111@gmail.com`. L’adresse doit être vérifiée dans Brevo ; la délivrance réelle d’un OTP reste à prouver.
+- `BREVO_FROM_EMAIL` est configuré à `benwahab111@gmail.com`. Brevo a accepté un envoi de test avec cette adresse ; la réception effective reste à confirmer.
 - Secrets du Worker de notification configurés lors du déploiement : chiffrement des abonnements push, paire VAPID P-256 et sujet VAPID.
 - `GET /api/health` retourne `200` avec `{"ok":true,"service":"sac-api","database":"connected"}`.
 - `GET /api/push/vapid-public-key` retourne la clé publique VAPID active ; elle correspond à la clé privée utilisée par le Worker.
@@ -32,7 +32,7 @@ Cet audit distingue trois niveaux :
 
 - `POST /api/auth/verify-email` avec un corps vide retourne `400 invalid_or_expired_code`, ce qui prouve que `EMAIL_OTP_HMAC_SECRET` est chargé et de longueur valide.
 - `POST /api/auth/root-enrollment-options` avec un corps vide retourne `400 invalid_credentials`, ce qui prouve que `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME` et `WEBAUTHN_ALLOWED_ORIGINS` sont chargés et acceptés pour l’origine `https://sac-3xh.pages.dev`.
-- `POST /api/auth/register` retourne toujours `503 verification_service_not_configured` : `BREVO_API_KEY` n’est pas disponible au runtime, même après configuration de `BREVO_FROM_EMAIL` et `BREVO_FROM_NAME`.
+- `POST /api/auth/register` ne retourne plus `503 verification_service_not_configured` : avec un corps vide, il retourne `400 invalid_email`, ce qui prouve que `BREVO_API_KEY`, `BREVO_FROM_EMAIL`, `BREVO_FROM_NAME` et `EMAIL_OTP_HMAC_SECRET` sont chargés. Aucun compte n’a été créé par ce test.
 - Aucun compte, défi OTP ou rôle n’a été créé par ces tests.
 
 ## Changements livrés dans cette session
@@ -104,7 +104,7 @@ Les points suivants ne doivent pas être déclarés opérationnels sans preuve r
 
 - **Parcours complet sur appareil réel** : création de compte, OTP e-mail réel, enrôlement WebAuthn, session multi-appareils, déclenchement SOS, réception push, ouverture du lien et clôture.
 - **Livraison push réelle** : le Worker est déployé et ses crons sont enregistrés, mais aucun abonnement push actif n’existait au moment de l’audit. La livraison vers un fournisseur réel n’est donc pas prouvée.
-- **Livraison e-mail réelle** : `BREVO_FROM_EMAIL` et `BREVO_FROM_NAME` sont configurés, mais `BREVO_API_KEY` n’est pas disponible au runtime. Aucun OTP ne peut être envoyé et l’adresse `benwahab111@gmail.com` doit être vérifiée dans Brevo.
+- **Livraison e-mail réelle** : `BREVO_API_KEY`, `BREVO_FROM_EMAIL` et `BREVO_FROM_NAME` sont configurés. Brevo a accepté un e-mail de test (`201`), mais la réception effective dans la boîte et le parcours OTP complet restent à confirmer par l’utilisateur.
 - **GPS de bout en bout** : le relais est actif et les tests de protocole passent, mais une session navigateur réelle avec deux appareils et consentement utilisateur n’a pas été exécutée.
 - **Sauvegardes mobiles et destruction J+30** : les exclusions Android/iOS restent des mesures de réduction du risque, pas une preuve d’effacement irréversible. Aucun test natif n’a été exécuté.
 - **Conformité juridique Niger** : l’ancienne HAPDP n’est pas une autorité opérationnelle actuelle. Les textes authentiques et les circuits ministériels restent à vérifier. Aucune formalité n’a été déposée.
