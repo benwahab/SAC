@@ -30,7 +30,7 @@ Le test `tests/acl-ude-contract-model.test.ts` décrit un modèle de journal de 
 
 ### Identité initiale du Super Admin
 
-Aucun compte, adresse e-mail ou mécanisme d'initialisation du Super Admin n'a été explicitement désigné. Aucun compte ne doit être promu automatiquement sur la base de son ordre de création, de son adresse supposée ou de la possession d'une session citoyenne.
+L'adresse officielle du Super Admin initial est maintenant explicitement désignée : `benwahab111@gmail.com`. La migration additive `0013_super_admin_bootstrap.sql` crée le rôle unique `super_admin` et le lie exclusivement à cette identité après vérification OTP e-mail. Aucun compte n'est créé automatiquement et aucun rôle n'est attribué avant la preuve de contrôle de l'adresse. La migration n'a pas été appliquée à la D1 distante.
 
 ## 3. Travaux nécessaires
 
@@ -57,6 +57,11 @@ Aucun compte, adresse e-mail ou mécanisme d'initialisation du Super Admin n'a �
 
 ## 5. Point de blocage avant l'implémentation administrative
 
-Le seul arbitrage d'identité indispensable qui manque est le compte qui recevra le rôle Super Admin initial. Il faut le désigner explicitement avant de créer la procédure de bootstrap et les droits d'administration.
+L'identité du Super Admin initial est fixée. Il reste à créer le compte avec cette adresse, à valider le code OTP envoyé à cette adresse, puis à appliquer la migration 0013 à la D1 cible après autorisation explicite.
 
 Aucune promotion de compte, migration D1, route d'administration ou interface Super Admin n'a été ajoutée par cet audit.
+
+
+## 6. Bootstrap Super Admin ajouté
+
+La migration `0013_super_admin_bootstrap.sql` et son test D1 isolé sont ajoutés. Le workflow CI exécute désormais ce test. Le rôle est lié à l'identité e-mail vérifiée, jamais au champ e-mail d'une requête. La procédure de gestion des missions et l'API d'autorisation Super Admin restent à construire.
