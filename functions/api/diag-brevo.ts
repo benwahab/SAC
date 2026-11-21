@@ -47,7 +47,40 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     }
   }
 
-  return new Response(JSON.stringify(result), {
+  let sendStatus: number | null = null;
+  let sendMessageId: string | null = null;
+  let sendError: string | null = null;
+
+  if (env.BREVO_API_KEY && env.BREVO_FROM_EMAIL && new URL(request.url).searchParams.get("send") === "1") {
+    try {
+      const sendResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "api-key": env.BREVO_API_KEY,
+          accept: "application/json",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          sender: { email: env.BREVO_FROM_EMAIL, name: env.BREVO_FROM_NAME || "SAC" },
+          to: [{ email: env.BREVO_FROM_EMAIL }],
+          subject: "SAC — test de configuration Brevo",
+          textContent: "Si vous recevez ce message, l’envoi Brevo de SAC fonctionne.",
+        }),
+      });
+      sendStatus = sendResponse.status;
+      if (sendResponse.ok) {
+        const payload = await sendResponse.json() as { messageId?: string };
+        sendMessageId = payload.messageId ?? null;
+      } else {
+        const payload = await sendResponse.json().catch(() => null) as { message?: string; code?: string } | null;
+        sendError = payload?.message ?? payload?.code ?? "unknown_error";
+      }
+    } catch {
+      sendStatus = -1;
+    }
+  }
+
+  return new Response(JSON.stringify({ ...result, sendStatus, sendMessageId, sendError }), {
     headers: { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" },
   });
 };
