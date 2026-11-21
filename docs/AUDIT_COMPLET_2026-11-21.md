@@ -13,7 +13,7 @@ Cet audit distingue trois niveaux :
 ## Infrastructure vérifiée
 
 - Projet Cloudflare Pages : `sac`, URL de production `https://sac-3xh.pages.dev`.
-- Dernier déploiement de production vérifié avant la présente mise à jour documentaire : `fbc57693-87bc-440a-a9a3-03f2377693a4` (commit `aa541db`), servi par l’alias `https://sac-3xh.pages.dev`.
+- Dernier déploiement de production portant les changements de code vérifiés : `fbc57693-87bc-440a-a9a3-03f2377693a4` (commit `aa541db`), servi par l’alias `https://sac-3xh.pages.dev`. Les commits documentaires ultérieurs sont aussi déployés par Pages, sans modification du code applicatif.
 - Base D1 : `sac-db`, identifiant `892ce876-f279-409c-8f9e-06b1dca66e9d`.
 - Migrations distantes appliquées : `0001` à `0015`, dont les tables de compte, identités, alertes, destinataires, événements, outbox SMS/rappels, responsabilité, tickets GPS, abonnements push, rétention des notifications, rôles Super Admin, missions déléguées et journal administratif append-only.
 - Worker GPS : `sac-gps-relay`, version déployée `b184406b-118e-4821-a818-0cd06d5bb98d`, bindings `DB`, `GPS_ROOMS`, `GPS_RELAY_E2EE_READY=true`.
@@ -120,7 +120,7 @@ Points non résolus :
 
 ## CI et déploiement
 
-- `SAC quality checks` est vert sur le commit `aa541db` (run `44877250023`).
+- `SAC quality checks` est vert sur le commit `aa541db` (run `44877250023`) et sur le commit documentaire `5846a3b` (run `44877604877`).
 - Le workflow manuel `Deploy SAC SOS notification Worker` a été rendu non bloquant lorsque les secrets GitHub `CLOUDFLARE_API_TOKEN` ou `PUSH_*` ne sont pas configurés. Il publie un avertissement et laisse le Worker sur sa version Cloudflare existante.
 - Le Worker de notification a été déployé manuellement avec ses secrets Cloudflare ; le workflow GitHub ne peut pas les recréer sans les secrets de dépôt, que le jeton de l’agent n’a pas le droit d’écrire.
 - Le déploiement Pages est automatique depuis `main` et le dernier déploiement de production sert bien la CSP avec `wss://sac-gps-relay.benwahab111.workers.dev`.
