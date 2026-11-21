@@ -5,6 +5,7 @@ import { completeRootAuthentication, requestRootAuthentication, type RootAuthent
 import { completeRootEnrollment, requestRootEnrollment, type RootEnrollmentCeremony } from "./services/device/root-enrollment";
 import PrivateSpacePage from "./PrivateSpacePage";
 import InvitationAcceptancePage from "./InvitationAcceptancePage";
+import AdminDashboard from "./AdminDashboard";
 
 
 type LoginPageProps = {
@@ -424,6 +425,7 @@ export default function App() {
   const isLoginPage = window.location.pathname === "/connexion";
   const isPrivateSpacePage = window.location.pathname === "/espace-prive";
   const isInvitationAcceptancePage = window.location.pathname === "/invitation/accept";
+  const isAdminPage = window.location.pathname === "/administration";
   const requestedReturnTo = new URLSearchParams(window.location.search).get("returnTo") ?? "";
   const loginReturnTo = requestedReturnTo.startsWith("/invitation/accept?") && !requestedReturnTo.startsWith("//")
     ? requestedReturnTo
@@ -502,6 +504,7 @@ export default function App() {
   if (isLoginPage) return <LoginPage language={language} setLanguage={setLanguage} returnTo={loginReturnTo} />;
   if (isInvitationAcceptancePage) return <InvitationAcceptancePage language={language} setLanguage={setLanguage} />;
   if (isPrivateSpacePage) return <PrivateSpacePage onLogout={() => { window.location.assign("/connexion"); }} />;
+  if (isAdminPage) return <AdminDashboard language={language} />;
 
   const pillars = [
     { icon: UsersRound, title: t.contactTitle, description: t.contactDescription },
