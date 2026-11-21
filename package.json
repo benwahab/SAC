@@ -67,7 +67,8 @@
     "test:live-geolocation": "node --experimental-strip-types --test tests/live-geolocation.test.ts",
     "test:location-session": "node --experimental-strip-types --test tests/location-session.test.ts",
     "test:sos-notification-worker-build": "wrangler deploy --dry-run --outdir /tmp/sac-sos-notification-delivery-build --config workers/sos-notification-delivery/wrangler.toml",
-    "test:session-management": "node --experimental-strip-types --test tests/session-management-endpoints.test.ts"
+    "test:session-management": "node --experimental-strip-types --test tests/session-management-endpoints.test.ts",
+    "test:d1-super-admin-bootstrap": "python3 tests/d1_super_admin_bootstrap_schema.test.py"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
