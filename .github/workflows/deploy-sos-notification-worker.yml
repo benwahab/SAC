@@ -42,6 +42,10 @@ jobs:
       - name: Validate and prepare runtime secrets
         shell: bash
         run: |
+          if [ -z "${PUSH_SUBSCRIPTION_ENCRYPTION_KEY:-}" ]; then
+            echo "::warning::Push runtime secrets are not configured in GitHub Actions. The Worker will be deployed with its existing Cloudflare secrets."
+            exit 0
+          fi
           node --input-type=module <<'NODE'
           import { writeFileSync } from "node:fs";
 
@@ -83,11 +87,17 @@ jobs:
           writeFileSync("/tmp/sac-sos-worker-secrets.json", JSON.stringify(secrets), { mode: 0o600 });
           NODE
 
-      - name: Deploy Worker with secrets in one version
-        run: >-
-          npx wrangler deploy
-          --config workers/sos-notification-delivery/wrangler.toml
-          --secrets-file /tmp/sac-sos-worker-secrets.json
+      - name: Deploy Worker
+        shell: bash
+        run: |
+          if [ -s /tmp/sac-sos-worker-secrets.json ]; then
+            npx wrangler deploy \
+              --config workers/sos-notification-delivery/wrangler.toml \
+              --secrets-file /tmp/sac-sos-worker-secrets.json
+          else
+            npx wrangler deploy \
+              --config workers/sos-notification-delivery/wrangler.toml
+          fi
 
       - name: Verify active production deployment
         run: npx wrangler deployments status --name sac-sos-notification-delivery
