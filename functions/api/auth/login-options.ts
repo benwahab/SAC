@@ -11,7 +11,7 @@ interface Env {
   EMAIL_OTP_HMAC_SECRET?: string;
 }
 const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" };
-const DUMMY_PASSWORD_HASH = "pbkdf2-sha256$600000$PFp-kbLU9ggaPF5_kLLU9g$UH7I5h10GxoZrC61QkcmamX2kS6MSnPQ8-aJwoD_mWA";
+const DUMMY_PASSWORD_HASH = "pbkdf2-sha256$100000$QJCawctZHugzwvMPBYGVgw$aHm2jdlvnZ5DlVbSo7a3_l6N6uW74-bAAAaadoxm10Q";
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
 

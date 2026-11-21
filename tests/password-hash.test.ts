@@ -11,7 +11,7 @@ const cryptoProvider = webcrypto as unknown as Crypto;
 test("hachage PBKDF2 conserve les paramètres et un sel aléatoire", async () => {
   const first = await hashAccountPassword(cryptoProvider, "une phrase de passe très longue 🔐");
   const second = await hashAccountPassword(cryptoProvider, "une phrase de passe très longue 🔐");
-  assert.match(first, /^pbkdf2-sha256\$600000\$[A-Za-z0-9_-]+\$[A-Za-z0-9_-]+$/);
+  assert.match(first, /^pbkdf2-sha256\$100000\$[A-Za-z0-9_-]+\$[A-Za-z0-9_-]+$/);
   assert.notEqual(first, second);
 });
 

@@ -1,12 +1,15 @@
 /**
  * Hachage de mot de passe pour Cloudflare Workers.
  *
- * PBKDF2-HMAC-SHA-256, 600 000 itérations, sel aléatoire unique de 128 bits.
+ * PBKDF2-HMAC-SHA-256, sel aléatoire unique de 128 bits.
  * La clé dérivée sert à produire un vérificateur HMAC de contexte ; le mot de
  * passe et la clé dérivée ne sont jamais persistés.
+ *
+ * Cloudflare Workers WebCrypto refuse les compteurs PBKDF2 supérieurs à
+ * 100 000 : ce plafond est une contrainte de runtime, pas un choix de sécurité.
  */
 const ALGORITHM = "pbkdf2-sha256";
-const ITERATIONS = 600_000;
+const ITERATIONS = 100_000;
 const SALT_BYTES = 16;
 const TAG_BYTES = 32;
 const MAX_ENCODED_HASH_LENGTH = 256;
