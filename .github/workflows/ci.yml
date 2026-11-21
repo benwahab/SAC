@@ -74,6 +74,10 @@ jobs:
       - name: Test API and D1 schema readiness endpoint
         run: npm run test:health
       - run: npm run typecheck
+      - name: Test PWA manifest icons
+        run: python3 tests/pwa_manifest_icons.test.py
+      - name: Test reminders, family groups and ordinary notification separation
+        run: npm run test:extensions-domain
       - name: Test experimental location encryption primitive
         run: npm run test:crypto
       - name: Test local non-exportable location identity key vault
