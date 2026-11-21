@@ -27,6 +27,13 @@ Cet audit distingue trois niveaux :
 - `GET /api/push/vapid-public-key` retourne la clé publique VAPID active ; elle correspond à la clé privée utilisée par le Worker.
 - `GET /api/admin/audit` retourne `401 authentication_required` sans session, ce qui confirme que la route admin est servie et que le garde échoue correctement.
 
+### Vérification e-mail et WebAuthn
+
+- `POST /api/auth/verify-email` avec un corps vide retourne `400 invalid_or_expired_code`, ce qui prouve que `EMAIL_OTP_HMAC_SECRET` est chargé et de longueur valide.
+- `POST /api/auth/root-enrollment-options` avec un corps vide retourne `400 invalid_credentials`, ce qui prouve que `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME` et `WEBAUTHN_ALLOWED_ORIGINS` sont chargés et acceptés pour l’origine `https://sac-3xh.pages.dev`.
+- `POST /api/auth/register` retourne encore `503 verification_service_not_configured` : `BREVO_FROM_EMAIL` manque.
+- Aucun compte, défi OTP ou rôle n’a été créé par ces tests.
+
 ## Changements livrés dans cette session
 
 ### 1. Activation contrôlée du relais GPS éphémère
