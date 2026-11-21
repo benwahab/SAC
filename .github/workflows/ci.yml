@@ -124,6 +124,8 @@ jobs:
         run: python3 tests/d1_email_otp_schema.test.py
       - name: Test verified-email Super Admin bootstrap and singleton role
         run: npm run test:d1-super-admin-bootstrap
+      - name: Test delegated mission schema and append-only admin audit log
+        run: python3 tests/d1_admin_missions_schema.test.py
       - name: Test D1 root device enrollment, credential and session constraints
         run: npm run test:d1-root-device-enrollment
       - name: Test D1 trusted contact invitation and relationship constraints
