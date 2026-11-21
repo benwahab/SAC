@@ -50,6 +50,17 @@ test("refuse les cookies SAC dupliqués ou malformés", () => {
   assert.equal(readSessionCookie(malformed), null);
 });
 
+
+test("accepte les 16 suffixes canoniques possibles d'un jeton de 256 bits", () => {
+  for (const suffix of "AEIMQUYcgkosw048") {
+    const candidate = "A".repeat(42) + suffix;
+    assert.equal(readSessionCookie(new Request("https://sac.example/api/private", {
+      headers: { Cookie: `${SESSION_COOKIE_NAME}=${candidate}` },
+    })), candidate);
+    assert.doesNotThrow(() => createSessionCookie(candidate));
+  }
+});
+
 test("retourne null en absence du cookie SAC", () => {
   assert.equal(readSessionCookie(new Request("https://sac.example/api/private", {
     headers: { Cookie: "theme=light; locale=fr" },
