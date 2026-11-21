@@ -60,7 +60,10 @@ export async function sendBrevoTransactionalEmail(
         htmlContent: input.htmlContent,
       }),
     });
-  } catch { return { ok: false, reason: "provider_unavailable" }; }
+  } catch (error) {
+    console.error("brevo_unavailable", error instanceof Error ? `${error.name}: ${error.message}` : "unknown");
+    return { ok: false, reason: "provider_unavailable" };
+  }
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
     console.error("brevo_rejected", response.status, detail.slice(0, 500));
