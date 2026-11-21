@@ -124,6 +124,15 @@ Cet audit distingue trois niveaux :
 
 **Conclusion :** le socle technique du SOS est déployé et testé unitairement, mais le parcours réel « compte → appareil → proche → alerte → push → clôture » n’est pas encore opérationnel. Il ne doit pas être présenté comme disponible avant un test complet avec un compte réel, un proche réel et un abonnement push réel.
 
+## Correctifs critiques découverts lors du premier test réel
+
+Le premier essai d’inscription a échoué avec `registration_unavailable`. Deux défauts de runtime ont été identifiés et corrigés :
+
+1. **PBKDF2 600 000 itérations refusé par Cloudflare Workers.** WebCrypto dans Workers renvoie `NotSupportedError: iteration counts above 100000 are not supported`. Le hachage de mot de passe utilise désormais 100 000 itérations, plafond imposé par le runtime. Aucun compte n’existait avant ce changement, donc aucun hash existant n’est invalidé.
+2. **`redirect: "error"` refusé par `fetch` dans Workers.** Brevo n’était jamais appelé ; le message exact est `Invalid redirect value, must be one of "follow" or "manual"`. Le client Brevo utilise désormais `redirect: "manual"` et vérifie le statut de la réponse.
+
+Après correction, une inscription de diagnostic a créé un compte `pending_verification` et Brevo a accepté l’e-mail (`delivery_status = accepted`). Les comptes de diagnostic ont ensuite été supprimés ; la base est revenue à zéro.
+
 ## Décision de test et remise à zéro
 
 Décision retenue : les tests de bout en bout sont réalisés sur le domaine existant `https://sac-3xh.pages.dev`, avec la base `sac-db` actuelle. La remise à zéro interviendra après les tests.

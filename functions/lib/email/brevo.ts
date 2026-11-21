@@ -65,8 +65,7 @@ export async function sendBrevoTransactionalEmail(
     return { ok: false, reason: "provider_unavailable" };
   }
   if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    console.error("brevo_rejected", response.status, detail.slice(0, 500));
+    console.error("brevo_rejected", response.status);
     return { ok: false, reason: "provider_rejected" };
   }
   const payload = await readBoundedJson(response);
