@@ -1,7 +1,7 @@
 # SAC Santé — Conception fonctionnelle et décisions validées
 
 **Date de consolidation :** 21 novembre 2026  
-**Statut :** conception fonctionnelle consolidée ; module non déclaré implémenté.  
+**Statut :** socle personnel implémenté ; fonctions familiales et cliniques non implémentées.  
 **Périmètre :** rappels personnels et familiaux, suivi des patients par les cliniques et rappels de santé programmés.
 
 ## 1. Positionnement
@@ -215,11 +215,28 @@ Les prix, limites, périodes d'essai, modalités de paiement et fonctionnalités
 9. Validation juridique et clinique des parcours, contenus et responsabilités.
 10. Architecture technique détaillée, tests d'isolation multi-cliniques et tests d'idempotence.
 
-## 11. État d'avancement
+## 11. État d'avancement au 21 novembre 2026
 
-À la date de ce document :
-- les trois décisions de produit de la section 2 sont validées ;
-- le présent document formalise la conception fonctionnelle ;
-- aucun module SAC Santé n'est déclaré implémenté ;
-- aucune migration D1, intégration de prestataire, notification clinique réelle ou donnée patient n'est créée par cette consolidation ;
-- l'implémentation devra commencer par un audit du code et du modèle existants, puis par une conception détaillée des permissions, du consentement, du cycle de rappel et de la conservation.
+### 11.1 Socle personnel implémenté
+
+Le socle des rappels personnels est présent dans le code et déployé :
+- migration D1 `0017_health_reminders_and_ordinary_notifications.sql` appliquée en production ;
+- tables `health_reminders`, `health_reminder_occurrences`, `health_reminder_events`, `ordinary_notification_outbox`, `ordinary_notification_deliveries`, `ordinary_notification_attempts`, `ordinary_notification_reads` et `account_entitlements` ;
+- API authentifiée `/api/reminders`, `/api/reminders/[reminderId]`, `/api/reminders/[reminderId]/occurrences`, `/api/reminders/occurrences/[occurrenceId]/close`, `/api/notifications` et `/api/notifications/[notificationId]/read` ;
+- écran personnel `#/rappels` avec création, liste, confirmation et annulation ;
+- notifications ordinaires séparées du SOS, sans GPS, sans SMS et sans escalade ;
+- Worker `sac-ordinary-notification-delivery` déployé avec un déclenchement chaque minute ;
+- tests de domaine, de schéma D1, de service worker et d'intégration D1 isolée.
+
+Le Worker reste inactif tant que les secrets `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_PRIVATE_JWK` et `PUSH_VAPID_SUBJECT` ne sont pas configurés. Dans cet état, les notifications restent visibles dans l'application et les lignes d'outbox restent en attente ; aucune notification push réelle n'est envoyée.
+
+### 11.2 Fonctions non implémentées
+
+Restent hors périmètre du socle livré :
+- rappels créés par un proche pour un autre compte et consentement familial ;
+- espaces cliniques, rattachement patient-clinique, permissions professionnelles et notifications de non-confirmation ;
+- recherche sécurisée d'un patient, consentement patient-clinique et retrait du suivi ;
+- purge et conservation spécifiques aux données de santé ;
+- prix, quotas commerciaux et facturation.
+
+Aucune donnée patient réelle, aucun fournisseur clinique et aucun canal SMS n'est activé par ce socle. Les points de la section 10 restent à arbitrer avant toute extension familiale ou clinique.
