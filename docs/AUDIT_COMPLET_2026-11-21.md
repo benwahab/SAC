@@ -19,6 +19,8 @@ Cet audit distingue trois niveaux :
 - Worker GPS : `sac-gps-relay`, version déployée `b184406b-118e-4821-a818-0cd06d5bb98d`, bindings `DB`, `GPS_ROOMS`, `GPS_RELAY_E2EE_READY=true`.
 - Worker de livraison SOS : `sac-sos-notification-delivery`, version déployée `e53280e6-5a72-4eed-b28a-7a737e05e3ce`, crons `* * * * *` et `0 * * * *`, binding D1 `sac-db`.
 - Secrets Pages présents : `BREVO_API_KEY`, `EMAIL_OTP_HMAC_SECRET`, `GPS_RELAY_HMAC_SECRET`, `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PRIVATE_JWK`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_SUBJECT`, `BREVO_FROM_NAME`, `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ALLOWED_ORIGINS`, `WEBAUTHN_ROOT_ENROLLMENT_ENABLED`, `APP_BASE_URL`.
+- `EMAIL_OTP_HMAC_SECRET` a été régénéré avec une longueur conforme ; l’ancienne valeur ne satisfaisait pas le contrôle de longueur du code.
+- `WEBAUTHN_ALLOWED_ORIGINS` est configuré comme tableau JSON `["https://sac-3xh.pages.dev"]`, format attendu par le serveur.
 - `BREVO_FROM_EMAIL` n’est pas encore défini : l’inscription répond `503 verification_service_not_configured` et aucun compte n’est créé.
 - Secrets du Worker de notification configurés lors du déploiement : chiffrement des abonnements push, paire VAPID P-256 et sujet VAPID.
 - `GET /api/health` retourne `200` avec `{"ok":true,"service":"sac-api","database":"connected"}`.
