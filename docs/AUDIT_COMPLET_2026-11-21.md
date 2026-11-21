@@ -124,6 +124,20 @@ Cet audit distingue trois niveaux :
 
 **Conclusion :** le socle technique du SOS est déployé et testé unitairement, mais le parcours réel « compte → appareil → proche → alerte → push → clôture » n’est pas encore opérationnel. Il ne doit pas être présenté comme disponible avant un test complet avec un compte réel, un proche réel et un abonnement push réel.
 
+## Décision de test et remise à zéro
+
+Décision retenue : les tests de bout en bout sont réalisés sur le domaine existant `https://sac-3xh.pages.dev`, avec la base `sac-db` actuelle. La remise à zéro interviendra après les tests.
+
+Contraintes à respecter lors de la remise à zéro :
+
+- un `DELETE` manuel des comptes/appareils est bloqué par les FK `RESTRICT` et par le trigger append-only `device_enrollment_event_immutable_delete` ;
+- la remise à zéro doit donc se faire par **nouvelle base D1** ou par **drop/recreate contrôlé de toutes les tables**, puis réapplication des migrations `0001` à `0015` ;
+- ne pas utiliser `time-travel restore` comme remise à zéro : cela restaurerait un état antérieur et pourrait ressusciter des alertes, révocations ou suppressions ;
+- conserver les secrets Pages/Worker (Brevo, VAPID, WebAuthn, chiffrement push) : seule la base est remise à zéro ;
+- après la remise à zéro, les sessions navigateur et abonnements push existants ne correspondent plus à aucune ligne D1 ; il faut reconnecter les appareils et réactiver les notifications ;
+- le rôle Super Admin sera réattribué automatiquement à `benwahab111@gmail.com` après vérification OTP du nouveau compte ;
+- vérifier après reset : `accounts = 0`, `devices = 0`, `device_sessions = 0`, `trusted_contacts = 0`, `push_subscriptions = 0`, `alerts = 0`, puis `GET /api/health` et les gardes `401`.
+
 ## Feuille de route minimale vers une plateforme opérationnelle
 
 ### P0 — bloque l’ouverture à de vrais utilisateurs
