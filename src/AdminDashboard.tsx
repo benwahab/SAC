@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 type Permission = "read" | "create" | "update" | "process" | "export" | "delete";
 type Account = { id: string; email: string };
+type AuditEvent = { id: string; actor_email: string | null; action: string; scope_key: string | null; permission_used: string | null; outcome: string; occurred_at: number };
 type Mission = {
   id: string; assignedAccountId: string; assignedEmail?: string | null; scopeKey: string; status: "active" | "suspended" | "revoked";
   dueAt: number | null; createdAt: number; updatedAt: number; version: number; permissions: Permission[];
@@ -18,6 +19,7 @@ const PERMISSIONS: { value: Permission; fr: string; en: string; ar: string }[] =
 export default function AdminDashboard({ language = "fr" }: { language?: "fr" | "en" | "ar" }) {
   const [allowedDevice, setAllowedDevice] = useState(false);
   const [missions, setMissions] = useState<Mission[]>([]);
+  const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [query, setQuery] = useState("");
   const [accountId, setAccountId] = useState("");
@@ -28,16 +30,23 @@ export default function AdminDashboard({ language = "fr" }: { language?: "fr" | 
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const t = {
-    fr: { title: "Administration SAC", subtitle: "Missions et délégations", unavailable: "Accès réservé au Super Admin sur ordinateur ou tablette.", denied: "Accès refusé ou session expirée.", loading: "Chargement…", assignee: "Collaborateur (e-mail vérifié)", search: "Rechercher un e-mail", scope: "Périmètre précis", scopeHint: "Ex. : zone:niamey ou module:assistance", due: "Échéance (facultative)", create: "Attribuer la mission", missions: "Missions attribuées", empty: "Aucune mission pour le moment.", suspend: "Suspendre", resume: "Reprendre", revoke: "Révoquer", active: "Active", suspended: "Suspendue", revoked: "Révoquée", saved: "Mission enregistrée.", select: "Sélectionner un compte", back: "Retour à l’accueil", choose: "Choisissez au moins une permission." },
-    en: { title: "SAC administration", subtitle: "Missions and delegations", unavailable: "Access is limited to the Super Admin on desktop or tablet.", denied: "Access denied or session expired.", loading: "Loading…", assignee: "Collaborator (verified email)", search: "Search email", scope: "Exact scope", scopeHint: "e.g. area:niamey or module:support", due: "Deadline (optional)", create: "Assign mission", missions: "Assigned missions", empty: "No missions yet.", suspend: "Suspend", resume: "Resume", revoke: "Revoke", active: "Active", suspended: "Suspended", revoked: "Revoked", saved: "Mission saved.", select: "Select an account", back: "Back to home", choose: "Choose at least one permission." },
-    ar: { title: "إدارة SAC", subtitle: "المهام والتفويضات", unavailable: "الوصول مخصص للمسؤول الأعلى عبر الكمبيوتر أو الجهاز اللوحي.", denied: "تم رفض الوصول أو انتهت الجلسة.", loading: "جارٍ التحميل…", assignee: "المتعاون (بريد موثّق)", search: "ابحث عن البريد", scope: "النطاق المحدد", scopeHint: "مثال area:niamey أو module:support", due: "الموعد النهائي (اختياري)", create: "إسناد المهمة", missions: "المهام المسندة", empty: "لا توجد مهام حالياً.", suspend: "تعليق", resume: "استئناف", revoke: "إلغاء", active: "نشطة", suspended: "معلقة", revoked: "ملغاة", saved: "تم حفظ المهمة.", select: "اختر حساباً", back: "العودة للرئيسية", choose: "اختر صلاحية واحدة على الأقل." },
+    fr: { title: "Administration SAC", subtitle: "Missions et délégations", unavailable: "Accès réservé au Super Admin sur ordinateur ou tablette.", denied: "Accès refusé ou session expirée.", loading: "Chargement…", assignee: "Collaborateur (e-mail vérifié)", search: "Rechercher un e-mail", scope: "Périmètre précis", scopeHint: "Ex. : zone:niamey ou module:assistance", due: "Échéance (facultative)", create: "Attribuer la mission", missions: "Missions attribuées", empty: "Aucune mission pour le moment.", suspend: "Suspendre", resume: "Reprendre", revoke: "Révoquer", active: "Active", suspended: "Suspendue", revoked: "Révoquée", saved: "Mission enregistrée.", select: "Sélectionner un compte", back: "Retour à l’accueil", choose: "Choisissez au moins une permission.", audit: "Journal d’audit", actor: "Acteur", action: "Action", result: "Résultat" },
+    en: { title: "SAC administration", subtitle: "Missions and delegations", unavailable: "Access is limited to the Super Admin on desktop or tablet.", denied: "Access denied or session expired.", loading: "Loading…", assignee: "Collaborator (verified email)", search: "Search email", scope: "Exact scope", scopeHint: "e.g. area:niamey or module:support", due: "Deadline (optional)", create: "Assign mission", missions: "Assigned missions", empty: "No missions yet.", suspend: "Suspend", resume: "Resume", revoke: "Revoke", active: "Active", suspended: "Suspended", revoked: "Revoked", saved: "Mission saved.", select: "Select an account", back: "Back to home", choose: "Choose at least one permission.", audit: "Audit log", actor: "Actor", action: "Action", result: "Outcome" },
+    ar: { title: "إدارة SAC", subtitle: "المهام والتفويضات", unavailable: "الوصول مخصص للمسؤول الأعلى عبر الكمبيوتر أو الجهاز اللوحي.", denied: "تم رفض الوصول أو انتهت الجلسة.", loading: "جارٍ التحميل…", assignee: "المتعاون (بريد موثّق)", search: "ابحث عن البريد", scope: "النطاق المحدد", scopeHint: "مثال area:niamey أو module:support", due: "الموعد النهائي (اختياري)", create: "إسناد المهمة", missions: "المهام المسندة", empty: "لا توجد مهام حالياً.", suspend: "تعليق", resume: "استئناف", revoke: "إلغاء", active: "نشطة", suspended: "معلقة", revoked: "ملغاة", saved: "تم حفظ المهمة.", select: "اختر حساباً", back: "العودة للرئيسية", choose: "اختر صلاحية واحدة على الأقل.", audit: "سجل التدقيق", actor: "المنفذ", action: "الإجراء", result: "النتيجة" },
   }[language];
 
   const refresh = useCallback(async () => {
-    const response = await fetch("/api/admin/missions", { credentials: "same-origin", cache: "no-store" });
-    if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? "denied" : "unavailable");
-    const payload = await response.json() as { missions: Mission[] };
-    setMissions(payload.missions);
+    const [missionResponse, auditResponse] = await Promise.all([
+      fetch("/api/admin/missions", { credentials: "same-origin", cache: "no-store" }),
+      fetch("/api/admin/audit?limit=50", { credentials: "same-origin", cache: "no-store" }),
+    ]);
+    if (!missionResponse.ok || !auditResponse.ok) throw new Error(missionResponse.status === 401 || missionResponse.status === 403 ? "denied" : "unavailable");
+    const [missionPayload, auditPayload] = await Promise.all([
+      missionResponse.json() as Promise<{ missions: Mission[] }>,
+      auditResponse.json() as Promise<{ events: AuditEvent[] }>,
+    ]);
+    setMissions(missionPayload.missions);
+    setAuditEvents(auditPayload.events);
   }, []);
 
   useEffect(() => {
@@ -131,6 +140,13 @@ export default function AdminDashboard({ language = "fr" }: { language?: "fr" | 
           {mission.dueAt && <p className="mt-3 text-xs text-sac-muted">{new Date(mission.dueAt).toLocaleString(language)}</p>}
           {mission.status !== "revoked" && <div className="mt-4 flex flex-wrap gap-2">{mission.status === "active" ? <button disabled={busy} onClick={() => void manageMission(mission.id, "suspend")} className="rounded-lg border px-3 py-2 text-xs font-bold">{t.suspend}</button> : <button disabled={busy} onClick={() => void manageMission(mission.id, "resume")} className="rounded-lg border px-3 py-2 text-xs font-bold">{t.resume}</button>}<button disabled={busy} onClick={() => void manageMission(mission.id, "revoke")} className="rounded-lg bg-sac-alert px-3 py-2 text-xs font-bold text-white">{t.revoke}</button></div>}
         </article>)}</div>}
+      </section>
+      <section className="mt-8 rounded-3xl border border-white/90 bg-white/75 p-6 shadow-glass">
+        <h2 className="text-xl font-extrabold">{t.audit}</h2>
+        {auditEvents.length === 0 ? <p className="mt-4 text-sm text-sac-muted">{t.empty}</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[680px] text-left text-sm">
+          <thead><tr className="border-b border-sac-primary-strong/15 text-xs text-sac-muted"><th className="p-3">{t.actor}</th><th className="p-3">{t.action}</th><th className="p-3">{t.scope}</th><th className="p-3">{t.result}</th><th className="p-3">{t.due}</th></tr></thead>
+          <tbody>{auditEvents.map((event) => <tr key={event.id} className="border-b border-sac-primary-strong/10"><td className="p-3">{event.actor_email ?? "—"}</td><td className="p-3">{event.action}</td><td className="p-3">{event.scope_key ?? "—"}</td><td className="p-3">{event.outcome}</td><td className="p-3">{new Date(event.occurred_at).toLocaleString(language)}</td></tr>)}</tbody>
+        </table></div>}
       </section>
     </div>
   </main>;
