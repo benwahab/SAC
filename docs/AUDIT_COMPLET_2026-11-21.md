@@ -128,7 +128,7 @@ Cet audit distingue trois niveaux :
 
 ### P0 — bloque l’ouverture à de vrais utilisateurs
 
-1. **Choisir le domaine définitif avant tout enrôlement WebAuthn.** Les identifiants WebAuthn sont liés au `rpId` et à l’origine. Un changement de domaine ne supprime pas les comptes D1, mais il rend les passkeys existants inutilisables. Comme `devices_one_root_per_account` n’autorise qu’un seul appareil racine et que la V1 interdit son remplacement, un compte existant ne peut pas ré-enrôler un appareil sur le nouveau domaine : il faudrait supprimer manuellement `device_root_credentials`, `devices` et `device_sessions`, ou supprimer le compte. C’est destructif. La base étant actuellement vide (`accounts = 0`), c’est le bon moment pour fixer le domaine définitif.
+1. **Choisir le domaine définitif avant tout enrôlement WebAuthn.** Les identifiants WebAuthn sont liés au `rpId` et à l’origine. Un changement de domaine ne supprime pas les comptes D1, mais il rend les passkeys existants inutilisables. Comme `devices_one_root_per_account` n’autorise qu’un seul appareil racine et que la V1 interdit son remplacement, un compte existant ne peut pas ré-enrôler un appareil sur le nouveau domaine. La suppression manuelle est elle-même bloquée : `device_enrollment_events` est append-only (`device_enrollment_event_immutable_delete`) et référence `devices` et `device_sessions` avec `ON DELETE RESTRICT`. Il faudrait désactiver un trigger d’audit pour supprimer l’appareil, ce qui détruit la garantie d’audit. La base étant actuellement vide (`accounts = 0`), c’est le bon moment pour fixer le domaine définitif.
 
    Procédure avant la première inscription :
    - ajouter le domaine personnalisé dans Cloudflare Pages et vérifier HTTPS ;
@@ -149,6 +149,7 @@ Cet audit distingue trois niveaux :
 
 - **Créer le compte Super Admin** : l’adresse `benwahab111@gmail.com` reçoit automatiquement le rôle après vérification OTP. Il faut créer ce compte et tester la console, les missions et le journal d’audit.
 - **Définir la récupération de compte et d’appareil** : mot de passe oublié, téléphone perdu, appareil perdu. La récupération de racine est interdite en V1 ; sans procédure de support, un utilisateur peut perdre définitivement l’accès.
+- **Concevoir la suppression/réinitialisation de compte** : un `DELETE FROM accounts` échoue à cause des FK `ON DELETE RESTRICT`. Un `DELETE FROM devices` échoue aussi car `device_enrollment_events` est append-only et le référence. Il faut un parcours de suppression conforme (soft delete, purge des identités, conservation d’audit) ou une migration contrôlée, jamais un DELETE manuel.
 - **Renforcer l’anti-abus** : limitation de débit par IP sur l’inscription, le renvoi d’OTP et les invitations ; quotas Brevo ; protection contre l’épuisement de la file SMS.
 - **Prouver le GPS de bout en bout** avec deux appareils et un consentement réel, puis documenter la destruction J+30. Le GPS reste NO-GO tant que ce n’est pas prouvé.
 - **Rendre `test:sos-d1` idempotent** : le test échoue à la seconde exécution sans suppression de `tests/.wrangler/state` à cause de jetons de seed déterministes.
