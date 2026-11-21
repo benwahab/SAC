@@ -18,7 +18,8 @@ Cet audit distingue trois niveaux :
 - Migrations distantes appliquées : `0001` à `0015`, dont les tables de compte, identités, alertes, destinataires, événements, outbox SMS/rappels, responsabilité, tickets GPS, abonnements push, rétention des notifications, rôles Super Admin, missions déléguées et journal administratif append-only.
 - Worker GPS : `sac-gps-relay`, version déployée `b184406b-118e-4821-a818-0cd06d5bb98d`, bindings `DB`, `GPS_ROOMS`, `GPS_RELAY_E2EE_READY=true`.
 - Worker de livraison SOS : `sac-sos-notification-delivery`, version déployée `e53280e6-5a72-4eed-b28a-7a737e05e3ce`, crons `* * * * *` et `0 * * * *`, binding D1 `sac-db`.
-- Secrets Pages présents : `BREVO_API_KEY`, `EMAIL_OTP_HMAC_SECRET`, `GPS_RELAY_HMAC_SECRET`, `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PRIVATE_JWK`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_SUBJECT`, `BREVO_FROM_NAME`, `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ALLOWED_ORIGINS`, `WEBAUTHN_ROOT_ENROLLMENT_ENABLED`, `APP_BASE_URL`.
+- Secrets Pages présents : `EMAIL_OTP_HMAC_SECRET`, `GPS_RELAY_HMAC_SECRET`, `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PRIVATE_JWK`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_SUBJECT`, `BREVO_FROM_EMAIL`, `BREVO_FROM_NAME`, `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ALLOWED_ORIGINS`, `WEBAUTHN_ROOT_ENROLLMENT_ENABLED`, `APP_BASE_URL`.
+- `BREVO_API_KEY` est déclaré dans la configuration Pages mais n’est pas disponible au runtime : le diagnostic renvoie `brevoApiKeyPresent:false`. L’inscription reste donc en `503 verification_service_not_configured`.
 - `EMAIL_OTP_HMAC_SECRET` a été régénéré avec une longueur conforme ; l’ancienne valeur ne satisfaisait pas le contrôle de longueur du code.
 - `WEBAUTHN_ALLOWED_ORIGINS` est configuré comme tableau JSON `["https://sac-3xh.pages.dev"]`, format attendu par le serveur.
 - `BREVO_FROM_EMAIL` est configuré à `benwahab111@gmail.com`. L’adresse doit être vérifiée dans Brevo ; la délivrance réelle d’un OTP reste à prouver.
@@ -31,7 +32,7 @@ Cet audit distingue trois niveaux :
 
 - `POST /api/auth/verify-email` avec un corps vide retourne `400 invalid_or_expired_code`, ce qui prouve que `EMAIL_OTP_HMAC_SECRET` est chargé et de longueur valide.
 - `POST /api/auth/root-enrollment-options` avec un corps vide retourne `400 invalid_credentials`, ce qui prouve que `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME` et `WEBAUTHN_ALLOWED_ORIGINS` sont chargés et acceptés pour l’origine `https://sac-3xh.pages.dev`.
-- `POST /api/auth/register` ne doit plus retourner `503 verification_service_not_configured` après la configuration de `BREVO_FROM_EMAIL` ; le contrôle de configuration est à revérifier après déploiement.
+- `POST /api/auth/register` retourne toujours `503 verification_service_not_configured` : `BREVO_API_KEY` n’est pas disponible au runtime, même après configuration de `BREVO_FROM_EMAIL` et `BREVO_FROM_NAME`.
 - Aucun compte, défi OTP ou rôle n’a été créé par ces tests.
 
 ## Changements livrés dans cette session
@@ -103,7 +104,7 @@ Les points suivants ne doivent pas être déclarés opérationnels sans preuve r
 
 - **Parcours complet sur appareil réel** : création de compte, OTP e-mail réel, enrôlement WebAuthn, session multi-appareils, déclenchement SOS, réception push, ouverture du lien et clôture.
 - **Livraison push réelle** : le Worker est déployé et ses crons sont enregistrés, mais aucun abonnement push actif n’existait au moment de l’audit. La livraison vers un fournisseur réel n’est donc pas prouvée.
-- **Livraison e-mail réelle** : `BREVO_API_KEY` et `BREVO_FROM_EMAIL` sont configurés, mais l’arrivée réelle d’un OTP dans une boîte n’est pas encore prouvée. L’adresse `benwahab111@gmail.com` doit être vérifiée dans Brevo.
+- **Livraison e-mail réelle** : `BREVO_FROM_EMAIL` et `BREVO_FROM_NAME` sont configurés, mais `BREVO_API_KEY` n’est pas disponible au runtime. Aucun OTP ne peut être envoyé et l’adresse `benwahab111@gmail.com` doit être vérifiée dans Brevo.
 - **GPS de bout en bout** : le relais est actif et les tests de protocole passent, mais une session navigateur réelle avec deux appareils et consentement utilisateur n’a pas été exécutée.
 - **Sauvegardes mobiles et destruction J+30** : les exclusions Android/iOS restent des mesures de réduction du risque, pas une preuve d’effacement irréversible. Aucun test natif n’a été exécuté.
 - **Conformité juridique Niger** : l’ancienne HAPDP n’est pas une autorité opérationnelle actuelle. Les textes authentiques et les circuits ministériels restent à vérifier. Aucune formalité n’a été déposée.
