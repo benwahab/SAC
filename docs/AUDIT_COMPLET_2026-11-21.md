@@ -128,7 +128,15 @@ Cet audit distingue trois niveaux :
 
 ### P0 — bloque l’ouverture à de vrais utilisateurs
 
-1. **Choisir le domaine définitif avant tout enrôlement WebAuthn.** Les identifiants WebAuthn sont liés au `rpId` et à l’origine. Passer plus tard de `sac-3xh.pages.dev` à un domaine personnalisé invalide les appareils déjà enrôlés.
+1. **Choisir le domaine définitif avant tout enrôlement WebAuthn.** Les identifiants WebAuthn sont liés au `rpId` et à l’origine. Un changement de domaine ne supprime pas les comptes D1, mais il rend les passkeys existants inutilisables. Comme `devices_one_root_per_account` n’autorise qu’un seul appareil racine et que la V1 interdit son remplacement, un compte existant ne peut pas ré-enrôler un appareil sur le nouveau domaine : il faudrait supprimer manuellement `device_root_credentials`, `devices` et `device_sessions`, ou supprimer le compte. C’est destructif. La base étant actuellement vide (`accounts = 0`), c’est le bon moment pour fixer le domaine définitif.
+
+   Procédure avant la première inscription :
+   - ajouter le domaine personnalisé dans Cloudflare Pages et vérifier HTTPS ;
+   - configurer `WEBAUTHN_RP_ID` avec le nouvel hôte, sans schéma ;
+   - configurer `WEBAUTHN_ALLOWED_ORIGINS` avec `["https://nouveau-domaine"]` ;
+   - configurer `APP_BASE_URL` avec `https://nouveau-domaine` pour les liens d’invitation ;
+   - redéployer et vérifier `POST /api/auth/root-enrollment-options` et `POST /api/auth/login-options` sur la nouvelle origine ;
+   - ne créer aucun compte réel avant cette vérification.
 2. **Créer le premier compte réel** : inscription, OTP Brevo, enrôlement WebAuthn, session appareil. Aujourd’hui `accounts = 0`, `devices = 0`, `device_sessions = 0`.
 3. **Créer un second compte proche et accepter l’invitation.** Le SOS exige au moins un proche actif ; `trusted_contacts = 0` aujourd’hui.
 4. **Enregistrer un abonnement push réel sur chaque appareil** et prouver la réception sur Android et iOS. `push_subscriptions = 0` aujourd’hui ; la permission navigateur seule ne suffit pas.
