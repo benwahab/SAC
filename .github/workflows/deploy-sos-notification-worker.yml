@@ -89,7 +89,5 @@ jobs:
           --config workers/sos-notification-delivery/wrangler.toml
           --secrets-file /tmp/sac-sos-worker-secrets.json
 
-      - name: Verify Worker and Cron configuration
-        run: |
-          npx wrangler deployments list --name sac-sos-notification-delivery
-          npx wrangler triggers list --name sac-sos-notification-delivery
+      - name: Verify active production deployment
+        run: npx wrangler deployments status --name sac-sos-notification-delivery
