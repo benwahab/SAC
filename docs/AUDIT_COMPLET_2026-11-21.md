@@ -13,7 +13,7 @@ Cet audit distingue trois niveaux :
 ## Infrastructure vérifiée
 
 - Projet Cloudflare Pages : `sac`, URL de production `https://sac-3xh.pages.dev`.
-- Dernier déploiement de production vérifié avant la présente mise à jour documentaire : `21066072-8935-4f2a-b59d-6728d2db1be2` (commit `1104a1c`), servi par l’alias `https://sac-3xh.pages.dev`.
+- Dernier déploiement de production vérifié avant la présente mise à jour documentaire : `b86a738b-6609-47cc-a2c8-29cdff3f0cc9` (commit `67be51e`), servi par l’alias `https://sac-3xh.pages.dev`.
 - Base D1 : `sac-db`, identifiant `892ce876-f279-409c-8f9e-06b1dca66e9d`.
 - Migrations distantes appliquées : `0001` à `0015`, dont les tables de compte, identités, alertes, destinataires, événements, outbox SMS/rappels, responsabilité, tickets GPS, abonnements push, rétention des notifications, rôles Super Admin, missions déléguées et journal administratif append-only.
 - Worker GPS : `sac-gps-relay`, version déployée `b184406b-118e-4821-a818-0cd06d5bb98d`, bindings `DB`, `GPS_ROOMS`, `GPS_RELAY_E2EE_READY=true`.
@@ -22,6 +22,7 @@ Cet audit distingue trois niveaux :
 - Secrets du Worker de notification configurés lors du déploiement : chiffrement des abonnements push, paire VAPID P-256 et sujet VAPID.
 - `GET /api/health` retourne `200` avec `{"ok":true,"service":"sac-api","database":"connected"}`.
 - `GET /api/push/vapid-public-key` retourne la clé publique VAPID active ; elle correspond à la clé privée utilisée par le Worker.
+- `GET /api/admin/audit` retourne `401 authentication_required` sans session, ce qui confirme que la route admin est servie et que le garde échoue correctement.
 
 ## Changements livrés dans cette session
 
@@ -107,7 +108,7 @@ Points non résolus :
 
 ## CI et déploiement
 
-- `SAC quality checks` est vert sur le commit `1104a1c` (run `44875789859`).
+- `SAC quality checks` est vert sur le commit `67be51e` (run `44876630751`).
 - Le workflow manuel `Deploy SAC SOS notification Worker` a été rendu non bloquant lorsque les secrets GitHub `CLOUDFLARE_API_TOKEN` ou `PUSH_*` ne sont pas configurés. Il publie un avertissement et laisse le Worker sur sa version Cloudflare existante.
 - Le Worker de notification a été déployé manuellement avec ses secrets Cloudflare ; le workflow GitHub ne peut pas les recréer sans les secrets de dépôt, que le jeton de l’agent n’a pas le droit d’écrire.
 - Le déploiement Pages est automatique depuis `main` et le dernier déploiement de production sert bien la CSP avec `wss://sac-gps-relay.benwahab111.workers.dev`.
