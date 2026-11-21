@@ -1,6 +1,6 @@
-import { guardSameOriginJsonPost } from "../../../functions/lib/security/http-request-guard.ts";
-import { readJsonRequestBody } from "../../../functions/lib/security/json-request-body.ts";
-import { requireAuthenticatedDeviceSession } from "../../../functions/lib/security/require-authenticated-device-session.ts";
+import { guardSameOriginJsonPost } from "../../lib/security/http-request-guard.ts";
+import { readJsonRequestBody } from "../../lib/security/json-request-body.ts";
+import { requireAuthenticatedDeviceSession } from "../../lib/security/require-authenticated-device-session.ts";
 
 interface Env { DB: D1Database; }
 
