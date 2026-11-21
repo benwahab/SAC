@@ -81,7 +81,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       "account_email_verification",
       code,
     );
-  } catch {
+  } catch (error) {
+    console.error("register_hash_failed", error instanceof Error ? `${error.name}: ${error.message}` : "unknown");
     return json({ error: "registration_unavailable" }, 503);
   }
 
@@ -102,10 +103,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     ]);
 
     if (results.some((result) => !result.success || result.meta.changes !== 1)) {
+      console.error("register_batch_failed", JSON.stringify(results.map((result) => ({ success: result.success, changes: result.meta.changes }))));
       return json({ error: "registration_unavailable" }, 503);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
+    console.error("register_db_failed", error instanceof Error ? `${error.name}: ${message}` : "unknown");
     if (message.includes("UNIQUE constraint failed")) return json(GENERIC_ACCEPTED, 202);
     return json({ error: "registration_unavailable" }, 503);
   }
