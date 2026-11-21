@@ -19,7 +19,7 @@ export default function AlertScreen({ copy, language, go, notice, id, alerts, lo
       <Sheet>
         {notice && <p role="status" className="rounded-2xl border border-sac-confirm/25 bg-sac-confirm/10 p-3 text-sm font-semibold leading-6">{notice}</p>}
         {alert.description && <Card><p className="text-sm">{alert.description}</p></Card>}
-        {identity && <PrivateSosAlertPanel alertId={alert.id} accountId={identity.accountId} deviceId={identity.deviceId} participantRole={alert.participantRole} status={alert.status} copy={copy} language={language} onUpdated={() => void refresh()} />}
+        {identity && <PrivateSosAlertPanel key={alert.id} alertId={alert.id} accountId={identity.accountId} deviceId={identity.deviceId} participantRole={alert.participantRole} status={alert.status} copy={copy} language={language} onUpdated={() => void refresh()} />}
       </Sheet>
     </>
   );

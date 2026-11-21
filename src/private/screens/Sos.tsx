@@ -48,7 +48,7 @@ export default function Sos({ copy, go, setNotice, contacts, refresh }: ScreenPr
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
             <Card><fieldset><legend className="mb-2 text-sm font-extrabold">{copy.sosRecipients}</legend>
               <div className="flex flex-col gap-2">{contacts.map((c) => (
-                <label key={c.accountId} className="flex min-h-12 items-center gap-3 rounded-[14px] bg-sac-sand px-3 text-sm font-semibold"><input type="checkbox" className="size-5 accent-[#E85D04]" checked={selected.includes(c.accountId)}
+                <label key={c.accountId} className="flex min-h-12 items-center gap-3 rounded-[14px] bg-sac-sand px-3 text-sm font-semibold"><input type="checkbox" className="size-5 accent-[#2E8B68]" checked={selected.includes(c.accountId)}
                   onChange={(e) => setSelected((cur) => e.target.checked ? [...cur, c.accountId].slice(0, 2) : cur.filter((id) => id !== c.accountId))} /><span className="truncate" dir="ltr">{c.email}</span></label>))}</div>
               <p className="mt-2 text-xs text-sac-muted">{copy.contactsLimit}</p></fieldset></Card>
             <Card><fieldset><legend className="mb-2 text-sm font-extrabold">{copy.sosType}</legend>
@@ -59,7 +59,7 @@ export default function Sos({ copy, go, setNotice, contacts, refresh }: ScreenPr
               <div className="grid grid-cols-3 gap-2">{LEVELS.map((l) => (
                 <button key={l} type="button" aria-pressed={level === l} onClick={() => setLevel(l)} className={"min-h-12 rounded-[14px] border text-sm font-extrabold " + (level === l ? (l === "critical" ? "border-sac-alert bg-sac-alert text-white" : "border-sac-primary bg-sac-primary text-white") : "border-[#E8DCD3] bg-white")}>{copy[("level_" + l) as keyof typeof copy]}</button>))}</div>
               {level === "critical" && <p className="mt-2 text-xs font-semibold text-sac-alert">{copy.sosCriticalNote}</p>}
-              <label className="mt-4 block text-sm font-bold tnum">{copy.sosReminders.replace("{n}", String(reminders))}<input type="range" min="1" max="5" value={reminders} onChange={(e) => setReminders(Number(e.target.value))} className="mt-2 w-full accent-[#E85D04]" /></label>
+              <label className="mt-4 block text-sm font-bold tnum">{copy.sosReminders.replace("{n}", String(reminders))}<input type="range" min="1" max="5" value={reminders} onChange={(e) => setReminders(Number(e.target.value))} className="mt-2 w-full accent-[#2E8B68]" /></label>
               <p className="mt-1 text-xs leading-5 text-sac-muted">{copy.sosRemindersNote}</p></fieldset></Card>
             {error && <Notice kind="error">{error}</Notice>}
             {confirming ? (

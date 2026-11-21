@@ -6,7 +6,7 @@ import type { Screen } from "./types";
 export function Halo({ title, eyebrow, onBack, backLabel, children, tone = "orange" }: {
   title: string; eyebrow?: string; onBack?: () => void; backLabel?: string; children?: ReactNode; tone?: "orange" | "alert";
 }) {
-  const bg = tone === "alert" ? "linear-gradient(165deg,#D21E3A 0%,#B5172F 100%)" : "linear-gradient(165deg,#E85D04 0%,#EE6608 58%,#C94E00 100%)";
+  const bg = tone === "alert" ? "linear-gradient(165deg,#D21E3A 0%,#B5172F 100%)" : "linear-gradient(165deg,#2E8B68 0%,#3FAE7A 58%,#1F5F45 100%)";
   return (
     <header className="relative overflow-hidden px-5 pb-12 pt-5 text-white" style={{ background: bg }}>
       <svg className="pointer-events-none absolute -top-12 end-[-80px] rtl:-scale-x-100" width="320" height="320" viewBox="0 0 320 320" aria-hidden="true">

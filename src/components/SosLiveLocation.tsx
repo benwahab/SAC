@@ -21,6 +21,7 @@ export default function SosLiveLocation({ alertId, accountId, deviceId, particip
   const [status, setStatus] = useState<SosLocationRelayStatus>("connecting");
   const [error, setError] = useState<SosLocationRelayError | null>(null);
   const [location, setLocation] = useState<EphemeralPreciseLocation | null>(null);
+  const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -31,8 +32,8 @@ export default function SosLiveLocation({ alertId, accountId, deviceId, particip
       role: participantRole,
       callbacks: {
         onStatus: (value) => { if (mounted) setStatus(value); },
-        onLocation: (value) => { if (mounted) setLocation(value); },
-        onClear: () => { if (mounted) setLocation(null); },
+        onLocation: (value) => { if (mounted) { setLocation(value); setRevealed(false); } },
+        onClear: () => { if (mounted) { setLocation(null); setRevealed(false); } },
         onError: (value) => { if (mounted) setError(value); },
       },
     });
@@ -57,8 +58,15 @@ export default function SosLiveLocation({ alertId, accountId, deviceId, particip
       {location && participantRole === "recipient" && (
         <div className="mt-3 rounded-lg bg-sac-confirm/10 p-3">
           <p className="text-xs font-bold uppercase text-sac-muted">{copy.gpsLast}</p>
-          <p className="mt-1 break-all font-mono text-sm font-bold">{location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}</p>
-          <p className="mt-1 text-xs text-sac-muted">{fillCopy(copy.gpsAccuracy, { m: Math.round(location.accuracy) })} · {new Date(location.capturedAt).toLocaleTimeString(localeFor(language))}</p>
+          {revealed ? (
+            <>
+              <p className="mt-1 break-all font-mono text-sm font-bold">{location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}</p>
+              <p className="mt-1 text-xs text-sac-muted">{fillCopy(copy.gpsAccuracy, { m: Math.round(location.accuracy) })} · {new Date(location.capturedAt).toLocaleTimeString(localeFor(language))}</p>
+              <button type="button" onClick={() => setRevealed(false)} className="mt-2 text-sm font-extrabold text-sac-confirm underline">{copy.gpsHide}</button>
+            </>
+          ) : (
+            <button type="button" onClick={() => setRevealed(true)} className="mt-2 text-sm font-extrabold text-sac-confirm underline">{copy.gpsReveal}</button>
+          )}
         </div>
       )}
       <p className="mt-3 text-[11px] leading-4 text-sac-muted">

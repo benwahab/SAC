@@ -288,10 +288,10 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       <div className="sac-auth-layout relative z-10 mx-auto grid w-full max-w-5xl items-center gap-8 lg:grid-cols-[1fr_minmax(0,28rem)] lg:gap-14">
         <aside className="sac-auth-brand hidden lg:block">
           <div className="sac-auth-brand-mark mb-7 grid h-16 w-16 place-items-center rounded-2xl"><ShieldCheck size={34} strokeWidth={1.5}/></div>
-          <p className="text-xs font-black uppercase tracking-[.28em] text-[#FFB27C]">SAC · SÉCURITÉ · CONFIANCE</p>
-          <h2 className="mt-5 max-w-xl text-5xl font-black leading-[1.08] tracking-tight text-white">{language === "fr" ? <>Toujours proches.<span className="block text-[#FF9857]">Même à distance.</span></> : language === "en" ? <>Always close.<span className="block text-[#FF9857]">Even from afar.</span></> : <>دائماً قريبون.<span className="block text-[#FF9857]">حتى عن بُعد.</span></>}</h2>
-          <p className="mt-6 max-w-md text-base leading-8 text-white/70">{language === "fr" ? "Un espace sécurisé pour rester relié aux personnes qui comptent, et leur transmettre une alerte lorsque vous en avez besoin." : language === "en" ? "A secure space to stay connected to the people who matter and reach them when you need help." : "مساحة آمنة للبقاء على اتصال بمن يهمك أمرهم وطلب المساعدة عند الحاجة."}</p>
-          <div className="sac-auth-brand-orbit mt-10 flex h-48 w-48 items-center justify-center rounded-full"><div className="grid h-28 w-28 place-items-center rounded-full border border-white/20 bg-white/10 text-[#FFB27C] shadow-[0_0_55px_rgba(232,93,4,.35)]"><HeartHandshake size={48} strokeWidth={1.35}/></div></div>
+          <p className="text-xs font-black uppercase tracking-[.28em] text-sac-primary-strong">SAC · SÉCURITÉ · CONFIANCE</p>
+          <h2 className="mt-5 max-w-xl text-5xl font-black leading-[1.08] tracking-tight text-sac-ink">{language === "fr" ? <>Toujours proches.<span className="block text-sac-primary-strong">Même à distance.</span></> : language === "en" ? <>Always close.<span className="block text-sac-primary-strong">Even from afar.</span></> : <>دائماً قريبون.<span className="block text-sac-primary-strong">حتى عن بُعد.</span></>}</h2>
+          <p className="mt-6 max-w-md text-base leading-8 text-sac-muted">{language === "fr" ? "Un espace sécurisé pour rester relié aux personnes qui comptent, et leur transmettre une alerte lorsque vous en avez besoin." : language === "en" ? "A secure space to stay connected to the people who matter and reach them when you need help." : "مساحة آمنة للبقاء على اتصال بمن يهمك أمرهم وطلب المساعدة عند الحاجة."}</p>
+          <div className="sac-auth-brand-orbit mt-10 flex h-48 w-48 items-center justify-center rounded-full"><div className="grid h-28 w-28 place-items-center rounded-full border border-sac-primary/20 bg-sac-primary/10 text-sac-primary-strong shadow-[0_0_55px_rgba(63,174,122,.30)]"><HeartHandshake size={48} strokeWidth={1.35}/></div></div>
         </aside>
         <section className="sac-glass-panel sac-auth-card w-full max-w-md rounded-[2rem] p-6 sm:p-9">
         <div className="flex items-start justify-between gap-4">
@@ -520,7 +520,7 @@ export default function App() {
           <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-sac-muted">{t.appName}</span>
         </a>
         <div className="flex items-center gap-2 sm:gap-3">
-          <a href="/connexion" className="inline-flex min-h-10 items-center justify-center rounded-full border border-white/25 bg-[#E85D04] px-4 py-2 text-xs font-extrabold text-white shadow-lg shadow-orange-950/20 hover:bg-[#F07825]">{signInLabel}</a>
+          <a href="/connexion" className="inline-flex min-h-10 items-center justify-center rounded-full border border-white/25 bg-[#2E8B68] px-4 py-2 text-xs font-extrabold text-white shadow-lg shadow-emerald-950/20 hover:bg-[#3FAE7A]">{signInLabel}</a>
           <div className="sac-language-switch flex items-center gap-1 rounded-full border border-white/90 bg-white/65 p-1 shadow-glass" role="group" aria-label={t.languageLabel} dir="ltr">
             {languages.map((item) => (
               <button
@@ -540,12 +540,12 @@ export default function App() {
         <div className="sac-install-overlay fixed inset-0 z-[100] flex items-center justify-center p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) { setInstallDialogOpen(false); try { window.sessionStorage.setItem("sac-install-dialog-dismissed", "1"); } catch {} } }}>
           <section className="sac-install-dialog w-full max-w-md rounded-[1.75rem] p-6 sm:p-7" role="dialog" aria-modal="true" aria-labelledby="sac-install-title">
             <div className="flex items-start justify-between gap-4">
-              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#E85D04]/10 text-[#E85D04]">{installHelp === "ios" ? <Share2 size={23}/> : <Download size={23}/>}</div>
+              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#2E8B68]/10 text-[#2E8B68]">{installHelp === "ios" ? <Share2 size={23}/> : <Download size={23}/>}</div>
               <button type="button" onClick={() => { setInstallDialogOpen(false); try { window.sessionStorage.setItem("sac-install-dialog-dismissed", "1"); } catch {} }} aria-label={t.close} className="rounded-full border border-black/10 p-2 text-sac-muted hover:bg-black/5"><X size={18}/></button>
             </div>
             <h2 id="sac-install-title" className="mt-5 text-xl font-black text-sac-ink">{t.installApp}</h2>
             <p className="mt-3 text-sm leading-7 text-sac-muted">{installHelp === "ios" ? t.installIosHelp : t.installAndroidHelp}</p>
-            <button type="button" onClick={() => void installApp()} className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#E85D04] px-4 text-sm font-extrabold text-white shadow-lg shadow-orange-900/20 hover:bg-[#F07825]"><Download size={17}/>{t.installApp}</button>
+            <button type="button" onClick={() => void installApp()} className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#2E8B68] px-4 text-sm font-extrabold text-white shadow-lg shadow-emerald-900/20 hover:bg-[#3FAE7A]"><Download size={17}/>{t.installApp}</button>
             <button type="button" onClick={() => { setInstallDialogOpen(false); try { window.sessionStorage.setItem("sac-install-dialog-dismissed", "1"); } catch {} }} className="mt-2 min-h-11 w-full rounded-xl px-4 text-sm font-bold text-sac-muted hover:bg-black/5">{t.close}</button>
           </section>
         </div>
@@ -593,11 +593,11 @@ export default function App() {
               </div>
             </div>
             <div className="sac-art-float sac-art-float-top absolute left-5 top-[16%] z-20 flex items-center gap-3 rounded-2xl px-4 py-3 sm:left-8">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#E85D04]/20 text-[#FF9A5C]"><HeartHandshake size={21}/></span>
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#2E8B68]/20 text-[#8BE3B8]"><HeartHandshake size={21}/></span>
               <span><b className="block text-xs text-white">{language === "fr" ? "Un lien de confiance" : language === "en" ? "A trusted connection" : "رابط موثوق"}</b><small className="mt-1 block text-[10px] text-white/55">{language === "fr" ? "Vos proches, votre choix" : language === "en" ? "Your people, your choice" : "أحباؤك، اختيارك"}</small></span>
             </div>
             <div className="sac-art-float sac-art-float-bottom absolute bottom-[14%] right-4 z-20 flex items-center gap-3 rounded-2xl px-4 py-3 sm:right-7">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#E85D04]/20 text-[#FF9A5C]"><MapPin size={20}/></span>
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#2E8B68]/20 text-[#8BE3B8]"><MapPin size={20}/></span>
               <span><b className="block text-xs text-white">{language === "fr" ? "Alerte confidentielle" : language === "en" ? "Private alert" : "تنبيه خاص"}</b><small className="mt-1 block text-[10px] text-white/55">{language === "fr" ? "Uniquement à vos contacts" : language === "en" ? "Only to your contacts" : "لجهات اتصالك فقط"}</small></span>
             </div>
             <span className="sac-art-side-label absolute right-3 top-1/2 hidden -translate-y-1/2 rotate-90 text-[9px] font-black uppercase tracking-[.38em] sm:block">SÉCURITÉ • CONFIANCE • PROXIMITÉ</span>

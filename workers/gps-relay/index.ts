@@ -1,9 +1,12 @@
 import { parseGpsWebSocketProtocols } from "./websocket-protocol.ts";
+import { isGpsRelayReady } from "./relay-readiness.ts";
+import { isRelayTarget } from "./routing.ts";
 import { DurableObject } from "cloudflare:workers";
 
 interface Env {
   DB: D1Database;
   GPS_ROOMS: DurableObjectNamespace<GpsRelayRoom>;
+  GPS_RELAY_E2EE_READY?: string;
 }
 interface RelayMessage {
   type: "heartbeat" | "key-announce" | "gps-encrypted";
@@ -52,6 +55,9 @@ async function isActiveParticipant(
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    if (!isGpsRelayReady(env.GPS_RELAY_E2EE_READY)) {
+      return json({ error: "gps_relay_not_ready" }, 503);
+    }
     const url = new URL(request.url);
     const match = url.pathname.match(/^\/v1\/alerts\/([^/]+)\/socket$/);
     if (!match) return json({ error: "not_found" }, 404);
@@ -183,8 +189,13 @@ export class GpsRelayRoom extends DurableObject<Env> {
     const outgoing = JSON.stringify({ ...message, fromRole: identity.role, fromConnectionId: identity.connectionId,
       fromAccountId: identity.accountId, fromDeviceId: identity.deviceId });
     for (const [socket, target] of this.sockets) {
-      const isTarget = message.type !== "gps-encrypted" ||
-        (target.role === "recipient" && target.connectionId === message.recipientConnectionId);
+      const isTarget = isRelayTarget(
+        identity.role,
+        message.type,
+        target.role,
+        target.connectionId,
+        message.recipientConnectionId,
+      );
       if (socket !== sender && isTarget && socket.readyState === WebSocket.OPEN) {
         try { socket.send(outgoing); } catch { this.sockets.delete(socket); }
       }

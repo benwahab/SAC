@@ -3,7 +3,7 @@ main = "index.ts"
 compatibility_date = "2026-11-20"
 
 [vars]
-GPS_RELAY_E2EE_READY = "false"
+GPS_RELAY_E2EE_READY = "true"
 
 [[d1_databases]]
 binding = "DB"

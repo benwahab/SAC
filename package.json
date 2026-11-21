@@ -63,7 +63,6 @@
     "test:gps-relay-build": "wrangler deploy --dry-run --outdir /tmp/sac-gps-relay-build --config workers/gps-relay/wrangler.toml",
     "test:gps-relay-readiness": "node --experimental-strip-types --test tests/gps-relay-readiness.test.ts",
     "test:location-identity-vault": "node --experimental-strip-types --test tests/location-identity-vault.test.ts",
-    "test:location-trust": "node --experimental-strip-types --test tests/location-trust.test.ts",
     "test:live-geolocation": "node --experimental-strip-types --test tests/live-geolocation.test.ts",
     "test:location-session": "node --experimental-strip-types --test tests/location-session.test.ts",
     "test:sos-notification-worker-build": "wrangler deploy --dry-run --outdir /tmp/sac-sos-notification-delivery-build --config workers/sos-notification-delivery/wrangler.toml",

@@ -18,7 +18,7 @@ export default function PrivateSosAlertPanel({ alertId, accountId, deviceId, par
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [gpsSharingEnabled, setGpsSharingEnabled] = useState(true);
+  const [gpsSharingEnabled, setGpsSharingEnabled] = useState(false);
   const locale = localeFor(language);
 
   const load = useCallback(async () => {
@@ -37,7 +37,7 @@ export default function PrivateSosAlertPanel({ alertId, accountId, deviceId, par
     } catch (reason) { setError(reason instanceof Error ? reason.message : copy.trackLoadError); } finally { setLoading(false); }
   }, [alertId, copy]);
 
-  useEffect(() => { setGpsSharingEnabled(true); void load(); }, [load]);
+  useEffect(() => { void load(); }, [load]);
 
   async function respond(action: "acknowledge" | "volunteer" | "withdraw") {
     if (busy) return;
@@ -88,6 +88,19 @@ export default function PrivateSosAlertPanel({ alertId, accountId, deviceId, par
           {active && responsibility && <p className="mt-3 rounded-[14px] bg-sac-primary/10 p-3 text-sm font-semibold">{responsibility.isSelf ? copy.respSelf : responsibility.assigned ? copy.respOther : copy.respNone}</p>}
           {detail.closedAt && <p className="mt-3 rounded-[14px] border border-sac-confirm/30 bg-sac-confirm/10 p-3 text-sm font-semibold">{fillCopy(copy.closedOn, { d: formatDate(detail.closedAt, language, locale) })} · {closureLabel}</p>}
         </Card>
+
+        {active && (
+          <Card>
+            <h2 className="font-extrabold">{copy.gpsConsentTitle}</h2>
+            <p className="mt-2 text-sm leading-6 text-sac-muted">{participantRole === "author" ? copy.gpsConsentAuthor : copy.gpsConsentRecipient}</p>
+            <button type="button" onClick={() => setGpsSharingEnabled((value) => !value)} className={"mt-3 " + (gpsSharingEnabled ? ghostBtn : primaryBtn)}>
+              {participantRole === "author"
+                ? (gpsSharingEnabled ? copy.gpsShareStop : copy.gpsShareStart)
+                : (gpsSharingEnabled ? copy.gpsReceiveStop : copy.gpsReceiveStart)}
+            </button>
+            <p className="mt-2 text-xs leading-5 text-sac-muted">{copy.gpsConsentHint}</p>
+          </Card>
+        )}
 
         {active && gpsSharingEnabled && <SosLiveLocation alertId={alertId} accountId={accountId} deviceId={deviceId} participantRole={participantRole} copy={copy} language={language} />}
 
