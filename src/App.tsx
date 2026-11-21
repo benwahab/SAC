@@ -500,7 +500,7 @@ export default function App() {
   };
 
   if (isLoginPage) return <LoginPage language={language} setLanguage={setLanguage} returnTo={loginReturnTo} />;
-  if (isInvitationAcceptancePage) return <InvitationAcceptancePage />;
+  if (isInvitationAcceptancePage) return <InvitationAcceptancePage language={language} setLanguage={setLanguage} />;
   if (isPrivateSpacePage) return <PrivateSpacePage onLogout={() => { window.location.assign("/connexion"); }} />;
 
   const pillars = [
