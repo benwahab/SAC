@@ -65,3 +65,8 @@ Aucune promotion de compte, migration D1, route d'administration ou interface Su
 ## 6. Bootstrap Super Admin ajouté
 
 La migration `0013_super_admin_bootstrap.sql` et son test D1 isolé sont ajoutés. Le workflow CI exécute désormais ce test. Le rôle est lié à l'identité e-mail vérifiée, jamais au champ e-mail d'une requête. La procédure de gestion des missions et l'API d'autorisation Super Admin restent à construire.
+
+
+## 7. Garde d'autorisation Super Admin
+
+Le helper `functions/lib/security/require-super-admin-session.ts` est ajouté. Il vérifie d'abord la session appareil, puis le rôle persistant `account_roles` côté D1. Une session citoyenne ordinaire reçoit 403 ; une indisponibilité D1 provoque un refus fermé 503. Les API d'administration futures devront obligatoirement passer par ce garde. Tests : `npm run test:super-admin-guard`.
