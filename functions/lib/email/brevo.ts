@@ -51,7 +51,7 @@ export async function sendBrevoTransactionalEmail(
     response = await fetcher(ENDPOINT, {
       method: "POST",
       signal: AbortSignal.timeout(8000),
-      redirect: "error",
+      redirect: "manual",
       headers: { "api-key": apiKey, "accept": "application/json", "content-type": "application/json" },
       body: JSON.stringify({
         sender: { email: senderEmail, name: senderName },
