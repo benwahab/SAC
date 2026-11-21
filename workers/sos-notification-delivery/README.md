@@ -28,7 +28,18 @@ Les secrets Cloudflare sont en écriture seule : une valeur existante ne peut pa
 
 Le fichier `wrangler.toml` lie le Worker à la base `sac-db` et programme le Cron `* * * * *`. Le Worker n'est pas encore créé ni déployé sur Cloudflare.
 
-Toute configuration des secrets, création du Worker, activation du Cron ou déploiement exige une autorisation distincte. Ne pas lancer de livraison réelle depuis un environnement de prévisualisation.
+Le dépôt fournit le workflow manuel [Deploy SAC SOS notification Worker](../../.github/workflows/deploy-sos-notification-worker.yml). Il compile d'abord le Worker sans déployer, valide le format de la clé de chiffrement et la cohérence mathématique de la paire VAPID, puis déploie le code, les quatre secrets et les Cron dans une seule version.
+
+Avant de lancer ce workflow sur GitHub, créer dans **Settings → Secrets and variables → Actions** les secrets suivants :
+- `CLOUDFLARE_API_TOKEN` — jeton Cloudflare limité à l'écriture des scripts Workers et aux opérations nécessaires au déploiement.
+- `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`
+- `PUSH_VAPID_PUBLIC_KEY`
+- `PUSH_VAPID_PRIVATE_JWK`
+- `PUSH_VAPID_SUBJECT`
+
+Les quatre valeurs Push doivent être strictement identiques à celles de l'environnement **Production** de Pages `sac`. Ne pas générer une seconde clé de chiffrement indépendante. Les valeurs Cloudflare existantes étant masquées après enregistrement, si elles ne sont pas connues, il faut effectuer une rotation coordonnée dans Pages et dans les secrets GitHub avant le déploiement. Ne jamais publier ces valeurs dans Git, les logs ou le chat.
+
+Le workflow est volontairement manuel : son lancement déploie le Worker de production et active ses deux Cron. Il ne crée pas de SOS et n'envoie pas de notification par lui-même. Ne pas lancer une livraison réelle depuis un environnement de prévisualisation.
 
 ## Limites connues
 
