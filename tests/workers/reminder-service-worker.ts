@@ -7,7 +7,7 @@ import {
   markNotificationRead,
   updateReminder,
 } from "../../functions/lib/reminders/service.ts";
-import { runOrdinaryNotificationDispatch, type Env as DeliveryEnv } from "../../workers/ordinary-notification-delivery/index.ts";
+import { runOrdinaryNotificationDispatch, type OrdinaryDispatchEnvironment } from "../../functions/lib/notifications/ordinary-dispatch.ts";
 
 interface Env { DB: D1Database; }
 
@@ -125,7 +125,7 @@ export default {
 
     if (url.pathname === "/dispatch" && request.method === "POST") {
       const input = await body<{ now?: number }>(request);
-      const deliveryEnv: DeliveryEnv = { DB: env.DB };
+      const deliveryEnv: OrdinaryDispatchEnvironment = { DB: env.DB };
       await runOrdinaryNotificationDispatch(env.DB, deliveryEnv, input.now);
       return json({ ok: true });
     }
