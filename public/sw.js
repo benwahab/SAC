@@ -1,4 +1,4 @@
-const CACHE_NAME="sac-shell-v2";
+const CACHE_NAME="sac-shell-v3";
 const APP_SHELL=["/","/manifest.webmanifest","/brand/sac-icon-192.png","/brand/sac-icon-512.png","/brand/sac-icon-maskable-512.png","/brand/sac-logo.png"];
 
 self.addEventListener("install",event=>{
@@ -28,9 +28,37 @@ self.addEventListener("fetch",event=>{
   }));
 });
 
+function ordinaryPushKind(kind){
+  return kind==="ordinary_reminder"||kind==="family_event"||kind==="clinic_reminder";
+}
+
+function safeTarget(value){
+  return typeof value==="string"&&value.startsWith("/")&&!value.startsWith("//")&&!value.includes("\\")?value:"/";
+}
+
+function ordinaryTitle(kind){
+  if(kind==="family_event")return "Événement familial SAC";
+  if(kind==="clinic_reminder")return "Rappel de suivi SAC";
+  return "Rappel SAC";
+}
+
 self.addEventListener("push",event=>{
   let payload={};
   try{payload=event.data?event.data.json():{};}catch{payload={};}
+
+  if(ordinaryPushKind(payload.kind)){
+    const target=safeTarget(payload.targetPath);
+    const options={
+      body:"Un rappel vous attend. Ouvrez SAC pour le consulter.",
+      tag:"sac-ordinary-"+(payload.kind||"reminder")+"-"+(payload.notificationId||"unknown"),
+      renotify:false,
+      data:{url:target},
+      requireInteraction:false
+    };
+    event.waitUntil(self.registration.showNotification(ordinaryTitle(payload.kind),options));
+    return;
+  }
+
   const title="Alerte privée SAC";
   const options={
     body:"Une alerte privée vous attend. Ouvrez SAC pour la consulter.",
@@ -45,7 +73,7 @@ self.addEventListener("push",event=>{
 self.addEventListener("notificationclick",event=>{
   event.notification.close();
   event.waitUntil((async()=>{
-    const target=new URL("/",self.location.origin).href;
+    const target=new URL(safeTarget(event.notification.data&&event.notification.data.url),self.location.origin).href;
     const windows=await self.clients.matchAll({type:"window",includeUncontrolled:true});
     for(const client of windows){
       if("focus" in client){

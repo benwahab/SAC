@@ -8,7 +8,7 @@ export type SosAlert = {
 };
 export type Screen =
   | { name: "home" } | { name: "contacts" } | { name: "invite" } | { name: "sos" }
-  | { name: "history" } | { name: "settings" } | { name: "alert"; id: string };
+  | { name: "history" } | { name: "settings" } | { name: "reminders" } | { name: "alert"; id: string };
 
 export type ScreenProps = {
   copy: PrivateCopy; language: Language;
@@ -25,6 +25,7 @@ export function screenToHash(screen: Screen): string {
     case "sos": return "#/sos";
     case "history": return "#/historique";
     case "settings": return "#/reglages";
+    case "reminders": return "#/rappels";
   }
 }
 
@@ -39,6 +40,7 @@ export function hashToScreen(hash: string): Screen {
     case "#/sos": return { name: "sos" };
     case "#/historique": return { name: "history" };
     case "#/reglages": return { name: "settings" };
+    case "#/rappels": return { name: "reminders" };
     default: return { name: "home" };
   }
 }

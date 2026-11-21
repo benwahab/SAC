@@ -8,6 +8,7 @@ import Contacts from "./private/screens/Contacts";
 import Dashboard from "./private/screens/Dashboard";
 import HistoryScreen from "./private/screens/History";
 import Invite from "./private/screens/Invite";
+import Reminders from "./private/screens/Reminders";
 import Settings from "./private/screens/Settings";
 import Sos from "./private/screens/Sos";
 
@@ -55,6 +56,7 @@ export default function PrivateSpacePage({ onLogout }: Props) {
     case "invite": body = <Invite {...nav} />; break;
     case "sos": body = <Sos {...shared} contacts={data.contacts} refresh={data.refresh} />; break;
     case "history": body = <HistoryScreen {...nav} alerts={data.alerts} loading={data.loading} error={data.error} />; break;
+    case "reminders": body = <Reminders {...nav} />; break;
     case "settings": body = <Settings {...nav} setLanguage={setLanguage} onLogout={onLogout} securityKeyConfigured={data.securityKeyConfigured} onSecurityKeyConfigured={() => { void data.refresh(); }} />; break;
     case "alert": body = <AlertScreen {...nav} notice={notice} id={screen.id} identity={data.identity} alerts={data.alerts} loading={data.loading} refresh={data.refresh} />; break;
     default: body = <Dashboard {...nav} contacts={data.contacts} alerts={data.alerts} loading={data.loading} error={data.error} securityKeyConfigured={data.securityKeyConfigured} />;

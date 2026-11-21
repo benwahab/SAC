@@ -1,4 +1,4 @@
-import { ChevronRight, KeyRound, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
+import { BellRing, ChevronRight, KeyRound, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
 import { fillCopy, localeFor } from "../../i18n/translations";
 import type { Contact, ScreenProps, SosAlert } from "../types";
 import { formatDate } from "../types";
@@ -42,6 +42,16 @@ export default function Dashboard({ copy, language, go, contacts, alerts, loadin
             </div>
           </Card>
         )}
+        <Card className="!border-sac-primary/25 !bg-sac-primary/5">
+          <div className="flex items-start gap-3">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-sac-primary/10 text-sac-primary"><BellRing size={22} /></span>
+            <div className="min-w-0">
+              <p className="font-extrabold">{copy.dashRemindersTitle}</p>
+              <p className="mt-1 text-sm leading-6 text-sac-muted">{copy.dashRemindersText}</p>
+              <button type="button" onClick={() => go({ name: "reminders" })} className={"mt-3 " + ghostBtn}>{copy.dashRemindersCta}</button>
+            </div>
+          </div>
+        </Card>
         <Card>
           <div className="flex items-center justify-between"><h2 className="flex items-center gap-2 font-extrabold"><UsersRound size={18} />{copy.dashCircle}</h2>
             <button type="button" onClick={() => go({ name: "contacts" })} className="min-h-12 px-2 text-sm font-bold text-sac-ember">{copy.dashSeeAll}</button></div>
