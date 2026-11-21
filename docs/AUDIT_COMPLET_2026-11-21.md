@@ -21,7 +21,7 @@ Cet audit distingue trois niveaux :
 - Secrets Pages présents : `BREVO_API_KEY`, `EMAIL_OTP_HMAC_SECRET`, `GPS_RELAY_HMAC_SECRET`, `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PRIVATE_JWK`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_SUBJECT`, `BREVO_FROM_NAME`, `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ALLOWED_ORIGINS`, `WEBAUTHN_ROOT_ENROLLMENT_ENABLED`, `APP_BASE_URL`.
 - `EMAIL_OTP_HMAC_SECRET` a été régénéré avec une longueur conforme ; l’ancienne valeur ne satisfaisait pas le contrôle de longueur du code.
 - `WEBAUTHN_ALLOWED_ORIGINS` est configuré comme tableau JSON `["https://sac-3xh.pages.dev"]`, format attendu par le serveur.
-- `BREVO_FROM_EMAIL` n’est pas encore défini : l’inscription répond `503 verification_service_not_configured` et aucun compte n’est créé.
+- `BREVO_FROM_EMAIL` est configuré à `benwahab111@gmail.com`. L’adresse doit être vérifiée dans Brevo ; la délivrance réelle d’un OTP reste à prouver.
 - Secrets du Worker de notification configurés lors du déploiement : chiffrement des abonnements push, paire VAPID P-256 et sujet VAPID.
 - `GET /api/health` retourne `200` avec `{"ok":true,"service":"sac-api","database":"connected"}`.
 - `GET /api/push/vapid-public-key` retourne la clé publique VAPID active ; elle correspond à la clé privée utilisée par le Worker.
@@ -31,7 +31,7 @@ Cet audit distingue trois niveaux :
 
 - `POST /api/auth/verify-email` avec un corps vide retourne `400 invalid_or_expired_code`, ce qui prouve que `EMAIL_OTP_HMAC_SECRET` est chargé et de longueur valide.
 - `POST /api/auth/root-enrollment-options` avec un corps vide retourne `400 invalid_credentials`, ce qui prouve que `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME` et `WEBAUTHN_ALLOWED_ORIGINS` sont chargés et acceptés pour l’origine `https://sac-3xh.pages.dev`.
-- `POST /api/auth/register` retourne encore `503 verification_service_not_configured` : `BREVO_FROM_EMAIL` manque.
+- `POST /api/auth/register` ne doit plus retourner `503 verification_service_not_configured` après la configuration de `BREVO_FROM_EMAIL` ; le contrôle de configuration est à revérifier après déploiement.
 - Aucun compte, défi OTP ou rôle n’a été créé par ces tests.
 
 ## Changements livrés dans cette session
@@ -103,7 +103,7 @@ Les points suivants ne doivent pas être déclarés opérationnels sans preuve r
 
 - **Parcours complet sur appareil réel** : création de compte, OTP e-mail réel, enrôlement WebAuthn, session multi-appareils, déclenchement SOS, réception push, ouverture du lien et clôture.
 - **Livraison push réelle** : le Worker est déployé et ses crons sont enregistrés, mais aucun abonnement push actif n’existait au moment de l’audit. La livraison vers un fournisseur réel n’est donc pas prouvée.
-- **Livraison e-mail réelle** : `BREVO_API_KEY` est présent, mais l’adresse expéditrice vérifiée `BREVO_FROM_EMAIL` manque ; aucun OTP ne peut être envoyé tant qu’elle n’est pas configurée.
+- **Livraison e-mail réelle** : `BREVO_API_KEY` et `BREVO_FROM_EMAIL` sont configurés, mais l’arrivée réelle d’un OTP dans une boîte n’est pas encore prouvée. L’adresse `benwahab111@gmail.com` doit être vérifiée dans Brevo.
 - **GPS de bout en bout** : le relais est actif et les tests de protocole passent, mais une session navigateur réelle avec deux appareils et consentement utilisateur n’a pas été exécutée.
 - **Sauvegardes mobiles et destruction J+30** : les exclusions Android/iOS restent des mesures de réduction du risque, pas une preuve d’effacement irréversible. Aucun test natif n’a été exécuté.
 - **Conformité juridique Niger** : l’ancienne HAPDP n’est pas une autorité opérationnelle actuelle. Les textes authentiques et les circuits ministériels restent à vérifier. Aucune formalité n’a été déposée.
