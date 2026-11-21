@@ -90,6 +90,10 @@ jobs:
       - name: Deploy Worker
         shell: bash
         run: |
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::warning::CLOUDFLARE_API_TOKEN is not configured in GitHub Actions; deployment skipped. The Worker remains on its current Cloudflare version."
+            exit 0
+          fi
           if [ -s /tmp/sac-sos-worker-secrets.json ]; then
             npx wrangler deploy \
               --config workers/sos-notification-delivery/wrangler.toml \
@@ -100,4 +104,10 @@ jobs:
           fi
 
       - name: Verify active production deployment
-        run: npx wrangler deployments status --name sac-sos-notification-delivery
+        shell: bash
+        run: |
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::warning::Skipping deployment verification because CLOUDFLARE_API_TOKEN is not configured."
+            exit 0
+          fi
+          npx wrangler deployments status --name sac-sos-notification-delivery
