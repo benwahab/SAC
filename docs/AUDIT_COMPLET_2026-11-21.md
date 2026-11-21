@@ -298,5 +298,6 @@ Une session ouverte avec le seul mot de passe peut accéder aux fonctions de l�
 - `npm run test:root-authentication-endpoints` : 4/4 OK.
 - `npm run test:root-enrollment-endpoints` : 7/7 OK.
 - `npm run test:root-enrollment-client` : 3/3 OK.
+- `npm run test:session-guard` : 4/4 OK après correction du mock TypeScript pour Node 24.
 - `npm run typecheck` : OK.
 - `npm run build` : OK.

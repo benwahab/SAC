@@ -9,7 +9,11 @@ import { getSessionExpiresAt } from "../src/domain/auth-policy.ts";
 const cryptoProvider = webcrypto as unknown as Crypto;
 
 class MockStatement {
-  constructor(private readonly database: MockDatabase) {}
+  private readonly database: MockDatabase;
+
+  constructor(database: MockDatabase) {
+    this.database = database;
+  }
   bind(..._values: unknown[]) { return this; }
   async first<T>() { return this.database.row as T | null; }
   async run() {
@@ -20,7 +24,12 @@ class MockStatement {
 
 class MockDatabase {
   updateCalls = 0;
-  constructor(readonly row: Record<string, unknown> | null) {}
+  readonly row: Record<string, unknown> | null;
+
+  constructor(row: Record<string, unknown> | null) {
+    this.row = row;
+  }
+
   prepare(_sql: string) { return new MockStatement(this); }
 }
 
@@ -31,7 +40,7 @@ function validSessionRow(tokenHash: string, now: number): Record<string, unknown
   const lastActivityIso = new Date(lastActivityAt).toISOString();
   const expiresAt = getSessionExpiresAt({
     createdAt: createdIso,
-    lastActivityAt: new Date(now).toISOString(),
+    lastActivityAt: lastActivityIso,
   });
   assert.ok(expiresAt);
   return {

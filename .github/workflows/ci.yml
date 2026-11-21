@@ -96,6 +96,8 @@ jobs:
         run: npm run test:certificates
       - name: Test per-device session authorization
         run: npm run test:sessions
+      - name: Test authenticated device session guard and renewal
+        run: npm run test:session-guard
       - name: Test opaque session token generation and hashing
         run: npm run test:session-tokens
       - name: Test strict host-only session cookie handling
