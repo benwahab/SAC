@@ -45,7 +45,7 @@ Base relationnelle cible : Cloudflare D1. Stockage privé : Cloudflare R2 si act
 
 **Phase : socle technique initial en cours.** Le premier socle React/Vite/TypeScript, l'interface mobile de démarrage, le manifeste PWA, un service worker minimal, les contrats d'adaptateurs Web et une route Pages Functions de vérification D1 sont versionnés. Des contrats TypeScript purs et des tests existent également pour certains cycles métier.
 
-Le SOS réel, l'authentification complète, les alertes métier, les notifications réelles, les paiements et les migrations métier D1 ne sont pas déclarés opérationnels. Le GPS précis reste bloqué par l'exigence de destruction irréversible J+30. La console professionnelle et les services administratifs sont documentés comme conception, pas comme fonctionnalités livrées.
+Le SOS réel, l'authentification complète, les alertes métier, la livraison push réelle, les paiements et les migrations métier D1 ne sont pas déclarés opérationnels. Le socle des rappels personnels SAC Santé est livré avec persistance D1, écran personnel et notifications in-app ; la livraison push reste inactive tant que les secrets VAPID et de chiffrement ne sont pas configurés. Le GPS précis reste bloqué par l'exigence de destruction irréversible J+30. La console professionnelle et les services administratifs sont documentés comme conception, pas comme fonctionnalités livrées.
 
 Vérifier `TODO_SUPERVISION.md`, le code, les ressources Cloudflare et les résultats CI récents avant toute affirmation sur l'état d'une fonction.
 
@@ -76,6 +76,7 @@ Ces documents décrivent l'architecture cible et les points restant à valider. 
 - [Modèle de données administratif et intégration au modèle général](docs/MODELE_DONNEES_ADMIN_ET_INTEGRATION_SAC.md)
 
 
+- [Conception SAC Santé](docs/CONCEPTION_SAC_SANTE.md) — rappels personnels, familiaux et cliniques ; décisions produit et périmètre réellement implémenté.
 - [Modèle global des données SAC](docs/MODELE_GLOBAL_DONNEES_SAC.md) — référentiel de cohérence des domaines citoyens, alertes, trajets, notifications, offres/paiements et administration.
 
 
