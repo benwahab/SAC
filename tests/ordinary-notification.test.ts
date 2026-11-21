@@ -125,7 +125,7 @@ test("le payload ordinaire ne contient ni GPS, ni SMS, ni escalade", () => {
     version: 1,
     kind: "ordinary_reminder",
     notificationId: "notification-a",
-    targetPath: "/private#/rappels",
+    targetPath: "/espace-prive#/rappels",
   });
   assert.equal("gps" in payload, false);
   assert.equal("sms" in payload, false);
@@ -136,7 +136,8 @@ test("le payload ordinaire ne contient ni GPS, ni SMS, ni escalade", () => {
 test("un payload SOS est explicitement refusé", () => {
   assert.equal(isOrdinaryPushPayload({ version: 1, kind: "private_sos" }), false);
   assert.equal(isOrdinaryPushPayload({ version: 1, kind: "ordinary_reminder", notificationId: "n", targetPath: "/sos" }), false);
-  assert.equal(isOrdinaryPushPayload({ version: 1, kind: "ordinary_reminder", notificationId: "n", targetPath: "/private#/rappels", gps: true }), false);
+  assert.equal(isOrdinaryPushPayload({ version: 1, kind: "ordinary_reminder", notificationId: "n", targetPath: "/autre#/rappels" }), false);
+  assert.equal(isOrdinaryPushPayload({ version: 1, kind: "ordinary_reminder", notificationId: "n", targetPath: "/espace-prive#/rappels", gps: true }), false);
 });
 
 test("applique les résultats Web Push sans créer de relance utilisateur", () => {

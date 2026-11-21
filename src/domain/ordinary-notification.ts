@@ -249,12 +249,12 @@ function pushKind(kind: OrdinaryNotificationKind): OrdinaryPushKind {
 
 function targetPath(kind: OrdinaryNotificationKind): string {
   switch (kind) {
-    case "reminder_due": return "/private#/rappels";
-    case "clinic_reminder_due": return "/private#/sante";
+    case "reminder_due": return "/espace-prive#/rappels";
+    case "clinic_reminder_due": return "/espace-prive#/sante";
     case "family_event_created":
     case "family_event_updated":
     case "family_event_cancelled":
-      return "/private#/groupes";
+      return "/espace-prive#/groupes";
   }
 }
 
@@ -278,7 +278,7 @@ export function isOrdinaryPushPayload(value: unknown): value is OrdinaryPushPayl
   if (record.kind === "private_sos" || record.kind === "sos") return false;
   if (!["ordinary_reminder", "family_event", "clinic_reminder"].includes(String(record.kind))) return false;
   if (!isNonEmpty(record.notificationId) || !isNonEmpty(record.targetPath)) return false;
-  if (record.targetPath.startsWith("/sos") || record.targetPath.includes("sos")) return false;
+  if (!record.targetPath.startsWith("/espace-prive#/") || record.targetPath.includes("sos")) return false;
   if ("gps" in record || "location" in record || "sms" in record || "escalation" in record || "requireInteraction" in record) return false;
   return true;
 }
