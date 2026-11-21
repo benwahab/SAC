@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, CheckCircle2, Clock3, ShieldCheck, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock3, XCircle } from "lucide-react";
+import BrandLogo from "./components/BrandLogo";
 import { languages, type Language } from "./i18n/translations";
 import { getDeviceSession } from "./services/device/root-enrollment";
 
@@ -172,7 +173,7 @@ export default function InvitationAcceptancePage({ language, setLanguage }: Prop
           </div>
         </div>
         <div className="mt-6 flex items-center gap-3">
-          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-sac-primary/60 text-sac-confirm"><ShieldCheck size={25}/></span>
+          <span className="grid h-12 w-24 place-items-center rounded-2xl bg-white/85 px-3 shadow-sm"><BrandLogo className="h-7 w-auto" /></span>
           <div><p className="text-xs font-bold uppercase tracking-widest text-sac-muted">{text.eyebrow}</p><h1 className="text-2xl font-black">{text.title}</h1></div>
         </div>
         {loading ? <p className="py-8 text-sm text-sac-muted">{text.checking}</p> : authenticated === false ? (

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AlertTriangle, ArrowLeft, Clock3, History, Home, Settings, ShieldCheck, UsersRound } from "lucide-react";
+import BrandLogo from "../components/BrandLogo";
 import type { PrivateCopy } from "../i18n/translations";
 import type { Screen } from "./types";
 
@@ -12,7 +13,8 @@ export function Halo({ title, eyebrow, onBack, backLabel, children, tone = "oran
       <svg className="pointer-events-none absolute -top-12 end-[-80px] rtl:-scale-x-100" width="320" height="320" viewBox="0 0 320 320" aria-hidden="true">
         <g fill="none" stroke="#fff" strokeWidth="2" opacity=".2"><circle cx="160" cy="160" r="60" /><circle cx="160" cy="160" r="105" /><circle cx="160" cy="160" r="150" /></g>
       </svg>
-      <div className="relative">
+      <span className="absolute end-5 top-5 z-10 grid h-10 w-20 place-items-center rounded-xl bg-white/95 px-2 shadow-sm"><BrandLogo className="h-6 w-auto" /></span>
+      <div className="relative pe-24">
         {onBack && <button type="button" onClick={onBack} className="mb-3 inline-flex min-h-12 items-center gap-2 rounded-full bg-white/15 pe-4 ps-3 text-sm font-bold text-white"><ArrowLeft size={18} className="rtl:rotate-180" />{backLabel}</button>}
         {eyebrow && <p className="text-xs font-bold uppercase tracking-widest text-white/80">{eyebrow}</p>}
         <h1 className="mt-1 text-[1.75rem] font-extrabold leading-tight tracking-tight">{title}</h1>

@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Download, Eye, EyeOff, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, X } from "lucide-react";
+import BrandLogo from "./components/BrandLogo";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
 import { completeRootAuthentication, requestRootAuthentication, type RootAuthenticationOptions } from "./services/device/root-authentication";
 import { createPasswordSession } from "./services/device/password-session";
@@ -271,7 +272,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     <main className="sac-shell sac-auth-page flex min-h-screen items-center justify-center px-5 py-10 text-sac-ink" dir={rtl ? "rtl" : "ltr"}>
       <div className="sac-auth-layout relative z-10 mx-auto grid w-full max-w-5xl items-center gap-8 lg:grid-cols-[1fr_minmax(0,28rem)] lg:gap-14">
         <aside className="sac-auth-brand hidden lg:block">
-          <div className="sac-auth-brand-mark mb-7 grid h-16 w-16 place-items-center rounded-2xl"><ShieldCheck size={34} strokeWidth={1.5}/></div>
+          <div className="mb-7 inline-flex h-16 items-center rounded-2xl border border-white/30 bg-white/95 px-4 shadow-glass"><BrandLogo className="h-9 w-auto" /></div>
           <p className="text-xs font-black uppercase tracking-[.28em] text-sac-primary-strong">SAC · SÉCURITÉ · CONFIANCE</p>
           <h2 className="mt-5 max-w-xl text-5xl font-black leading-[1.08] tracking-tight text-sac-ink">{language === "fr" ? <>Toujours proches.<span className="block text-sac-primary-strong">Même à distance.</span></> : language === "en" ? <>Always close.<span className="block text-sac-primary-strong">Even from afar.</span></> : <>دائماً قريبون.<span className="block text-sac-primary-strong">حتى عن بُعد.</span></>}</h2>
           <p className="mt-6 max-w-md text-base leading-8 text-sac-muted">{language === "fr" ? "Un espace sécurisé pour rester relié aux personnes qui comptent, et leur transmettre une alerte lorsque vous en avez besoin." : language === "en" ? "A secure space to stay connected to the people who matter and reach them when you need help." : "مساحة آمنة للبقاء على اتصال بمن يهمك أمرهم وطلب المساعدة عند الحاجة."}</p>
@@ -280,7 +281,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
         <section className="sac-glass-panel sac-auth-card w-full max-w-md rounded-[2rem] p-6 sm:p-9">
         <div className="flex items-start justify-between gap-4">
           <a href="/" className="flex flex-col" aria-label="SAC accueil">
-            <span className="text-xl font-black tracking-[0.2em]">SAC</span>
+            <BrandLogo className="h-9 w-auto" alt="" />
           </a>
           <div className="sac-language-switch flex items-center gap-1 rounded-full border border-white/90 bg-white/70 p-1 shadow-glass" role="group" aria-label={copy.languageLabel} dir="ltr">
             {languages.map((item) => (
@@ -505,8 +506,8 @@ export default function App() {
   return (
     <div className="sac-shell min-h-screen overflow-hidden text-sac-ink" dir={isRtl ? "rtl" : "ltr"}>
       <header className="sac-header relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-5 sm:px-8">
-        <a href="/" aria-label="SAC" className="flex min-w-0 flex-col">
-          <span className="text-xl font-black tracking-[0.2em] text-sac-ink">SAC</span>
+        <a href="/" aria-label="SAC" className="flex min-w-0 flex-col gap-1">
+          <BrandLogo className="h-9 w-auto" alt="" />
           <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-sac-muted">{t.appName}</span>
         </a>
         <div className="flex items-center gap-2 sm:gap-3">
@@ -565,7 +566,7 @@ export default function App() {
             <div className="sac-art-phone relative z-10 w-[min(68%,18rem)] rounded-[2.5rem] p-3">
               <div className="sac-art-phone-screen flex min-h-[25rem] flex-col rounded-[2rem] p-5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black tracking-[.22em] text-white/65">SAC</span>
+                  <BrandLogo className="h-3.5 w-auto" alt="" />
                   <span className="sac-art-secure inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[9px] font-bold"><LockKeyhole size={11}/> {language === "fr" ? "PRIVÉ" : language === "en" ? "PRIVATE" : "خاص"}</span>
                 </div>
                 <div className="my-auto text-center">
@@ -685,7 +686,7 @@ export default function App() {
         </section>
       </main>
 
-      <footer className="border-t border-white/80 bg-white/45 px-5 py-7 text-center text-xs text-sac-muted backdrop-blur-xl">{t.footer}</footer>
+      <footer className="border-t border-white/80 bg-white/45 px-5 py-7 text-center text-xs text-sac-muted backdrop-blur-xl"><BrandLogo className="mx-auto mb-3 h-8 w-auto" /><span>{t.footer}</span></footer>
     </div>
   );
 }

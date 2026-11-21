@@ -1,5 +1,5 @@
-const CACHE_NAME="sac-shell-v1";
-const APP_SHELL=["/","/manifest.webmanifest"];
+const CACHE_NAME="sac-shell-v2";
+const APP_SHELL=["/","/manifest.webmanifest","/brand/sac-icon-192.png","/brand/sac-icon-512.png","/brand/sac-icon-maskable-512.png","/brand/sac-logo.png"];
 
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)));
