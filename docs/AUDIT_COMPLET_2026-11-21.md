@@ -124,6 +124,40 @@ Cet audit distingue trois niveaux :
 
 **Conclusion :** le socle technique du SOS est déployé et testé unitairement, mais le parcours réel « compte → appareil → proche → alerte → push → clôture » n’est pas encore opérationnel. Il ne doit pas être présenté comme disponible avant un test complet avec un compte réel, un proche réel et un abonnement push réel.
 
+## Feuille de route minimale vers une plateforme opérationnelle
+
+### P0 — bloque l’ouverture à de vrais utilisateurs
+
+1. **Choisir le domaine définitif avant tout enrôlement WebAuthn.** Les identifiants WebAuthn sont liés au `rpId` et à l’origine. Passer plus tard de `sac-3xh.pages.dev` à un domaine personnalisé invalide les appareils déjà enrôlés.
+2. **Créer le premier compte réel** : inscription, OTP Brevo, enrôlement WebAuthn, session appareil. Aujourd’hui `accounts = 0`, `devices = 0`, `device_sessions = 0`.
+3. **Créer un second compte proche et accepter l’invitation.** Le SOS exige au moins un proche actif ; `trusted_contacts = 0` aujourd’hui.
+4. **Enregistrer un abonnement push réel sur chaque appareil** et prouver la réception sur Android et iOS. `push_subscriptions = 0` aujourd’hui ; la permission navigateur seule ne suffit pas.
+5. **Ajouter un canal de secours réel pour le SOS.** Le push seul n’est pas fiable. Les SMS sont seulement mis en file dans `alert_sms_outbox`, sans fournisseur ni Worker d’envoi. Il faut soit intégrer un fournisseur SMS avec numéros vérifiés et consentement, soit un fallback e-mail explicite.
+6. **Mettre en place l’observabilité** : alertes sur échec du Worker, cron manqué, erreur D1, échec Brevo, échec push, et supervision de `/api/health`.
+7. **Écrire les documents légaux et le consentement** : politique de confidentialité, conditions d’utilisation, base légale, durées de conservation, droits des personnes, sous-traitants Brevo/Cloudflare, procédure de violation. Aucune page de ce type n’est présente dans l’application.
+8. **Tester une sauvegarde et une restauration D1** avec vérification de non-résurrection des alertes, révocations et suppressions.
+
+### P1 — nécessaire pour un service fiable
+
+- **Créer le compte Super Admin** : l’adresse `benwahab111@gmail.com` reçoit automatiquement le rôle après vérification OTP. Il faut créer ce compte et tester la console, les missions et le journal d’audit.
+- **Définir la récupération de compte et d’appareil** : mot de passe oublié, téléphone perdu, appareil perdu. La récupération de racine est interdite en V1 ; sans procédure de support, un utilisateur peut perdre définitivement l’accès.
+- **Renforcer l’anti-abus** : limitation de débit par IP sur l’inscription, le renvoi d’OTP et les invitations ; quotas Brevo ; protection contre l’épuisement de la file SMS.
+- **Prouver le GPS de bout en bout** avec deux appareils et un consentement réel, puis documenter la destruction J+30. Le GPS reste NO-GO tant que ce n’est pas prouvé.
+- **Rendre `test:sos-d1` idempotent** : le test échoue à la seconde exécution sans suppression de `tests/.wrangler/state` à cause de jetons de seed déterministes.
+- **Traiter la vulnérabilité `picomatch`** sans override artisanal : suivre la publication d’une version corrigée et documenter le risque résiduel.
+- **Tester la correspondance réelle des secrets Pages/Worker** : clé de chiffrement des abonnements et paire VAPID. Une divergence ferait échouer silencieusement les livraisons.
+
+### P2 — qualité et exploitation
+
+- QA réelle des trois langues et du RTL sur les écrans privés.
+- Accessibilité clavier, contraste et lecteurs d’écran.
+- Test de charge et de disponibilité du chemin SOS.
+- Procédure d’incident, astreinte et runbooks d’exploitation.
+- Support utilisateur et canal de signalement de problème.
+- Performance PWA et comportement hors ligne explicite.
+
+**Verdict :** la plateforme est un prototype avancé avec un socle technique solide, mais elle n’est pas encore un service opérationnel. Les P0 ci-dessus doivent être traités avant toute ouverture à des utilisateurs réels.
+
 ## Ce qui reste non prouvé
 
 Les points suivants ne doivent pas être déclarés opérationnels sans preuve réelle :
