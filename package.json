@@ -60,6 +60,7 @@
     "test:webauthn-assertion-policy": "node --experimental-strip-types --test tests/webauthn-assertion-policy.test.ts",
     "test:push-subscriptions": "node --experimental-strip-types --test tests/push-subscription-crypto.test.ts",
     "test:web-push-delivery": "node --experimental-strip-types --test tests/web-push-delivery.test.ts",
+    "test:ordinary-dispatch-endpoint": "node --experimental-strip-types --test tests/ordinary-dispatch-endpoint.test.ts",
     "test:d1-notification-retention": "python3 tests/d1_notification_retention_schema.test.py",
     "test:d1-gps-relay-tickets": "python3 tests/d1_gps_relay_tickets_schema.test.py",
     "test:gps-relay-protocol": "node --experimental-strip-types --test tests/gps-relay-protocol.test.ts",

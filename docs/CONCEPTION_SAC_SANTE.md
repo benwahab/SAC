@@ -228,7 +228,7 @@ Le socle des rappels personnels est présent dans le code et déployé :
 - Worker `sac-ordinary-notification-delivery` déployé avec un déclenchement chaque minute ;
 - tests de domaine, de schéma D1, de service worker et d'intégration D1 isolée.
 
-Le Worker reste inactif tant que les secrets `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_PRIVATE_JWK` et `PUSH_VAPID_SUBJECT` ne sont pas configurés. Dans cet état, les notifications restent visibles dans l'application et les lignes d'outbox restent en attente ; aucune notification push réelle n'est envoyée.
+Les quatre secrets push (`PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_PRIVATE_JWK`, `PUSH_VAPID_SUBJECT`) restent portés par le projet Pages. Le Worker ne les duplique pas : il appelle chaque minute `/api/internal/ordinary-notification-dispatch`, protégé par `INTERNAL_DISPATCH_TOKEN`. Ce jeton est configuré sur Pages et sur le Worker. L'endpoint répond `401` sans jeton et `200` avec le jeton attendu. La réception sur un appareil réel reste à confirmer par un rappel créé depuis le compte.
 
 ### 11.2 Fonctions non implémentées
 
