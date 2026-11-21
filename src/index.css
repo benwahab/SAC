@@ -1093,3 +1093,15 @@ button:focus-visible, a:focus-visible { outline-color: #2E8B68; }
   background: #FFFFFF !important;
   color: #5B6B62 !important;
 }
+
+/* Password visibility control: override global button positioning and shine. */
+.sac-password-toggle {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+.sac-password-toggle::after { content: none !important; }
+.sac-password-toggle:hover { background: rgba(46,139,104,.12) !important; }
