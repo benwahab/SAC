@@ -106,6 +106,26 @@ async function releaseExpiredOutboxLeases(db: D1Database, now: number): Promise<
   ).bind(now, now, now).run().catch(() => undefined);
 }
 
+async function releaseExpiredDeliveryLeases(db: D1Database, now: number): Promise<void> {
+  await db.prepare(
+    `UPDATE ordinary_notification_deliveries
+     SET status = 'permanent_failure', lease_until = NULL, lease_token = NULL,
+         next_attempt_at = NULL, updated_at = ?, error_code = 'lease_expired'
+     WHERE status = 'processing' AND lease_until <= ? AND attempt_count >= 2`,
+  ).bind(now, now).run().catch(() => undefined);
+  await db.prepare(
+    `UPDATE ordinary_notification_deliveries
+     SET status = 'pending', lease_until = NULL, lease_token = NULL,
+         next_attempt_at = ?, updated_at = ?, error_code = 'lease_expired'
+     WHERE status = 'processing' AND lease_until <= ? AND attempt_count < 2`,
+  ).bind(now, now, now).run().catch(() => undefined);
+  await db.prepare(
+    `UPDATE ordinary_notification_attempts
+     SET result = 'permanent_failure', finished_at = ?, error_code = 'lease_expired'
+     WHERE result = 'processing' AND started_at <= ?`,
+  ).bind(now, now - DELIVERY_LEASE_MS).run().catch(() => undefined);
+}
+
 async function revalidateReminderSource(db: D1Database, row: OutboxRow): Promise<boolean> {
   if (row.kind !== "reminder_due") return false;
   const source = await db.prepare(
@@ -388,6 +408,7 @@ export default {
     context.waitUntil((async () => {
       const now = Date.now();
       await releaseExpiredOutboxLeases(env.DB, now);
+      await releaseExpiredDeliveryLeases(env.DB, now);
       const due = await env.DB.prepare(
         `SELECT id, kind, source_id, recipient_account_id, scheduled_at, status,
                 attempt_count, next_attempt_at, lease_until, lease_token,
