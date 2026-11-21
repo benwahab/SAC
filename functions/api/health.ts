@@ -21,10 +21,6 @@ const REQUIRED_TABLES = [
   "device_sessions",
   "device_enrollment_events",
   "push_subscriptions",
-  "account_roles",
-  "admin_missions",
-  "admin_mission_permissions",
-  "admin_audit_events",
 ] as const;
 
 const HEADERS = {
