@@ -84,7 +84,7 @@ Cet audit distingue trois niveaux :
 
 - `npm run typecheck` : OK (application, Functions, Workers).
 - `npm run build` : OK.
-- `npm run test:sos-d1` : OK après réinitialisation de l’état D1 local de test.
+- `npm run test:sos-d1` : 1/1 OK après suppression de `tests/.wrangler/state`. Le test n’est pas idempotent : une seconde exécution sans nettoyage échoue sur `UNIQUE constraint failed: contact_invitations.token_digest`.
 - `npm run test:contact-invitations-d1` : OK.
 - `npm run test:health` : 4/4 OK.
 - `npm run test:gps-relay-protocol` : 6/6 OK.
@@ -96,7 +96,33 @@ Cet audit distingue trois niveaux :
 - `npm run test:d1-admin-missions` : 6/6 OK.
 - `npm run test:d1-super-admin-bootstrap` : 6/6 OK.
 - `npm run test:super-admin-guard` : 4/4 OK.
-- `SAC quality checks` : vert sur `aa541db` (run `44877250023`).
+- `SAC quality checks` : vert sur `4721c4c` (run `44882198162`).
+
+## État réel du SOS
+
+### Déployé et vérifié
+
+- `POST /api/alerts` existe et est protégé par une session appareil : sans session, il retourne `401 authentication_required`.
+- `GET /api/alerts` retourne aussi `401` sans session.
+- Le service `createSosAlert` persiste l’alerte, l’instantané des destinataires, l’événement `triggered` et les rappels dans un lot D1.
+- `POST /api/alerts/[alertId]/close` ferme l’alerte par son auteur et révoque les tickets GPS associés.
+- Les routes de réponse, de responsabilité et d’événements existent et sont couvertes par les tests.
+- Le Worker `sac-sos-notification-delivery` est déployé, avec les crons `* * * * *` et `0 * * * *` et le binding D1 `sac-db`.
+- `GET /api/push/vapid-public-key` retourne une clé publique VAPID active.
+- `npm run test:alerts` : 11/11 ; `npm run test:responses` : 17/17 ; `npm run test:web-push-delivery` : 5/5 ; `npm run test:sos-d1` : 1/1 après nettoyage de l’état local.
+
+### Non opérationnel de bout en bout
+
+- Au moment de l’audit, la base de production contient `0` compte, `0` proche fiable, `0` abonnement push, `0` appareil et `0` session. Aucun SOS réel n’a donc pu être déclenché.
+- Le déclenchement exige une session appareil authentifiée et au moins un proche actif. Sans proche, l’écran SOS n’affiche pas le bouton de déclenchement.
+- Le seul canal de notification réel est le Web Push. Aucun e-mail SOS n’est envoyé.
+- Les escalades SMS sont seulement insérées dans `alert_sms_outbox` ; aucun Worker ni fournisseur ne les envoie. L’interface parle d’« évaluation du SMS », mais aucun SMS ne part réellement.
+- Aucune livraison push réelle n’a été observée : le Worker n’a jamais traité d’alerte.
+- Le GPS live SOS n’est pas prouvé de bout en bout ; la destruction J+30 reste NO-GO.
+- La clôture administrative exceptionnelle n’est pas implémentée : seule la clôture par l’auteur est présente.
+- L’idempotence du déclenchement SOS n’est pas implémentée.
+
+**Conclusion :** le socle technique du SOS est déployé et testé unitairement, mais le parcours réel « compte → appareil → proche → alerte → push → clôture » n’est pas encore opérationnel. Il ne doit pas être présenté comme disponible avant un test complet avec un compte réel, un proche réel et un abonnement push réel.
 
 ## Ce qui reste non prouvé
 
