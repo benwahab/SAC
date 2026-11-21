@@ -2,8 +2,13 @@ name = "sac-sos-notification-delivery"
 main = "./index.ts"
 compatibility_date = "2026-11-17"
 
-[vars]
-PUSH_VAPID_SUBJECT = "mailto:benwahab111@gmail.com"
+[secrets]
+required = [
+  "PUSH_SUBSCRIPTION_ENCRYPTION_KEY",
+  "PUSH_VAPID_PUBLIC_KEY",
+  "PUSH_VAPID_PRIVATE_JWK",
+  "PUSH_VAPID_SUBJECT",
+]
 
 [[d1_databases]]
 binding = "DB"
