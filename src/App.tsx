@@ -93,7 +93,9 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [registerPasswordVisible, setRegisterPasswordVisible] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -364,12 +366,22 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
             </div>
             <div>
               <label className="mb-2 block text-sm font-bold" htmlFor="sac-register-password">{copy.password}</label>
-              <input id="sac-register-password" type="password" autoComplete="new-password" required minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} />
+              <div className="relative">
+                <input id="sac-register-password" type={registerPasswordVisible ? "text" : "password"} autoComplete="new-password" required minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass + (rtl ? " pl-12" : " pr-12")} />
+                <button type="button" onClick={() => setRegisterPasswordVisible((visible) => !visible)} aria-label={registerPasswordVisible ? translations[language].hidePassword : translations[language].showPassword} aria-pressed={registerPasswordVisible} aria-controls="sac-register-password" title={registerPasswordVisible ? translations[language].hidePassword : translations[language].showPassword} className={"sac-password-toggle flex h-11 w-11 items-center justify-center rounded-lg text-sac-muted transition hover:text-sac-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sac-confirm/40 " + (rtl ? "left-1" : "right-1")}>
+                  {registerPasswordVisible ? <EyeOff aria-hidden="true" size={20} /> : <Eye aria-hidden="true" size={20} />}
+                </button>
+              </div>
               <p className="mt-2 text-xs leading-5 text-sac-muted">{copy.passwordHint}</p>
             </div>
             <div>
               <label className="mb-2 block text-sm font-bold" htmlFor="sac-register-confirm-password">{copy.confirmPassword}</label>
-              <input id="sac-register-confirm-password" type="password" autoComplete="new-password" required minLength={12} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className={inputClass} />
+              <div className="relative">
+                <input id="sac-register-confirm-password" type={confirmPasswordVisible ? "text" : "password"} autoComplete="new-password" required minLength={12} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className={inputClass + (rtl ? " pl-12" : " pr-12")} />
+                <button type="button" onClick={() => setConfirmPasswordVisible((visible) => !visible)} aria-label={confirmPasswordVisible ? translations[language].hidePassword : translations[language].showPassword} aria-pressed={confirmPasswordVisible} aria-controls="sac-register-confirm-password" title={confirmPasswordVisible ? translations[language].hidePassword : translations[language].showPassword} className={"sac-password-toggle flex h-11 w-11 items-center justify-center rounded-lg text-sac-muted transition hover:text-sac-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sac-confirm/40 " + (rtl ? "left-1" : "right-1")}>
+                  {confirmPasswordVisible ? <EyeOff aria-hidden="true" size={20} /> : <Eye aria-hidden="true" size={20} />}
+                </button>
+              </div>
             </div>
             <button type="submit" disabled={busy} className={primaryButton}>{busy ? "…" : copy.register}</button>
             <button type="button" disabled={busy} onClick={() => { setMode("login"); setError(""); setNotice(""); }} className="min-h-11 w-full rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 text-sm font-bold text-sac-ink disabled:opacity-60">{copy.back}</button>

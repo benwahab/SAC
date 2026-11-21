@@ -76,7 +76,7 @@ Cet audit distingue trois niveaux :
 
 ### 6. Connexion
 
-- Ajout d’un bouton œil pour afficher ou masquer le mot de passe sur la page de connexion.
+- Ajout d’un bouton œil pour afficher ou masquer le mot de passe sur la page de connexion et sur les deux champs de mot de passe de la création de compte.
 - Libellés accessibles FR/EN/AR centralisés dans `src/i18n/translations.ts`, avec `aria-pressed` et positionnement adapté au sens RTL.
 
 ## Résultats de tests exécutés
