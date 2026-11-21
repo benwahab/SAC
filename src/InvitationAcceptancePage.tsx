@@ -126,7 +126,7 @@ export default function InvitationAcceptancePage({ language, setLanguage }: Prop
         setLoading(false);
       }
     })();
-  }, [text]);
+  }, []);
 
   async function decide(action: "accept" | "decline") {
     if (!invitation || busy) return;
