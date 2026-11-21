@@ -171,6 +171,8 @@ jobs:
         run: npm run test:sos-d1
       - name: Test trusted contact service against isolated local D1
         run: npm run test:contact-invitations-d1
+      - name: Test reminder service against isolated local D1
+        run: npm run test:reminder-d1
       - name: Test registration input policy
         run: npm run test:registration-policy
       - run: npm run build

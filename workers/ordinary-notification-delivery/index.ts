@@ -10,7 +10,7 @@ import {
   type WebPushResult,
 } from "../../functions/lib/notifications/web-push-delivery.ts";
 
-interface Env extends WebPushEnvironment {
+export interface Env extends WebPushEnvironment {
   DB: D1Database;
 }
 
@@ -403,26 +403,27 @@ async function processOutbox(db: D1Database, env: Env, row: OutboxRow, now: numb
   await finalizeOutbox(db, row, outcomes, now);
 }
 
+export async function runOrdinaryNotificationDispatch(db: D1Database, env: Env, now = Date.now()): Promise<void> {
+  await releaseExpiredOutboxLeases(db, now);
+  await releaseExpiredDeliveryLeases(db, now);
+  const due = await db.prepare(
+    `SELECT id, kind, source_id, recipient_account_id, scheduled_at, status,
+            attempt_count, next_attempt_at, lease_until, lease_token,
+            deduplication_key, created_at, updated_at
+     FROM ordinary_notification_outbox
+     WHERE status = 'pending' AND scheduled_at <= ?
+       AND (next_attempt_at IS NULL OR next_attempt_at <= ?)
+     ORDER BY scheduled_at, id
+     LIMIT ?`,
+  ).bind(now, now, BATCH_SIZE).all<OutboxRow>();
+  if (!due.success || !Array.isArray(due.results)) throw new Error("sac_ordinary_notification_select_failed");
+  for (const row of due.results) {
+    await processOutbox(db, env, row, now);
+  }
+}
+
 export default {
   async scheduled(_controller: ScheduledController, env: Env, context: ExecutionContext): Promise<void> {
-    context.waitUntil((async () => {
-      const now = Date.now();
-      await releaseExpiredOutboxLeases(env.DB, now);
-      await releaseExpiredDeliveryLeases(env.DB, now);
-      const due = await env.DB.prepare(
-        `SELECT id, kind, source_id, recipient_account_id, scheduled_at, status,
-                attempt_count, next_attempt_at, lease_until, lease_token,
-                deduplication_key, created_at, updated_at
-         FROM ordinary_notification_outbox
-         WHERE status = 'pending' AND scheduled_at <= ?
-           AND (next_attempt_at IS NULL OR next_attempt_at <= ?)
-         ORDER BY scheduled_at, id
-         LIMIT ?`,
-      ).bind(now, now, BATCH_SIZE).all<OutboxRow>();
-      if (!due.success || !Array.isArray(due.results)) throw new Error("sac_ordinary_notification_select_failed");
-      for (const row of due.results) {
-        await processOutbox(env.DB, env, row, now);
-      }
-    })());
+    context.waitUntil(runOrdinaryNotificationDispatch(env.DB, env, Date.now()));
   },
 };

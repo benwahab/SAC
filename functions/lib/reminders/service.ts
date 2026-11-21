@@ -463,13 +463,16 @@ export async function updateReminder(
          VALUES (?, ?, NULL, ?, ?, ?, NULL)`,
       ).bind(crypto.randomUUID(), reminderId, accountId, eventType, nowMs),
     ]);
-    if (results.length !== 2 || results.some((result) => !result.success) || results[0].meta.changes !== 1) {
-      return { ok: false, error: "invalid_transition" };
+    if (results.length !== 2 || results.some((result) => !result.success)) {
+      return { ok: false, error: "reminder_storage_unavailable" };
     }
   } catch {
     return { ok: false, error: "reminder_storage_unavailable" };
   }
-  return getReminder(db, accountId, reminderId);
+  const updated = await getReminder(db, accountId, reminderId);
+  if (!updated.ok) return updated;
+  if (updated.value.updatedAt !== nowMs) return { ok: false, error: "invalid_transition" };
+  return updated;
 }
 
 export async function closeOccurrence(
@@ -515,9 +518,13 @@ export async function closeOccurrence(
         status === "completed" ? "occurrence_completed" : "occurrence_cancelled", nowMs,
       ),
     ]);
-    if (results.length !== 2 || results.some((result) => !result.success) || results[0].meta.changes !== 1) {
-      return { ok: false, error: "invalid_transition" };
+    if (results.length !== 2 || results.some((result) => !result.success)) {
+      return { ok: false, error: "reminder_storage_unavailable" };
     }
+    const refreshed = await db.prepare(
+      `SELECT status FROM health_reminder_occurrences WHERE id = ? AND owner_account_id = ? LIMIT 1`,
+    ).bind(occurrenceId, accountId).first<{ status: string }>();
+    if (refreshed?.status !== status) return { ok: false, error: "invalid_transition" };
     return { ok: true, value: { ...occurrence, status } };
   } catch {
     return { ok: false, error: "reminder_storage_unavailable" };

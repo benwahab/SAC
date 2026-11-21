@@ -1,0 +1,9 @@
+name = "sac-reminder-service-test"
+main = "./workers/reminder-service-worker.ts"
+compatibility_date = "2026-11-17"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sac-reminder-service-test"
+database_id = "5d5c4e3a-2b1f-4a99-9c7d-8e6f5a4b3c21"
+migrations_dir = "../migrations"
