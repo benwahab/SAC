@@ -53,7 +53,7 @@ export async function requireMissionPermission(
          VALUES (?, ?, ?, ?, 'mission_permission_denied', ?, ?, 'denied', ?)`,
       ).bind(
         crypto.randomUUID(), authenticated.value.accountId, authenticated.value.deviceId,
-        missionId, expectedScopeKey, permission, Date.now(),
+        null, expectedScopeKey, permission, Date.now(),
       ).run();
       return { ok: false, status: 403 };
     }
