@@ -85,6 +85,10 @@ const copy = {
 export default function InvitationAcceptancePage({ language, setLanguage }: Props) {
   const text = copy[language];
   const rtl = language === "ar";
+  const [initialLink] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return { id: params.get("id") ?? "", rawToken: params.get("token") ?? "" };
+  });
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [token, setToken] = useState("");
@@ -95,9 +99,7 @@ export default function InvitationAcceptancePage({ language, setLanguage }: Prop
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id") ?? "";
-    const rawToken = params.get("token") ?? "";
+    const { id, rawToken } = initialLink;
     if (!/^[0-9a-f-]{36}$/i.test(id) || !/^[A-Za-z0-9_-]{43}$/.test(rawToken)) {
       setError(text.invalid);
       setLoading(false);
