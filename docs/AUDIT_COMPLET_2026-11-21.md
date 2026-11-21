@@ -98,12 +98,12 @@ Points vérifiés :
 - Le rôle Super Admin est unique et lié à une identité e-mail vérifiée.
 - La mise à jour d’une mission utilise un verrou optimiste sur `version` et un jeton de mutation unique. Une requête concurrente ne peut plus remplacer les permissions d’une mission déjà modifiée ; le test `test_stale_mutation_cannot_replace_permissions` le vérifie.
 - Les consultations de la liste des missions, de la recherche de comptes et du journal d’audit créent un événement `admin.missions.read`, `admin.accounts.search` ou `admin.audit.read`, sans journaliser la recherche brute.
+- Les textes de la console sont centralisés dans `src/i18n/translations.ts` (`adminTranslations`), y compris les libellés de permissions. L’interface affiche un état d’accès refusé distinct au lieu de laisser le formulaire actif.
 
 Points non résolus :
 
 - Aucun rôle Super Admin n’existe encore en production : la migration n’a créé aucun rôle (`roles=0`). Le bootstrap est lié à l’adresse `benwahab111@gmail.com` et le rôle sera attribué uniquement lorsque cette identité sera créée et vérifiée. Cette adresse doit être confirmée comme identité d’exploitation.
 - La console n’a pas été testée avec un compte Super Admin réel, une session WebAuthn réelle et une vérification e-mail réelle.
-- Les textes de la console sont définis localement dans `src/AdminDashboard.tsx` au lieu d’être centralisés dans `src/i18n/translations.ts`.
 - Le journal de consultation croît à chaque lecture ; aucune politique de rétention ou d’archivage n’est encore arbitrée.
 
 ## CI et déploiement

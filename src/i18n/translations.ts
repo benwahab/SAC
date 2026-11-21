@@ -258,3 +258,76 @@ export function fillCopy(text: string, values: Record<string, string | number>):
 export function localeFor(language: Language): string {
   return language === "ar" ? "ar" : language === "en" ? "en-GB" : "fr-FR";
 }
+
+export type AdminPermission = "read" | "create" | "update" | "process" | "export" | "delete";
+
+export interface AdminTranslation {
+  title: string; subtitle: string; unavailable: string; denied: string; loading: string; loadError: string;
+  assignee: string; search: string; scope: string; scopeHint: string; due: string;
+  create: string; missions: string; empty: string; emptyAudit: string; suspend: string;
+  resume: string; revoke: string; active: string; suspended: string; revoked: string;
+  saved: string; select: string; back: string; choose: string; edit: string; save: string;
+  cancel: string; audit: string; actor: string; action: string; result: string;
+  permissionsLabel: string; signIn: string; conflict: string;
+  permissions: Record<AdminPermission, string>;
+}
+
+export const adminTranslations: Record<Language, AdminTranslation> = {
+  fr: {
+    title: "Administration SAC", subtitle: "Missions et délégations",
+    unavailable: "Accès réservé au Super Admin sur ordinateur ou tablette.",
+    denied: "Accès refusé ou session expirée.", loading: "Chargement…",
+    loadError: "Impossible de charger les données administratives.",
+    assignee: "Collaborateur (e-mail vérifié)", search: "Rechercher un e-mail",
+    scope: "Périmètre précis", scopeHint: "Ex. : zone:niamey ou module:assistance",
+    due: "Échéance (facultative)", create: "Attribuer la mission",
+    missions: "Missions attribuées", empty: "Aucune mission pour le moment.",
+    emptyAudit: "Aucun événement pour le moment.", suspend: "Suspendre", resume: "Reprendre",
+    revoke: "Révoquer", active: "Active", suspended: "Suspendue", revoked: "Révoquée",
+    saved: "Mission enregistrée.", select: "Sélectionner un compte", back: "Retour à l’accueil",
+    choose: "Choisissez au moins une permission.", edit: "Modifier",
+    save: "Enregistrer les modifications", cancel: "Annuler", audit: "Journal d’audit",
+    actor: "Acteur", action: "Action", result: "Résultat",
+    permissionsLabel: "Permissions explicitement accordées", signIn: "Se connecter",
+    conflict: "La mission a été modifiée entre-temps. Rechargez et réessayez.",
+    permissions: { read: "Consulter", create: "Créer", update: "Modifier", process: "Traiter", export: "Exporter", delete: "Supprimer" },
+  },
+  en: {
+    title: "SAC administration", subtitle: "Missions and delegations",
+    unavailable: "Access is limited to the Super Admin on desktop or tablet.",
+    denied: "Access denied or session expired.", loading: "Loading…",
+    loadError: "Unable to load administrative data.",
+    assignee: "Collaborator (verified email)", search: "Search email",
+    scope: "Exact scope", scopeHint: "e.g. area:niamey or module:support",
+    due: "Deadline (optional)", create: "Assign mission",
+    missions: "Assigned missions", empty: "No missions yet.",
+    emptyAudit: "No events yet.", suspend: "Suspend", resume: "Resume",
+    revoke: "Revoke", active: "Active", suspended: "Suspended", revoked: "Revoked",
+    saved: "Mission saved.", select: "Select an account", back: "Back to home",
+    choose: "Choose at least one permission.", edit: "Edit",
+    save: "Save changes", cancel: "Cancel", audit: "Audit log",
+    actor: "Actor", action: "Action", result: "Outcome",
+    permissionsLabel: "Explicitly granted permissions", signIn: "Sign in",
+    conflict: "The mission changed in the meantime. Reload and try again.",
+    permissions: { read: "Read", create: "Create", update: "Update", process: "Process", export: "Export", delete: "Delete" },
+  },
+  ar: {
+    title: "إدارة SAC", subtitle: "المهام والتفويضات",
+    unavailable: "الوصول مخصص للمسؤول الأعلى عبر الكمبيوتر أو الجهاز اللوحي.",
+    denied: "تم رفض الوصول أو انتهت الجلسة.", loading: "جارٍ التحميل…",
+    loadError: "تعذر تحميل البيانات الإدارية.",
+    assignee: "المتعاون (بريد موثّق)", search: "ابحث عن البريد",
+    scope: "النطاق المحدد", scopeHint: "مثال area:niamey أو module:support",
+    due: "الموعد النهائي (اختياري)", create: "إسناد المهمة",
+    missions: "المهام المسندة", empty: "لا توجد مهام حالياً.",
+    emptyAudit: "لا توجد أحداث حالياً.", suspend: "تعليق", resume: "استئناف",
+    revoke: "إلغاء", active: "نشطة", suspended: "معلقة", revoked: "ملغاة",
+    saved: "تم حفظ المهمة.", select: "اختر حساباً", back: "العودة للرئيسية",
+    choose: "اختر صلاحية واحدة على الأقل.", edit: "تعديل",
+    save: "حفظ التغييرات", cancel: "إلغاء", audit: "سجل التدقيق",
+    actor: "المنفذ", action: "الإجراء", result: "النتيجة",
+    permissionsLabel: "الصلاحيات الممنوحة صراحةً", signIn: "تسجيل الدخول",
+    conflict: "تم تعديل المهمة في هذه الأثناء. أعد التحميل وحاول مجدداً.",
+    permissions: { read: "قراءة", create: "إنشاء", update: "تعديل", process: "معالجة", export: "تصدير", delete: "حذف" },
+  },
+};
