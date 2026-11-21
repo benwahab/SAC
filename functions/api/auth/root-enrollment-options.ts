@@ -2,7 +2,7 @@ import { guardSameOriginJsonPost } from "../../lib/security/http-request-guard.t
 import { readJsonRequestBody } from "../../lib/security/json-request-body.ts";
 import { normalizeRegistrationEmail } from "../../../src/domain/registration-policy.ts";
 import { verifyAccountPassword } from "../../lib/security/password-hash.ts";
-import { createRootRegistrationOptions } from "../../lib/security/webauthn-root-options.ts";
+import { createRootEnrollmentCeremony } from "../../lib/security/root-enrollment-ceremony.ts";
 import { isAllowedWebAuthnOrigin } from "../../lib/security/webauthn-origin.ts";
 
 interface Env {
@@ -21,15 +21,6 @@ const MAX_ATTEMPTS = 5;
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: HEADERS });
 }
-function uuidBytes(value: string): Uint8Array {
-  const hex = value.replace(/-/g, "");
-  if (!/^[a-f0-9]{32}$/i.test(hex)) throw new Error("account_identifier_invalid");
-  return Uint8Array.from(hex.match(/.{2}/g)!, (part) => Number.parseInt(part, 16));
-}
-function decodeChallenge(value: string): Uint8Array {
-  const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
-  return Uint8Array.from(atob(base64 + "=".repeat((4 - base64.length % 4) % 4)), (c) => c.charCodeAt(0));
-}
 function configuredOrigins(value: string | undefined): string[] {
   if (!value || value.length > 4096) return [];
   try {
@@ -42,6 +33,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const guard = guardSameOriginJsonPost(request);
   if (guard) return guard;
   if (!env.DB || !env.WEBAUTHN_RP_ID || !env.WEBAUTHN_RP_NAME || !env.EMAIL_OTP_HMAC_SECRET || env.EMAIL_OTP_HMAC_SECRET.length < 32) return json({ error: "root_enrollment_unavailable" }, 503);
+  const rpId = env.WEBAUTHN_RP_ID;
+  const rpName = env.WEBAUTHN_RP_NAME;
   const origins = configuredOrigins(env.WEBAUTHN_ALLOWED_ORIGINS);
   const origin = request.headers.get("Origin");
   if (!origin || !isAllowedWebAuthnOrigin(origin, env.WEBAUTHN_RP_ID, origins)) {
@@ -89,37 +82,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       return json({ error: "invalid_credentials" }, 401);
     }
 
-    const ceremonyId = crypto.randomUUID();
-    const challengeId = crypto.randomUUID();
-    const userHandle = uuidBytes(account.id);
-    const options = createRootRegistrationOptions({
-      rpId: env.WEBAUTHN_RP_ID,
-      rpName: env.WEBAUTHN_RP_NAME,
-      userHandle,
-      userName: "SAC-" + account.id.slice(0, 8),
-      userDisplayName: "Compte SAC",
-      residentKey: "discouraged",
-    }, crypto);
-    const challengeDigestBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", Uint8Array.from(decodeChallenge(options.challenge)).buffer));
-    const challengeDigest = Array.from(challengeDigestBytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
-    const expiresAt = now + 5 * 60 * 1000;
-
-    await env.DB.prepare(
-      "UPDATE root_enrollment_ceremonies SET status = 'expired' WHERE account_id = ? AND status = 'pending' AND expires_at <= ?",
-    ).bind(account.id, now).run();
-    await env.DB.prepare(
-      "UPDATE root_enrollment_ceremonies SET status = 'cancelled' WHERE account_id = ? AND status = 'pending' AND EXISTS (SELECT 1 FROM root_enrollment_challenges WHERE ceremony_id = root_enrollment_ceremonies.id AND consumed_at IS NULL)",
-    ).bind(account.id).run();
-
-    await env.DB.batch([
-      env.DB.prepare(
-        "INSERT INTO root_enrollment_ceremonies (id, account_id, origin, status, created_at, expires_at, completed_at) VALUES (?, ?, ?, 'pending', ?, ?, NULL)",
-      ).bind(ceremonyId, account.id, origin, now, expiresAt),
-      env.DB.prepare(
-        "INSERT INTO root_enrollment_challenges (id, ceremony_id, account_id, challenge_digest, created_at, expires_at, consumed_at, attempt_count) VALUES (?, ?, ?, ?, ?, ?, NULL, 0)",
-      ).bind(challengeId, ceremonyId, account.id, challengeDigest, now, expiresAt),
-    ]);
-    return json({ ceremonyId, expiresAt, options });
+    const ceremony = await createRootEnrollmentCeremony({ DB: env.DB, WEBAUTHN_RP_ID: rpId, WEBAUTHN_RP_NAME: rpName }, account.id, origin, now);
+    return json(ceremony);
   } catch {
     return json({ error: "root_enrollment_unavailable" }, 503);
   }

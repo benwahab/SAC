@@ -28,6 +28,7 @@ Avant toute tâche, lis :
 21. `docs/PLAN_SOCLE_COMPTE_SESSIONS_APPAREILS.md`
 23. `docs/AUDIT_TRANSVERSAL_COHERENCE_ARCHITECTURE_2026-11-18.md`
 22. `docs/ARBITRAGES_TECHNIQUES_COMPTES_OTP_SESSIONS.md`
+23. `docs/DECISION_CLE_SECURITE_OPTIONNELLE_2026-11-21.md`
 
 Avant toute intervention, lis aussi les cinq documents de consolidation ajoutés à la liste obligatoire, dont l'audit de l'état réel du code. Pour les sujets qu'il couvre, `docs/DECISIONS_COMPLEMENTAIRES_2026-11-18.md` remplace les anciennes formulations relatives à l'identité visuelle, aux langues de lancement, à la console mobile, à la gouvernance des délégations et au kit de récupération. En cas de conflit non couvert ou ambigu, ne tranche pas seul : demande validation.
 

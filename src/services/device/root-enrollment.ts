@@ -41,6 +41,23 @@ export async function requestRootEnrollment(
   return payload;
 }
 
+export async function requestRootEnrollmentFromSession(
+  fetcher: FetchPort = fetch,
+): Promise<RootEnrollmentCeremony> {
+  const response = await fetcher("/api/auth/start-root-enrollment", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+    cache: "no-store",
+  });
+  const payload = await readPayload<RootEnrollmentCeremony & { error?: string }>(response);
+  if (!response.ok || !payload.ceremonyId || !payload.options) {
+    throw new Error(payload.error ?? "root_enrollment_unavailable");
+  }
+  return payload;
+}
+
 export async function completeRootEnrollment(
   ceremony: RootEnrollmentCeremony,
   fetcher: FetchPort = fetch,
@@ -68,12 +85,12 @@ export async function completeRootEnrollment(
 }
 
 export async function getDeviceSession(fetcher: FetchPort = fetch): Promise<{
-  authenticated: boolean; accountId?: string; deviceId?: string; sessionId?: string;
+  authenticated: boolean; accountId?: string; deviceId?: string; sessionId?: string; securityKeyConfigured?: boolean;
 }> {
   const response = await fetcher("/api/auth/session", {
     method: "GET", credentials: "same-origin", cache: "no-store",
   });
-  const payload = await readPayload<{ authenticated: boolean; accountId?: string; deviceId?: string; sessionId?: string }>(response);
+  const payload = await readPayload<{ authenticated: boolean; accountId?: string; deviceId?: string; sessionId?: string; securityKeyConfigured?: boolean }>(response);
   if (!response.ok || !payload.authenticated) return { authenticated: false };
   return payload;
 }

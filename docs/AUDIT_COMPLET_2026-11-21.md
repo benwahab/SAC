@@ -15,7 +15,7 @@ Cet audit distingue trois niveaux :
 - Projet Cloudflare Pages : `sac`, URL de production `https://sac-3xh.pages.dev`.
 - Dernier déploiement de production portant les changements de code vérifiés : `fbc57693-87bc-440a-a9a3-03f2377693a4` (commit `aa541db`), servi par l’alias `https://sac-3xh.pages.dev`. Les commits documentaires ultérieurs sont aussi déployés par Pages, sans modification du code applicatif.
 - Base D1 : `sac-db`, identifiant `892ce876-f279-409c-8f9e-06b1dca66e9d`.
-- Migrations distantes appliquées : `0001` à `0015`, dont les tables de compte, identités, alertes, destinataires, événements, outbox SMS/rappels, responsabilité, tickets GPS, abonnements push, rétention des notifications, rôles Super Admin, missions déléguées et journal administratif append-only.
+- Migrations distantes appliquées : `0001` à `0016`, dont les tables de compte, identités, alertes, destinataires, événements, outbox SMS/rappels, responsabilité, tickets GPS, abonnements push, rétention des notifications, rôles Super Admin, missions déléguées, journal administratif append-only et enrôlement racine facultatif.
 - Worker GPS : `sac-gps-relay`, version déployée `b184406b-118e-4821-a818-0cd06d5bb98d`, bindings `DB`, `GPS_ROOMS`, `GPS_RELAY_E2EE_READY=true`.
 - Worker de livraison SOS : `sac-sos-notification-delivery`, version déployée `e53280e6-5a72-4eed-b28a-7a737e05e3ce`, crons `* * * * *` et `0 * * * *`, binding D1 `sac-db`.
 - Secrets Pages présents : `EMAIL_OTP_HMAC_SECRET`, `GPS_RELAY_HMAC_SECRET`, `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PRIVATE_JWK`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_SUBJECT`, `BREVO_FROM_EMAIL`, `BREVO_FROM_NAME`, `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ALLOWED_ORIGINS`, `WEBAUTHN_ROOT_ENROLLMENT_ENABLED`, `APP_BASE_URL`.
@@ -250,3 +250,53 @@ La console administrative est désormais migrée en production, avec un journal 
 - GPS : repasser `GPS_RELAY_E2EE_READY` à `false` dans `workers/gps-relay/wrangler.toml`, puis redéployer `sac-gps-relay`. Le relais répondra `503 gps_relay_not_ready`.
 - Notifications : suspendre les crons du Worker `sac-sos-notification-delivery` ou retirer ses secrets si la livraison doit être coupée.
 - Pages : redéployer un déploiement de production antérieur depuis Cloudflare Pages.
+
+## Mise à jour du 21 novembre 2026 — clé de sécurité facultative
+
+### Décision et état réel
+
+La clé de sécurité WebAuthn n’est plus exigée à la première connexion. Un compte activé par e-mail peut ouvrir une session avec son adresse et son mot de passe. La clé reste recommandée et se configure depuis les réglages du compte. Une fois configurée, elle redevient obligatoire pour les connexions suivantes.
+
+Cette décision est documentée dans [DECISION_CLE_SECURITE_OPTIONNELLE_2026-11-21.md](DECISION_CLE_SECURITE_OPTIONNELLE_2026-11-21.md). Elle modifie le moment de l’enrôlement, pas le profil WebAuthn validé.
+
+### Preuves de production
+
+- La migration `0016_optional_root_enrollment.sql` est appliquée à la D1 distante `sac-db`.
+- Le compte réel `benwahab111@gmail.com` est `active` et son identité e-mail est vérifiée.
+- Un compte temporaire a exécuté le parcours complet suivant :
+  1. inscription `202` ;
+  2. réception réelle de l’OTP Brevo ;
+  3. vérification `200 verified:true accountActivated:true` ;
+  4. `login-options` `409 root_enrollment_required` ;
+  5. `password-session` `201 securityKeyConfigured:false` ;
+  6. `session` `200 securityKeyConfigured:false` ;
+  7. `start-root-enrollment` `200` avec options WebAuthn ;
+  8. `complete-root-enrollment` `201` avec le même appareil provisoire ;
+  9. `session` `200 securityKeyConfigured:true` ;
+  10. `login-options` suivant `200` avec un défi WebAuthn.
+- Le compte temporaire, ses appareils, sessions, cérémonies, événements et le mailbox de test ont été supprimés. Le compte réel et son rôle Super Admin sont conservés.
+- Le test de production a utilisé une credential WebAuthn synthétique valide pour le challenge serveur. Il ne prouve pas la compatibilité avec un authentificateur physique réel.
+
+### Nouveaux endpoints et interface
+
+- `POST /api/auth/password-session` : session e-mail + mot de passe sans clé, avec limitation de débit.
+- `POST /api/auth/start-root-enrollment` : cérémonie d’enrôlement authentifiée par la session.
+- `POST /api/auth/complete-root-enrollment` : attache le credential à l’appareil provisoire, révoque les anciennes sessions et ouvre une nouvelle session.
+- `GET /api/auth/session` : expose `securityKeyConfigured`.
+- Interface : carte « Clé de sécurité » dans les réglages, badge de notification sur l’onglet Réglages et carte de rappel sur le tableau de bord.
+- Traductions FR/EN/AR ajoutées ; l’arabe conserve la mise en page RTL.
+
+### Limite résiduelle
+
+Une session ouverte avec le seul mot de passe peut accéder aux fonctions de l’application, y compris le déclenchement d’un SOS. La clé de sécurité n’est donc pas une condition d’accès aux fonctions sensibles tant qu’elle n’est pas configurée. Ce compromis est assumé pour éviter de bloquer les utilisateurs dont l’appareil ne prend pas en charge WebAuthn. Il ne doit pas être présenté comme une protection équivalente à l’enrôlement obligatoire.
+
+### Tests exécutés
+
+- `npm run test:password-session` : 5/5 OK.
+- `npm run test:start-root-enrollment` : 3/3 OK.
+- `npm run test:d1-optional-root-enrollment` : 2/2 OK.
+- `npm run test:root-authentication-endpoints` : 4/4 OK.
+- `npm run test:root-enrollment-endpoints` : 7/7 OK.
+- `npm run test:root-enrollment-client` : 3/3 OK.
+- `npm run typecheck` : OK.
+- `npm run build` : OK.

@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Download, Eye, EyeOff, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, X } from "lucide-react";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
 import { completeRootAuthentication, requestRootAuthentication, type RootAuthenticationOptions } from "./services/device/root-authentication";
-import { completeRootEnrollment, requestRootEnrollment, type RootEnrollmentCeremony } from "./services/device/root-enrollment";
+import { createPasswordSession } from "./services/device/password-session";
 import PrivateSpacePage from "./PrivateSpacePage";
 import InvitationAcceptancePage from "./InvitationAcceptancePage";
 import AdminDashboard from "./AdminDashboard";
@@ -23,12 +23,12 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       signIn: "Connexion", create: "Créer un compte", register: "Créer mon compte",
       verify: "Vérifier mon adresse", resend: "Renvoyer un code",
       back: "Retour", home: "Retour à l’accueil", language: "Langue",
-      private: "Espace privé", loginUnavailable: "Connectez-vous avec votre adresse vérifiée et votre mot de passe pour sécuriser ce téléphone.",
+      private: "Espace privé", loginUnavailable: "Connectez-vous avec votre adresse vérifiée et votre mot de passe. Vous pourrez configurer la clé de sécurité plus tard dans vos réglages.",
       rootIntro: "Votre appareil sécurisé est prêt. Confirmez votre identité pour ouvrir votre session.", prepareRoot: "Se connecter", createRoot: "Confirmer sur cet appareil", rootReady: "Confirmez la connexion avec la clé sécurisée de ce téléphone.", rootSuccess: "Connexion sécurisée réussie. Votre session est ouverte.", rootPreparing: "Vérification…", rootCreating: "Confirmation sur l’appareil…",
       registerIntro: "Créez votre compte. Votre adresse e-mail doit être vérifiée avant toute activation.",
       verifyIntro: "Saisissez le code envoyé à votre adresse e-mail. Il est valable 10 minutes.",
       resendWait: "Vous pourrez demander un nouveau code dans", seconds: "s",
-      success: "Adresse e-mail vérifiée et compte activé. Connectez-vous pour enregistrer la clé sécurisée de votre téléphone.",
+      success: "Adresse e-mail vérifiée et compte activé. Connectez-vous. Vous pourrez configurer la clé de sécurité dans vos réglages.",
       completeIntro: "Connexion sécurisée",
       genericAccepted: "Si cette adresse est éligible, vous recevrez les instructions de vérification.",
       serviceUnavailable: "Le service de vérification n’est pas encore configuré. Aucun compte n’a été activé.",
@@ -46,12 +46,12 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       signIn: "Sign in", create: "Create an account", register: "Create my account",
       verify: "Verify my email", resend: "Resend code",
       back: "Back", home: "Back to home", language: "Language",
-      private: "Private space", loginUnavailable: "Sign in with your verified email and password to secure this phone.",
+      private: "Private space", loginUnavailable: "Sign in with your verified email and password. You can configure the security key later in your settings.",
       rootIntro: "Your secure device is ready. Confirm your identity to open your session.", prepareRoot: "Sign in", createRoot: "Confirm on this device", rootReady: "Confirm sign-in with this phone’s secure key.", rootSuccess: "Secure sign-in successful. Your session is open.", rootPreparing: "Checking…", rootCreating: "Confirm on your device…",
       registerIntro: "Create your account. Your email address must be verified before activation.",
       verifyIntro: "Enter the code sent to your email address. It is valid for 10 minutes.",
       resendWait: "You can request another code in", seconds: "s",
-      success: "Email verified and account activated. Sign in to register your phone’s secure key.",
+      success: "Email verified and account activated. Sign in. You can configure the security key in your settings.",
       completeIntro: "Secure sign-in",
       genericAccepted: "If this address is eligible, you will receive verification instructions.",
       serviceUnavailable: "The verification service is not configured yet. No account has been activated.",
@@ -69,12 +69,12 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       signIn: "تسجيل الدخول", create: "إنشاء حساب", register: "إنشاء حسابي",
       verify: "التحقق من بريدي", resend: "إعادة إرسال الرمز",
       back: "رجوع", home: "العودة إلى الصفحة الرئيسية", language: "اللغة",
-      private: "مساحة خاصة", loginUnavailable: "سجّل الدخول ببريدك الموثّق وكلمة المرور لتأمين هذا الهاتف.",
+      private: "مساحة خاصة", loginUnavailable: "سجّل الدخول ببريدك الموثّق وكلمة المرور. يمكنك إعداد مفتاح الأمان لاحقاً من الإعدادات.",
       rootIntro: "جهازك الآمن جاهز. أكّد هويتك لفتح جلستك.", prepareRoot: "تسجيل الدخول", createRoot: "التأكيد على هذا الجهاز", rootReady: "أكّد تسجيل الدخول باستخدام المفتاح الآمن لهذا الهاتف.", rootSuccess: "تم تسجيل الدخول بأمان وفتح جلستك.", rootPreparing: "جارٍ التحقق…", rootCreating: "أكّد على جهازك…",
       registerIntro: "أنشئ حسابك. يجب التحقق من بريدك الإلكتروني قبل تفعيل الحساب.",
       verifyIntro: "أدخل الرمز المرسل إلى بريدك الإلكتروني. صلاحية الرمز 10 دقائق.",
       resendWait: "يمكنك طلب رمز جديد خلال", seconds: "ث",
-      success: "تم التحقق من البريد وتفعيل الحساب. سجّل الدخول لتسجيل المفتاح الآمن لهاتفك.",
+      success: "تم التحقق من البريد وتفعيل الحساب. سجّل الدخول. يمكنك إعداد مفتاح الأمان من الإعدادات.",
       completeIntro: "تسجيل دخول آمن",
       genericAccepted: "إذا كان هذا العنوان مؤهلاً، فستصلك تعليمات التحقق.",
       serviceUnavailable: "خدمة التحقق غير مهيأة بعد. لم يتم تفعيل أي حساب.",
@@ -87,7 +87,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     },
   }[language];
 
-  type Mode = "login" | "register" | "verify" | "enroll" | "authenticate" | "complete";
+  type Mode = "login" | "register" | "verify" | "authenticate" | "complete";
   const [mode, setMode] = useState<Mode>(() => new URLSearchParams(window.location.search).get("mode") === "register" ? "register" : "login");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -103,7 +103,6 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
   const [resendAt, setResendAt] = useState<number | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const [rootCeremony, setRootCeremony] = useState<RootAuthenticationOptions | null>(null);
-  const [enrollmentCeremony, setEnrollmentCeremony] = useState<RootEnrollmentCeremony | null>(null);
   const rtl = language === "ar";
 
   useEffect(() => {
@@ -212,28 +211,10 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
         setMode("authenticate");
       } catch (reason) {
         if (!(reason instanceof Error) || reason.message !== "root_enrollment_required") throw reason;
-        const ceremony = await requestRootEnrollment(email, password);
-        setEnrollmentCeremony(ceremony);
+        await createPasswordSession(email, password);
         setPassword("");
-        setMode("enroll");
+        window.location.assign(returnTo);
       }
-    } catch (reason) {
-      setError(errorMessage(reason instanceof Error ? reason.message : undefined));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function confirmRootEnrollment() {
-    if (!enrollmentCeremony || busy) return;
-    setBusy(true);
-    setError("");
-    setNotice("");
-    try {
-      await completeRootEnrollment(enrollmentCeremony);
-      setEnrollmentCeremony(null);
-      setMode("complete");
-      setNotice(copy.rootSuccess);
     } catch (reason) {
       setError(errorMessage(reason instanceof Error ? reason.message : undefined));
     } finally {
@@ -333,15 +314,6 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
               <button type="submit" disabled={busy || !email || !password} className={primaryButton}>{busy ? copy.rootPreparing : copy.prepareRoot}</button>
             </form>
             <button type="button" className="min-h-11 w-full rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 text-sm font-bold text-sac-ink" onClick={() => { setMode("register"); setError(""); setNotice(""); }}>{copy.create}</button>
-          </div>
-        )}
-
-        {mode === "enroll" && enrollmentCeremony && (
-          <div className="mt-8 space-y-4">
-            <p className="rounded-xl border border-sac-confirm/25 bg-sac-confirm/10 p-4 text-sm leading-6 text-sac-ink">{language === "fr" ? "Première connexion : enregistrez la clé sécurisée de ce téléphone. Votre compte doit déjà être activé par e-mail." : language === "en" ? "First sign-in: register this phone’s secure key. Your account must already be activated by email." : "تسجيل الدخول الأول: سجّل المفتاح الآمن لهذا الهاتف. يجب أن يكون حسابك مفعّلاً عبر البريد الإلكتروني."}</p>
-            <p className="text-sm leading-6 text-sac-muted">{copy.rootReady}</p>
-            <button type="button" disabled={busy} onClick={confirmRootEnrollment} className={primaryButton}>{busy ? copy.rootCreating : copy.createRoot}</button>
-            <button type="button" disabled={busy} onClick={() => { setEnrollmentCeremony(null); setMode("login"); setError(""); setNotice(""); }} className="min-h-11 w-full rounded-xl border border-sac-primary-strong/30 bg-white/60 px-4 text-sm font-bold text-sac-ink">{copy.back}</button>
           </div>
         )}
 

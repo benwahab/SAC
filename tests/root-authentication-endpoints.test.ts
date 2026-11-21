@@ -45,6 +45,32 @@ test("login options directs a verified account without a root device to first-de
   assert.deepEqual(await response.json(), { error: "root_enrollment_required" });
 });
 
+test("login options routes a provisional password-only device to the optional enrollment path", async () => {
+  const password = "phrase de passe de test SAC 2026";
+  const passwordHash = await hashAccountPassword(webcrypto as unknown as Crypto, password);
+  const account = { id: "123e4567-e89b-42d3-a456-426614174000", status: "active", password_hash: passwordHash, device_id: "device-1", device_status: "active", credential_id: null };
+  const db = {
+    prepare(sql: string) {
+      return {
+        bind() {
+          return {
+            async run() { return { success: true, meta: { changes: 1 } }; },
+            async first() {
+              if (sql.includes("SELECT attempt_count")) return { attempt_count: 1 };
+              if (sql.includes("SELECT a.id")) return account;
+              throw new Error("Unexpected D1 query");
+            },
+          };
+        },
+      };
+    },
+  };
+  const env = { DB: db, WEBAUTHN_RP_ID: "sac.example", WEBAUTHN_ALLOWED_ORIGINS: JSON.stringify([origin]), EMAIL_OTP_HMAC_SECRET: "s".repeat(32) };
+  const response = await loginOptions({ request: request({ email: "root@example.test", password }), env } as never);
+  assert.equal(response.status, 409);
+  assert.deepEqual(await response.json(), { error: "root_enrollment_required" });
+});
+
 test("login options does not disclose first-device state for an invalid password", async () => {
   const passwordHash = await hashAccountPassword(webcrypto as unknown as Crypto, "correct password for SAC");
   const account = { id: "123e4567-e89b-42d3-a456-426614174000", status: "active", password_hash: passwordHash, device_id: null, device_status: null, credential_id: null };

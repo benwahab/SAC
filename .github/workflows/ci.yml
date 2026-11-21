@@ -43,6 +43,10 @@ jobs:
         run: npm run test:root-enrollment-endpoints
       - name: Test root authentication endpoint and first-device routing
         run: npm run test:root-authentication-endpoints
+      - name: Test password-only session without a security key
+        run: npm run test:password-session
+      - name: Test session-authenticated security key enrollment
+        run: npm run test:start-root-enrollment
       - name: Test root WebAuthn assertion flag policy
         run: npm run test:webauthn-assertion-policy
       - name: Test PWA root enrollment client flow
@@ -128,6 +132,8 @@ jobs:
         run: python3 tests/d1_admin_missions_schema.test.py
       - name: Test D1 root device enrollment, credential and session constraints
         run: npm run test:d1-root-device-enrollment
+      - name: Test optional root enrollment after a password-only session
+        run: npm run test:d1-optional-root-enrollment
       - name: Test D1 trusted contact invitation and relationship constraints
         run: python3 tests/d1_contact_invitations_schema.test.py
       - name: Test D1 SOS recipient snapshots, event chronology and reminder constraints

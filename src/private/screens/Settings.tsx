@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { LogOut, ShieldCheck, Smartphone, MonitorSmartphone } from "lucide-react";
+import { KeyRound, LogOut, ShieldCheck, Smartphone, MonitorSmartphone } from "lucide-react";
 import PushNotificationSettings from "../../components/PushNotificationSettings";
 import { languages, type Language } from "../../i18n/translations";
-import { logoutDeviceSession } from "../../services/device/root-enrollment";
+import { completeRootEnrollment, logoutDeviceSession, requestRootEnrollmentFromSession } from "../../services/device/root-enrollment";
 import type { ScreenProps } from "../types";
 import { Card, Halo, Notice, Sheet } from "../ui";
 
@@ -14,7 +14,7 @@ type SessionInfo = {
   current: boolean;
 };
 
-export default function Settings({ copy, language, setLanguage, onLogout }: ScreenProps & { setLanguage: (l: Language) => void; onLogout: () => void }) {
+export default function Settings({ copy, language, setLanguage, onLogout, securityKeyConfigured, onSecurityKeyConfigured }: ScreenProps & { setLanguage: (l: Language) => void; onLogout: () => void; securityKeyConfigured: boolean; onSecurityKeyConfigured: () => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
@@ -22,6 +22,9 @@ export default function Settings({ copy, language, setLanguage, onLogout }: Scre
   const [sessionsError, setSessionsError] = useState("");
   const [sessionsNotice, setSessionsNotice] = useState("");
   const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null);
+  const [securityKeyBusy, setSecurityKeyBusy] = useState(false);
+  const [securityKeyError, setSecurityKeyError] = useState("");
+  const [securityKeyNotice, setSecurityKeyNotice] = useState("");
   const locale = language === "ar" ? "ar" : language === "en" ? "en-GB" : "fr-FR";
 
   useEffect(() => {
@@ -68,6 +71,31 @@ export default function Settings({ copy, language, setLanguage, onLogout }: Scre
     }
   }
 
+  function securityKeyErrorMessage(reason: unknown): string {
+    if (reason instanceof Error) {
+      if (reason.message === "webauthn_not_supported" || reason.message.includes("ne prend pas en charge")) return copy.securityKeyUnsupported;
+      if (reason.message.includes("annulée") || reason.message.includes("refusée")) return copy.securityKeyCancelled;
+    }
+    return copy.securityKeyError;
+  }
+
+  async function configureSecurityKey() {
+    if (securityKeyBusy) return;
+    setSecurityKeyBusy(true);
+    setSecurityKeyError("");
+    setSecurityKeyNotice("");
+    try {
+      const ceremony = await requestRootEnrollmentFromSession();
+      await completeRootEnrollment(ceremony);
+      setSecurityKeyNotice(copy.securityKeySuccess);
+      onSecurityKeyConfigured();
+    } catch (reason) {
+      setSecurityKeyError(securityKeyErrorMessage(reason));
+    } finally {
+      setSecurityKeyBusy(false);
+    }
+  }
+
   async function signOut() {
     if (busy) return;
     setBusy(true); setError("");
@@ -79,6 +107,22 @@ export default function Settings({ copy, language, setLanguage, onLogout }: Scre
     <>
       <Halo title={copy.settingsTitle} eyebrow={copy.privateSpace} />
       <Sheet>
+        <Card className={securityKeyConfigured ? "" : "!border-sac-alert/30 !bg-sac-alert/5"}>
+          <h2 className="flex items-center gap-2 font-extrabold"><KeyRound size={18} />{copy.securityKeyTitle}</h2>
+          {securityKeyConfigured ? (
+            <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-sac-confirm"><ShieldCheck size={17} />{copy.securityKeyConfigured}</p>
+          ) : (
+            <>
+              <p className="mt-2 text-sm leading-6 text-sac-muted">{copy.securityKeyWhy}</p>
+              <button type="button" disabled={securityKeyBusy} onClick={() => void configureSecurityKey()}
+                className="mt-3 inline-flex min-h-12 items-center justify-center rounded-[14px] bg-sac-primary px-4 text-sm font-extrabold text-white disabled:opacity-50">
+                {securityKeyBusy ? copy.securityKeyConfiguring : copy.securityKeyConfigure}
+              </button>
+              {securityKeyError && <p role="alert" className="mt-3 text-sm font-semibold text-sac-alert">{securityKeyError}</p>}
+            </>
+          )}
+          {securityKeyNotice && <p role="status" className="mt-3 text-sm font-semibold text-sac-confirm">{securityKeyNotice}</p>}
+        </Card>
         <Card><h2 className="flex items-center gap-2 font-extrabold"><Smartphone size={18} />{copy.settingsDevice}</h2>
           <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-sac-confirm"><ShieldCheck size={17} />{copy.settingsDeviceOk}</p></Card>
         <PushNotificationSettings copy={copy} />

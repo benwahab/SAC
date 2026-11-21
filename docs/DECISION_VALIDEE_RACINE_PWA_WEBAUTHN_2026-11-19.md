@@ -1,5 +1,7 @@
 # SAC — Décision validée : racine PWA avec WebAuthn
 
+> **Mise à jour du 21 novembre 2026 :** la clé de sécurité reste recommandée mais n’est plus exigée à la première connexion. Un compte peut ouvrir une session avec e-mail + mot de passe, puis configurer la clé depuis les réglages. Voir [DECISION_CLE_SECURITE_OPTIONNELLE_2026-11-21.md](DECISION_CLE_SECURITE_OPTIONNELLE_2026-11-21.md). Le profil WebAuthn et les garanties single-device restent inchangés.
+
 - **Date :** 19 novembre 2026
 - **Dépôt :** benwahab/SAC
 - **Branche :** main

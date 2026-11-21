@@ -55,11 +55,13 @@ export const fieldClass = "min-h-12 w-full rounded-[14px] border border-[#E8DCD3
 export const primaryBtn = "inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-sac-primary px-5 text-base font-extrabold text-white shadow-orange disabled:opacity-50 disabled:shadow-none";
 export const ghostBtn = "inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] border border-sac-primary/30 bg-white px-4 text-sm font-bold text-sac-ember disabled:opacity-50";
 
-export function BottomNav({ current, copy, go }: { current: Screen["name"]; copy: PrivateCopy; go: (screen: Screen) => void }) {
-  const item = (name: Screen["name"], label: string, icon: ReactNode) => (
+export function BottomNav({ current, copy, go, securityKeyConfigured = true }: { current: Screen["name"]; copy: PrivateCopy; go: (screen: Screen) => void; securityKeyConfigured?: boolean }) {
+  const item = (name: Screen["name"], label: string, icon: ReactNode, badge?: number) => (
     <button type="button" onClick={() => go({ name } as Screen)} aria-current={current === name ? "page" : undefined}
+      aria-label={badge ? `${label} — ${copy.securityKeyBadgeLabel}` : undefined}
       className={"flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-2xl text-[11px] font-bold " + (current === name ? "text-sac-primary" : "text-sac-muted")}>
-      {icon}<span>{label}</span>
+      <span className="relative">{icon}{badge ? <span className="absolute -end-2 -top-1 flex size-4 items-center justify-center rounded-full bg-sac-alert text-[9px] font-black text-white">{badge}</span> : null}</span>
+      <span>{label}</span>
     </button>
   );
   return (
@@ -72,7 +74,7 @@ export function BottomNav({ current, copy, go }: { current: Screen["name"]; copy
           {copy.navSos}
         </button>
         {item("history", copy.navHistory, <History size={22} />)}
-        {item("settings", copy.navSettings, <Settings size={22} />)}
+        {item("settings", copy.navSettings, <Settings size={22} />, securityKeyConfigured ? undefined : 1)}
       </div>
     </nav>
   );

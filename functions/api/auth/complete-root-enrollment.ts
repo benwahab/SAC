@@ -83,7 +83,22 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ error: "root_credential_rejected" }, 400);
   }
 
-  const deviceId = crypto.randomUUID();
+  let existingDevice: { id: string; auth_version: number } | null;
+  try {
+    existingDevice = await env.DB.prepare(
+      `SELECT d.id, d.auth_version
+       FROM devices d
+       LEFT JOIN device_root_credentials rc
+         ON rc.device_id = d.id AND rc.account_id = d.account_id
+       WHERE d.account_id = ? AND d.status = 'active' AND rc.id IS NULL
+       LIMIT 1`,
+    ).bind(ceremony.account_id).first<{ id: string; auth_version: number }>();
+  } catch {
+    return json({ error: "root_enrollment_conflict" }, 409);
+  }
+
+  const deviceId = existingDevice?.id ?? crypto.randomUUID();
+  const deviceAuthVersion = existingDevice?.auth_version ?? 1;
   const credentialRecordId = crypto.randomUUID();
   const sessionId = crypto.randomUUID();
   const eventId = crypto.randomUUID();
@@ -93,7 +108,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const expiresAt = now + 30 * 24 * 60 * 60 * 1000;
 
   try {
-    const results = await env.DB.batch([
+    const statements: D1PreparedStatement[] = [
       env.DB.prepare(
         `UPDATE root_enrollment_challenges
          SET consumed_at = ?, attempt_count = attempt_count + 1
@@ -101,12 +116,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
            AND challenge_digest = ? AND consumed_at IS NULL
            AND expires_at > ? AND attempt_count < 5`,
       ).bind(now, ceremony.challenge_id, ceremony.id, ceremony.account_id, ceremony.challenge_digest, now),
-      env.DB.prepare(
+    ];
+    if (!existingDevice) {
+      statements.push(env.DB.prepare(
         `INSERT INTO devices (id, account_id, status, auth_version, created_at, revoked_at)
          SELECT ?, ?, 'active', 1, ?, NULL
          WHERE EXISTS (SELECT 1 FROM root_enrollment_challenges
            WHERE id = ? AND ceremony_id = ? AND account_id = ? AND consumed_at = ?)`,
-      ).bind(deviceId, ceremony.account_id, now, ceremony.challenge_id, ceremony.id, ceremony.account_id, now),
+      ).bind(deviceId, ceremony.account_id, now, ceremony.challenge_id, ceremony.id, ceremony.account_id, now));
+    }
+    statements.push(
       env.DB.prepare(
         `INSERT INTO device_root_credentials
          (id, device_id, account_id, credential_id, public_key_x, public_key_y, sign_count, credential_device_type, credential_backed_up, created_at, last_used_at)
@@ -114,22 +133,39 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
          WHERE EXISTS (SELECT 1 FROM devices WHERE id = ? AND account_id = ? AND status = 'active')`,
       ).bind(credentialRecordId, deviceId, ceremony.account_id, verified.credentialId, verified.publicKeyX, verified.publicKeyY, verified.signCount, now, deviceId, ceremony.account_id),
       env.DB.prepare(
+        `UPDATE device_sessions
+         SET status = 'revoked', revoked_at = ?
+         WHERE device_id = ? AND account_id = ? AND status = 'active' AND revoked_at IS NULL`,
+      ).bind(now, deviceId, ceremony.account_id),
+      env.DB.prepare(
         `INSERT INTO device_sessions
          (id, account_id, device_id, token_hash, status, auth_version, created_at, last_activity_at, expires_at, revoked_at)
-         SELECT ?, ?, ?, ?, 'active', d.auth_version, ?, ?, ?, NULL
-         FROM devices d JOIN device_root_credentials rc ON rc.device_id = d.id
-         WHERE d.id = ? AND d.account_id = ? AND d.status = 'active'`,
-      ).bind(sessionId, ceremony.account_id, deviceId, session.tokenHash, now, now, expiresAt, deviceId, ceremony.account_id),
+         VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?, NULL)`,
+      ).bind(sessionId, ceremony.account_id, deviceId, session.tokenHash, deviceAuthVersion, now, now, expiresAt),
       env.DB.prepare(
         "UPDATE root_enrollment_ceremonies SET status = 'completed', completed_at = ? WHERE id = ? AND account_id = ? AND status = 'pending' AND EXISTS (SELECT 1 FROM root_enrollment_challenges WHERE ceremony_id = ? AND consumed_at = ?)",
       ).bind(now, ceremony.id, ceremony.account_id, ceremony.id, now),
       env.DB.prepare(
         "INSERT INTO device_enrollment_events (id, ceremony_id, account_id, device_id, session_id, event_type, created_at) VALUES (?, ?, ?, ?, ?, 'root_device_enrolled', ?)",
       ).bind(eventId, ceremony.id, ceremony.account_id, deviceId, sessionId, now),
-    ]);
-    if (results.some((result) => !result.success) || results.some((result) => result.meta.changes !== 1)) {
+    );
+
+    const results = await env.DB.batch(statements);
+    if (results.some((result) => !result.success)) {
       return json({ error: "root_enrollment_conflict" }, 409);
     }
+
+    const finalized = await env.DB.prepare(
+      `SELECT s.id
+       FROM device_sessions s
+       JOIN devices d ON d.id = s.device_id AND d.account_id = s.account_id
+       JOIN device_root_credentials rc ON rc.device_id = d.id AND rc.account_id = d.account_id
+       JOIN root_enrollment_ceremonies c ON c.id = ? AND c.account_id = d.account_id
+       WHERE s.id = ? AND s.account_id = ? AND s.device_id = ?
+         AND s.status = 'active' AND c.status = 'completed'
+       LIMIT 1`,
+    ).bind(ceremony.id, sessionId, ceremony.account_id, deviceId).first();
+    if (!finalized) return json({ error: "root_enrollment_conflict" }, 409);
   } catch {
     return json({ error: "root_enrollment_conflict" }, 409);
   }

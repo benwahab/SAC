@@ -9,6 +9,7 @@ export function usePrivateData(copy: PrivateCopy, onLogout: () => void) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [identity, setIdentity] = useState<{ accountId: string; deviceId: string } | null>(null);
+  const [securityKeyConfigured, setSecurityKeyConfigured] = useState(true);
 
   const refresh = useCallback(async () => {
     setLoading(true); setError("");
@@ -16,6 +17,7 @@ export function usePrivateData(copy: PrivateCopy, onLogout: () => void) {
       const session = await getDeviceSession();
       if (!session.authenticated || !session.accountId || !session.deviceId) { onLogout(); return; }
       setIdentity({ accountId: session.accountId, deviceId: session.deviceId });
+      setSecurityKeyConfigured(session.securityKeyConfigured !== false);
       const response = await fetch("/api/contacts", { credentials: "same-origin", cache: "no-store" });
       const payload = await response.json() as { contacts?: Contact[] };
       if (!response.ok || !Array.isArray(payload.contacts)) {
@@ -33,5 +35,5 @@ export function usePrivateData(copy: PrivateCopy, onLogout: () => void) {
   }, [onLogout, copy]);
 
   useEffect(() => { void refresh(); }, [refresh]);
-  return { contacts, setContacts, alerts, loading, error, refresh, identity };
+  return { contacts, setContacts, alerts, loading, error, refresh, identity, securityKeyConfigured };
 }

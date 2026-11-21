@@ -80,10 +80,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const matches = await verifyAccountPassword(crypto, body.password, account?.password_hash ?? DUMMY_PASSWORD_HASH);
     if (!account || account.status !== "active" || !matches) return json({ error: "invalid_credentials" }, 401);
 
-    if (!account.device_id && !account.device_status && !account.credential_id) {
+    if (!account.credential_id) {
       return json({ error: "root_enrollment_required" }, 409);
     }
-    if (account.device_status !== "active" || !account.credential_id) {
+    if (account.device_status !== "active") {
       return json({ error: "root_device_unavailable" }, 409);
     }
 

@@ -1,10 +1,10 @@
-import { ChevronRight, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
+import { ChevronRight, KeyRound, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
 import { fillCopy, localeFor } from "../../i18n/translations";
 import type { Contact, ScreenProps, SosAlert } from "../types";
 import { formatDate } from "../types";
 import { Avatar, Card, Halo, LevelBadge, Notice, Sheet, StatusBadge, ghostBtn } from "../ui";
 
-export default function Dashboard({ copy, language, go, contacts, alerts, loading, error }: ScreenProps & { contacts: Contact[]; alerts: SosAlert[]; loading: boolean; error: string }) {
+export default function Dashboard({ copy, language, go, contacts, alerts, loading, error, securityKeyConfigured }: ScreenProps & { contacts: Contact[]; alerts: SosAlert[]; loading: boolean; error: string; securityKeyConfigured: boolean }) {
   const locale = localeFor(language);
   const active = alerts.filter((a) => a.status === "active");
   const received = active.find((a) => a.participantRole === "recipient");
@@ -28,6 +28,18 @@ export default function Dashboard({ copy, language, go, contacts, alerts, loadin
           <Card className="flex items-center gap-3 !border-sac-confirm/30">
             <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-sac-confirm/10 text-sac-confirm"><ShieldCheck size={26} /></span>
             <div><p className="font-extrabold">{copy.dashCalmTitle}</p><p className="text-sm text-sac-muted">{copy.dashCalmText}</p></div>
+          </Card>
+        )}
+        {securityKeyConfigured === false && (
+          <Card className="!border-sac-alert/30 !bg-sac-alert/5">
+            <div className="flex items-start gap-3">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-sac-alert/10 text-sac-alert"><KeyRound size={22} /></span>
+              <div className="min-w-0">
+                <p className="font-extrabold">{copy.securityKeyDashTitle}</p>
+                <p className="mt-1 text-sm leading-6 text-sac-muted">{copy.securityKeyDashText}</p>
+                <button type="button" onClick={() => go({ name: "settings" })} className={"mt-3 " + ghostBtn}>{copy.securityKeyDashCta}</button>
+              </div>
+            </div>
           </Card>
         )}
         <Card>
