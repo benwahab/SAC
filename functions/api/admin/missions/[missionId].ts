@@ -24,8 +24,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   const now = Date.now();
   try {
     const current = await env.DB.prepare(
-      "SELECT id, assigned_account_id, scope_key, status, due_at FROM admin_missions WHERE id = ? LIMIT 1",
-    ).bind(missionId).first<{ id: string; assigned_account_id: string; scope_key: string; status: string; due_at: number | null }>();
+      "SELECT id, assigned_account_id, scope_key, status, due_at, version FROM admin_missions WHERE id = ? LIMIT 1",
+    ).bind(missionId).first<{ id: string; assigned_account_id: string; scope_key: string; status: string; due_at: number | null; version: number }>();
     if (!current) return json({ error: "mission_not_found" }, 404);
     if (current.status === "revoked") return json({ error: "mission_revoked" }, 409);
 
@@ -68,31 +68,41 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
       return json({ error: "invalid_mission_action" }, 400);
     }
 
+    const nextVersion = current.version + 1;
+    const mutationToken = crypto.randomUUID();
+    const guardedMission = "SELECT 1 FROM admin_missions WHERE id = ? AND mutation_token = ?";
     const statements: D1PreparedStatement[] = [
       env.DB.prepare(
         `UPDATE admin_missions
          SET assigned_account_id = ?, scope_key = ?, status = ?, due_at = ?,
-             updated_at = ?, version = version + 1
-         WHERE id = ? AND status <> 'revoked'`,
-      ).bind(nextAssignee, nextScope, nextStatus, nextDueAt, now, missionId),
+             updated_at = ?, version = ?, mutation_token = ?
+         WHERE id = ? AND status <> 'revoked' AND version = ?`,
+      ).bind(nextAssignee, nextScope, nextStatus, nextDueAt, now, nextVersion, mutationToken, missionId, current.version),
     ];
     if (permissionRows) {
-      statements.push(env.DB.prepare("DELETE FROM admin_mission_permissions WHERE mission_id = ?").bind(missionId));
+      statements.push(env.DB.prepare(
+        `DELETE FROM admin_mission_permissions
+         WHERE mission_id = ? AND EXISTS (${guardedMission} AND status <> 'revoked')`,
+      ).bind(missionId, missionId, mutationToken));
       for (const permission of permissionRows) {
         statements.push(env.DB.prepare(
-          "INSERT INTO admin_mission_permissions (mission_id, permission, granted_at) VALUES (?, ?, ?)",
-        ).bind(missionId, permission, now));
+          `INSERT INTO admin_mission_permissions (mission_id, permission, granted_at)
+           SELECT ?, ?, ? WHERE EXISTS (${guardedMission} AND status <> 'revoked')`,
+        ).bind(missionId, permission, now, missionId, mutationToken));
       }
     }
     statements.push(env.DB.prepare(
       `INSERT INTO admin_audit_events
        (id, actor_account_id, actor_device_id, mission_id, action, scope_key, permission_used, outcome, occurred_at)
-       VALUES (?, ?, ?, ?, ?, ?, 'admin.missions.manage', 'success', ?)`,
-    ).bind(crypto.randomUUID(), admin.value.accountId, admin.value.deviceId, missionId, actionName, nextScope, now));
+       SELECT ?, ?, ?, ?, ?, ?, 'admin.missions.manage', 'success', ?
+       WHERE EXISTS (${guardedMission})`,
+    ).bind(crypto.randomUUID(), admin.value.accountId, admin.value.deviceId, missionId, actionName, nextScope, now, missionId, mutationToken));
 
     const results = await env.DB.batch(statements);
+    if (!results[0]?.success) return json({ error: "admin_service_unavailable" }, 503);
+    if ((results[0].meta?.changes ?? 0) !== 1) return json({ error: "mission_conflict" }, 409);
     if (results.some((result) => !result.success)) return json({ error: "admin_service_unavailable" }, 503);
-    return json({ updated: true, missionId, status: nextStatus, assignedAccountId: nextAssignee, scopeKey: nextScope, dueAt: nextDueAt, permissions: permissionRows ?? undefined, updatedAt: now });
+    return json({ updated: true, missionId, status: nextStatus, assignedAccountId: nextAssignee, scopeKey: nextScope, dueAt: nextDueAt, permissions: permissionRows ?? undefined, updatedAt: now, version: nextVersion });
   } catch {
     return json({ error: "admin_service_unavailable" }, 503);
   }

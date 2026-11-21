@@ -1,3 +1,4 @@
+import { recordAdminReadEvent } from "../../../lib/security/admin-audit.ts";
 import { requireSuperAdminSession } from "../../../lib/security/require-super-admin-session.ts";
 import { guardSameOriginJsonPost } from "../../../lib/security/http-request-guard.ts";
 import { readJsonRequestBody } from "../../../lib/security/json-request-body.ts";
@@ -39,6 +40,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       current.push(item.permission);
       byMission.set(item.mission_id, current);
     }
+    await recordAdminReadEvent(env.DB, admin.value, "admin.missions.read", "admin.missions.read");
     return json({ missions: (missions.results ?? []).map((row) => ({
       id: row.id, assignedAccountId: row.assigned_account_id,
       assignedEmail: row.assigned_email, createdByAccountId: row.created_by_account_id, scopeKey: row.scope_key,

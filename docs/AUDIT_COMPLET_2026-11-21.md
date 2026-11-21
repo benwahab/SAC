@@ -15,7 +15,7 @@ Cet audit distingue trois niveaux :
 - Projet Cloudflare Pages : `sac`, URL de production `https://sac-3xh.pages.dev`.
 - Dernier déploiement de production vérifié avant la présente mise à jour documentaire : `21066072-8935-4f2a-b59d-6728d2db1be2` (commit `1104a1c`), servi par l’alias `https://sac-3xh.pages.dev`.
 - Base D1 : `sac-db`, identifiant `892ce876-f279-409c-8f9e-06b1dca66e9d`.
-- Migrations distantes appliquées : `0001` à `0012`, dont les tables de compte, identités, alertes, destinataires, événements, outbox SMS/rappels, responsabilité, tickets GPS, abonnements push et rétention des notifications.
+- Migrations distantes appliquées : `0001` à `0015`, dont les tables de compte, identités, alertes, destinataires, événements, outbox SMS/rappels, responsabilité, tickets GPS, abonnements push, rétention des notifications, rôles Super Admin, missions déléguées et journal administratif append-only.
 - Worker GPS : `sac-gps-relay`, version déployée `b184406b-118e-4821-a818-0cd06d5bb98d`, bindings `DB`, `GPS_ROOMS`, `GPS_RELAY_E2EE_READY=true`.
 - Worker de livraison SOS : `sac-sos-notification-delivery`, version déployée `e53280e6-5a72-4eed-b28a-7a737e05e3ce`, crons `* * * * *` et `0 * * * *`, binding D1 `sac-db`.
 - Secrets Pages présents : `BREVO_API_KEY`, `EMAIL_OTP_HMAC_SECRET`, `GPS_RELAY_HMAC_SECRET`, `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PRIVATE_JWK`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_SUBJECT`, entre autres.
@@ -86,23 +86,24 @@ Les points suivants ne doivent pas être déclarés opérationnels sans preuve r
 
 ## Administration et gouvernance
 
-Le dépôt contient désormais une console Super Admin, des routes `/api/admin/accounts`, `/api/admin/missions`, `/api/admin/missions/[missionId]` et `/api/admin/audit`, ainsi que les migrations `0013_super_admin_bootstrap.sql` et `0014_admin_missions_and_audit.sql`.
+Le dépôt contient une console Super Admin, des routes `/api/admin/accounts`, `/api/admin/missions`, `/api/admin/missions/[missionId]` et `/api/admin/audit`, ainsi que les migrations `0013_super_admin_bootstrap.sql`, `0014_admin_missions_and_audit.sql` et `0015_admin_mission_mutation_token.sql`.
 
 Points vérifiés :
 
+- Les migrations `0013`, `0014` et `0015` sont appliquées à la D1 distante. Les tables `account_roles`, `admin_missions`, `admin_mission_permissions` et `admin_audit_events` existent, ainsi que les triggers append-only.
 - Le garde `requireSuperAdminSession` vérifie d’abord une session appareil authentifiée, puis le rôle `super_admin` dans D1. Aucun rôle fourni par le client n’est accepté.
 - Les routes d’écriture utilisent `guardSameOriginJsonPost`, un corps JSON borné et des validations de permission, de périmètre et d’échéance.
 - Le journal `admin_audit_events` est protégé par des triggers D1 qui refusent modification et suppression.
 - Le rôle Super Admin est unique et lié à une identité e-mail vérifiée.
+- La mise à jour d’une mission utilise un verrou optimiste sur `version` et un jeton de mutation unique. Une requête concurrente ne peut plus remplacer les permissions d’une mission déjà modifiée ; le test `test_stale_mutation_cannot_replace_permissions` le vérifie.
+- Les consultations de la liste des missions, de la recherche de comptes et du journal d’audit créent un événement `admin.missions.read`, `admin.accounts.search` ou `admin.audit.read`, sans journaliser la recherche brute.
 
 Points non résolus :
 
-- Les migrations `0013` et `0014` ne sont pas appliquées à la D1 distante. La console renverra `503 admin_service_unavailable` tant qu’elles ne le sont pas. Une migration distante crée un rôle privilégié et exige une autorisation explicite distincte.
-- Le bootstrap est lié à l’adresse `benwahab111@gmail.com`. C’est une décision d’exploitation sensible qui doit être confirmée et documentée comme telle.
-- La mise à jour d’une mission ne vérifie pas la version ni le nombre de lignes modifiées. Une révocation concurrente peut donc laisser un remplacement de permissions partiel. Ce point doit être corrigé avant toute production.
-- Les consultations `/api/admin/accounts` et `/api/admin/audit` ne créent pas d’événement d’audit de consultation, alors que le contrat de protection des accès internes l’exige.
+- Aucun rôle Super Admin n’existe encore en production : la migration n’a créé aucun rôle (`roles=0`). Le bootstrap est lié à l’adresse `benwahab111@gmail.com` et le rôle sera attribué uniquement lorsque cette identité sera créée et vérifiée. Cette adresse doit être confirmée comme identité d’exploitation.
+- La console n’a pas été testée avec un compte Super Admin réel, une session WebAuthn réelle et une vérification e-mail réelle.
 - Les textes de la console sont définis localement dans `src/AdminDashboard.tsx` au lieu d’être centralisés dans `src/i18n/translations.ts`.
-- La console n’a pas été testée avec un compte Super Admin réel, une session WebAuthn réelle et une base D1 migrée.
+- Le journal de consultation croît à chaque lecture ; aucune politique de rétention ou d’archivage n’est encore arbitrée.
 
 ## CI et déploiement
 
@@ -116,6 +117,8 @@ Points non résolus :
 Le socle public, l’API de santé, la base D1, le relais GPS éphémère et le Worker de notification sont déployés et vérifiés au niveau infrastructure et tests automatisés. L’identité visuelle est revenue au vert clair demandé.
 
 Le projet n’est pas encore « 100 % production » au sens de preuve de bout en bout : les parcours réels appareil/e-mail/push/GPS, les sauvegardes natives, la conformité juridique et l’idempotence SOS restent à valider. Ces limites sont explicites et ne doivent pas être masquées par les tests unitaires.
+
+La console administrative est désormais migrée en production, avec un journal append-only et un contrôle de concurrence testé. Aucun compte Super Admin réel n’a encore été activé ni utilisé pour un test de bout en bout.
 
 ## Retour arrière
 

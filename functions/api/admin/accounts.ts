@@ -1,3 +1,4 @@
+import { recordAdminReadEvent } from "../../lib/security/admin-audit.ts";
 import { requireSuperAdminSession } from "../../lib/security/require-super-admin-session.ts";
 
 interface Env { DB: D1Database; }
@@ -21,6 +22,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
        LIMIT 25`,
     ).bind(query ? `%${query.replace(/[\\%_]/g, "\\$&")}%` : "%").all<{ id: string; email: string }>();
     if (!rows.success) return json({ error: "admin_service_unavailable" }, 503);
+    await recordAdminReadEvent(env.DB, admin.value, "admin.accounts.search", "admin.accounts.search");
     return json({ accounts: rows.results ?? [] });
   } catch {
     return json({ error: "admin_service_unavailable" }, 503);
