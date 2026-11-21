@@ -20,9 +20,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   try {
     const [missions, permissions] = await Promise.all([
       env.DB.prepare(
-        `SELECT id, assigned_account_id, created_by_account_id, scope_key, status,
-                due_at, created_at, updated_at, version
-         FROM admin_missions ORDER BY created_at DESC, id DESC LIMIT 200`,
+        `SELECT m.id, m.assigned_account_id, i.normalized_value AS assigned_email,
+                m.created_by_account_id, m.scope_key, m.status, m.due_at,
+                m.created_at, m.updated_at, m.version
+         FROM admin_missions m
+         LEFT JOIN account_identities i ON i.account_id = m.assigned_account_id
+           AND i.channel = 'email' AND i.is_primary = 1 AND i.verified_at IS NOT NULL
+         ORDER BY m.created_at DESC, m.id DESC LIMIT 200`,
       ).all<Record<string, unknown>>(),
       env.DB.prepare(
         "SELECT mission_id, permission FROM admin_mission_permissions ORDER BY mission_id, permission",
@@ -37,7 +41,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     }
     return json({ missions: (missions.results ?? []).map((row) => ({
       id: row.id, assignedAccountId: row.assigned_account_id,
-      createdByAccountId: row.created_by_account_id, scopeKey: row.scope_key,
+      assignedEmail: row.assigned_email, createdByAccountId: row.created_by_account_id, scopeKey: row.scope_key,
       status: row.status, dueAt: row.due_at, createdAt: row.created_at,
       updatedAt: row.updated_at, version: row.version,
       permissions: byMission.get(String(row.id)) ?? [],
