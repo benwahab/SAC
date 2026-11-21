@@ -9,7 +9,7 @@ export const SESSION_COOKIE_NAME = "__Host-sac_session";
 export const SESSION_COOKIE_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
-const CANONICAL_TOKEN_SUFFIX = /[AQgw]$/;
+const CANONICAL_TOKEN_SUFFIX = /[AEIMQUYcgkosw048]$/;
 
 function isCanonicalSessionToken(token: unknown): token is string {
   return typeof token === "string" &&
