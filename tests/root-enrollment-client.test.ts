@@ -6,6 +6,8 @@ import {
   type RootEnrollmentCeremony,
 } from "../src/services/device/root-enrollment.ts";
 import type { RootCredentialCreationOptionsJSON, WebAuthnCreationPort } from "../src/services/device/webauthn.ts";
+import { requestRootAuthenticationWithCredential } from "../src/services/device/root-authentication.ts";
+import { clearStoredPasskeyCredentialId, getStoredPasskeyCredentialId, storePasskeyCredentialId } from "../src/services/device/passkey-storage.ts";
 
 const options: RootCredentialCreationOptionsJSON = {
   challenge: "A".repeat(42) + "Q",
@@ -84,4 +86,42 @@ test("refuses an expired ceremony before invoking the authenticator", async () =
   };
   await assert.rejects(() => completeRootEnrollment({ ...ceremony, expiresAt: Date.now() - 1 }, fetch, port));
   assert.equal(called, false);
+});
+
+test("stores only a non-secret credential id for the biometric shortcut", () => {
+  const original = (globalThis as { localStorage?: Storage }).localStorage;
+  const values = new Map<string, string>();
+  (globalThis as { localStorage?: Storage }).localStorage = {
+    get length() { return values.size; },
+    clear: () => values.clear(),
+    getItem: (key: string) => values.get(key) ?? null,
+    key: (index: number) => [...values.keys()][index] ?? null,
+    removeItem: (key: string) => { values.delete(key); },
+    setItem: (key: string, value: string) => { values.set(key, value); },
+  } as Storage;
+  try {
+    storePasskeyCredentialId("credential-1");
+    assert.equal(getStoredPasskeyCredentialId(), "credential-1");
+    storePasskeyCredentialId("invalid credential with spaces");
+    assert.equal(getStoredPasskeyCredentialId(), "credential-1");
+    clearStoredPasskeyCredentialId();
+    assert.equal(getStoredPasskeyCredentialId(), null);
+  } finally {
+    if (original) (globalThis as { localStorage?: Storage }).localStorage = original;
+    else delete (globalThis as { localStorage?: Storage }).localStorage;
+  }
+});
+
+test("requests a challenge from a stored credential without sending email or password", async () => {
+  let posted = "";
+  const response = await requestRootAuthenticationWithCredential("credential-1", async (_url, init) => {
+    posted = String(init?.body);
+    return new Response(JSON.stringify({
+      challengeId: "11111111-1111-4111-8111-111111111111",
+      expiresAt: Date.now() + 60_000,
+      publicKey: { challenge: "A".repeat(42) + "Q", rpId: "sac.example", timeout: 300_000, userVerification: "required", allowCredentials: [{ type: "public-key", id: "credential-1" }] },
+    }), { status: 200 });
+  });
+  assert.equal(response.challengeId, "11111111-1111-4111-8111-111111111111");
+  assert.deepEqual(JSON.parse(posted), { credentialId: "credential-1" });
 });

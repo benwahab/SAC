@@ -1,9 +1,10 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Download, Eye, EyeOff, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, X } from "lucide-react";
+import { Download, Eye, EyeOff, Fingerprint, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, X } from "lucide-react";
 import BrandLogo from "./components/BrandLogo";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
-import { completeRootAuthentication, requestRootAuthentication, type RootAuthenticationOptions } from "./services/device/root-authentication";
+import { completeRootAuthentication, requestRootAuthentication, requestRootAuthenticationWithCredential, type RootAuthenticationOptions } from "./services/device/root-authentication";
 import { createPasswordSession } from "./services/device/password-session";
+import { clearStoredPasskeyCredentialId, getStoredPasskeyCredentialId } from "./services/device/passkey-storage";
 import PrivateSpacePage from "./PrivateSpacePage";
 import InvitationAcceptancePage from "./InvitationAcceptancePage";
 import AdminDashboard from "./AdminDashboard";
@@ -25,7 +26,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       signIn: "Connexion", create: "Créer un compte", register: "Créer mon compte",
       verify: "Vérifier mon adresse", resend: "Renvoyer un code",
       back: "Retour", home: "Retour à l’accueil", language: "Langue",
-      private: "Espace privé", loginUnavailable: "Connectez-vous avec votre adresse vérifiée et votre mot de passe. Vous pourrez configurer la clé de sécurité plus tard dans vos réglages.",
+      private: "Espace privé", loginUnavailable: "Utilisez Face ID ou l’empreinte si elle est configurée sur cet appareil, sinon connectez-vous avec votre adresse vérifiée et votre mot de passe.",
       rootIntro: "Votre appareil sécurisé est prêt. Confirmez votre identité pour ouvrir votre session.", prepareRoot: "Se connecter", createRoot: "Confirmer sur cet appareil", rootReady: "Confirmez la connexion avec la clé sécurisée de ce téléphone.", rootSuccess: "Connexion sécurisée réussie. Votre session est ouverte.", rootPreparing: "Vérification…", rootCreating: "Confirmation sur l’appareil…",
       registerIntro: "Créez votre compte. Votre adresse e-mail doit être vérifiée avant toute activation.",
       verifyIntro: "Saisissez le code envoyé à votre adresse e-mail. Il est valable 10 minutes.",
@@ -49,7 +50,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       signIn: "Sign in", create: "Create an account", register: "Create my account",
       verify: "Verify my email", resend: "Resend code",
       back: "Back", home: "Back to home", language: "Language",
-      private: "Private space", loginUnavailable: "Sign in with your verified email and password. You can configure the security key later in your settings.",
+      private: "Private space", loginUnavailable: "Use Face ID or your fingerprint if configured on this device; otherwise sign in with your verified email and password.",
       rootIntro: "Your secure device is ready. Confirm your identity to open your session.", prepareRoot: "Sign in", createRoot: "Confirm on this device", rootReady: "Confirm sign-in with this phone’s secure key.", rootSuccess: "Secure sign-in successful. Your session is open.", rootPreparing: "Checking…", rootCreating: "Confirm on your device…",
       registerIntro: "Create your account. Your email address must be verified before activation.",
       verifyIntro: "Enter the code sent to your email address. It is valid for 10 minutes.",
@@ -73,7 +74,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       signIn: "تسجيل الدخول", create: "إنشاء حساب", register: "إنشاء حسابي",
       verify: "التحقق من بريدي", resend: "إعادة إرسال الرمز",
       back: "رجوع", home: "العودة إلى الصفحة الرئيسية", language: "اللغة",
-      private: "مساحة خاصة", loginUnavailable: "سجّل الدخول ببريدك الموثّق وكلمة المرور. يمكنك إعداد مفتاح الأمان لاحقاً من الإعدادات.",
+      private: "مساحة خاصة", loginUnavailable: "استخدم Face ID أو بصمة الإصبع إذا كانت مُعدة على هذا الجهاز، وإلا فسجّل الدخول ببريدك الموثّق وكلمة المرور.",
       rootIntro: "جهازك الآمن جاهز. أكّد هويتك لفتح جلستك.", prepareRoot: "تسجيل الدخول", createRoot: "التأكيد على هذا الجهاز", rootReady: "أكّد تسجيل الدخول باستخدام المفتاح الآمن لهذا الهاتف.", rootSuccess: "تم تسجيل الدخول بأمان وفتح جلستك.", rootPreparing: "جارٍ التحقق…", rootCreating: "أكّد على جهازك…",
       registerIntro: "أنشئ حسابك. يجب التحقق من بريدك الإلكتروني قبل تفعيل الحساب.",
       verifyIntro: "أدخل الرمز المرسل إلى بريدك الإلكتروني. صلاحية الرمز 10 دقائق.",
@@ -109,6 +110,10 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
   const [resendAt, setResendAt] = useState<number | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const [rootCeremony, setRootCeremony] = useState<RootAuthenticationOptions | null>(null);
+  const [passkeyCredentialId, setPasskeyCredentialId] = useState<string | null>(() =>
+    globalThis.isSecureContext && typeof navigator.credentials?.get === "function" ? getStoredPasskeyCredentialId() : null,
+  );
+  const passkeyCopy = translations[language];
   const rtl = language === "ar";
 
   useEffect(() => {
@@ -247,6 +252,35 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       setBusy(false);
     }
   }
+
+  async function submitPasskey() {
+    if (busy || !passkeyCredentialId) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const ceremony = await requestRootAuthenticationWithCredential(passkeyCredentialId);
+      await completeRootAuthentication(ceremony);
+      setNotice(copy.rootSuccess);
+      window.location.assign(returnTo);
+    } catch (reason) {
+      const name = reason instanceof DOMException ? reason.name : "";
+      const message = reason instanceof Error ? reason.message : "";
+      if (message === "invalid_credentials" || message === "root_device_unavailable" || message === "root_enrollment_required") {
+        clearStoredPasskeyCredentialId();
+        setPasskeyCredentialId(null);
+        setError(passkeyCopy.passkeyUnavailable);
+      } else if (name === "NotAllowedError" || message.includes("annulée") || message.includes("refusée")) {
+        setError(passkeyCopy.passkeyCancelled);
+      } else if (message === "webauthn_not_supported") {
+        setError(passkeyCopy.passkeyUnavailable);
+      } else {
+        setError(passkeyCopy.passkeyFailed);
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
   async function resendCode() {
     if (busy || secondsRemaining > 0) return;
     setBusy(true);
@@ -305,6 +339,15 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
         {mode === "login" && (
           <div className="mt-8 space-y-4">
             <p className="text-sm leading-6 text-sac-muted">{copy.loginUnavailable}</p>
+            {passkeyCredentialId && (
+              <div className="rounded-2xl border border-sac-confirm/25 bg-sac-confirm/10 p-4">
+                <button type="button" disabled={busy} onClick={() => void submitPasskey()} className={primaryButton + " flex items-center justify-center gap-2"}>
+                  <Fingerprint aria-hidden="true" size={20} />{busy ? copy.rootPreparing : passkeyCopy.passkeySignIn}
+                </button>
+                <p className="mt-2 text-xs leading-5 text-sac-muted">{passkeyCopy.passkeyHint}</p>
+              </div>
+            )}
+            {passkeyCredentialId && <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[.18em] text-sac-muted"><span className="h-px flex-1 bg-sac-primary-strong/15" /><span>{passkeyCopy.passkeyOr}</span><span className="h-px flex-1 bg-sac-primary-strong/15" /></div>}
             <form className="space-y-4" onSubmit={submitRootOptions}>
               <div>
                 <label className="mb-2 block text-sm font-bold" htmlFor="sac-login-email">{copy.email}</label>

@@ -347,3 +347,27 @@ Le socle compte a été étendu au-delà de l’authentification :
 ### Verdict de cette mise à jour
 
 Le socle compte et social est désormais implémenté, typé, testé localement et relié à l’interface FR/EN/AR. Il ne doit pas être présenté comme opérationnel en production avant application contrôlée des migrations, vérification des secrets Brevo, test réel à deux comptes et validation de la suppression/purge.
+
+## Mise à jour du 21 novembre 2026 — connexion biométrique depuis la page de connexion
+
+### Comportement ajouté
+
+- Après configuration de la clé de sécurité, la page `/connexion` propose un bouton « Se connecter avec Face ID / empreinte ».
+- Le bouton utilise l’identifiant public de la credential mémorisé localement, sans envoyer d’e-mail ni de mot de passe.
+- Un seul geste WebAuthn est nécessaire ; la session est ouverte puis l’utilisateur est redirigé vers `/espace-prive` ou vers le lien d’invitation demandé.
+- Le formulaire e-mail + mot de passe reste disponible en secours.
+
+### Vérifications
+
+- `POST /api/auth/login-options` accepte `{ credentialId }` et retourne un défi WebAuthn uniquement pour un compte actif, un appareil actif et une credential existante.
+- Un identifiant inconnu retourne `401 invalid_credentials` sans révéler son existence.
+- `GET /api/auth/session` renvoie l’identifiant de credential de l’appareil courant à une session authentifiée.
+- `npm run test:root-authentication-endpoints` : 6/6 OK.
+- `npm run test:root-enrollment-client` : 5/5 OK.
+- `npm run typecheck` : OK.
+
+### Limites
+
+- La credential n’est pas discoverable : si le stockage local est effacé, une connexion par mot de passe est nécessaire pour réafficher le bouton.
+- Aucun test réel Face ID/empreinte sur appareil physique n’a été exécuté.
+- Aucune migration D1 n’est nécessaire, mais le déploiement du code reste dépendant de l’application préalable des migrations `0018`/`0019` pour les autres fonctionnalités de compte.

@@ -53,3 +53,27 @@ Ce choix est volontaire : il évite de bloquer les utilisateurs dont l’apparei
 - Aucun test avec un authentificateur physique réel n’a été exécuté dans cette session. Le test de production a utilisé une credential WebAuthn synthétique valide pour vérifier le parcours serveur.
 - Le blocage des fonctions sensibles sans clé n’est pas implémenté.
 - Les appareils secondaires et le remplacement de racine restent hors périmètre V1.
+
+## Ajout du 21 novembre 2026 — connexion biométrique depuis la page de connexion
+
+### Comportement
+
+- Après l’enrôlement d’une clé de sécurité, l’identifiant public de la credential est mémorisé localement sur l’appareil. Ce n’est ni un secret, ni un jeton de session, ni une donnée biométrique.
+- La page `/connexion` affiche alors un bouton « Se connecter avec Face ID / empreinte » avant le formulaire e-mail + mot de passe.
+- Un clic déclenche une seule cérémonie WebAuthn avec vérification utilisateur obligatoire, puis ouvre la session et redirige vers l’espace demandé.
+- Le formulaire e-mail + mot de passe reste disponible comme secours, notamment si le stockage local a été effacé ou si l’appareil ne prend pas en charge WebAuthn.
+
+### Implémentation
+
+- `POST /api/auth/login-options` accepte désormais soit `{ email, password }`, soit `{ credentialId }`.
+- Le mode `credentialId` recherche uniquement un compte actif, un appareil actif et une credential racine existante. Un identifiant inconnu retourne le même `401 invalid_credentials` qu’un identifiant invalide, sans indice d’existence.
+- La limitation de débit est appliquée par HMAC de la credential et réutilise la table existante `root_enrollment_rate_limits`.
+- `GET /api/auth/session` expose l’identifiant de credential de l’appareil courant à une session déjà authentifiée ; le client le mémorise pour proposer le bouton lors d’une connexion ultérieure.
+- Aucun remplacement de racine, aucune nouvelle table et aucune migration D1 ne sont ajoutés.
+
+### Limites
+
+- La credential n’est pas encore discoverable : si le stockage local est effacé, l’utilisateur doit se reconnecter une fois par mot de passe pour réactiver le bouton.
+- Aucun test avec un authentificateur physique réel, Face ID ou empreinte réelle n’a été exécuté dans cette session.
+- Le bouton n’est affiché que dans un contexte sécurisé et si `navigator.credentials.get` est disponible.
+- Les tests automatisés couvrent les options serveur et le stockage local, pas la cérémonie navigateur réelle.

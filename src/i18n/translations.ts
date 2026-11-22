@@ -13,6 +13,7 @@ export interface Translation {
   locationTitle: string; locationDescription: string; helpTitle: string; helpDescription: string;
   responsibleEyebrow: string; emergencyTitle: string; emergencyDescription: string;
   followProject: string; footer: string; installApp: string; installIosHelp: string; installAndroidHelp: string; close: string;
+  passkeySignIn: string; passkeyHint: string; passkeyOr: string; passkeyUnavailable: string; passkeyCancelled: string; passkeyFailed: string;
 }
 
 export const languages: { code: Language; label: string; nativeLabel: string }[] = [
@@ -55,7 +56,8 @@ export const translations: Record<Language, Translation> = {
     responsibleEyebrow: "Une application responsable",
     emergencyTitle: "SAC ne remplace pas les services d'urgence.",
     emergencyDescription: "SAC est conçu pour prévenir vos proches de confiance. Il ne garantit pas une intervention des secours.",
-    followProject: "Suivre le projet", footer: "SAC — Sécurité, Alerte, Citoyenne · Votre sécurité, votre décision.", installApp: "Installer SAC", installIosHelp: "Sur iPhone ou iPad : touchez Partager dans Safari, puis « Sur l’écran d’accueil » pour installer SAC.", installAndroidHelp: "Dans le menu de votre navigateur, choisissez « Installer l’application » ou « Ajouter à l’écran d’accueil ».", close: "Fermer"
+    followProject: "Suivre le projet", footer: "SAC — Sécurité, Alerte, Citoyenne · Votre sécurité, votre décision.", installApp: "Installer SAC", installIosHelp: "Sur iPhone ou iPad : touchez Partager dans Safari, puis « Sur l’écran d’accueil » pour installer SAC.", installAndroidHelp: "Dans le menu de votre navigateur, choisissez « Installer l’application » ou « Ajouter à l’écran d’accueil ».", close: "Fermer",
+    passkeySignIn: "Se connecter avec Face ID / empreinte", passkeyHint: "Utilisez la clé de sécurité configurée sur cet appareil, sans saisir d’e-mail ni de mot de passe.", passkeyOr: "ou", passkeyUnavailable: "Aucune clé de sécurité n’est configurée sur cet appareil. Connectez-vous avec votre mot de passe, puis configurez-la dans les réglages.", passkeyCancelled: "La connexion par clé de sécurité a été annulée.", passkeyFailed: "La connexion par clé de sécurité a échoué. Utilisez votre mot de passe ou réessayez."
   },
   en: {
     appName: "Safety · Alert · Citizen", tagline: "Your safety. Your loved ones. Your decision.",
@@ -86,7 +88,8 @@ export const translations: Record<Language, Translation> = {
     responsibleEyebrow: "A responsible app",
     emergencyTitle: "SAC does not replace emergency services.",
     emergencyDescription: "SAC is designed to notify people you trust. It does not guarantee that emergency responders will intervene.",
-    followProject: "Follow the project", footer: "SAC — Safety, Alert, Citizen · Your safety, your decision.", installApp: "Install SAC", installIosHelp: "On iPhone or iPad: tap Share in Safari, then choose “Add to Home Screen” to install SAC.", installAndroidHelp: "Open your browser menu and choose “Install app” or “Add to Home screen”.", close: "Close"
+    followProject: "Follow the project", footer: "SAC — Safety, Alert, Citizen · Your safety, your decision.", installApp: "Install SAC", installIosHelp: "On iPhone or iPad: tap Share in Safari, then choose “Add to Home Screen” to install SAC.", installAndroidHelp: "Open your browser menu and choose “Install app” or “Add to Home screen”.", close: "Close",
+    passkeySignIn: "Sign in with Face ID / fingerprint", passkeyHint: "Use the security key configured on this device, without entering an email or password.", passkeyOr: "or", passkeyUnavailable: "No security key is configured on this device. Sign in with your password, then configure it in settings.", passkeyCancelled: "Security-key sign-in was cancelled.", passkeyFailed: "Security-key sign-in failed. Use your password or try again."
   },
   ar: {
     appName: "السلامة · التنبيه · المواطنة", tagline: "سلامتك. أحباؤك. قرارك.",
@@ -117,7 +120,8 @@ export const translations: Record<Language, Translation> = {
     responsibleEyebrow: "تطبيق مسؤول",
     emergencyTitle: "لا يحل SAC محل خدمات الطوارئ.",
     emergencyDescription: "صُمم SAC لإبلاغ الأشخاص الذين تثق بهم. ولا يضمن تدخل فرق الطوارئ.",
-    followProject: "تابع المشروع", footer: "SAC — السلامة والتنبيه والمواطنة · سلامتك، قرارك.", installApp: "تثبيت SAC", installIosHelp: "على iPhone أو iPad: اضغط على «مشاركة» في Safari ثم اختر «إضافة إلى الشاشة الرئيسية» لتثبيت SAC.", installAndroidHelp: "افتح قائمة المتصفح واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».", close: "إغلاق"
+    followProject: "تابع المشروع", footer: "SAC — السلامة والتنبيه والمواطنة · سلامتك، قرارك.", installApp: "تثبيت SAC", installIosHelp: "على iPhone أو iPad: اضغط على «مشاركة» في Safari ثم اختر «إضافة إلى الشاشة الرئيسية» لتثبيت SAC.", installAndroidHelp: "افتح قائمة المتصفح واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».", close: "إغلاق",
+    passkeySignIn: "تسجيل الدخول باستخدام Face ID / البصمة", passkeyHint: "استخدم مفتاح الأمان المُعد على هذا الجهاز دون إدخال بريد إلكتروني أو كلمة مرور.", passkeyOr: "أو", passkeyUnavailable: "لا يوجد مفتاح أمان مُعد على هذا الجهاز. سجّل الدخول بكلمة المرور ثم أعدّه من الإعدادات.", passkeyCancelled: "تم إلغاء تسجيل الدخول بمفتاح الأمان.", passkeyFailed: "فشل تسجيل الدخول بمفتاح الأمان. استخدم كلمة المرور أو حاول مرة أخرى."
   }
 };
 

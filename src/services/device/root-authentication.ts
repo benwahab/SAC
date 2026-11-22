@@ -43,6 +43,17 @@ export async function requestRootAuthentication(email: string, password: string,
   return result;
 }
 
+export async function requestRootAuthenticationWithCredential(credentialId: string, fetcher: FetchPort = fetch): Promise<RootAuthenticationOptions> {
+  const response = await fetcher("/api/auth/login-options", {
+    method: "POST", credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ credentialId }), cache: "no-store",
+  });
+  const result = await payload<RootAuthenticationOptions & { error?: string }>(response);
+  if (!response.ok || !result.challengeId || !result.publicKey) throw new Error(result.error ?? "authentication_unavailable");
+  return result;
+}
+
 export async function completeRootAuthentication(ceremony: RootAuthenticationOptions, fetcher: FetchPort = fetch): Promise<RootAuthenticationResult> {
   if (!ceremony?.challengeId || ceremony.expiresAt <= Date.now()) throw new Error("authentication_expired_or_unavailable");
   if (!globalThis.isSecureContext || typeof navigator.credentials?.get !== "function") throw new Error("webauthn_not_supported");

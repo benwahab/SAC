@@ -2,6 +2,7 @@ import { Camera, KeyRound, Mail, Phone, Save, ShieldCheck, Trash2 } from "lucide
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { OwnProfile, PrivacySettings, ScreenProps } from "../types";
 import { MAX_PROFILE_PHOTO_BYTES } from "../../domain/account-profile";
+import { clearStoredPasskeyCredentialId } from "../../services/device/passkey-storage";
 import { accountErrorMessage } from "../errors";
 import { Card, Halo, Notice, ProfileAvatar, Sheet, fieldClass, ghostBtn, primaryBtn } from "../ui";
 
@@ -183,6 +184,7 @@ export default function Account({ copy, go, notice, setNotice, ownProfile, setOw
     setBusy("delete"); setProblem(""); setNotice("");
     try {
       await request("/api/account/deletion", { password: deletePassword });
+      clearStoredPasskeyCredentialId();
       setNotice(copy.accountDeleted);
       window.setTimeout(onLogout, 900);
     } catch (reason) { setProblem(reason instanceof Error ? reason.message : copy.accountErrGeneric); }

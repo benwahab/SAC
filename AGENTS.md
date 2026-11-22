@@ -171,3 +171,10 @@ Pour tout travail sur le cycle de suppression, lire `docs/RECOMMANDATIONS_ARBITR
 - Les migrations 0018 et 0019 ne sont pas appliquées à la base D1 distante par le code ou les tests locaux ; leur application exige une autorisation distincte.
 - `src/domain/account-lifecycle.ts` supporte désormais les cinq états (`pending_verification`, `active`, `suspended`, `deletion_pending`, `deleted`) ; la phrase antérieure indiquant qu'il n'en supporte que trois est obsolète.
 - L'acceptation d'une invitation de proximité ne partage automatiquement ni la photo ni les coordonnées. Chaque permission doit être accordée explicitement, conformément à `docs/CONTRAT_CONFIDENTIALITE_FAMILIALE_ET_ISOLATION_DONNEES.md`.
+
+## Mémoire technique — connexion biométrique (2026-11-21)
+
+- La page `/connexion` propose un bouton de connexion par clé de sécurité si un identifiant de credential non secret est mémorisé localement. Le bouton déclenche une cérémonie WebAuthn puis redirige vers l’espace demandé.
+- `POST /api/auth/login-options` accepte `{ credentialId }` sans e-mail ni mot de passe ; il exige un compte actif, un appareil actif et une credential racine existante. Un identifiant inconnu retourne `invalid_credentials` sans révéler son existence.
+- `GET /api/auth/session` renvoie l’identifiant de credential de l’appareil courant à une session authentifiée. Le client le mémorise après enrôlement ou connexion par mot de passe.
+- Cette credential n’est pas discoverable : l’effacement du stockage local exige une reconnexion par mot de passe pour réafficher le bouton. Aucune migration D1 n’est nécessaire pour ce raccourci.

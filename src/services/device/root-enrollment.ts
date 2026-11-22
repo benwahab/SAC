@@ -4,6 +4,7 @@ import {
   type SerializedRootCredential,
   type WebAuthnCreationPort,
 } from "./webauthn.ts";
+import { clearStoredPasskeyCredentialId, storePasskeyCredentialId } from "./passkey-storage.ts";
 
 export interface RootEnrollmentCeremony {
   ceremonyId: string;
@@ -81,17 +82,20 @@ export async function completeRootEnrollment(
   if (!response.ok || !payload.enrolled || !payload.session?.id) {
     throw new Error(payload.error ?? "root_enrollment_failed");
   }
+  storePasskeyCredentialId(credential.id);
   return payload;
 }
 
 export async function getDeviceSession(fetcher: FetchPort = fetch): Promise<{
-  authenticated: boolean; accountId?: string; deviceId?: string; sessionId?: string; securityKeyConfigured?: boolean;
+  authenticated: boolean; accountId?: string; deviceId?: string; sessionId?: string; securityKeyConfigured?: boolean; credentialId?: string | null;
 }> {
   const response = await fetcher("/api/auth/session", {
     method: "GET", credentials: "same-origin", cache: "no-store",
   });
-  const payload = await readPayload<{ authenticated: boolean; accountId?: string; deviceId?: string; sessionId?: string; securityKeyConfigured?: boolean }>(response);
+  const payload = await readPayload<{ authenticated: boolean; accountId?: string; deviceId?: string; sessionId?: string; securityKeyConfigured?: boolean; credentialId?: string | null }>(response);
   if (!response.ok || !payload.authenticated) return { authenticated: false };
+  if (payload.credentialId) storePasskeyCredentialId(payload.credentialId);
+  else if (payload.securityKeyConfigured === false) clearStoredPasskeyCredentialId();
   return payload;
 }
 

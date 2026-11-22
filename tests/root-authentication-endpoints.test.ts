@@ -87,3 +87,40 @@ test("login options does not disclose first-device state for an invalid password
   assert.equal(response.status, 401);
   assert.deepEqual(await response.json(), { error: "invalid_credentials" });
 });
+
+test("login options can prepare a passkey challenge from a stored credential without email or password", async () => {
+  const account = { id: "123e4567-e89b-42d3-a456-426614174000", status: "active", device_id: "device-1", device_status: "active", credential_id: "credential-1" };
+  const db = {
+    prepare(sql: string) {
+      return { bind() { return {
+        async run() { return { success: true, meta: { changes: 1 } }; },
+        async first() {
+          if (sql.includes("SELECT attempt_count")) return { attempt_count: 1 };
+          if (sql.includes("c.credential_id = ?")) return account;
+          throw new Error("Unexpected D1 query");
+        },
+      }; } };
+    },
+  };
+  const env = { DB: db, WEBAUTHN_RP_ID: "sac.example", WEBAUTHN_ALLOWED_ORIGINS: JSON.stringify([origin]), EMAIL_OTP_HMAC_SECRET: "s".repeat(32) };
+  const response = await loginOptions({ request: request({ credentialId: "credential-1" }), env } as never);
+  assert.equal(response.status, 200);
+  const payload = await response.json() as { challengeId: string; publicKey: { allowCredentials: Array<{ id: string }> } };
+  assert.equal(typeof payload.challengeId, "string");
+  assert.deepEqual(payload.publicKey.allowCredentials, [{ type: "public-key", id: "credential-1" }]);
+});
+
+test("login options does not reveal whether an unknown passkey exists", async () => {
+  const db = {
+    prepare(sql: string) {
+      return { bind() { return {
+        async run() { return { success: true, meta: { changes: 1 } }; },
+        async first() { return sql.includes("SELECT attempt_count") ? { attempt_count: 1 } : null; },
+      }; } };
+    },
+  };
+  const env = { DB: db, WEBAUTHN_RP_ID: "sac.example", WEBAUTHN_ALLOWED_ORIGINS: JSON.stringify([origin]), EMAIL_OTP_HMAC_SECRET: "s".repeat(32) };
+  const response = await loginOptions({ request: request({ credentialId: "unknown-credential" }), env } as never);
+  assert.equal(response.status, 401);
+  assert.deepEqual(await response.json(), { error: "invalid_credentials" });
+});
