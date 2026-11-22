@@ -65,12 +65,12 @@ export default function PrivateSpacePage({ onLogout }: Props) {
     case "reminders": body = <Reminders {...nav} />; break;
     case "settings": body = <Settings {...nav} setLanguage={setLanguage} onLogout={onLogout} securityKeyConfigured={data.securityKeyConfigured} onSecurityKeyConfigured={() => { void data.refresh(); }} />; break;
     case "alert": body = <AlertScreen {...nav} notice={notice} id={screen.id} identity={data.identity} alerts={data.alerts} loading={data.loading} refresh={data.refresh} />; break;
-    default: body = <Dashboard {...nav} contacts={data.contacts} closeContacts={data.closeContacts} ownProfile={data.ownProfile} alerts={data.alerts} loading={data.loading} error={data.error} securityKeyConfigured={data.securityKeyConfigured} />;
+    default: body = <Dashboard {...nav} closeContacts={data.closeContacts} invitations={data.invitations} ownProfile={data.ownProfile} alerts={data.alerts} loading={data.loading} error={data.error} securityKeyConfigured={data.securityKeyConfigured} />;
   }
 
   return (
     <div className="sac-app" dir={language === "ar" ? "rtl" : "ltr"}>
-      <main className="mx-auto min-h-svh max-w-lg bg-sac-canvas">{body}</main>
+      <main className={`mx-auto min-h-svh ${screen.name === "home" ? "max-w-2xl" : "max-w-lg"} bg-sac-canvas`}>{body}</main>
       <BottomNav current={screen.name === "invite" || screen.name === "contact" ? "contacts" : screen.name === "alert" ? "history" : screen.name === "account" || screen.name === "alertContacts" ? "settings" : screen.name} copy={copy} go={changeScreen} securityKeyConfigured={data.securityKeyConfigured} />
     </div>
   );

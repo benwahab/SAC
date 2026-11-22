@@ -75,12 +75,16 @@ test("reminder service persists, isolates, closes and dispatches ordinary notifi
   const seeded = await post<{ owner: string; other: string; now: number }>("/seed", {});
   assert.equal(seeded.status, 200, JSON.stringify(seeded.data));
   const { owner, other, now } = seeded.data;
+  const localDateInDays = (days: number) => new Date(now + days * 86_400_000).toISOString().slice(0, 10);
+  const targetDate = localDateInDays(2);
+  const weekStart = localDateInDays(3);
+  const weekEnd = localDateInDays(12);
 
   const onceDraft = {
     kind: "appointment",
     title: "Consultation",
     description: "Apporter le carnet",
-    recurrence: { type: "once", localDate: "2026-11-22", localTime: "08:00", timeZone: "Africa/Niamey" },
+    recurrence: { type: "once", localDate: targetDate, localTime: "08:00", timeZone: "Africa/Niamey" },
     medication: null,
   };
   const created = await post<Result<Detail>>("/create", { accountId: owner, draft: onceDraft, now });
@@ -170,8 +174,8 @@ test("reminder service persists, isolates, closes and dispatches ordinary notifi
       description: null,
       recurrence: {
         type: "weekly",
-        startDate: "2026-11-21",
-        endDate: "2026-11-30",
+        startDate: weekStart,
+        endDate: weekEnd,
         localTime: "09:00",
         timeZone: "Africa/Niamey",
         weekdays: [1, 3],
@@ -206,7 +210,7 @@ test("reminder service persists, isolates, closes and dispatches ordinary notifi
       kind: "medication",
       title: "Traitement",
       description: null,
-      recurrence: { type: "once", localDate: "2026-11-22", localTime: "08:00", timeZone: "Africa/Niamey" },
+      recurrence: { type: "once", localDate: targetDate, localTime: "08:00", timeZone: "Africa/Niamey" },
       medication: { name: "Médicament", dosage: "", instructions: null },
     },
   });
