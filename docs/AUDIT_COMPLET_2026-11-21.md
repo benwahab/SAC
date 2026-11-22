@@ -370,4 +370,19 @@ Le socle compte et social est désormais implémenté, typé, testé localement 
 
 - La credential n’est pas discoverable : si le stockage local est effacé, une connexion par mot de passe est nécessaire pour réafficher le bouton.
 - Aucun test réel Face ID/empreinte sur appareil physique n’a été exécuté.
-- Aucune migration D1 n’est nécessaire, mais le déploiement du code reste dépendant de l’application préalable des migrations `0018`/`0019` pour les autres fonctionnalités de compte.
+- Aucune migration D1 supplémentaire n’est nécessaire pour ce raccourci. Les migrations `0018`/`0019` ont été appliquées à la D1 distante avant le déploiement.
+
+
+## Déploiement vérifié du 21 novembre 2026
+
+- Sauvegarde D1 distante avant migration : `/tmp/sac-d1-backups/sac-db-before-0018-2026-11-21.sql`, 96 Ko, SHA-256 `911944ca3123c7ed7b070564173c42dcf85e12ff33bed5d1b44a5fbde0ef2f53`.
+- Migrations `0018_account_profiles_privacy_proximity.sql` et `0019_account_contact_change_guards.sql` appliquées à `sac-db` (UUID `892ce876-f279-409c-8f9e-06b1dca66e9d`).
+- `wrangler d1 migrations list sac-db --remote` : aucune migration en attente.
+- Contrôle lecture seule : tables `account_profiles`, `proximity_invitations`, `close_relations` et `account_activity_log` interrogeables, toutes vides au moment du contrôle.
+- Commits poussés sur `origin/main` : `62c983f`, puis `bfe1d54`.
+- GitHub Actions `SAC quality checks` sur `bfe1d54` : **success**.
+- Déploiement Cloudflare Pages de production : `e507dda3-2cc0-4aa0-a8fc-c63b275af5b8`, source `bfe1d54`.
+- `https://sac-3xh.pages.dev/api/health` : HTTP 200, `{"ok":true,"service":"sac-api","database":"connected"}`.
+- Page `/connexion` : le bouton biométrique est rendu lorsque l’identifiant de credential de test est présent dans le stockage local ; le test de rendu a été effectué dans le navigateur, puis l’identifiant de test a été retiré.
+- `POST /api/auth/login-options` avec une credential inconnue : HTTP 401 `invalid_credentials`, sans divulgation.
+- Aucun test réel de création de compte, d’OTP Brevo, de Face ID ou d’empreinte physique n’a été exécuté dans cette session.

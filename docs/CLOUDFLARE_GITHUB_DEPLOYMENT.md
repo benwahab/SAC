@@ -103,3 +103,14 @@ La configuration de la variable secrète a reçu une réponse de succès Cloudfl
 ### Vérification R2 complémentaire (19 novembre 2026)
 
 La liste des buckets a été interrogée directement sur l'API du compte connecté. Cloudflare a répondu HTTP 403, code 10042 : `Please enable R2 through the Cloudflare Dashboard.` R2 n'est donc pas activé pour ce compte. Aucun bucket ni binding R2 n'a été créé. Cette activation doit être effectuée dans le tableau de bord Cloudflare par le titulaire du compte ; la configuration SAC ne doit pas simuler un stockage objet disponible.
+
+
+## Mise à jour du 21 novembre 2026 — migrations et déploiement
+
+- Sauvegarde D1 distante effectuée avant migration.
+- Migrations `0018` et `0019` appliquées à `sac-db` ; aucune migration en attente.
+- Commits `62c983f` et `bfe1d54` poussés sur `main`.
+- Déploiement Cloudflare Pages de production `e507dda3-2cc0-4aa0-a8fc-c63b275af5b8`, source `bfe1d54`.
+- `https://sac-3xh.pages.dev/api/health` retourne HTTP 200 avec la base connectée.
+- Le bouton de connexion biométrique est présent dans le bundle de production ; il n’apparaît qu’après mémorisation locale d’une credential.
+- Les tests réels OTP/Brevo, Face ID/empreinte physique et parcours complet à deux comptes restent à exécuter.
