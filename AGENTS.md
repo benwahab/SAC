@@ -180,3 +180,5 @@ Pour tout travail sur le cycle de suppression, lire `docs/RECOMMANDATIONS_ARBITR
 - Cette credential n’est pas discoverable : l’effacement du stockage local exige une reconnexion par mot de passe pour réafficher le bouton. Aucune migration D1 n’est nécessaire pour ce raccourci.
 
 - État vérifié le 21 novembre 2026 : migrations `0018`/`0019` appliquées à la D1 distante `sac-db`, commits `62c983f`/`bfe1d54` poussés sur `origin/main`, déploiement Pages `e507dda3-2cc0-4aa0-a8fc-c63b275af5b8` et `/api/health` à 200. Le bouton biométrique est visible dans le bundle de production ; les tests réels OTP/Brevo, Face ID/empreinte et deux comptes restent à faire.
+
+- Correctif du 21 novembre 2026 : les déconnexions après connexion sécurisée venaient d'une course de renouvellement de session entre requêtes parallèles. `requireAuthenticatedDeviceSession` tolère désormais un décalage d'horloge borné et met à jour la session avec `MAX(...)`. Suite complète 68/68.

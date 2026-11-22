@@ -3,6 +3,8 @@ import { hashSessionToken } from "./session-token.ts";
 import { authorizeDeviceSession, type DeviceSessionRecord, type SessionAuthorizationContext } from "../../../src/domain/session-authorization.ts";
 import { getSessionExpiresAt } from "../../../src/domain/auth-policy.ts";
 
+const SESSION_CLOCK_SKEW_TOLERANCE_MS = 60_000;
+
 export interface AuthenticatedDeviceSession {
   readonly accountId: string;
   readonly deviceId: string;
@@ -35,7 +37,6 @@ export async function requireAuthenticatedDeviceSession(
     const tokenHash = await hashSessionToken(cryptoProvider, token);
     if (!tokenHash) return { ok: false, status: 401 };
 
-    const now = new Date(nowMs).toISOString();
     const row = await db.prepare(
       `SELECT s.id AS session_id, s.account_id, s.device_id, s.token_hash,
               s.status AS session_status, s.auth_version AS session_auth_version,
@@ -58,6 +59,16 @@ export async function requireAuthenticatedDeviceSession(
         typeof row.current_device_auth_version !== "number") {
       return { ok: false, status: 401 };
     }
+
+    // Les requêtes parallèles d'un même écran peuvent arriver avec une horloge
+    // d'edge légèrement en retard sur le last_activity_at déjà écrit par une
+    // autre requête. On tolère ce décalage sans accepter une date future arbitraire.
+    const lastActivityMs = row.last_activity_at;
+    if (lastActivityMs > nowMs + SESSION_CLOCK_SKEW_TOLERANCE_MS) {
+      return { ok: false, status: 401 };
+    }
+    const effectiveNowMs = Math.max(nowMs, lastActivityMs);
+    const now = new Date(effectiveNowMs).toISOString();
 
     const session: DeviceSessionRecord = {
       sessionId: row.session_id,
@@ -86,10 +97,12 @@ export async function requireAuthenticatedDeviceSession(
     if (!nextExpiry) return { ok: false, status: 401 };
 
     const updated = await db.prepare(
-      `UPDATE device_sessions SET last_activity_at = ?, expires_at = ?
+      `UPDATE device_sessions
+       SET last_activity_at = MAX(last_activity_at, ?),
+           expires_at = MAX(expires_at, ?)
        WHERE id = ? AND token_hash = ? AND status = 'active'
-         AND auth_version = ? AND last_activity_at <= ? AND expires_at > ?`,
-    ).bind(nowMs, Date.parse(nextExpiry), session.sessionId, tokenHash, session.authVersion, nowMs, nowMs).run();
+         AND auth_version = ? AND expires_at > ?`,
+    ).bind(effectiveNowMs, Date.parse(nextExpiry), session.sessionId, tokenHash, session.authVersion, effectiveNowMs).run();
 
     if (!updated.success || updated.meta.changes !== 1) return { ok: false, status: 401 };
     return {

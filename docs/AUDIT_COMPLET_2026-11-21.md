@@ -386,3 +386,17 @@ Le socle compte et social est désormais implémenté, typé, testé localement 
 - Page `/connexion` : le bouton biométrique est rendu lorsque l’identifiant de credential de test est présent dans le stockage local ; le test de rendu a été effectué dans le navigateur, puis l’identifiant de test a été retiré.
 - `POST /api/auth/login-options` avec une credential inconnue : HTTP 401 `invalid_credentials`, sans divulgation.
 - Aucun test réel de création de compte, d’OTP Brevo, de Face ID ou d’empreinte physique n’a été exécuté dans cette session.
+
+
+## Correctif — déconnexion après connexion sécurisée
+
+Symptôme observé : après une connexion par clé de sécurité, l’espace privé renvoie vers `/connexion`. Les sessions récentes restaient `active` en D1, ce qui écartait une révocation serveur.
+
+Cause : les écrans privés chargent plusieurs endpoints protégés en parallèle. Chaque requête renouvelle `last_activity_at` dans `device_sessions`. Lorsqu’une requête arrivait avec une horloge d’edge légèrement antérieure à la valeur déjà écrite par une autre requête, `authorizeDeviceSession` refusait la session (`current < lastActivity`) et l’interface appelait `onLogout`.
+
+Correctif :
+- tolérance bornée de 60 secondes pour un `last_activity_at` légèrement futur ;
+- calcul de l’autorisation avec l’horodatage effectif le plus récent ;
+- mise à jour atomique `MAX(last_activity_at, ?)` / `MAX(expires_at, ?)` au lieu d’un filtre `last_activity_at <= ?` qui échouait en concurrence.
+
+Tests ajoutés dans `tests/require-authenticated-device-session.test.ts` : décalage léger accepté, activité future au-delà de la tolérance refusée. Suite complète : 68 scripts, 0 échec ; typecheck et build OK.

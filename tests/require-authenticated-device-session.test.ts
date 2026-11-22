@@ -104,6 +104,48 @@ test("autorise uniquement une session active liée à un compte et un appareil a
   assert.equal(db.updateCalls, 1);
 });
 
+test("tolère un léger décalage d'horloge entre requêtes parallèles", async () => {
+  const now = Date.now();
+  const issued = await createSessionToken(cryptoProvider);
+  const row = validSessionRow(issued.tokenHash, now);
+  row.last_activity_at = now + 2_000;
+  row.expires_at = Date.parse(getSessionExpiresAt({
+    createdAt: new Date(row.created_at as number).toISOString(),
+    lastActivityAt: new Date(row.last_activity_at as number).toISOString(),
+  }) as string);
+  const db = new MockDatabase(row);
+  const response = await requireAuthenticatedDeviceSession(
+    new Request("https://sac.example/api/contacts", {
+      headers: { Cookie: createSessionCookie(issued.token) },
+    }),
+    db as unknown as D1Database,
+    now,
+    cryptoProvider,
+  );
+
+  assert.equal(response.ok, true);
+  assert.equal(db.updateCalls, 1);
+});
+
+test("refuse une activité future au-delà de la tolérance d'horloge", async () => {
+  const now = Date.now();
+  const issued = await createSessionToken(cryptoProvider);
+  const row = validSessionRow(issued.tokenHash, now);
+  row.last_activity_at = now + 61_000;
+  const db = new MockDatabase(row);
+  const response = await requireAuthenticatedDeviceSession(
+    new Request("https://sac.example/api/contacts", {
+      headers: { Cookie: createSessionCookie(issued.token) },
+    }),
+    db as unknown as D1Database,
+    now,
+    cryptoProvider,
+  );
+
+  assert.deepEqual(response, { ok: false, status: 401 });
+  assert.equal(db.updateCalls, 0);
+});
+
 test("refuse un compte suspendu et ne renouvelle pas sa session", async () => {
   const now = Date.now();
   const issued = await createSessionToken(cryptoProvider);
