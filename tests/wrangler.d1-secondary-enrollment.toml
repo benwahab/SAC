@@ -1,0 +1,9 @@
+name = "sac-d1-secondary-enrollment-test"
+main = "./workers/d1-secondary-enrollment-worker.ts"
+compatibility_date = "2026-11-17"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sac-d1-secondary-enrollment-test"
+database_id = "7b0d4e8e-3d5a-4f6b-9c21-8a7e6f5d4c3b"
+migrations_dir = "./d1-secondary-enrollment/migrations"

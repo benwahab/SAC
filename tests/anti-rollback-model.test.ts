@@ -7,6 +7,8 @@ type SecurityEvent =
   | { type: "ROOT_REVOKED"; rootDeviceId: string; generation: number }
   | { type: "DEVICE_ACTIVATED"; deviceId: string }
   | { type: "DEVICE_REVOKED"; deviceId: string }
+  | { type: "SECONDARY_DEVICE_ACTIVATED"; rootDeviceId: string; deviceId: string }
+  | { type: "CERTIFICATE_ISSUED"; deviceId: string; certificateId: string }
   | { type: "CHALLENGE_CONSUMED"; challengeIdDigest: string };
 
 type LedgerEntry = {
@@ -95,6 +97,7 @@ type ProjectionSnapshot = {
   hash: string;
   root: { deviceId: string; generation: number; status: "active" | "revoked" } | null;
   devices: Record<string, "active" | "revoked">;
+  certificates: string[];
   consumedChallengeDigests: string[];
 };
 
@@ -104,6 +107,7 @@ class D1ProjectionModel {
     hash: GENESIS,
     root: null,
     devices: {},
+    certificates: [],
     consumedChallengeDigests: [],
   };
 
@@ -141,6 +145,18 @@ class D1ProjectionModel {
         break;
       case "DEVICE_REVOKED":
         this.state.devices[entry.event.deviceId] = "revoked";
+        break;
+      case "SECONDARY_DEVICE_ACTIVATED":
+        if (this.state.root?.deviceId !== entry.event.rootDeviceId || this.state.root.status !== "active") {
+          throw new Error("secondary_root_not_active");
+        }
+        this.state.devices[entry.event.deviceId] = "active";
+        break;
+      case "CERTIFICATE_ISSUED":
+        if (this.state.devices[entry.event.deviceId] !== "active") throw new Error("certificate_device_not_active");
+        if (!this.state.certificates.includes(entry.event.certificateId)) {
+          this.state.certificates.push(entry.event.certificateId);
+        }
         break;
       case "CHALLENGE_CONSUMED":
         if (!this.state.consumedChallengeDigests.includes(entry.event.challengeIdDigest)) {
@@ -307,4 +323,27 @@ test("a D1 projection ahead of the authoritative anchor is not auto-reconciled",
   projectedD1.restore(newerD1.snapshot());
   assert.equal(isSynchronized(authoritativeAnchor, projectedD1), false);
   assert.equal(reconcile(authoritativeAnchor, projectedD1), false);
+});
+
+test("restoring D1 before a secondary enrollment replays activation and certificate", () => {
+  const anchor = new IndependentAnchorModel();
+  const d1 = new D1ProjectionModel();
+  appendThenProject(anchor, d1, "root-create-2", {
+    type: "ROOT_REGISTERED", rootDeviceId: "root-G", generation: 1,
+  });
+  const beforeEnrollment = d1.snapshot();
+
+  appendThenProject(anchor, d1, "secondary-activate-1", {
+    type: "SECONDARY_DEVICE_ACTIVATED", rootDeviceId: "root-G", deviceId: "secondary-H",
+  });
+  appendThenProject(anchor, d1, "certificate-issue-1", {
+    type: "CERTIFICATE_ISSUED", deviceId: "secondary-H", certificateId: "certificate-1",
+  });
+  assert.equal(isSynchronized(anchor, d1), true);
+
+  d1.restore(beforeEnrollment);
+  assert.equal(isSynchronized(anchor, d1), false);
+  assert.equal(reconcile(anchor, d1), true);
+  assert.equal(d1.state.devices["secondary-H"], "active");
+  assert.deepEqual(d1.state.certificates, ["certificate-1"]);
 });

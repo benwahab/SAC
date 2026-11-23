@@ -57,6 +57,8 @@ jobs:
         run: npx wrangler d1 migrations apply sac-d1-enrollment-atomicity-test --local --config tests/wrangler.d1-atomicity.toml
       - name: Test D1 enrollment challenge atomicity, rollback and concurrent replay
         run: npm run test:d1-enrollment-atomicity
+      - name: Test D1 secondary enrollment atomicity, idempotency and revocation race
+        run: npm run test:d1-secondary-enrollment
       - name: Test independent anti-rollback anchor model and fail-closed recovery
         run: npm run test:anti-rollback-model
       - name: Test isolated ACL UDE contract model (not an Azure integration test)
