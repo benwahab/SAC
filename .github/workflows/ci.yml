@@ -65,6 +65,8 @@ jobs:
         run: npm run test:jcs
       - name: Test strict JSON boundary parser and duplicate-key rejection
         run: npm run test:jcs-input
+      - name: Test device enrollment transcript, JCS vector, key validation and SAS
+        run: npm run test:device-enrollment-transcript
       - name: Test JCS and Web Crypto in local Cloudflare Workers runtime
         run: npm run test:jcs-worker
       - name: Test P-256 ECDSA RFC 6979 signature interoperability

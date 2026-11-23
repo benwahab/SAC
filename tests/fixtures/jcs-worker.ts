@@ -1,4 +1,11 @@
 import { canonicalizeStrictJson } from "../../src/services/crypto/strict-json.ts";
+import {
+  buildDeviceEnrollmentTranscript,
+  canonicalizeDeviceEnrollmentTranscript,
+  deriveDeviceEnrollmentSas,
+  hashDeviceEnrollmentTranscript,
+  validateDeviceEnrollmentPublicKeys,
+} from "../../src/domain/device-enrollment-transcript.ts";
 
 // This fixture is executed by Wrangler locally; it never deploys or binds remote resources.
 const input = String.raw`{"numbers":[333333333.33333329,1E30,4.50,2e-3,0.000000000000000000000000001],"string":"\u20ac$\u000F\u000aA'\u0042\u0022\u005c\\\"\/","literals":[null,true,false]}`;
@@ -63,10 +70,49 @@ export default {
       generatedSignature,
       new TextEncoder().encode("SAC worker ECDSA format check"),
     );
+    const transcript = buildDeviceEnrollmentTranscript({
+      accountId: "account-example-001",
+      rootDeviceId: "root-device-example-001",
+      rootKeyVersion: 1,
+      rootIdentityKeyThumbprint: "A".repeat(43),
+      ceremonyId: "A".repeat(22),
+      challengeId: "AQEBAQEBAQEBAQEBAQEBAQ",
+      challenge: "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI",
+      newDeviceId: "AwMDAwMDAwMDAwMDAwMDAw",
+      newDeviceNonce: "BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ",
+      rootNonce: "BQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQU",
+      platform: "android",
+      identityPublicKey: {
+        kty: "EC", crv: "P-256",
+        x: "NIlc9Qcp9HK_uID5f8-oQmBB3hWWmcaDBsfL3mXoN3k",
+        y: "iDT1z39uVSdkrpfaPADvoPnMA3pAtpRJ-SgkSLlJ-Ec",
+      },
+      agreementPublicKey: {
+        kty: "EC", crv: "P-256",
+        x: "EmfIJ6qNBvALHzVRIHgXSFeaA8nYIh9-zcMuMEpjYE8",
+        y: "rdP4tFHnjfoNPbC8DOdSYB_BJhz9IEWdxK4r84Dtm-o",
+      },
+      usages: ["device-authentication", "key-agreement"],
+      issuedAt: 1795046400000,
+      expiresAt: 1795046700000,
+    });
+    const transcriptCanonical = canonicalizeDeviceEnrollmentTranscript(transcript);
+    const transcriptSha256 = Array.from(await hashDeviceEnrollmentTranscript(transcript))
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+    const transcriptKeysValid = await validateDeviceEnrollmentPublicKeys(transcript);
+    const sas = await deriveDeviceEnrollmentSas(
+      transcript,
+      Uint8Array.from({ length: 64 }, (_, index) => index),
+    );
 
     return Response.json({
       canonical,
       sha256,
+      transcriptCanonical,
+      transcriptSha256,
+      transcriptKeysValid,
+      sas,
       ecdsa: {
         rfcSignatureBytes: rfcHighS.byteLength,
         rfcHighSVerified,

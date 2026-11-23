@@ -1,8 +1,8 @@
 # SAC — Spécification consolidée candidate : enrôlement multi-appareils V1
 
-**Date :** 19 novembre 2026  
-**Dépôt :** `benwahab/SAC`, branche `main`  
-**Statut :** spécification de travail consolidée — non homologuée, non implémentée.  
+**Date :** 19 novembre 2026
+**Dépôt :** `benwahab/SAC`, branche `main`
+**Statut :** décisions du 21 novembre 2026 approuvées ; transcript pur implémenté et testé ; enrôlement réel non homologué et non activé.
 **Portée :** enrôlement d'un appareil secondaire sous l'autorité de l'appareil racine unique. Ce document ne permet aucune activation réelle, création de session, migration D1, ressource Cloudflare ou utilisation GPS.
 
 ## 1. Hiérarchie et décisions fermées
@@ -228,3 +228,18 @@ La récupération/remplacement de racine demeure interdite en V1. Le GPS reste N
 - Notifications de sécurité et politique d'audit.
 
 **Règle finale :** aucun agent ne doit combler ces points par intuition, choisir silencieusement une primitive, ou raccorder le certificat expérimental à une API. Une décision technique devra être inscrite ici, testée et revue avant que le statut passe à « approuvé ».
+
+
+## 16. Décisions approuvées le 21 novembre 2026
+
+L'utilisateur a validé le paquet de décisions consigné dans [HOMOLOGATION_ENROLEMENT_SECOND_APPAREIL_V1.md](HOMOLOGATION_ENROLEMENT_SECOND_APPAREIL_V1.md) :
+
+- JCS RFC 8785 ;
+- assertions WebAuthn avec domaines séparés ;
+- SAS six mots sur une liste versionnée de 2 048 entrées ;
+- défi 5 minutes et cérémonie 10 minutes ;
+- une seule cérémonie pending par compte ;
+- activation uniquement après commit atomique ;
+- conception anti-restauration séparée avant toute API ou migration.
+
+Le module `src/domain/device-enrollment-transcript.ts` implémente le transcript pur et ses tests. Aucun endpoint, aucune migration D1, aucune session et aucune activation réelle n'est autorisé par cette décision. Le NO-GO production reste en vigueur.

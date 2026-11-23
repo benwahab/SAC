@@ -28,6 +28,7 @@
     "test:otp-code": "node --experimental-strip-types --test tests/email-otp-code.test.ts",
     "test:password-hash": "node --experimental-strip-types --test tests/password-hash.test.ts",
     "test:jcs": "node --experimental-strip-types --test tests/jcs-canonicalization.test.ts",
+    "test:device-enrollment-transcript": "node --experimental-strip-types --test tests/device-enrollment-transcript.test.ts",
     "test:jcs-input": "node --experimental-strip-types --test tests/strict-json.test.ts",
     "test:jcs-worker": "node --experimental-strip-types --test tests/jcs-worker-runtime.test.ts",
     "test:ecdsa": "node --experimental-strip-types --test tests/ecdsa-p256-interoperability.test.ts",

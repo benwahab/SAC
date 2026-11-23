@@ -57,6 +57,10 @@ test(
     const result = await response.json() as {
       canonical: string;
       sha256: string;
+      transcriptCanonical: string;
+      transcriptSha256: string;
+      transcriptKeysValid: boolean;
+      sas: string[];
       ecdsa: {
         rfcSignatureBytes: number;
         rfcHighSVerified: boolean;
@@ -71,6 +75,10 @@ test(
       result.sha256,
       "2d5e01a318d0f0879ab568c4be289c8b1f64ef8921a53c6277d5e069978baacb",
     );
+    assert.equal(result.transcriptCanonical.startsWith('{"accountId":"account-example-001"'), true);
+    assert.equal(result.transcriptSha256, "dc62c04005c989fd0f55b749477bc9311ee6875d9c91ce98aa87b470849739ec");
+    assert.equal(result.transcriptKeysValid, true);
+    assert.deepEqual(result.sas, ["axis", "canal", "unknown", "cream", "cart", "salad"]);
     assert.equal(result.ecdsa.rfcSignatureBytes, 64);
     assert.equal(result.ecdsa.rfcHighSVerified, true);
     assert.equal(result.ecdsa.rfcLowSVerified, true);
