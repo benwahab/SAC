@@ -41,6 +41,7 @@
     "test:anti-rollback-model": "node --experimental-strip-types --test tests/anti-rollback-model.test.ts",
     "test:security-anchor": "node --experimental-strip-types --test tests/security-anchor.test.ts",
     "test:restore-gate": "node --experimental-strip-types --test tests/device-enrollment-restore-gate.test.ts",
+    "test:device-enrollment-qr": "node --experimental-strip-types --test tests/device-enrollment-qr.test.ts",
     "test:acl-ude-contract": "node --experimental-strip-types --test tests/acl-ude-contract-model.test.ts",
     "test:contact-invitations": "node --experimental-strip-types --test tests/contact-invitations.test.ts",
     "test:contact-invitations-d1": "node --experimental-strip-types --test tests/d1-contact-invitations.integration.test.ts",

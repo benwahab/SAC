@@ -67,6 +67,8 @@ jobs:
         run: npm run test:security-anchor
       - name: Test fail-closed restore gate for stale, ahead and mismatched projections
         run: npm run test:restore-gate
+      - name: Test strict QR pairing URI parsing and canonical base64url
+        run: npm run test:device-enrollment-qr
       - name: Test isolated ACL UDE contract model (not an Azure integration test)
         run: npm run test:acl-ude-contract
       - name: Test full RFC 8785 Appendix B numeric vector set

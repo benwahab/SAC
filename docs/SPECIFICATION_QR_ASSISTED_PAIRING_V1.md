@@ -75,7 +75,20 @@ Le QR ne contient ni compte, ni e-mail, ni nom, ni clé publique complète, ni r
 - Taille visuelle suffisante, correction d'erreur standard, pas de logo masquant les modules.
 - Le QR expire et est annulé par l'UI à la fin de la cérémonie.
 
-### 4.3 Ce que le QR ne doit jamais contenir
+### 4.3 Parseur strict
+
+`src/domain/device-enrollment-qr.ts` implémente le format et le parseur stricts :
+
+- schéma `sac-pair:` et version `v1` exacts ;
+- champs `m`, `id`, `s`, `e` uniquement ;
+- identifiant de 16 octets et secret de 32 octets en base64url canonique sans padding ;
+- rejet des doublons, champs inconnus, fragments, chemins, ports et identifiants non canoniques ;
+- expiration entière et strictement future ;
+- longueur maximale de 512 caractères.
+
+`npm run test:device-enrollment-qr` couvre le round-trip, l'expiration, les schémas incorrects, les doublons, les champs inconnus, les encodages non canoniques et les charges invalides. Ce module ne crée aucun secret, ne contacte aucun serveur et n'ouvre aucune session.
+
+### 4.4 Ce que le QR ne doit jamais contenir
 
 - un mot de passe, un OTP ou un code de récupération ;
 - un jeton de session brut ;
