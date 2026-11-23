@@ -34,6 +34,12 @@ export type Screen =
   | { name: "history" } | { name: "settings" } | { name: "reminders" } | { name: "alert"; id: string }
   | { name: "account" } | { name: "contact"; id: string } | { name: "alertContacts" };
 
+export type AdminAccess = {
+  canAccess: boolean;
+  role: "super_admin" | "delegate" | null;
+  activeMissions: number;
+};
+
 export type ScreenProps = {
   copy: PrivateCopy; language: Language;
   go: (screen: Screen) => void;

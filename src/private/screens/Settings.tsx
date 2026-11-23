@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { KeyRound, LogOut, ShieldCheck, Smartphone, MonitorSmartphone, UserRound, UsersRound } from "lucide-react";
+import { KeyRound, LayoutDashboard, LogOut, ShieldCheck, Smartphone, MonitorSmartphone, UserRound, UsersRound } from "lucide-react";
 import PushNotificationSettings from "../../components/PushNotificationSettings";
-import { languages, type Language } from "../../i18n/translations";
+import { fillCopy, languages, type Language } from "../../i18n/translations";
 import { completeRootEnrollment, logoutDeviceSession, requestRootEnrollmentFromSession } from "../../services/device/root-enrollment";
-import type { ScreenProps } from "../types";
+import type { AdminAccess, ScreenProps } from "../types";
 import { Card, Halo, Notice, Sheet } from "../ui";
 
 type SessionInfo = {
@@ -14,7 +14,7 @@ type SessionInfo = {
   current: boolean;
 };
 
-export default function Settings({ copy, language, go, setLanguage, onLogout, securityKeyConfigured, onSecurityKeyConfigured }: ScreenProps & { setLanguage: (l: Language) => void; onLogout: () => void; securityKeyConfigured: boolean; onSecurityKeyConfigured: () => void }) {
+export default function Settings({ copy, language, go, setLanguage, onLogout, securityKeyConfigured, onSecurityKeyConfigured, adminAccess }: ScreenProps & { setLanguage: (l: Language) => void; onLogout: () => void; securityKeyConfigured: boolean; onSecurityKeyConfigured: () => void; adminAccess: AdminAccess | null }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
@@ -112,6 +112,14 @@ export default function Settings({ copy, language, go, setLanguage, onLogout, se
           <p className="mt-1 text-sm leading-6 text-sac-muted">{copy.settingsAccountText}</p>
           <button type="button" onClick={() => go({ name: "account" })} className="mt-3 inline-flex min-h-12 items-center justify-center rounded-[14px] bg-sac-primary px-4 text-sm font-extrabold text-white">{copy.settingsAccountOpen}</button>
         </Card>
+        {adminAccess?.canAccess && (
+          <Card className="!border-sac-primary/30 !bg-sac-primary/5">
+            <h2 className="flex items-center gap-2 font-extrabold"><LayoutDashboard size={18} />{copy.adminSpaceTitle}</h2>
+            <p className="mt-1 text-sm leading-6 text-sac-muted">{adminAccess.role === "super_admin" ? copy.adminSpaceSuperText : copy.adminSpaceDelegateText}</p>
+            {adminAccess.role === "delegate" && <p className="mt-2 text-xs font-bold text-sac-primary-strong">{fillCopy(copy.adminSpaceMissionCount, { n: adminAccess.activeMissions })}</p>}
+            <a href="/administration" className="mt-3 inline-flex min-h-12 items-center justify-center rounded-[14px] bg-sac-primary px-4 text-sm font-extrabold text-white">{copy.adminSpaceOpen}</a>
+          </Card>
+        )}
         <Card>
           <h2 className="flex items-center gap-2 font-extrabold"><UsersRound size={18} />{copy.settingsAlertContactsTitle}</h2>
           <p className="mt-1 text-sm leading-6 text-sac-muted">{copy.settingsAlertContactsText}</p>

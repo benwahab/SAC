@@ -9,12 +9,20 @@ type Mission = {
   id: string; assignedAccountId: string; assignedEmail?: string | null; scopeKey: string; status: "active" | "suspended" | "revoked";
   dueAt: number | null; createdAt: number; updatedAt: number; version: number; permissions: Permission[];
 };
+type DelegateMission = {
+  id: string; scopeKey: string; status: "active" | "suspended"; dueAt: number | null;
+  createdAt: number; updatedAt: number; version: number; permissions: Permission[];
+};
+type AdminAccess = { canAccess: boolean; role: "super_admin" | "delegate" | null; activeMissions: number };
 const PERMISSION_VALUES: Permission[] = ["read", "create", "update", "process", "export", "delete"];
 
 export default function AdminDashboard({ language = "fr" }: { language?: Language }) {
   const [allowedDevice, setAllowedDevice] = useState(false);
+  const [accessLoading, setAccessLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
+  const [access, setAccess] = useState<AdminAccess | null>(null);
   const [missions, setMissions] = useState<Mission[]>([]);
+  const [delegateMissions, setDelegateMissions] = useState<DelegateMission[]>([]);
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [query, setQuery] = useState("");
@@ -28,7 +36,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
   const [error, setError] = useState("");
   const t = adminTranslations[language];
 
-  const refresh = useCallback(async () => {
+  const refreshSuperAdmin = useCallback(async () => {
     const [missionResponse, auditResponse] = await Promise.all([
       fetch("/api/admin/missions", { credentials: "same-origin", cache: "no-store" }),
       fetch("/api/admin/audit?limit=50", { credentials: "same-origin", cache: "no-store" }),
@@ -43,6 +51,14 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
     setAccessDenied(false);
   }, []);
 
+  const refreshDelegate = useCallback(async () => {
+    const response = await fetch("/api/admin/my-missions", { credentials: "same-origin", cache: "no-store" });
+    if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? "denied" : "unavailable");
+    const payload = await response.json() as { missions?: DelegateMission[] };
+    setDelegateMissions(Array.isArray(payload.missions) ? payload.missions : []);
+    setAccessDenied(false);
+  }, []);
+
   useEffect(() => {
     const media = window.matchMedia("(min-width: 768px)");
     const update = () => setAllowedDevice(media.matches);
@@ -53,7 +69,36 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
 
   useEffect(() => {
     if (!allowedDevice) return;
-    void refresh().catch((reason: unknown) => {
+    const controller = new AbortController();
+    setAccessLoading(true);
+    void fetch("/api/admin/access", { credentials: "same-origin", cache: "no-store", signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? "denied" : "unavailable");
+        return response.json() as Promise<AdminAccess>;
+      })
+      .then((payload) => {
+        if (!payload.canAccess || !payload.role) {
+          setAccessDenied(true);
+          setError(t.denied);
+          return;
+        }
+        setAccess(payload);
+        setAccessDenied(false);
+        setError("");
+      })
+      .catch((reason: unknown) => {
+        if (reason instanceof DOMException && reason.name === "AbortError") return;
+        setAccessDenied(true);
+        setError(reason instanceof Error && reason.message === "denied" ? t.denied : t.loadError);
+      })
+      .finally(() => setAccessLoading(false));
+    return () => controller.abort();
+  }, [allowedDevice, t]);
+
+  useEffect(() => {
+    if (!allowedDevice || !access) return;
+    const load = access.role === "super_admin" ? refreshSuperAdmin : refreshDelegate;
+    void load().catch((reason: unknown) => {
       if (reason instanceof Error && reason.message === "denied") {
         setAccessDenied(true);
         setError(t.denied);
@@ -61,10 +106,10 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
       }
       setError(t.loadError);
     });
-  }, [allowedDevice, refresh, t]);
+  }, [allowedDevice, access, refreshDelegate, refreshSuperAdmin, t]);
 
   useEffect(() => {
-    if (!allowedDevice) return;
+    if (!allowedDevice || access?.role !== "super_admin") return;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
       void fetch("/api/admin/accounts?q=" + encodeURIComponent(query), { credentials: "same-origin", cache: "no-store", signal: controller.signal })
@@ -73,7 +118,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
         .catch(() => undefined);
     }, 250);
     return () => { window.clearTimeout(timer); controller.abort(); };
-  }, [allowedDevice, query]);
+  }, [allowedDevice, access, query]);
 
   async function createMission(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -92,13 +137,13 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
         const payload = await response.json().catch(() => null) as { error?: string } | null;
         if (payload?.error === "mission_conflict") {
           setError(t.conflict);
-          await refresh();
+          await refreshSuperAdmin();
           return;
         }
         throw new Error("save_failed");
       }
       setAccountId(""); setScopeKey(""); setPermissions(["read"]); setDueAt(""); setEditingMissionId(null);
-      setNotice(t.saved); await refresh();
+      setNotice(t.saved); await refreshSuperAdmin();
     } catch {
       setError(t.denied);
     } finally { setBusy(false); }
@@ -126,19 +171,39 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
         const payload = await response.json().catch(() => null) as { error?: string } | null;
         if (payload?.error === "mission_conflict") {
           setError(t.conflict);
-          await refresh();
+          await refreshSuperAdmin();
           return;
         }
         throw new Error("action_failed");
       }
-      await refresh();
+      await refreshSuperAdmin();
     } catch { setError(t.denied); }
     finally { setBusy(false); }
   }
 
   if (!allowedDevice) return <main className="min-h-screen bg-sac-primary/20 p-6 text-sac-ink"><section className="mx-auto mt-16 max-w-lg rounded-3xl border border-white/80 bg-white/75 p-8 text-center shadow-glass"><BrandLogo className="mx-auto h-10 w-auto" /><p className="mt-4 text-sm leading-7">{t.unavailable}</p><a href="/" className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-sac-primary-strong px-5 font-bold text-white">{t.back}</a></section></main>;
 
+  if (accessLoading) return <main className="min-h-screen bg-sac-primary/20 p-6 text-sac-ink"><section className="mx-auto mt-16 max-w-lg rounded-3xl border border-white/80 bg-white/75 p-8 text-center shadow-glass"><BrandLogo className="mx-auto h-10 w-auto" /><p className="mt-4 text-sm leading-7">{t.loading}</p></section></main>;
+
   if (accessDenied) return <main className="min-h-screen bg-sac-primary/20 p-6 text-sac-ink"><section className="mx-auto mt-16 max-w-lg rounded-3xl border border-white/80 bg-white/75 p-8 text-center shadow-glass"><BrandLogo className="mx-auto h-10 w-auto" /><p className="mt-4 text-sm leading-7">{t.denied}</p><div className="mt-6 flex flex-wrap justify-center gap-3"><a href="/connexion" className="inline-flex min-h-11 items-center rounded-xl bg-sac-primary-strong px-5 font-bold text-white">{t.signIn}</a><a href="/" className="inline-flex min-h-11 items-center rounded-xl border border-sac-primary-strong/20 bg-white/70 px-5 font-bold">{t.back}</a></div></section></main>;
+
+  if (access?.role === "delegate") return <main className="min-h-screen bg-sac-primary/15 px-5 py-8 text-sac-ink sm:px-8" dir={language === "ar" ? "rtl" : "ltr"}>
+    <div className="mx-auto max-w-4xl">
+      <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div><BrandLogo className="h-8 w-auto" /><h1 className="mt-2 text-3xl font-black">{t.delegateTitle}</h1><p className="mt-1 text-sm text-sac-muted">{t.delegateSubtitle}</p></div>
+        <a href="/" className="rounded-xl border border-white bg-white/70 px-4 py-3 text-sm font-bold">{t.back}</a>
+      </header>
+      {error && <p role="alert" className="mb-5 rounded-xl border border-sac-alert/30 bg-white/80 p-4 text-sm text-sac-alert">{error}</p>}
+      <section>
+        <h2 className="mb-4 text-xl font-extrabold">{t.myMissions}</h2>
+        {delegateMissions.length === 0 ? <p className="rounded-2xl bg-white/70 p-6 text-sm text-sac-muted">{t.noMissions}</p> : <div className="grid gap-4 lg:grid-cols-2">{delegateMissions.map((mission) => <article key={mission.id} className="rounded-2xl border border-white/90 bg-white/80 p-5 shadow-glass">
+          <div className="flex flex-wrap items-start justify-between gap-3"><h3 className="font-extrabold">{mission.scopeKey}</h3><span className="rounded-full bg-sac-primary/50 px-3 py-1 text-xs font-bold">{t[mission.status]}</span></div>
+          <div className="mt-3 flex flex-wrap gap-2">{mission.permissions.map((permission) => <span key={permission} className="rounded-lg border border-sac-primary-strong/15 px-2 py-1 text-xs">{t.permissions[permission]}</span>)}</div>
+          {mission.dueAt && <p className="mt-3 text-xs text-sac-muted">{t.dueOn}: {new Date(mission.dueAt).toLocaleString(language)}</p>}
+        </article>)}</div>}
+      </section>
+    </div>
+  </main>;
 
   return <main className="min-h-screen bg-sac-primary/15 px-5 py-8 text-sac-ink sm:px-8" dir={language === "ar" ? "rtl" : "ltr"}>
     <div className="mx-auto max-w-6xl">

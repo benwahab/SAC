@@ -63,9 +63,9 @@ export default function PrivateSpacePage({ onLogout }: Props) {
     case "sos": body = <Sos {...shared} contacts={data.contacts} refresh={data.refresh} />; break;
     case "history": body = <HistoryScreen {...nav} alerts={data.alerts} loading={data.loading} error={data.error} />; break;
     case "reminders": body = <Reminders {...nav} />; break;
-    case "settings": body = <Settings {...nav} setLanguage={setLanguage} onLogout={onLogout} securityKeyConfigured={data.securityKeyConfigured} onSecurityKeyConfigured={() => { void data.refresh(); }} />; break;
+    case "settings": body = <Settings {...nav} setLanguage={setLanguage} onLogout={onLogout} securityKeyConfigured={data.securityKeyConfigured} onSecurityKeyConfigured={() => { void data.refresh(); }} adminAccess={data.adminAccess} />; break;
     case "alert": body = <AlertScreen {...nav} notice={notice} id={screen.id} identity={data.identity} alerts={data.alerts} loading={data.loading} refresh={data.refresh} />; break;
-    default: body = <Dashboard {...nav} closeContacts={data.closeContacts} invitations={data.invitations} ownProfile={data.ownProfile} alerts={data.alerts} loading={data.loading} error={data.error} securityKeyConfigured={data.securityKeyConfigured} />;
+    default: body = <Dashboard {...nav} closeContacts={data.closeContacts} invitations={data.invitations} ownProfile={data.ownProfile} alerts={data.alerts} loading={data.loading} error={data.error} securityKeyConfigured={data.securityKeyConfigured} adminAccess={data.adminAccess} />;
   }
 
   return (

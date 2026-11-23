@@ -1,11 +1,11 @@
 import {
   ArrowDown, BellRing, BookOpen, Building2, CalendarClock, Check, ChevronRight,
   CircleHelp, Clock3, CreditCard, Crown, HeartPulse, History, Info, KeyRound,
-  LockKeyhole, RefreshCw, ShieldCheck, Siren, Sparkles, UserPlus, UsersRound, Wallet,
+  LayoutDashboard, LockKeyhole, RefreshCw, ShieldCheck, Siren, Sparkles, UserPlus, UsersRound, Wallet,
 } from "lucide-react";
 import BrandLogo from "../../components/BrandLogo";
 import { fillCopy, localeFor } from "../../i18n/translations";
-import type { CloseContact, OwnProfile, ProximityInvitation, ScreenProps, SosAlert } from "../types";
+import type { AdminAccess, CloseContact, OwnProfile, ProximityInvitation, ScreenProps, SosAlert } from "../types";
 import { formatDate } from "../types";
 import { Card, Notice, ProfileAvatar, Sheet } from "../ui";
 
@@ -17,6 +17,7 @@ type HomeProps = ScreenProps & {
   loading: boolean;
   error: string;
   securityKeyConfigured: boolean;
+  adminAccess: AdminAccess | null;
 };
 
 function SectionTitle({ eyebrow, title, intro, id }: { eyebrow?: string; title: string; intro?: string; id?: string }) {
@@ -61,7 +62,7 @@ function CheckLine({ children, tone = "confirm" }: { children: React.ReactNode; 
   return <li className="flex items-start gap-2 text-sm leading-6 text-sac-ink"><Check size={17} className={"mt-0.5 shrink-0 " + (tone === "alert" ? "text-sac-alert" : "text-sac-confirm")} aria-hidden="true" /><span>{children}</span></li>;
 }
 
-export default function Dashboard({ copy, language, go, closeContacts, invitations, ownProfile, alerts, loading, error, securityKeyConfigured }: HomeProps) {
+export default function Dashboard({ copy, language, go, closeContacts, invitations, ownProfile, alerts, loading, error, securityKeyConfigured, adminAccess }: HomeProps) {
   const locale = localeFor(language);
   const firstName = ownProfile?.firstName?.trim();
   const greeting = firstName ? fillCopy(copy.homeGreeting, { name: firstName }) : copy.homeGreetingFallback;
@@ -70,7 +71,7 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
   const own = active.find((alert) => alert.participantRole === "author");
   const focus = received ?? own;
   const pendingInvitations = invitations.filter((invitation) => invitation.direction === "received" && invitation.status === "pending").length;
-  const hasContext = Boolean(focus || pendingInvitations || securityKeyConfigured === false);
+  const hasContext = Boolean(focus || pendingInvitations || securityKeyConfigured === false || adminAccess?.canAccess);
   const category = (value: string) => copy[("cat_" + value) as keyof typeof copy] ?? value.replaceAll("_", " ");
 
   return (
@@ -127,6 +128,17 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
                   <span className="min-w-0 flex-1"><span className="block text-sm font-extrabold">{copy.homeContextSecurityTitle}</span><span className="block text-xs leading-5 text-sac-muted">{copy.homeContextSecurityText}</span></span>
                   <ChevronRight size={18} className="shrink-0 text-sac-primary-strong rtl:rotate-180" />
                 </button>
+              )}
+              {adminAccess?.canAccess && (
+                <a href="/administration" className="flex min-h-16 items-center gap-3 rounded-2xl border border-sac-primary/25 bg-sac-primary/5 p-3 text-start">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-sac-primary/10 text-sac-primary-strong"><LayoutDashboard size={20} /></span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-extrabold">{copy.adminSpaceTitle}</span>
+                    <span className="block text-xs leading-5 text-sac-muted">{adminAccess.role === "super_admin" ? copy.adminSpaceSuperText : copy.adminSpaceDelegateText}</span>
+                    {adminAccess.role === "delegate" && <span className="mt-1 block text-[11px] font-bold text-sac-primary-strong">{fillCopy(copy.adminSpaceMissionCount, { n: adminAccess.activeMissions })}</span>}
+                  </span>
+                  <ChevronRight size={18} className="shrink-0 text-sac-primary-strong rtl:rotate-180" />
+                </a>
               )}
             </div>
           </Card>
