@@ -81,6 +81,8 @@ Le hash d'ancre est défini dans `src/domain/security-anchor.ts`. Le choix de l'
 - **Q1** : la racine affiche un ticket, le nouvel appareil le scanne sans mot de passe et reste `pending`. Nouvelle voie d'authentification, non approuvée.
 - **Q2** : QR qui crée une session ou remplace l'approbation racine. Interdit.
 
+Le détail écran par écran est dans `PARCOURS_UTILISATEUR_SIMPLE_APPAIRAGE.md` : l'utilisateur ne crée aucune clé, ne voit aucun jargon et confirme seulement les mots de vérification puis sa biométrie.
+
 Aucun code QR, endpoint ou secret d'appairage n'est implémenté.
 
 ## 7. Conditions restantes avant activation réelle
