@@ -50,6 +50,17 @@ Utiliser un second compte ou projet Cloudflare avec un jeton restreint en écrit
 
 Conserver une tête signée sur un support hors ligne détenu par le propriétaire, avec vérification manuelle ou périodique. Cela ne prévient pas une restauration entre deux points de contrôle ; c'est une détection, pas une prévention continue. Utilisable seulement comme mesure temporaire avec un intervalle court et une procédure fail-closed. **Non approuvée.**
 
+## 3 bis. Gate de restauration
+
+`src/domain/device-enrollment-restore-gate.ts` fournit une gate pure, non branchée :
+
+- lit une tête via `SecurityAnchorAuthority` ;
+- refuse `anchor_unavailable`, `anchor_invalid`, `projection_invalid`, `projection_ahead`, `projection_stale` et `head_mismatch` ;
+- n'aligne jamais automatiquement une projection en retard ;
+- n'accepte que l'égalité exacte séquence + hash.
+
+`npm run test:restore-gate` couvre les six refus et le cas nominal. Cette gate devra être branchée avant toute API d'activation, mais aucun endpoint n'est ajouté à ce stade.
+
 ## 4. Exigences communes
 
 Toute option retenue doit fournir :

@@ -65,6 +65,8 @@ jobs:
         run: npm run test:anti-rollback-model
       - name: Test security anchor hash, monotonic sequence and projection synchronization
         run: npm run test:security-anchor
+      - name: Test fail-closed restore gate for stale, ahead and mismatched projections
+        run: npm run test:restore-gate
       - name: Test isolated ACL UDE contract model (not an Azure integration test)
         run: npm run test:acl-ude-contract
       - name: Test full RFC 8785 Appendix B numeric vector set
