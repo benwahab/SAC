@@ -73,7 +73,17 @@ Le modèle anti-restauration existant est étendu aux événements d'activation 
 
 Le hash d'ancre est défini dans `src/domain/security-anchor.ts`. Le choix de l'autorité de production reste ouvert : voir `ANTI_RESTAURATION_D1_CHOIX_AUTORITE.md`. Aucun fournisseur ni ressource Cloudflare n'est ajouté.
 
-## 6. Conditions restantes avant activation réelle
+## 6. Proposition QR-assisted pairing
+
+`SPECIFICATION_QR_ASSISTED_PAIRING_V1.md` distingue :
+
+- **Q0** : le nouvel appareil s'authentifie normalement et affiche un QR de récupération ; la racine scanne, compare le SAS et approuve. Pas de nouvelle voie d'authentification.
+- **Q1** : la racine affiche un ticket, le nouvel appareil le scanne sans mot de passe et reste `pending`. Nouvelle voie d'authentification, non approuvée.
+- **Q2** : QR qui crée une session ou remplace l'approbation racine. Interdit.
+
+Aucun code QR, endpoint ou secret d'appairage n'est implémenté.
+
+## 7. Conditions restantes avant activation réelle
 
 1. Revue indépendante du transcript, des domaines, du SAS et du modèle de menace.
 2. Choix et test de la vérification WebAuthn côté Worker, avec origines et RP ID autorisés.
@@ -84,7 +94,7 @@ Le hash d'ancre est défini dans `src/domain/security-anchor.ts`. Le choix de l'
 7. Tests sur appareils Android/iOS réels et navigateurs cibles.
 8. Revue de sécurité finale avant tout environnement réel.
 
-## 7. Verdict
+## 8. Verdict
 
 **Transcript pur : approuvé et testé.**
 **Enrôlement secondaire : NON HOMOLOGUÉ POUR LA PRODUCTION.**
