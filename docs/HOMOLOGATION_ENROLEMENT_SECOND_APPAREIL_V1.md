@@ -2,7 +2,7 @@
 
 **Date :** 21 novembre 2026
 **Dépôt :** `benwahab/SAC`, branche unique `main`
-**Statut :** décisions produit et techniques approuvées ; Lots 1 et 2 réalisés (transcript pur et fixture D1 isolé). **Aucun endpoint, aucune migration D1 de production, aucune activation réelle et aucun appareil secondaire opérationnel.**
+**Statut :** décisions produit et techniques approuvées ; Lots 1 et 2 réalisés, plus une preuve locale de détection de restauration D1 (transcript pur, fixture D1 isolé et rehearsal de restauration). **Aucun endpoint, aucune migration D1 de production, aucune activation réelle et aucun appareil secondaire opérationnel.**
 **Portée :** appareil racine unique déjà validé ; ajout d'un appareil secondaire sous son autorité.
 
 ## 1. Décisions approuvées
@@ -67,7 +67,13 @@ Le fixture isolé `tests/d1-secondary-enrollment/` prouve localement :
 
 Le modèle anti-restauration existant est étendu aux événements d'activation secondaire et d'émission de certificat. Il ne prouve pas encore une restauration D1 réelle avec autorité d'ancrage indépendante. Voir `MODELE_D1_ATOMIQUE_ENROLEMENT_SECOND_APPAREIL_V1.md`.
 
-## 5. Conditions restantes avant activation réelle
+## 5. Restauration réelle locale — preuve partielle
+
+`npm run test:d1-restore-rehearsal` sauvegarde réellement les fichiers SQLite D1 locaux, applique une révocation, restaure la sauvegarde, redémarre le Worker et vérifie que la tête d'ancrage externe détecte le retour arrière. Le service reste fermé (`503`) jusqu'au rejeu de la révocation.
+
+Le hash d'ancre est défini dans `src/domain/security-anchor.ts`. Le choix de l'autorité de production reste ouvert : voir `ANTI_RESTAURATION_D1_CHOIX_AUTORITE.md`. Aucun fournisseur ni ressource Cloudflare n'est ajouté.
+
+## 6. Conditions restantes avant activation réelle
 
 1. Revue indépendante du transcript, des domaines, du SAS et du modèle de menace.
 2. Choix et test de la vérification WebAuthn côté Worker, avec origines et RP ID autorisés.
@@ -78,7 +84,7 @@ Le modèle anti-restauration existant est étendu aux événements d'activation 
 7. Tests sur appareils Android/iOS réels et navigateurs cibles.
 8. Revue de sécurité finale avant tout environnement réel.
 
-## 6. Verdict
+## 7. Verdict
 
 **Transcript pur : approuvé et testé.**
 **Enrôlement secondaire : NON HOMOLOGUÉ POUR LA PRODUCTION.**
