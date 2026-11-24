@@ -54,7 +54,7 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
 
   return (
     <>
-      <header className="sac-home-hero relative overflow-hidden px-5 pb-16 pt-5 text-white">
+      <header className="sac-home-hero relative overflow-hidden px-5 pb-12 pt-5 text-white">
         <svg className="pointer-events-none absolute -end-20 -top-20 rtl:-scale-x-100" width="360" height="360" viewBox="0 0 360 360" aria-hidden="true">
           <g fill="none" stroke="#fff" strokeWidth="2" opacity=".18"><circle cx="180" cy="180" r="72" /><circle cx="180" cy="180" r="125" /><circle cx="180" cy="180" r="178" /></g>
         </svg>
@@ -64,7 +64,6 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
         </div>
 
         <div className="relative mt-6 flex items-center gap-3">
-          <span className="rounded-full bg-white p-0.5 shadow-sm"><ProfileAvatar photoUrl={ownProfile?.photoUrl} name={firstName || "SAC"} size="md" /></span>
           <div className="min-w-0">
             <p className="text-sm font-bold text-white/85">{greeting}</p>
             <p className="mt-1 text-[11px] font-black uppercase tracking-[.18em] text-white/60">{copy.homeEyebrow}</p>
@@ -72,8 +71,6 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
         </div>
 
         <h1 className="relative mt-4 max-w-md text-[2rem] font-black leading-[1.08] tracking-tight">{copy.homeDashboardTitle}</h1>
-        <p className="relative mt-2 max-w-md text-sm leading-6 text-white/85">{copy.homeDashboardSubtitle}</p>
-
         <div className="relative mt-4 flex flex-wrap gap-2">
           <span className={"inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-extrabold " + (focus ? "border-white/30 bg-sac-alert text-white" : "border-white/25 bg-white/10 text-white/90")}>
             <span className={"size-2 rounded-full " + (focus ? "bg-white" : "bg-sac-confirm")} />{focus ? copy.homeStatusActive : copy.homeStatusCalm}
@@ -82,10 +79,6 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-xs font-bold text-white/90"><ShieldCheck size={14} />{copy.homeBadgeSosFree}</span>
         </div>
 
-        <button type="button" onClick={() => go({ name: "sos" })} className="relative mt-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-sac-alert px-5 text-base font-black text-white shadow-sos">
-          <Siren size={21} />{copy.homeSosCta}<ChevronRight size={18} className="rtl:rotate-180" />
-        </button>
-        <p className="relative mt-2 text-center text-xs font-semibold text-white/75">{copy.dashSosHint}</p>
       </header>
 
       <Sheet>
@@ -209,7 +202,6 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
             ))}
           </ol>
           <p className="mt-3 rounded-2xl bg-sac-alert/5 p-3 text-xs leading-5 text-sac-ink">{copy.homeSosNote}</p>
-          <button type="button" onClick={() => go({ name: "sos" })} className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[16px] bg-sac-alert px-4 text-sm font-black text-white"><Siren size={18} />{copy.homeSosCta}</button>
         </details>
 
         <details className="group rounded-[22px] border border-sac-primary/20 bg-white p-4 shadow-card">
@@ -263,7 +255,6 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
         </details>
 
         <div className="flex items-start gap-3 rounded-2xl border border-sac-primary/15 bg-white/80 p-4">
-          <ProfileAvatar photoUrl={ownProfile?.photoUrl} name={firstName || "SAC"} size="sm" />
           <div className="min-w-0"><p className="text-sm font-extrabold">{firstName || copy.homeGreetingFallback}</p><p className="mt-1 text-xs leading-5 text-sac-muted">{copy.homeFooterEmergency}</p></div>
           {loading && <span className="ms-auto text-xs text-sac-muted">{copy.loading}</span>}
         </div>
