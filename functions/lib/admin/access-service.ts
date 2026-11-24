@@ -7,13 +7,14 @@ export interface AdminAccessSummary {
 }
 
 export async function readAdminAccess(db: D1Database, accountId: string): Promise<AdminAccessSummary> {
+  const now = Date.now();
   const [role, missions] = await Promise.all([
     db.prepare(
       "SELECT 1 AS allowed FROM account_roles WHERE account_id = ? AND role = 'super_admin' LIMIT 1",
     ).bind(accountId).first<{ allowed: number }>(),
     db.prepare(
-      "SELECT COUNT(*) AS count FROM admin_missions WHERE assigned_account_id = ? AND status = 'active'",
-    ).bind(accountId).first<{ count: number }>(),
+      "SELECT COUNT(*) AS count FROM admin_missions WHERE assigned_account_id = ? AND status = 'active' AND (due_at IS NULL OR due_at > ?)",
+    ).bind(accountId, now).first<{ count: number }>(),
   ]);
   const superAdmin = Boolean(role?.allowed);
   const activeMissions = Number.isSafeInteger(missions?.count) ? missions!.count : 0;
