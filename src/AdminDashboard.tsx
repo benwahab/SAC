@@ -15,6 +15,11 @@ type DelegateMission = {
 };
 type AdminAccess = { canAccess: boolean; role: "super_admin" | "delegate" | null; activeMissions: number };
 type OverviewMetrics = { activeAccounts: number; activeAlerts: number; alertsLast24h: number; activeMissions: number; activeDelegates: number; auditEventsLast24h: number };
+type AlertSupervision = {
+  summary: { active: number; createdLast24h: number; closedLast24h: number; activeWithResponse: number; activeWithResponsible: number; activeWithoutResponse: number };
+  byLevel: { level: string; total: number }[];
+  byCategory: { category: string; total: number }[];
+};
 const PERMISSION_VALUES: Permission[] = ["read", "create", "update", "process", "export", "delete"];
 
 export default function AdminDashboard({ language = "fr" }: { language?: Language }) {
@@ -27,6 +32,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [overviewMetrics, setOverviewMetrics] = useState<OverviewMetrics | null>(null);
+  const [alertSupervision, setAlertSupervision] = useState<AlertSupervision | null>(null);
   const [query, setQuery] = useState("");
   const [accountId, setAccountId] = useState("");
   const [editingMissionId, setEditingMissionId] = useState<string | null>(null);
@@ -48,16 +54,20 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
       fetch("/api/admin/missions", { credentials: "same-origin", cache: "no-store" }),
       fetch("/api/admin/audit?limit=50", { credentials: "same-origin", cache: "no-store" }),
       fetch("/api/admin/overview", { credentials: "same-origin", cache: "no-store" }),
+      fetch("/api/admin/alerts", { credentials: "same-origin", cache: "no-store" }),
     ]);
-    if (!missionResponse.ok || !auditResponse.ok || !overviewResponse.ok) throw new Error([missionResponse, auditResponse, overviewResponse].some((response) => response.status === 401 || response.status === 403) ? "denied" : "unavailable");
-    const [missionPayload, auditPayload, overviewPayload] = await Promise.all([
+    const alertResponse = await fetch("/api/admin/alerts", { credentials: "same-origin", cache: "no-store" });
+    if (!missionResponse.ok || !auditResponse.ok || !overviewResponse.ok || !alertResponse.ok) throw new Error([missionResponse, auditResponse, overviewResponse, alertResponse].some((response) => response.status === 401 || response.status === 403) ? "denied" : "unavailable");
+    const [missionPayload, auditPayload, overviewPayload, alertPayload] = await Promise.all([
       missionResponse.json() as Promise<{ missions: Mission[] }>,
       auditResponse.json() as Promise<{ events: AuditEvent[] }>,
       overviewResponse.json() as Promise<{ metrics: OverviewMetrics }>,
+      alertResponse.json() as Promise<AlertSupervision>,
     ]);
     setMissions(missionPayload.missions);
     setAuditEvents(auditPayload.events);
     setOverviewMetrics(overviewPayload.metrics);
+    setAlertSupervision(alertPayload);
     setAccessDenied(false);
   }, []);
 
@@ -319,6 +329,40 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
         </label>
         {accounts.length === 0 ? <p className="mt-5 rounded-xl bg-emerald-50/70 p-5 text-sm text-slate-600">{language === "fr" ? "Aucun compte actif correspondant. Saisis une adresse ou une partie d’adresse e-mail." : language === "ar" ? "لا يوجد حساب نشط مطابق. أدخل عنوان البريد الإلكتروني أو جزءاً منه." : "No matching active account. Enter an email address or part of one."}</p> : <div className="mt-5 overflow-x-auto"><table className="w-full min-w-[420px] text-left text-sm"><thead><tr className="border-b border-emerald-900/10 text-xs text-slate-500"><th className="p-3">{language === "fr" ? "Identifiant du compte" : language === "ar" ? "معرّف الحساب" : "Account ID"}</th><th className="p-3">E-mail vérifié</th></tr></thead><tbody>{accounts.map((account) => <tr key={account.id} className="border-b border-emerald-900/10"><td className="p-3 font-mono text-xs">{account.id}</td><td className="p-3">{account.email}</td></tr>)}</tbody></table></div>}
         <p className="mt-4 text-xs text-slate-500">{language === "fr" ? "Limite de 25 résultats. Cet écran ne modifie pas les comptes et n’expose aucune donnée privée supplémentaire." : language === "ar" ? "الحد الأقصى 25 نتيجة. لا تعدّل هذه الشاشة الحسابات ولا تكشف بيانات خاصة إضافية." : "Limited to 25 results. This screen does not modify accounts or expose additional private data."}</p>
+      </section>}
+      {activeSection === "alerts" && <section className="space-y-6">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {[
+            { label: language === "fr" ? "Alertes actives" : language === "ar" ? "التنبيهات النشطة" : "Active alerts", value: alertSupervision?.summary.active },
+            { label: language === "fr" ? "Créées · 24 h" : language === "ar" ? "تم إنشاؤها · 24 ساعة" : "Created · 24h", value: alertSupervision?.summary.createdLast24h },
+            { label: language === "fr" ? "Clôturées · 24 h" : language === "ar" ? "أُغلقت · 24 ساعة" : "Closed · 24h", value: alertSupervision?.summary.closedLast24h },
+            { label: language === "fr" ? "Avec une réponse" : language === "ar" ? "مع استجابة" : "With a response", value: alertSupervision?.summary.activeWithResponse },
+            { label: language === "fr" ? "Avec responsable actuel" : language === "ar" ? "لها مسؤول حالي" : "With current responsible contact", value: alertSupervision?.summary.activeWithResponsible },
+            { label: language === "fr" ? "Sans réponse enregistrée" : language === "ar" ? "دون استجابة مسجلة" : "Without recorded response", value: alertSupervision?.summary.activeWithoutResponse },
+          ].map((metric) => <article key={metric.label} className="rounded-2xl border border-emerald-900/10 bg-white/90 p-4 shadow-sm"><p className="text-xs font-bold text-slate-500">{metric.label}</p><p className="mt-2 text-2xl font-black tabular-nums text-emerald-950">{metric.value === undefined ? "—" : metric.value.toLocaleString(language)}</p></article>)}
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <article className="rounded-2xl border border-emerald-900/10 bg-white p-5 shadow-sm">
+            <h2 className="font-extrabold">{language === "fr" ? "Alertes actives par niveau" : language === "ar" ? "التنبيهات النشطة حسب المستوى" : "Active alerts by level"}</h2>
+            <div className="mt-4 space-y-3">{["critical", "urgent", "preventive"].map((level) => {
+              const total = alertSupervision?.byLevel.find((item) => item.level === level)?.total ?? 0;
+              const label = language === "fr" ? ({ critical: "Critique", urgent: "Urgente", preventive: "Préventive" }[level]) : language === "ar" ? ({ critical: "حرجة", urgent: "عاجلة", preventive: "وقائية" }[level]) : ({ critical: "Critical", urgent: "Urgent", preventive: "Preventive" }[level]);
+              return <div key={level} className="flex items-center justify-between gap-3 border-b border-emerald-900/10 pb-2 text-sm"><span>{label}</span><strong className="tabular-nums">{alertSupervision ? total.toLocaleString(language) : "—"}</strong></div>;
+            })}</div>
+          </article>
+          <article className="rounded-2xl border border-emerald-900/10 bg-white p-5 shadow-sm">
+            <h2 className="font-extrabold">{language === "fr" ? "Alertes actives par catégorie" : language === "ar" ? "التنبيهات النشطة حسب الفئة" : "Active alerts by category"}</h2>
+            <div className="mt-4 space-y-3">{["personal_danger", "accident", "home_intrusion", "medical_emergency", "lost_or_disoriented_person", "custom_alert"].map((category) => {
+              const total = alertSupervision?.byCategory.find((item) => item.category === category)?.total ?? 0;
+              const labelsFr: Record<string, string> = { personal_danger: "Danger personnel", accident: "Accident", home_intrusion: "Intrusion au domicile", medical_emergency: "Urgence médicale", lost_or_disoriented_person: "Personne perdue ou désorientée", custom_alert: "Autre alerte" };
+              const labelsEn: Record<string, string> = { personal_danger: "Personal danger", accident: "Accident", home_intrusion: "Home intrusion", medical_emergency: "Medical emergency", lost_or_disoriented_person: "Lost or disoriented person", custom_alert: "Other alert" };
+              const labelsAr: Record<string, string> = { personal_danger: "خطر شخصي", accident: "حادث", home_intrusion: "اقتحام المنزل", medical_emergency: "حالة طبية طارئة", lost_or_disoriented_person: "شخص تائه أو مشوش", custom_alert: "تنبيه آخر" };
+              return <div key={category} className="flex items-center justify-between gap-3 border-b border-emerald-900/10 pb-2 text-sm"><span>{(language === "fr" ? labelsFr : language === "ar" ? labelsAr : labelsEn)[category]}</span><strong className="tabular-nums">{alertSupervision ? total.toLocaleString(language) : "—"}</strong></div>;
+            })}</div>
+          </article>
+        </div>
+        <p className="rounded-xl border border-emerald-900/10 bg-emerald-50/70 p-4 text-xs leading-6 text-emerald-950">{language === "fr" ? "Vue agrégée réservée au Super Admin. Aucun nom, message privé, identifiant de citoyen, destinataire ni emplacement GPS n’est affiché. « Avec une réponse » signifie qu’un événement d’accusé de réception ou de volontariat a été enregistré ; cela ne signifie pas nécessairement qu’une prise en charge est toujours en cours." : language === "ar" ? "عرض إجمالي مخصص للمسؤول الأعلى. لا تظهر أسماء أو رسائل خاصة أو معرّفات المواطنين أو المستلمون أو مواقع GPS. تعني «مع استجابة» تسجيل إقرار بالاستلام أو تطوع، ولا تعني بالضرورة أن المساعدة لا تزال جارية." : "Aggregate view for the Super Admin only. No names, private messages, citizen IDs, recipients or GPS locations are displayed. “With a response” means an acknowledgement or volunteer event was recorded; it does not necessarily mean assistance is still ongoing."}</p>
+        {!alertSupervision && <p className="text-sm text-slate-500">{language === "fr" ? "Données de supervision indisponibles pour le moment." : language === "ar" ? "بيانات المراقبة غير متاحة حالياً." : "Supervision data is currently unavailable."}</p>}
       </section>}
       {activeSection === "security" && <section className="mt-8 rounded-3xl border border-white/90 bg-white/75 p-6 shadow-glass">
         <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-extrabold">{t.audit}</h2><a href="/api/admin/audit/export" className="inline-flex min-h-10 items-center rounded-xl border border-sac-primary-strong/20 bg-white px-4 text-xs font-extrabold text-sac-ink hover:bg-sac-primary/10">{language === "fr" ? "Exporter le journal CSV" : language === "en" ? "Export audit CSV" : "تصدير سجل التدقيق CSV"}</a></div>
