@@ -17,13 +17,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   if (!parsed.ok || typeof parsed.value !== "object" || parsed.value === null || Array.isArray(parsed.value)) return json({ error: "invalid_message" }, 400);
   const body = (parsed.value as Record<string, unknown>).body;
   if (typeof body !== "string" || body.trim().length < 1 || body.trim().length > 5000) return json({ error: "invalid_message" }, 400);
+  const now = Date.now();
   try {
-    const result = await env.DB.prepare(
-      `INSERT INTO support_messages (id, ticket_id, author_account_id, author_kind, body, created_at)
-       SELECT ?, t.id, ?, 'requester', ?, ?
-       FROM support_tickets t WHERE t.id = ? AND t.requester_account_id = ? AND t.status <> 'closed'`,
-    ).bind(crypto.randomUUID(), session.value.accountId, body.trim(), Date.now(), ticketId, session.value.accountId).run();
-    if (!result.success || result.meta.changes !== 1) return json({ error: "ticket_not_found_or_closed" }, 404);
-    return json({ sent: true }, 201);
+    const results = await env.DB.batch([
+      env.DB.prepare(
+        `INSERT INTO support_messages (id, ticket_id, author_account_id, author_kind, body, created_at)
+         SELECT ?, t.id, ?, 'requester', ?, ?
+         FROM support_tickets t WHERE t.id = ? AND t.requester_account_id = ? AND t.status <> 'closed'`,
+      ).bind(crypto.randomUUID(), session.value.accountId, body.trim(), now, ticketId, session.value.accountId),
+      env.DB.prepare(
+        `UPDATE support_tickets SET updated_at = ?, version = version + 1
+         WHERE id = ? AND requester_account_id = ? AND status <> 'closed'`,
+      ).bind(now, ticketId, session.value.accountId),
+    ]);
+    if (results.some((result) => !result.success) || results[0].meta.changes !== 1 || results[1].meta.changes !== 1) return json({ error: "ticket_not_found_or_closed" }, 404);
+    return json({ sent: true, createdAt: now }, 201);
   } catch { return json({ error: "support_unavailable" }, 503); }
 };
