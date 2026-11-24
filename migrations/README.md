@@ -148,3 +148,12 @@ La fonctionnalité est protégée par `MULTI_DEVICE_PASSWORD_LOGIN_ENABLED="true
 Tests : `npm run test:password-session` et `npm run test:d1-multi-device-password-login`.
 
 **Application distante vérifiée — 24 novembre 2026 :** la migration a été appliquée à `sac-db` après export de sauvegarde et vérification d'unicité des credentials racines. Les index `device_root_credentials_one_per_account` et `devices_account_status` sont présents, `devices_one_root_per_account` est absent, l'entrée 0020 est inscrite dans `d1_migrations` et `PRAGMA foreign_key_check` ne retourne aucune anomalie. Voir `docs/DECISION_CONNEXION_MULTI_APPAREILS_OPTION_2.md`.
+
+
+## 0021 — tickets d'assistance séparés du SOS
+
+`0021_support_tickets.sql` ajoute les tickets, les messages et le journal append-only des événements de support. Le premier flux est réservé aux comptes actifs authentifiés ; la récupération de compte sans connexion doit utiliser un flux OTP distinct et n'est pas incluse dans cette migration. Les demandes d'assistance ne créent ni ne modifient une alerte SOS.
+
+Les catégories et états sont contrôlés par contraintes D1. Les tickets sont liés à un demandeur actif, les messages du demandeur sont limités à ses propres tickets, les messages et événements sont append-only. Les pièces jointes ne sont pas incluses. L'API citoyenne `GET/POST /api/support/tickets` permet de consulter ses demandes et d'en créer ; la console Super Admin lit les compteurs et la file via `GET /api/admin/support`.
+
+Test local : `npm run test:d1-support-tickets`. Cette migration n'est pas appliquée à la D1 distante. Toute application distante nécessite une autorisation explicite après validation de la CI.
