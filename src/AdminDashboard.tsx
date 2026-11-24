@@ -132,9 +132,17 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
     setDelegateMissions(nextMissions);
     const canReadSupport = nextMissions.some((mission) => mission.scopeKey === "support" && mission.status === "active" && mission.permissions.includes("read"));
     if (canReadSupport) await refreshSupport();
-    else { setSupportInbox(null); setSupportTicketDetail(null); }
+    else { setSupportInbox(null); setSupportTicketDetail(null); if (activeSection === "support") setActiveSection("overview"); }
     setAccessDenied(false);
-  }, [refreshSupport]);
+  }, [refreshSupport, activeSection]);
+
+  useEffect(() => {
+    if (!allowedDevice || access?.role !== "delegate") return;
+    const revalidate = () => { void refreshDelegate().catch(() => { setSupportInbox(null); setSupportTicketDetail(null); setActiveSection("overview"); }); };
+    window.addEventListener("focus", revalidate);
+    document.addEventListener("visibilitychange", revalidate);
+    return () => { window.removeEventListener("focus", revalidate); document.removeEventListener("visibilitychange", revalidate); };
+  }, [allowedDevice, access, refreshDelegate]);
 
   useEffect(() => {
     const media = window.matchMedia("(min-width: 768px)");
