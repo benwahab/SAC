@@ -120,6 +120,12 @@ class SupportTicketSchemaTests(unittest.TestCase):
           VALUES ('message-delegate', 'ticket-delegate', 'support', 'support', 'We are reviewing your request', 100)
         """)
         self.assertEqual(self.db.execute("SELECT COUNT(*) FROM support_messages WHERE id='message-delegate'").fetchone()[0], 1)
+        self.db.execute("""
+          INSERT INTO support_ticket_events
+          (id, ticket_id, actor_account_id, event_type, previous_value, new_value, occurred_at)
+          VALUES ('event-delegate', 'ticket-delegate', 'support', 'status_changed', 'new', 'open', 100)
+        """)
+        self.assertEqual(self.db.execute("SELECT COUNT(*) FROM support_ticket_events WHERE id='event-delegate'").fetchone()[0], 1)
 
     def test_support_mission_wrong_scope_or_expired_cannot_reply(self):
         self.db.execute("""
@@ -146,6 +152,13 @@ class SupportTicketSchemaTests(unittest.TestCase):
                   INSERT INTO support_messages (id, ticket_id, author_account_id, author_kind, body, created_at)
                   VALUES (?, 'ticket-delegate', 'support', 'support', 'Reply', 100)
                 """, (message_id,))
+        for event_id in ('event-wrong-scope', 'event-expired', 'event-read-only', 'event-process-only'):
+            with self.assertRaises(sqlite3.IntegrityError):
+                self.db.execute("""
+                  INSERT INTO support_ticket_events
+                  (id, ticket_id, actor_account_id, event_type, previous_value, new_value, occurred_at)
+                  VALUES (?, 'ticket-delegate', 'support', 'status_changed', 'new', 'open', 100)
+                """, (event_id,))
 
     def test_messages_and_events_are_append_only(self):
         self.db.execute("""
