@@ -122,3 +122,14 @@ Confirmer :
 6. configuration R2, antivirus, chiffrement, URLs signées et procédures de sauvegarde.
 
 Aucune migration D1/R2 ni donnée fictive n'est créée par cette note. Le module reste non opérationnel jusqu'à validation du modèle commun, des politiques et des tests.
+
+
+## Prérequis d'infrastructure vérifié le 24 novembre 2026
+
+Le compte Cloudflare relié au projet répond actuellement que R2 doit d'abord être activé depuis le tableau de bord Cloudflare. Aucun bucket SAC ne peut donc être supposé disponible. En conséquence :
+- aucune liaison R2 n'est ajoutée à `wrangler.toml` ;
+- aucune route d'upload/téléchargement n'est activée ;
+- aucun document n'est stocké publiquement ou dans D1 sous forme de contenu binaire ;
+- la mise en œuvre du stockage documentaire attend l'activation R2, la création d'un bucket privé dédié, puis les tests de liaison locale et d'accès serveur.
+
+Cette vérification n'a créé ni modifié aucune ressource Cloudflare.
