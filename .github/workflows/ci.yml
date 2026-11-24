@@ -164,6 +164,8 @@ jobs:
         run: python3 tests/d1_admin_missions_schema.test.py
       - name: Test support ticket D1 constraints and immutable history
         run: npm run test:d1-support-tickets
+      - name: Test no-session support intake OTP protections
+        run: npm run test:d1-support-intake-otp
       - name: Test D1 root device enrollment, credential and session constraints
         run: npm run test:d1-root-device-enrollment
       - name: Test D1 multi-device password login migration and single root credential
