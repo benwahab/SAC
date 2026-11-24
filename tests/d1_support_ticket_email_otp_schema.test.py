@@ -31,6 +31,14 @@ class SupportIntakeOtpSchemaTests(unittest.TestCase):
         with self.assertRaises(sqlite3.IntegrityError):
             self.insert("challenge-2", "person@example.com", "b" * 64, 2000)
 
+    def test_new_delivered_code_invalidates_previous_code(self):
+        self.insert("challenge-1", "person@example.com", "a" * 64, 1000)
+        self.db.execute("UPDATE support_ticket_intake_challenges SET delivery_status='accepted' WHERE id='challenge-1'")
+        self.insert("challenge-2", "person@example.com", "a" * 64, 70000)
+        self.db.execute("UPDATE support_ticket_intake_challenges SET delivery_status='accepted' WHERE id='challenge-2'")
+        previous = self.db.execute("SELECT invalidated_at FROM support_ticket_intake_challenges WHERE id='challenge-1'").fetchone()
+        self.assertEqual(previous[0], 70000)
+
     def test_ip_hourly_rate_limit_is_enforced(self):
         for index in range(10):
             self.insert(f"challenge-{index}", f"person{index}@example.com", "a" * 64, 1000 + index)
