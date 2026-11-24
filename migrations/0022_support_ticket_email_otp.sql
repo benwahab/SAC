@@ -57,6 +57,18 @@ BEGIN
       AND NEW.created_ticket_id IS OLD.created_ticket_id)
     OR
     (OLD.delivery_status = 'accepted' AND NEW.delivery_status = 'accepted'
+      AND NEW.attempt_count = OLD.attempt_count
+      AND OLD.consumed_at IS NULL AND OLD.invalidated_at IS NULL
+      AND NEW.consumed_at IS NULL
+      AND NEW.invalidated_at IS NOT NULL
+      AND NEW.created_ticket_id IS OLD.created_ticket_id
+      AND EXISTS (
+        SELECT 1 FROM support_ticket_intake_challenges newer
+        WHERE newer.id <> OLD.id AND newer.normalized_email = OLD.normalized_email
+          AND newer.delivery_status = 'accepted' AND newer.created_at = NEW.invalidated_at
+      ))
+    OR
+    (OLD.delivery_status = 'accepted' AND NEW.delivery_status = 'accepted'
       AND NEW.attempt_count = OLD.attempt_count + 1
       AND OLD.attempt_count < OLD.max_attempts
       AND OLD.consumed_at IS NULL AND OLD.invalidated_at IS NULL
@@ -65,6 +77,19 @@ BEGIN
       AND ((NEW.consumed_at IS NULL AND NEW.created_ticket_id IS OLD.created_ticket_id)
         OR (NEW.consumed_at IS NOT NULL AND OLD.created_ticket_id IS NULL AND NEW.created_ticket_id IS NOT NULL)))
   ) THEN RAISE(ABORT, 'support_intake_otp_invalid_transition') END;
+END;
+
+CREATE TRIGGER support_intake_challenge_invalidate_previous
+AFTER UPDATE OF delivery_status ON support_ticket_intake_challenges
+WHEN OLD.delivery_status = 'pending' AND NEW.delivery_status = 'accepted'
+BEGIN
+  UPDATE support_ticket_intake_challenges
+  SET invalidated_at = NEW.created_at
+  WHERE normalized_email = NEW.normalized_email
+    AND id <> NEW.id
+    AND delivery_status = 'accepted'
+    AND consumed_at IS NULL
+    AND invalidated_at IS NULL;
 END;
 
 CREATE TRIGGER support_intake_challenge_no_delete
