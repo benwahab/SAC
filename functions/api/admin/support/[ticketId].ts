@@ -1,5 +1,5 @@
+import { requireSupportMissionAccess } from "../../../lib/security/require-support-mission-access.ts";
 import { recordAdminReadEvent } from "../../../lib/security/admin-audit.ts";
-import { requireSuperAdminSession } from "../../../lib/security/require-super-admin-session.ts";
 import { guardSameOriginJsonPost } from "../../../lib/security/http-request-guard.ts";
 import { readJsonRequestBody } from "../../../lib/security/json-request-body.ts";
 
@@ -10,8 +10,8 @@ function isObject(value: unknown): value is Record<string, unknown> { return typ
 const STATUSES = ["new","open","waiting_requester","waiting_internal","resolved","closed"] as const;
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
-  const admin = await requireSuperAdminSession(request, env.DB);
-  if (!admin.ok) return json({ error: admin.status === 401 ? "authentication_required" : admin.status === 403 ? "super_admin_required" : "admin_service_unavailable" }, admin.status);
+  const admin = await requireSupportMissionAccess(request, env.DB, "read");
+  if (!admin.ok) return json({ error: admin.status === 401 ? "authentication_required" : admin.status === 403 ? "support_permission_required" : "admin_service_unavailable" }, admin.status);
   const ticketId = params.ticketId;
   if (typeof ticketId !== "string" || ticketId.length > 128) return json({ error: "ticket_not_found" }, 404);
   try {
@@ -30,7 +30,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
     ]);
     if (!ticket) return json({ error: "ticket_not_found" }, 404);
     if (!messages.success || !events.success) return json({ error: "admin_service_unavailable" }, 503);
-    await recordAdminReadEvent(env.DB, admin.value, "admin.support.ticket.read", "admin.support.read");
+    await recordAdminReadEvent(env.DB, admin.value, "admin.support.ticket.read", "support.read", Date.now(), admin.missionId, "support");
     return json({ ticket, messages: messages.results ?? [], events: events.results ?? [] });
   } catch { return json({ error: "admin_service_unavailable" }, 503); }
 };
@@ -38,8 +38,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
 export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }) => {
   const guard = guardSameOriginJsonPost(request);
   if (guard) return guard;
-  const admin = await requireSuperAdminSession(request, env.DB);
-  if (!admin.ok) return json({ error: admin.status === 401 ? "authentication_required" : admin.status === 403 ? "super_admin_required" : "admin_service_unavailable" }, admin.status);
+  const admin = await requireSupportMissionAccess(request, env.DB, "process");
+  if (!admin.ok) return json({ error: admin.status === 401 ? "authentication_required" : admin.status === 403 ? "support_permission_required" : "admin_service_unavailable" }, admin.status);
   const ticketId = params.ticketId;
   if (typeof ticketId !== "string" || ticketId.length > 128) return json({ error: "ticket_not_found" }, 404);
   const parsed = await readJsonRequestBody(request, 4096);
@@ -78,9 +78,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
       env.DB.prepare(
         `INSERT INTO admin_audit_events
          (id, actor_account_id, actor_device_id, mission_id, action, scope_key, permission_used, outcome, occurred_at)
-         SELECT ?, ?, ?, NULL, 'support.ticket.status', 'support', 'support.process', 'success', ?
+         SELECT ?, ?, ?, ?, 'support.ticket.status', 'support', 'support.process', 'success', ?
          WHERE EXISTS (SELECT 1 FROM support_tickets WHERE id = ? AND version = ? AND status = ?)`,
-      ).bind(crypto.randomUUID(), admin.value.accountId, admin.value.deviceId, now, ticketId, current.version + 1, nextStatus),
+      ).bind(crypto.randomUUID(), admin.value.accountId, admin.value.deviceId, admin.missionId, now, ticketId, current.version + 1, nextStatus),
     ]);
     if (results.some((result) => !result.success || result.meta.changes !== 1)) return json({ error: "ticket_version_conflict" }, 409);
     return json({ updated: true, status: nextStatus, version: current.version + 1, updatedAt: now });
