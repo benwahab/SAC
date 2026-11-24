@@ -15,7 +15,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       env.DB.prepare(
         `SELECT
           COUNT(*) AS active_total,
-          SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) AS created_last_24h,
+          (SELECT COUNT(*) FROM alerts created WHERE created.created_at >= ?) AS created_last_24h,
           SUM(CASE WHEN EXISTS (
             SELECT 1 FROM alert_events e WHERE e.alert_id = alerts.id
               AND e.event_type IN ('acknowledged', 'volunteered')
