@@ -130,17 +130,22 @@ class SupportTicketSchemaTests(unittest.TestCase):
         self.db.execute("""
           INSERT INTO admin_missions (id, assigned_account_id, scope_key, status, due_at, created_at)
           VALUES ('mission-wrong-scope', 'support', 'finance', 'active', 500, 10),
-                 ('mission-expired', 'support', 'support', 'active', 50, 10)
+                 ('mission-expired', 'support', 'support', 'active', 50, 10),
+                 ('mission-read-only', 'support', 'support', 'active', 500, 10),
+                 ('mission-process-only', 'support', 'support', 'active', 500, 10)
         """)
         self.db.execute("""
           INSERT INTO admin_mission_permissions (mission_id, permission)
-          VALUES ('mission-wrong-scope', 'read'), ('mission-wrong-scope', 'process'), ('mission-expired', 'read'), ('mission-expired', 'process')
+          VALUES ('mission-wrong-scope', 'read'), ('mission-wrong-scope', 'process'),
+                 ('mission-expired', 'read'), ('mission-expired', 'process'),
+                 ('mission-read-only', 'read'), ('mission-process-only', 'process')
         """)
-        with self.assertRaises(sqlite3.IntegrityError):
-            self.db.execute("""
-              INSERT INTO support_messages (id, ticket_id, author_account_id, author_kind, body, created_at)
-              VALUES ('message-wrong-scope', 'ticket-delegate', 'support', 'support', 'Reply', 100)
-            """)
+        for message_id in ('message-wrong-scope', 'message-expired', 'message-read-only', 'message-process-only'):
+            with self.assertRaises(sqlite3.IntegrityError):
+                self.db.execute("""
+                  INSERT INTO support_messages (id, ticket_id, author_account_id, author_kind, body, created_at)
+                  VALUES (?, 'ticket-delegate', 'support', 'support', 'Reply', 100)
+                """, (message_id,))
 
     def test_messages_and_events_are_append_only(self):
         self.db.execute("""
