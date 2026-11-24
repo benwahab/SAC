@@ -15,15 +15,17 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   if (!session.ok) return json({ error: session.status === 401 ? "authentication_required" : "admin_service_unavailable" }, session.status);
 
   try {
+    const now = Date.now();
     const rows = await env.DB.prepare(
       `SELECT m.id, m.scope_key, m.status, m.due_at, m.created_at, m.updated_at,
               m.version, p.permission
        FROM admin_missions m
        LEFT JOIN admin_mission_permissions p ON p.mission_id = m.id
        WHERE m.assigned_account_id = ? AND m.status IN ('active', 'suspended')
+         AND (m.due_at IS NULL OR m.due_at > ?)
        ORDER BY m.created_at DESC, m.id DESC, p.permission
        LIMIT 100`,
-    ).bind(session.value.accountId).all<Record<string, unknown>>();
+    ).bind(session.value.accountId, now).all<Record<string, unknown>>();
     if (!rows.success) return json({ error: "admin_service_unavailable" }, 503);
 
     const byMission = new Map<string, { id: string; scopeKey: string; status: string; dueAt: number | null; createdAt: number; updatedAt: number; version: number; permissions: Permission[] }>();
