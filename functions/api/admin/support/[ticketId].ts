@@ -52,19 +52,37 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
     const current = await env.DB.prepare("SELECT status, version FROM support_tickets WHERE id = ? LIMIT 1").bind(ticketId).first<{status:string;version:number}>();
     if (!current) return json({ error: "ticket_not_found" }, 404);
     if (current.version !== parsed.value.expectedVersion) return json({ error: "ticket_version_conflict" }, 409);
-    const updated = await env.DB.prepare(
-      `UPDATE support_tickets SET status = ?, updated_at = ?,
-        resolved_at = CASE WHEN ? = 'resolved' THEN COALESCE(resolved_at, ?) WHEN ? IN ('new','open','waiting_requester','waiting_internal') THEN NULL ELSE resolved_at END,
-        closed_at = CASE WHEN ? = 'closed' THEN COALESCE(closed_at, ?) WHEN ? <> 'closed' THEN NULL ELSE closed_at END,
-        version = version + 1
-       WHERE id = ? AND version = ?`,
-    ).bind(nextStatus, now, nextStatus, now, nextStatus, nextStatus, now, nextStatus, ticketId, current.version).run();
-    if (!updated.success || updated.meta.changes !== 1) return json({ error: "ticket_version_conflict" }, 409);
-    await env.DB.prepare(
-      `INSERT INTO support_ticket_events
-       (id, ticket_id, actor_account_id, event_type, previous_value, new_value, occurred_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    ).bind(crypto.randomUUID(), ticketId, admin.value.accountId, nextStatus === "resolved" ? "resolved" : nextStatus === "closed" ? "closed" : nextStatus === "open" && current.status === "resolved" ? "reopened" : "status_changed", current.status, nextStatus, now).run();
+    const transitions: Record<string, string[]> = {
+      new: ["open", "waiting_internal", "closed"],
+      open: ["waiting_requester", "waiting_internal", "resolved", "closed"],
+      waiting_requester: ["open", "resolved", "closed"],
+      waiting_internal: ["open", "resolved", "closed"],
+      resolved: ["open", "closed"],
+      closed: [],
+    };
+    if (!transitions[current.status]?.includes(nextStatus)) return json({ error: "invalid_status_transition" }, 409);
+    const eventType = nextStatus === "resolved" ? "resolved" : nextStatus === "closed" ? "closed" : nextStatus === "open" && current.status === "resolved" ? "reopened" : "status_changed";
+    const results = await env.DB.batch([
+      env.DB.prepare(
+        `UPDATE support_tickets SET status = ?, updated_at = ?,
+          resolved_at = CASE WHEN ? = 'resolved' THEN COALESCE(resolved_at, ?) WHEN ? IN ('new','open','waiting_requester','waiting_internal') THEN NULL ELSE resolved_at END,
+          closed_at = CASE WHEN ? = 'closed' THEN COALESCE(closed_at, ?) ELSE closed_at END,
+          version = version + 1
+         WHERE id = ? AND version = ? AND status = ?`,
+      ).bind(nextStatus, now, nextStatus, now, nextStatus, nextStatus, now, ticketId, current.version, current.status),
+      env.DB.prepare(
+        `INSERT INTO support_ticket_events (id, ticket_id, actor_account_id, event_type, previous_value, new_value, occurred_at)
+         SELECT ?, ?, ?, ?, ?, ?, ?
+         WHERE EXISTS (SELECT 1 FROM support_tickets WHERE id = ? AND version = ? AND status = ?)`,
+      ).bind(crypto.randomUUID(), ticketId, admin.value.accountId, eventType, current.status, nextStatus, now, ticketId, current.version + 1, nextStatus),
+      env.DB.prepare(
+        `INSERT INTO admin_audit_events
+         (id, actor_account_id, actor_device_id, mission_id, action, scope_key, permission_used, outcome, occurred_at)
+         SELECT ?, ?, ?, NULL, 'support.ticket.status', 'support', 'support.process', 'success', ?
+         WHERE EXISTS (SELECT 1 FROM support_tickets WHERE id = ? AND version = ? AND status = ?)`,
+      ).bind(crypto.randomUUID(), admin.value.accountId, admin.value.deviceId, now, ticketId, current.version + 1, nextStatus),
+    ]);
+    if (results.some((result) => !result.success || result.meta.changes !== 1)) return json({ error: "ticket_version_conflict" }, 409);
     return json({ updated: true, status: nextStatus, version: current.version + 1, updatedAt: now });
   } catch { return json({ error: "admin_service_unavailable" }, 503); }
 };
