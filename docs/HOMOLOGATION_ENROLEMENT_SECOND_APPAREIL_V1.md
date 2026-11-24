@@ -5,6 +5,8 @@
 **Statut :** décisions produit et techniques approuvées ; Lots 1 et 2 réalisés, plus une preuve locale de détection de restauration D1 (transcript pur, fixture D1 isolé et rehearsal de restauration). **Aucun endpoint, aucune migration D1 de production, aucune activation réelle et aucun appareil secondaire opérationnel.**
 **Portée :** appareil racine unique déjà validé ; ajout d'un appareil secondaire sous son autorité.
 
+**Mise à jour du 24 novembre 2026 :** l'Option 2 (connexion multi-appareils par mot de passe) a été appliquée en production. Ce document reste le dossier de la voie Q0 avec approbation WebAuthn ; l'activation de l'Option 2 ne vaut pas homologation du parcours Q0.
+
 ## 1. Décisions approuvées
 
 L'utilisateur a validé le paquet suivant le 21 novembre 2026 :

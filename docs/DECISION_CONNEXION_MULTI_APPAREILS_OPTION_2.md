@@ -1,7 +1,7 @@
 # SAC — Décision produit : connexion multi-appareils par mot de passe (Option 2)
 
 **Date :** 21 novembre 2026
-**Statut :** décision produit explicite du propriétaire. **Non homologuée par une revue de sécurité indépendante.**
+**Statut :** décision produit explicite du propriétaire, appliquée en production le 24 novembre 2026. **Non homologuée par une revue de sécurité indépendante.**
 **Portée :** autoriser un nouvel appareil à ouvrir une session avec l'adresse e-mail vérifiée et le mot de passe du compte, sans QR et sans approbation WebAuthn d'un autre appareil.
 
 ## 1. Décision
@@ -67,8 +67,10 @@ Aucune migration distante ne doit être appliquée par un déploiement implicite
 
 ## 7. Verdict
 
-**Option 2 : décidée et préparée.**
-**Migration : non appliquée.**
-**Drapeau : désactivé.**
-**Production : non activée.**
-**Revue de sécurité indépendante : requise avant activation.**
+**Option 2 : décidée et activée.**
+**Migration : appliquée à `sac-db` le 24 novembre 2026.**
+**Drapeau : `MULTI_DEVICE_PASSWORD_LOGIN_ENABLED` présent en production.**
+**Déploiement : `60638a5d` — https://60638a5d.sac-3xh.pages.dev.**
+**CI : succès sur le commit `3449f80`.**
+**Sauvegarde : export D1 effectué avant migration dans `/tmp`.**
+**Revue de sécurité indépendante : toujours requise ; elle n'a pas été réalisée.**

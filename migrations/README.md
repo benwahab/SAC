@@ -147,4 +147,4 @@ La fonctionnalité est protégée par `MULTI_DEVICE_PASSWORD_LOGIN_ENABLED="true
 
 Tests : `npm run test:password-session` et `npm run test:d1-multi-device-password-login`.
 
-Cette migration n'a **pas** été appliquée à la D1 distante. Toute application distante exige une sauvegarde, une vérification d'unicité des credentials racines et une autorisation explicite distincte. Voir `docs/DECISION_CONNEXION_MULTI_APPAREILS_OPTION_2.md`.
+**Application distante vérifiée — 24 novembre 2026 :** la migration a été appliquée à `sac-db` après export de sauvegarde et vérification d'unicité des credentials racines. Les index `device_root_credentials_one_per_account` et `devices_account_status` sont présents, `devices_one_root_per_account` est absent, l'entrée 0020 est inscrite dans `d1_migrations` et `PRAGMA foreign_key_check` ne retourne aucune anomalie. Voir `docs/DECISION_CONNEXION_MULTI_APPAREILS_OPTION_2.md`.
