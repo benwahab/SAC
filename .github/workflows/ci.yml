@@ -162,6 +162,8 @@ jobs:
         run: npm run test:d1-super-admin-bootstrap
       - name: Test delegated mission schema and append-only admin audit log
         run: python3 tests/d1_admin_missions_schema.test.py
+      - name: Test support ticket D1 constraints and immutable history
+        run: npm run test:d1-support-tickets
       - name: Test D1 root device enrollment, credential and session constraints
         run: npm run test:d1-root-device-enrollment
       - name: Test D1 multi-device password login migration and single root credential
