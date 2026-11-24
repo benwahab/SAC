@@ -46,7 +46,7 @@ La présence d'une entrée de navigation ne vaut pas livraison du module.
 ## Étapes suivantes
 
 1. Compléter la Vue d’ensemble avec des états de santé mesurés et des tendances historiques contrôlées.
-2. Développer les workflows d’assistance et de support sans accès général aux alertes privées.
+2. Harmoniser et faire approuver le modèle D1 de l’Assistance avant de créer les tables et API de tickets.
 3. Définir si un traitement individuel des alertes est nécessaire, avec une permission distincte, une justification d’accès et une piste d’audit.
 4. Développer les services d'équipe (tâches, livrables, rapports, messagerie, réunions, calendrier et absences).
 5. Créer le service documentaire commun et les fonctions de secrétariat.
@@ -57,4 +57,4 @@ La présence d'une entrée de navigation ne vaut pas livraison du module.
 
 ## Validation
 
-Les commits de la supervision des alertes déclenchent de nouvelles exécutions GitHub Actions. Au moment de cette mise à jour, les workflows sont encore en cours ; aucun succès CI final ni déploiement de production n’est revendiqué.
+Les commits de la supervision des alertes et de la conception Assistance déclenchent des exécutions GitHub Actions. Les workflows de la supervision précédente ont été lancés ; leur conclusion doit être vérifiée avant de déclarer le lot validé. Aucun déploiement de production n’est revendiqué.
