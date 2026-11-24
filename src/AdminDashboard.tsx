@@ -54,7 +54,6 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
       fetch("/api/admin/missions", { credentials: "same-origin", cache: "no-store" }),
       fetch("/api/admin/audit?limit=50", { credentials: "same-origin", cache: "no-store" }),
       fetch("/api/admin/overview", { credentials: "same-origin", cache: "no-store" }),
-      fetch("/api/admin/alerts", { credentials: "same-origin", cache: "no-store" }),
     ]);
     const alertResponse = await fetch("/api/admin/alerts", { credentials: "same-origin", cache: "no-store" });
     if (!missionResponse.ok || !auditResponse.ok || !overviewResponse.ok || !alertResponse.ok) throw new Error([missionResponse, auditResponse, overviewResponse, alertResponse].some((response) => response.status === 401 || response.status === 403) ? "denied" : "unavailable");
