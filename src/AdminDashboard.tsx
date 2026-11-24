@@ -17,12 +17,11 @@ type AdminAccess = { canAccess: boolean; role: "super_admin" | "delegate" | null
 type OverviewMetrics = { activeAccounts: number; activeAlerts: number; alertsLast24h: number; activeMissions: number; activeDelegates: number; auditEventsLast24h: number };
 type AlertSupervision = {
   summary: { active: number; createdLast24h: number; closedLast24h: number; activeWithResponse: number; activeWithResponsible: number; activeWithoutResponse: number };
-type SupportTicket = { id: string; public_reference: string; category: string; subject: string; priority: string; status: string; created_at: number; updated_at: number; requester_email: string };
-type SupportInbox = { counts: { new: number; open: number; waiting: number; resolved: number }; tickets: SupportTicket[] };
-
   byLevel: { level: string; total: number }[];
   byCategory: { category: string; total: number }[];
 };
+type SupportTicket = { id: string; public_reference: string; category: string; subject: string; priority: string; status: string; created_at: number; updated_at: number; requester_email: string };
+type SupportInbox = { counts: { new: number; open: number; waiting: number; resolved: number }; tickets: SupportTicket[] };
 const PERMISSION_VALUES: Permission[] = ["read", "create", "update", "process", "export", "delete"];
 
 export default function AdminDashboard({ language = "fr" }: { language?: Language }) {
