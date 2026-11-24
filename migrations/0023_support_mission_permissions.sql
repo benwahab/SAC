@@ -33,6 +33,10 @@ BEGIN
                 AND m.status = 'active'
                 AND (m.due_at IS NULL OR m.due_at > NEW.created_at)
                 AND p.permission = 'process'
+                AND EXISTS (
+                  SELECT 1 FROM admin_mission_permissions reader
+                  WHERE reader.mission_id = m.id AND reader.permission = 'read'
+                )
             )
           )
         )
