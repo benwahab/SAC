@@ -310,7 +310,6 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     <main className="sac-shell sac-auth-page flex min-h-screen items-center justify-center px-5 py-10 text-sac-ink" dir={rtl ? "rtl" : "ltr"}>
       <div className="sac-auth-layout relative z-10 mx-auto grid w-full max-w-5xl items-center gap-8 lg:grid-cols-[1fr_minmax(0,28rem)] lg:gap-14">
         <aside className="sac-auth-brand hidden lg:block">
-          <div className="mb-7 inline-flex h-16 items-center rounded-2xl border border-white/30 bg-white/95 px-4 shadow-glass"><BrandLogo className="h-9 w-auto" /></div>
           <p className="text-xs font-black uppercase tracking-[.28em] text-sac-primary-strong">SAC · SÉCURITÉ · CONFIANCE</p>
           <h2 className="mt-5 max-w-xl text-5xl font-black leading-[1.08] tracking-tight text-sac-ink">{language === "fr" ? <>Toujours proches.<span className="block text-sac-primary-strong">Même à distance.</span></> : language === "en" ? <>Always close.<span className="block text-sac-primary-strong">Even from afar.</span></> : <>دائماً قريبون.<span className="block text-sac-primary-strong">حتى عن بُعد.</span></>}</h2>
           <p className="mt-6 max-w-md text-base leading-8 text-sac-muted">{language === "fr" ? "Un espace sécurisé pour rester relié aux personnes qui comptent, et leur transmettre une alerte lorsque vous en avez besoin." : language === "en" ? "A secure space to stay connected to the people who matter and reach them when you need help." : "مساحة آمنة للبقاء على اتصال بمن يهمك أمرهم وطلب المساعدة عند الحاجة."}</p>
