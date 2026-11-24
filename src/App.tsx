@@ -459,6 +459,26 @@ export default function App() {
   const [isAppleDevice, setIsAppleDevice] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [openOffer, setOpenOffer] = useState<"free" | "premium" | null>(null);
+  const [adminAccessAvailable, setAdminAccessAvailable] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const controller = new AbortController();
+    const checkAccess = async () => {
+      if (!media.matches) { setAdminAccessAvailable(false); return; }
+      try {
+        const response = await fetch("/api/admin/access", { credentials: "same-origin", cache: "no-store", signal: controller.signal });
+        if (!response.ok) { setAdminAccessAvailable(false); return; }
+        const access = await response.json() as { canAccess?: boolean; role?: "super_admin" | "delegate" | null };
+        setAdminAccessAvailable(access.canAccess === true && (access.role === "super_admin" || access.role === "delegate"));
+      } catch {
+        if (!controller.signal.aborted) setAdminAccessAvailable(false);
+      }
+    };
+    void checkAccess();
+    media.addEventListener("change", checkAccess);
+    return () => { controller.abort(); media.removeEventListener("change", checkAccess); };
+  }, []);
   const [language, setLanguage] = useState<Language>(() => {
     try {
       const saved = window.localStorage.getItem("sac-language");
@@ -567,6 +587,7 @@ export default function App() {
           <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-sac-muted">{t.appName}</span>
         </a>
         <div className="flex items-center gap-2 sm:gap-3">
+          {adminAccessAvailable && <a href="/administration" className="hidden min-h-10 items-center justify-center rounded-full border border-sac-confirm/30 bg-white/80 px-4 py-2 text-xs font-extrabold text-sac-ink shadow-glass transition hover:bg-white md:inline-flex">{language === "fr" ? "Espace administrateur" : language === "en" ? "Admin space" : "مساحة الإدارة"}</a>}
           <a href="/connexion" className="inline-flex min-h-10 items-center justify-center rounded-full border border-white/25 bg-[#2E8B68] px-4 py-2 text-xs font-extrabold text-white shadow-lg shadow-emerald-950/20 hover:bg-[#3FAE7A]">{signInLabel}</a>
           <div className="sac-language-switch flex items-center gap-1 rounded-full border border-white/90 bg-white/65 p-1 shadow-glass" role="group" aria-label={t.languageLabel} dir="ltr">
             {languages.map((item) => (
