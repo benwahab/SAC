@@ -358,7 +358,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-800/60">SAC · {sectionLabel(selectedSection)}</p>
           <p className="mt-1 text-sm text-slate-600">{sectionDetail(selectedSection)}</p>
         </div>
-      {activeSection === "overview" && summary}
+      {activeSection === "overview" && <>{summary}{overviewCards}</>}
       {error && <p role="alert" className="mb-5 rounded-xl border border-sac-alert/30 bg-white/80 p-4 text-sm text-sac-alert">{error}</p>}
       {notice && <p role="status" className="mb-5 rounded-xl border border-sac-confirm/30 bg-white/80 p-4 text-sm">{notice}</p>}
       {activeSection === "team" && <>
