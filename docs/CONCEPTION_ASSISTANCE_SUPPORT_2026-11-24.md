@@ -113,12 +113,12 @@ Si un utilisateur mentionne une urgence dans un ticket, l'interface doit lui ind
 
 ## 8. Conditions avant développement des API
 
-Avant la migration D1, confirmer :
-1. si le demandeur doit obligatoirement être connecté ;
+Avant l’activation complète, confirmer :
+1. la politique finale de récupération de compte (le ticket OTP actuel ne réinitialise pas les accès) ;
 2. les catégories et statuts définitifs ;
 3. les règles de priorité et les délais de traitement ;
 4. les rôles Support et leurs missions exactes ;
 5. la durée de conservation et les notifications ;
 6. le modèle de pièces jointes (ou leur exclusion définitive).
 
-Le premier lot a été codé dans `migrations/0021_support_tickets.sql`, `functions/api/support/tickets.ts`, `functions/api/support/tickets/[ticketId].ts`, `functions/api/support/tickets/[ticketId]/messages.ts`, `functions/api/admin/support/index.ts`, `functions/api/admin/support/[ticketId].ts` et `functions/api/admin/support/[ticketId]/messages.ts`. Les API actuelles permettent la création authentifiée, la consultation du ticket par son propriétaire, les réponses et la supervision/gestion par le Super Admin. Le premier flux n’accepte pas encore de ticket anonyme. Le parcours de récupération sans connexion, avec OTP e-mail dédié, reste à construire. Les affectations aux délégués, les SLA, notifications et pièces jointes restent hors de ce lot. La migration 0021 est locale au dépôt/CI et ne doit pas être appliquée à la D1 distante sans autorisation explicite.
+Le premier lot a été codé dans `migrations/0021_support_tickets.sql`, `functions/api/support/tickets.ts`, `functions/api/support/tickets/[ticketId].ts`, `functions/api/support/tickets/[ticketId]/messages.ts`, `functions/api/admin/support/index.ts`, `functions/api/admin/support/[ticketId].ts` et `functions/api/admin/support/[ticketId]/messages.ts`. Les API actuelles permettent la création authentifiée, la consultation du ticket par son propriétaire, les réponses et la supervision/gestion par le Super Admin. Le parcours de support « accès au compte » accepte désormais une demande sans session après vérification OTP de l’adresse e-mail. Il ne réinitialise pas le mot de passe et n'ouvre pas le compte : il crée uniquement un ticket lié à un compte actif correspondant. Les autres demandes nécessitent une session authentifiée. Les affectations aux délégués, les SLA, notifications et pièces jointes restent hors de ce lot. Les migrations 0021 et 0022 sont locales au dépôt/CI et ne doivent pas être appliquées à la D1 distante sans autorisation explicite.
