@@ -272,6 +272,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
       {error && <p role="alert" className="mb-5 rounded-xl border border-sac-alert/30 bg-white/80 p-4 text-sm text-sac-alert">{error}</p>}
       {notice && <p role="status" className="mb-5 rounded-xl border border-sac-confirm/30 bg-white/80 p-4 text-sm">{notice}</p>}
       {activeSection === "team" && <>
+      <section className="rounded-3xl border border-white/90 bg-white/75 p-6 shadow-glass backdrop-blur-xl">
         <h2 className="text-xl font-extrabold">{t.create}</h2>
         <form onSubmit={createMission} className="mt-5 grid gap-5 md:grid-cols-2">
           <label className="block text-sm font-bold">{t.assignee}
