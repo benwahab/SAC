@@ -96,7 +96,9 @@ BEGIN
       AND (
         (NEW.author_kind = 'requester' AND t.requester_account_id = NEW.author_account_id)
         OR
-        (NEW.author_kind = 'support' AND t.status NOT IN ('closed'))
+        (NEW.author_kind = 'support' AND t.status NOT IN ('closed')
+          AND EXISTS (SELECT 1 FROM account_roles r
+            WHERE r.account_id = NEW.author_account_id AND r.role = 'super_admin'))
       )
   ) THEN RAISE(ABORT, 'support_message_not_authorized') END;
 END;
