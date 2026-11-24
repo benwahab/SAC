@@ -13,8 +13,13 @@ class SupportTicketSchemaTests(unittest.TestCase):
             id TEXT PRIMARY KEY NOT NULL,
             status TEXT NOT NULL
           );
+          CREATE TABLE account_roles (
+            account_id TEXT NOT NULL,
+            role TEXT NOT NULL
+          );
           INSERT INTO accounts (id, status) VALUES
-            ('requester', 'active'), ('support', 'active'), ('suspended', 'suspended'), ('superadmin', 'active');\n          INSERT INTO account_roles (account_id, role) VALUES ('superadmin', 'super_admin');
+            ('requester', 'active'), ('support', 'active'), ('suspended', 'suspended'), ('superadmin', 'active');
+          INSERT INTO account_roles (account_id, role) VALUES ('superadmin', 'super_admin');
         """)
         self.db.executescript(MIGRATION.read_text())
 
