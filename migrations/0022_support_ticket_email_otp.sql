@@ -5,6 +5,7 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE support_ticket_intake_challenges (
   id TEXT PRIMARY KEY NOT NULL,
   normalized_email TEXT NOT NULL CHECK (length(normalized_email) BETWEEN 5 AND 254),
+  request_ip_hash TEXT NOT NULL CHECK (length(request_ip_hash) = 64 AND request_ip_hash NOT GLOB '*[^a-f0-9]*'),
   digest TEXT NOT NULL CHECK (length(digest) = 64 AND digest NOT GLOB '*[^a-f0-9]*'),
   attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count BETWEEN 0 AND 6),
   max_attempts INTEGER NOT NULL DEFAULT 6 CHECK (max_attempts = 6),
@@ -34,13 +35,18 @@ BEGIN
   ) >= 5 THEN RAISE(ABORT, 'support_intake_otp_rate_limited') END;
   SELECT CASE WHEN NEW.delivery_status <> 'pending'
     THEN RAISE(ABORT, 'support_intake_otp_must_start_pending') END;
+  SELECT CASE WHEN (
+    SELECT COUNT(*) FROM support_ticket_intake_challenges previous
+    WHERE previous.request_ip_hash = NEW.request_ip_hash
+      AND previous.created_at > NEW.created_at - 3600000
+  ) >= 10 THEN RAISE(ABORT, 'support_intake_ip_rate_limited') END;
 END;
 
 CREATE TRIGGER support_intake_challenge_update_guard
 BEFORE UPDATE ON support_ticket_intake_challenges
 BEGIN
   SELECT CASE WHEN NEW.id <> OLD.id OR NEW.normalized_email <> OLD.normalized_email
-    OR NEW.digest <> OLD.digest OR NEW.max_attempts <> OLD.max_attempts
+    OR NEW.request_ip_hash <> OLD.request_ip_hash OR NEW.digest <> OLD.digest OR NEW.max_attempts <> OLD.max_attempts
     OR NEW.created_at <> OLD.created_at OR NEW.expires_at <> OLD.expires_at
     THEN RAISE(ABORT, 'support_intake_otp_immutable_fields') END;
   SELECT CASE WHEN NOT (
