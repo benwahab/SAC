@@ -43,3 +43,45 @@ BEGIN
       )
   ) THEN RAISE(ABORT, 'support_message_not_authorized') END;
 END;
+
+
+-- Le journal d'événements vérifie également les droits dans la transaction
+-- qui accompagne le changement d'état, afin d'éviter une révocation concurrente.
+CREATE TRIGGER support_ticket_event_actor_permission_guard
+BEFORE INSERT ON support_ticket_events
+BEGIN
+  SELECT CASE WHEN NOT EXISTS (
+    SELECT 1
+    FROM support_tickets t
+    JOIN accounts a ON a.id = NEW.actor_account_id AND a.status = 'active'
+    WHERE t.id = NEW.ticket_id
+      AND (
+        (NEW.event_type = 'created'
+          AND t.requester_account_id = NEW.actor_account_id)
+        OR
+        (NEW.event_type <> 'created'
+          AND (
+            EXISTS (
+              SELECT 1 FROM account_roles r
+              WHERE r.account_id = NEW.actor_account_id
+                AND r.role = 'super_admin'
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM admin_missions m
+              JOIN admin_mission_permissions p ON p.mission_id = m.id
+              WHERE m.assigned_account_id = NEW.actor_account_id
+                AND m.scope_key = 'support'
+                AND m.status = 'active'
+                AND (m.due_at IS NULL OR m.due_at > NEW.occurred_at)
+                AND p.permission = 'process'
+                AND EXISTS (
+                  SELECT 1 FROM admin_mission_permissions reader
+                  WHERE reader.mission_id = m.id AND reader.permission = 'read'
+                )
+            )
+          )
+        )
+      )
+  ) THEN RAISE(ABORT, 'support_event_actor_not_authorized') END;
+END;
