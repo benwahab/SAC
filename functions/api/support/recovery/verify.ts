@@ -2,7 +2,7 @@ import { verifyEmailOtpDigest } from "../../../lib/security/email-otp-code.ts";
 import { guardSameOriginJsonPost } from "../../../lib/security/http-request-guard.ts";
 import { readJsonRequestBody } from "../../../lib/security/json-request-body.ts";
 
-interface Env { DB: D1Database; EMAIL_OTP_HMAC_SECRET?: string; }
+interface Env { DB: D1Database; EMAIL_OTP_HMAC_SECRET?: string; SUPPORT_INTAKE_ENABLED?: string; }
 const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" };
 function json(body: unknown, status = 200): Response { return new Response(JSON.stringify(body), { status, headers: HEADERS }); }
 function isObject(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
@@ -14,7 +14,7 @@ function makeReference(): string {
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const guard = guardSameOriginJsonPost(request);
   if (guard) return guard;
-  if (!env.DB || !env.EMAIL_OTP_HMAC_SECRET || env.EMAIL_OTP_HMAC_SECRET.length < 32) return json({ error: "support_intake_unavailable" }, 503);
+  if (env.SUPPORT_INTAKE_ENABLED !== "true" || !env.DB || !env.EMAIL_OTP_HMAC_SECRET || env.EMAIL_OTP_HMAC_SECRET.length < 32) return json({ error: "support_intake_unavailable" }, 503);
   const parsed = await readJsonRequestBody(request, 8192);
   if (!parsed.ok || !isObject(parsed.value)) return json({ error: "invalid_request" }, 400);
   const body = parsed.value;
