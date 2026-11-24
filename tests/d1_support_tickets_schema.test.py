@@ -42,6 +42,20 @@ class SupportTicketSchemaTests(unittest.TestCase):
         """)
         self.assertEqual(self.db.execute("SELECT status FROM support_tickets WHERE id='ticket-1'").fetchone()[0], "new")
 
+    def test_ticket_creation_rate_is_limited_by_database(self):
+        for index in range(5):
+            self.db.execute("""
+              INSERT INTO support_tickets
+              (id, public_reference, requester_account_id, category, subject, description, created_at, updated_at)
+              VALUES (?, ?, 'requester', 'general_question', 'Question', 'Need help please', ?, ?)
+            """, (f'ticket-{index}', f'SAC-RATE-LIMIT-{index:02d}', 100 + index, 100 + index))
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("""
+              INSERT INTO support_tickets
+              (id, public_reference, requester_account_id, category, subject, description, created_at, updated_at)
+              VALUES ('ticket-six', 'SAC-RATE-LIMIT-06', 'requester', 'general_question', 'Question', 'Need help please', 200, 200)
+            """)
+
     def test_requester_cannot_write_as_support(self):
         self.db.execute("""
           INSERT INTO support_tickets
