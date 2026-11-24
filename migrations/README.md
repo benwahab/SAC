@@ -157,3 +157,12 @@ Tests : `npm run test:password-session` et `npm run test:d1-multi-device-passwor
 Les catégories et états sont contrôlés par contraintes D1. La base limite la création à cinq tickets par compte et par heure. Les changements de statut sont soumis à des transitions autorisées dans l’API. Les tickets sont liés à un demandeur actif, les messages du demandeur sont limités à ses propres tickets, les messages et événements sont append-only. Les pièces jointes ne sont pas incluses. L'API citoyenne `GET/POST /api/support/tickets` permet de consulter ses demandes et d'en créer ; la console Super Admin lit les compteurs et la file via `GET /api/admin/support`.
 
 Test local : `npm run test:d1-support-tickets`. Cette migration n'est pas appliquée à la D1 distante. Toute application distante nécessite une autorisation explicite après validation de la CI.
+
+
+## 0022 — OTP e-mail pour les demandes d'assistance sans session
+
+`0022_support_ticket_email_otp.sql` ajoute des défis OTP isolés du parcours d'inscription. Le code est lié à l'usage `support_ticket_intake`, stocké sous forme HMAC, valable dix minutes et limité à six tentatives. Le déclenchement est limité par adresse e-mail (délai de 60 secondes, cinq demandes/heure) et par empreinte HMAC de l'IP (dix demandes/heure). L'adresse IP brute n'est pas persistée.
+
+Les routes `POST /api/support/recovery/request` et `POST /api/support/recovery/verify` permettent de déposer un ticket « accès au compte » sans session, après vérification de la maîtrise de l'adresse e-mail. La réponse de demande reste générique pour limiter l'énumération des comptes. Ce code ne réinitialise pas le mot de passe et ne donne pas accès au compte ; il autorise uniquement l'envoi d'une demande de support associée à un compte actif existant.
+
+Test local : `npm run test:d1-support-intake-otp`. La migration 0022 n'est pas appliquée à la D1 distante. Toute application distante nécessite une autorisation explicite après validation CI.
