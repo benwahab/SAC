@@ -30,7 +30,7 @@ export async function digestEmailOtp(
   cryptoProvider: Pick<Crypto, "subtle">,
   secret: string,
   challengeId: string,
-  purpose: "account_email_verification" | "account_email_change" | "account_phone_change",
+  purpose: "account_email_verification" | "account_email_change" | "account_phone_change" | "support_ticket_intake",
   code: string,
 ): Promise<string> {
   if (!secret || secret.length < 32) throw new Error("otp_secret_not_configured");
