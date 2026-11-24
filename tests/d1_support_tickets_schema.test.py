@@ -113,7 +113,7 @@ class SupportTicketSchemaTests(unittest.TestCase):
         """)
         self.db.execute("""
           INSERT INTO admin_mission_permissions (mission_id, permission)
-          VALUES ('mission-support', 'process')
+          VALUES ('mission-support', 'read'), ('mission-support', 'process')
         """)
         self.db.execute("""
           INSERT INTO support_messages (id, ticket_id, author_account_id, author_kind, body, created_at)
@@ -134,7 +134,7 @@ class SupportTicketSchemaTests(unittest.TestCase):
         """)
         self.db.execute("""
           INSERT INTO admin_mission_permissions (mission_id, permission)
-          VALUES ('mission-wrong-scope', 'process'), ('mission-expired', 'process')
+          VALUES ('mission-wrong-scope', 'read'), ('mission-wrong-scope', 'process'), ('mission-expired', 'read'), ('mission-expired', 'process')
         """)
         with self.assertRaises(sqlite3.IntegrityError):
             self.db.execute("""
