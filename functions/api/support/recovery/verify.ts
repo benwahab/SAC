@@ -1,4 +1,3 @@
-import { normalizeRegistrationEmail } from "../../../../src/domain/registration-policy.ts";
 import { verifyEmailOtpDigest } from "../../../lib/security/email-otp-code.ts";
 import { guardSameOriginJsonPost } from "../../../lib/security/http-request-guard.ts";
 import { readJsonRequestBody } from "../../../lib/security/json-request-body.ts";
