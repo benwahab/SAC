@@ -63,7 +63,7 @@ export async function verifyEmailOtpDigest(
   cryptoProvider: Pick<Crypto, "subtle">,
   secret: string,
   challengeId: string,
-  purpose: "account_email_verification" | "account_email_change" | "account_phone_change",
+  purpose: "account_email_verification" | "account_email_change" | "account_phone_change" | "support_ticket_intake",
   code: string,
   expectedDigest: string,
 ): Promise<boolean> {
