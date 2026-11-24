@@ -40,9 +40,13 @@ export async function requireSupportMissionAccess(
          AND m.status = 'active'
          AND (m.due_at IS NULL OR m.due_at > ?)
          AND p.permission = ?
+         AND (? <> 'process' OR EXISTS (
+           SELECT 1 FROM admin_mission_permissions reader
+           WHERE reader.mission_id = m.id AND reader.permission = 'read'
+         ))
        ORDER BY m.created_at DESC, m.id
        LIMIT 1`,
-    ).bind(authenticated.value.accountId, nowMs, permission).first<{ id: string }>();
+    ).bind(authenticated.value.accountId, nowMs, permission, permission).first<{ id: string }>();
 
     if (!mission) return { ok: false, status: 403 };
     return { ok: true, value: authenticated.value, isSuperAdmin: false, missionId: mission.id };
