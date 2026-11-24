@@ -25,7 +25,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       env.DB.prepare(
         `SELECT t.id, t.public_reference, t.category, t.subject, t.priority, t.status,
                 t.created_at, t.updated_at, t.resolved_at, t.version,
-                i.normalized_value AS requester_email
+                CASE WHEN ? = 1 THEN i.normalized_value ELSE NULL END AS requester_email
          FROM support_tickets t
          JOIN account_identities i ON i.account_id = t.requester_account_id
            AND i.channel = 'email' AND i.is_primary = 1 AND i.verified_at IS NOT NULL
@@ -33,7 +33,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
          ORDER BY CASE t.priority WHEN 'critical_support' THEN 0 WHEN 'high' THEN 1 ELSE 2 END,
                   t.updated_at DESC, t.id DESC
          LIMIT 100`,
-      ).bind(status, status).all<Record<string, unknown>>(),
+      ).bind(admin.isSuperAdmin ? 1 : 0, status, status).all<Record<string, unknown>>(),
     ]);
     if (!counts || !tickets.success) return json({ error: "admin_service_unavailable" }, 503);
     await recordAdminReadEvent(env.DB, admin.value, "admin.support.read", "support.read", Date.now(), admin.missionId, "support");
