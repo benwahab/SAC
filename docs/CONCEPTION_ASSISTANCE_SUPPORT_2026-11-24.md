@@ -132,3 +132,8 @@ Les API de la file, du détail, des changements de statut et des réponses accep
 ### Minimisation des données pour les missions Support
 
 La file et le détail des tickets ne renvoient plus l'adresse e-mail du demandeur aux collaborateurs délégués. Cette coordonnée reste visible au Super Admin ; les collaborateurs Support travaillent sur la référence, la catégorie, le sujet, le contenu et les échanges. Les contrôles serveur restent obligatoires, même si l'interface masque un champ.
+
+
+### Protection contre la révocation concurrente
+
+Les triggers D1 vérifient les permissions de mission Support au moment de l'insertion des messages et des événements de ticket. Ainsi, si une mission est suspendue, révoquée ou expirée après le contrôle API mais avant l'écriture métier, D1 refuse l'écriture et annule la transaction. Les événements `created` restent réservés au demandeur propriétaire du ticket. Les événements de traitement exigent le Super Admin ou une mission Support active avec `read` et `process`.
