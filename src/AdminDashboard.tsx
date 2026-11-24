@@ -14,6 +14,7 @@ type DelegateMission = {
   createdAt: number; updatedAt: number; version: number; permissions: Permission[];
 };
 type AdminAccess = { canAccess: boolean; role: "super_admin" | "delegate" | null; activeMissions: number };
+type OverviewMetrics = { activeAccounts: number; activeAlerts: number; alertsLast24h: number; activeMissions: number; activeDelegates: number; auditEventsLast24h: number };
 const PERMISSION_VALUES: Permission[] = ["read", "create", "update", "process", "export", "delete"];
 
 export default function AdminDashboard({ language = "fr" }: { language?: Language }) {
@@ -25,6 +26,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
   const [delegateMissions, setDelegateMissions] = useState<DelegateMission[]>([]);
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [overviewMetrics, setOverviewMetrics] = useState<OverviewMetrics | null>(null);
   const [query, setQuery] = useState("");
   const [accountId, setAccountId] = useState("");
   const [editingMissionId, setEditingMissionId] = useState<string | null>(null);
@@ -42,17 +44,20 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
   const permissionCount = new Set((isSuperAdmin ? missions : delegateMissions).flatMap((mission) => mission.permissions)).size;
 
   const refreshSuperAdmin = useCallback(async () => {
-    const [missionResponse, auditResponse] = await Promise.all([
+    const [missionResponse, auditResponse, overviewResponse] = await Promise.all([
       fetch("/api/admin/missions", { credentials: "same-origin", cache: "no-store" }),
       fetch("/api/admin/audit?limit=50", { credentials: "same-origin", cache: "no-store" }),
+      fetch("/api/admin/overview", { credentials: "same-origin", cache: "no-store" }),
     ]);
-    if (!missionResponse.ok || !auditResponse.ok) throw new Error(missionResponse.status === 401 || missionResponse.status === 403 ? "denied" : "unavailable");
-    const [missionPayload, auditPayload] = await Promise.all([
+    if (!missionResponse.ok || !auditResponse.ok || !overviewResponse.ok) throw new Error([missionResponse, auditResponse, overviewResponse].some((response) => response.status === 401 || response.status === 403) ? "denied" : "unavailable");
+    const [missionPayload, auditPayload, overviewPayload] = await Promise.all([
       missionResponse.json() as Promise<{ missions: Mission[] }>,
       auditResponse.json() as Promise<{ events: AuditEvent[] }>,
+      overviewResponse.json() as Promise<{ metrics: OverviewMetrics }>,
     ]);
     setMissions(missionPayload.missions);
     setAuditEvents(auditPayload.events);
+    setOverviewMetrics(overviewPayload.metrics);
     setAccessDenied(false);
   }, []);
 
@@ -225,13 +230,20 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
     ];
   const summary = <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{summaryCards.map((card) => <div key={card.label} className="rounded-2xl border border-white/90 bg-white/75 p-5 shadow-glass"><p className="text-[11px] font-black uppercase tracking-[.14em] text-sac-muted">{card.label}</p><p className="mt-2 text-2xl font-black text-sac-primary-strong">{card.value}</p></div>)}</section>;
 
+  const overviewLabels = language === "fr"
+    ? [{ label: "Comptes actifs", value: overviewMetrics?.activeAccounts }, { label: "Alertes actives", value: overviewMetrics?.activeAlerts }, { label: "Alertes · 24 h", value: overviewMetrics?.alertsLast24h }, { label: "Missions actives", value: overviewMetrics?.activeMissions }, { label: "Délégués actifs", value: overviewMetrics?.activeDelegates }, { label: "Événements d’audit · 24 h", value: overviewMetrics?.auditEventsLast24h }]
+    : language === "ar"
+      ? [{ label: "الحسابات النشطة", value: overviewMetrics?.activeAccounts }, { label: "التنبيهات النشطة", value: overviewMetrics?.activeAlerts }, { label: "التنبيهات · 24 ساعة", value: overviewMetrics?.alertsLast24h }, { label: "المهام النشطة", value: overviewMetrics?.activeMissions }, { label: "المفوضون النشطون", value: overviewMetrics?.activeDelegates }, { label: "أحداث التدقيق · 24 ساعة", value: overviewMetrics?.auditEventsLast24h }]
+      : [{ label: "Active accounts", value: overviewMetrics?.activeAccounts }, { label: "Active alerts", value: overviewMetrics?.activeAlerts }, { label: "Alerts · 24h", value: overviewMetrics?.alertsLast24h }, { label: "Active missions", value: overviewMetrics?.activeMissions }, { label: "Active delegates", value: overviewMetrics?.activeDelegates }, { label: "Audit events · 24h", value: overviewMetrics?.auditEventsLast24h }];
+  const overviewCards = <section className="mb-8"><div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-sm font-extrabold text-emerald-950">{language === "fr" ? "Activité réelle de la plateforme" : language === "ar" ? "النشاط الفعلي للمنصة" : "Live platform activity"}</h2><span className="text-[11px] text-slate-500">{language === "fr" ? "Période glissante de 24 heures" : language === "ar" ? "آخر 24 ساعة" : "Rolling 24-hour period"}</span></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{overviewLabels.map((metric) => <div key={metric.label} className="rounded-2xl border border-emerald-900/10 bg-white/85 p-4 shadow-sm"><p className="text-xs font-bold text-slate-500">{metric.label}</p><p className="mt-2 text-2xl font-black tabular-nums text-emerald-950">{metric.value === undefined ? "—" : metric.value.toLocaleString(language)}</p></div>)}</div>{!overviewMetrics && <p className="mt-3 text-xs text-slate-500">{language === "fr" ? "Indicateurs indisponibles : actualise la page ou réessaie plus tard." : language === "ar" ? "المؤشرات غير متاحة: حدّث الصفحة أو أعد المحاولة لاحقاً." : "Metrics unavailable: refresh the page or try again later."}</p>}</section>;
+
   if (access?.role === "delegate") return <main className="min-h-screen bg-sac-primary/15 px-5 py-8 text-sac-ink sm:px-8" dir={language === "ar" ? "rtl" : "ltr"}>
     <div className="mx-auto max-w-6xl">
       <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div><BrandLogo className="h-8 w-auto" /><div className="mt-2 flex flex-wrap items-center gap-3"><h1 className="text-3xl font-black">{t.delegateTitle}</h1><span className="rounded-full bg-sac-primary/15 px-3 py-1 text-xs font-black text-sac-primary-strong">{t.roleDelegate}</span></div><p className="mt-1 text-sm text-sac-muted">{t.delegateSubtitle}</p></div>
         <a href="/" className="rounded-xl border border-white bg-white/70 px-4 py-3 text-sm font-bold">{t.back}</a>
       </header>
-      {activeSection === "overview" && summary}
+      {activeSection === "overview" && <>{summary}{isSuperAdmin && overviewCards}</>}
       {error && <p role="alert" className="mb-5 rounded-xl border border-sac-alert/30 bg-white/80 p-4 text-sm text-sac-alert">{error}</p>}
       <section>
         <h2 className="mb-4 text-xl font-extrabold">{t.myMissions}</h2>
