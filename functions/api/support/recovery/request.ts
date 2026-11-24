@@ -7,6 +7,7 @@ import { readJsonRequestBody } from "../../../lib/security/json-request-body.ts"
 interface Env {
   DB: D1Database;
   EMAIL_OTP_HMAC_SECRET?: string;
+  SUPPORT_INTAKE_ENABLED?: string;
   BREVO_API_KEY?: string;
   BREVO_FROM_EMAIL?: string;
   BREVO_FROM_NAME?: string;
@@ -24,7 +25,7 @@ async function hmacHex(secret: string, value: string): Promise<string> {
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const guard = guardSameOriginJsonPost(request);
   if (guard) return guard;
-  if (!env.DB || !env.EMAIL_OTP_HMAC_SECRET || env.EMAIL_OTP_HMAC_SECRET.length < 32 ||
+  if (env.SUPPORT_INTAKE_ENABLED !== "true" || !env.DB || !env.EMAIL_OTP_HMAC_SECRET || env.EMAIL_OTP_HMAC_SECRET.length < 32 ||
       !env.BREVO_API_KEY || !env.BREVO_FROM_EMAIL || !env.BREVO_FROM_NAME) return json({ error: "support_intake_unavailable" }, 503);
   const parsed = await readJsonRequestBody(request, 4096);
   if (!parsed.ok || typeof parsed.value !== "object" || parsed.value === null || Array.isArray(parsed.value)) return json({ error: "invalid_request" }, 400);
