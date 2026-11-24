@@ -127,3 +127,8 @@ Le premier lot a été codé dans `migrations/0021_support_tickets.sql`, `functi
 ## Extension — accès des collaborateurs par mission (24 novembre 2026)
 
 Les API de la file, du détail, des changements de statut et des réponses acceptent désormais le Super Admin ou un collaborateur muni d'une mission active de périmètre exact `support`. La lecture exige la permission `read`; le traitement et les réponses exigent simultanément `read` et `process`. Les permissions sont relues dans D1 à chaque requête et l'échéance est vérifiée côté serveur. Les événements d'audit associent l'identifiant de mission et le périmètre. Le trigger D1 de la table des messages impose également une mission Support active avec `process` pour une réponse de collaborateur. Cette protection est ajoutée par la migration 0023 et doit être appliquée dans chaque environnement avant d'utiliser les réponses déléguées. La D1 distante n'est pas modifiée.
+
+
+### Minimisation des données pour les missions Support
+
+La file et le détail des tickets ne renvoient plus l'adresse e-mail du demandeur aux collaborateurs délégués. Cette coordonnée reste visible au Super Admin ; les collaborateurs Support travaillent sur la référence, la catégorie, le sujet, le contenu et les échanges. Les contrôles serveur restent obligatoires, même si l'interface masque un champ.
