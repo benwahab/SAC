@@ -64,6 +64,7 @@
     "test:root-authentication-endpoints": "node --experimental-strip-types --test tests/root-authentication-endpoints.test.ts",
     "test:password-session": "node --experimental-strip-types --test tests/password-session-endpoint.test.ts",
     "test:password-session-multi-device": "node --experimental-strip-types --test tests/password-session-multi-device.integration.test.ts",
+    "test:login-flow": "node --experimental-strip-types --test tests/login-flow.test.ts",
     "test:start-root-enrollment": "node --experimental-strip-types --test tests/start-root-enrollment-endpoint.test.ts",
     "test:webauthn-assertion-policy": "node --experimental-strip-types --test tests/webauthn-assertion-policy.test.ts",
     "test:push-subscriptions": "node --experimental-strip-types --test tests/push-subscription-crypto.test.ts",

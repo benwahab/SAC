@@ -49,6 +49,8 @@ jobs:
         run: npm run test:password-session
       - name: Test multi-device password login against isolated D1
         run: npm run test:password-session-multi-device
+      - name: Test password-first login with WebAuthn fallback
+        run: npm run test:login-flow
       - name: Test session-authenticated security key enrollment
         run: npm run test:start-root-enrollment
       - name: Test root WebAuthn assertion flag policy

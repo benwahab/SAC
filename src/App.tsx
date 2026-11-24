@@ -2,8 +2,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Download, Eye, EyeOff, Fingerprint, HeartHandshake, LockKeyhole, MapPin, Share2, ShieldCheck, UsersRound, X } from "lucide-react";
 import BrandLogo from "./components/BrandLogo";
 import { isLanguage, languages, translations, type Language } from "./i18n/translations";
-import { completeRootAuthentication, requestRootAuthentication, requestRootAuthenticationWithCredential, type RootAuthenticationOptions } from "./services/device/root-authentication";
-import { createPasswordSession } from "./services/device/password-session";
+import { completeRootAuthentication, requestRootAuthenticationWithCredential, type RootAuthenticationOptions } from "./services/device/root-authentication";
+import { startLogin } from "./services/device/login-flow";
 import { clearStoredPasskeyCredentialId, getStoredPasskeyCredentialId } from "./services/device/passkey-storage";
 import PrivateSpacePage from "./PrivateSpacePage";
 import InvitationAcceptancePage from "./InvitationAcceptancePage";
@@ -26,7 +26,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       signIn: "Connexion", create: "Créer un compte", register: "Créer mon compte",
       verify: "Vérifier mon adresse", resend: "Renvoyer un code",
       back: "Retour", home: "Retour à l’accueil", language: "Langue",
-      private: "Espace privé", loginUnavailable: "Utilisez Face ID ou l’empreinte si elle est configurée sur cet appareil, sinon connectez-vous avec votre adresse vérifiée et votre mot de passe.",
+      private: "Espace privé", loginUnavailable: "Connectez-vous avec votre adresse e-mail vérifiée et votre mot de passe. Face ID ou l’empreinte reste disponible si elle est configurée sur cet appareil.",
       rootIntro: "Votre appareil sécurisé est prêt. Confirmez votre identité pour ouvrir votre session.", prepareRoot: "Se connecter", createRoot: "Confirmer sur cet appareil", rootReady: "Confirmez la connexion avec la clé sécurisée de ce téléphone.", rootSuccess: "Connexion sécurisée réussie. Votre session est ouverte.", rootPreparing: "Vérification…", rootCreating: "Confirmation sur l’appareil…",
       registerIntro: "Créez votre compte. Votre adresse e-mail doit être vérifiée avant toute activation.",
       verifyIntro: "Saisissez le code envoyé à votre adresse e-mail. Il est valable 10 minutes.",
@@ -50,7 +50,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       signIn: "Sign in", create: "Create an account", register: "Create my account",
       verify: "Verify my email", resend: "Resend code",
       back: "Back", home: "Back to home", language: "Language",
-      private: "Private space", loginUnavailable: "Use Face ID or your fingerprint if configured on this device; otherwise sign in with your verified email and password.",
+      private: "Private space", loginUnavailable: "Sign in with your verified email and password. Face ID or fingerprint remains available if it is configured on this device.",
       rootIntro: "Your secure device is ready. Confirm your identity to open your session.", prepareRoot: "Sign in", createRoot: "Confirm on this device", rootReady: "Confirm sign-in with this phone’s secure key.", rootSuccess: "Secure sign-in successful. Your session is open.", rootPreparing: "Checking…", rootCreating: "Confirm on your device…",
       registerIntro: "Create your account. Your email address must be verified before activation.",
       verifyIntro: "Enter the code sent to your email address. It is valid for 10 minutes.",
@@ -74,7 +74,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
       signIn: "تسجيل الدخول", create: "إنشاء حساب", register: "إنشاء حسابي",
       verify: "التحقق من بريدي", resend: "إعادة إرسال الرمز",
       back: "رجوع", home: "العودة إلى الصفحة الرئيسية", language: "اللغة",
-      private: "مساحة خاصة", loginUnavailable: "استخدم Face ID أو بصمة الإصبع إذا كانت مُعدة على هذا الجهاز، وإلا فسجّل الدخول ببريدك الموثّق وكلمة المرور.",
+      private: "مساحة خاصة", loginUnavailable: "سجّل الدخول ببريدك الإلكتروني الموثّق وكلمة المرور. يبقى Face ID أو بصمة الإصبع متاحاً إذا كان مُعدّاً على هذا الجهاز.",
       rootIntro: "جهازك الآمن جاهز. أكّد هويتك لفتح جلستك.", prepareRoot: "تسجيل الدخول", createRoot: "التأكيد على هذا الجهاز", rootReady: "أكّد تسجيل الدخول باستخدام المفتاح الآمن لهذا الهاتف.", rootSuccess: "تم تسجيل الدخول بأمان وفتح جلستك.", rootPreparing: "جارٍ التحقق…", rootCreating: "أكّد على جهازك…",
       registerIntro: "أنشئ حسابك. يجب التحقق من بريدك الإلكتروني قبل تفعيل الحساب.",
       verifyIntro: "أدخل الرمز المرسل إلى بريدك الإلكتروني. صلاحية الرمز 10 دقائق.",
@@ -217,17 +217,14 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
     setError("");
     setNotice("");
     try {
-      try {
-        const ceremony = await requestRootAuthentication(email, password);
-        setRootCeremony(ceremony);
-        setPassword("");
-        setMode("authenticate");
-      } catch (reason) {
-        if (!(reason instanceof Error) || reason.message !== "root_enrollment_required") throw reason;
-        await createPasswordSession(email, password);
-        setPassword("");
+      const result = await startLogin(email, password);
+      setPassword("");
+      if (result.kind === "session") {
         window.location.assign(returnTo);
+        return;
       }
+      setRootCeremony(result.ceremony);
+      setMode("authenticate");
     } catch (reason) {
       setError(errorMessage(reason instanceof Error ? reason.message : undefined));
     } finally {
