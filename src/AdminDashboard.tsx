@@ -138,7 +138,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
 
   useEffect(() => {
     if (!allowedDevice || access?.role !== "delegate") return;
-    const revalidate = () => { void refreshDelegate().catch(() => { setSupportInbox(null); setSupportTicketDetail(null); setActiveSection("overview"); }); };
+    const revalidate = () => { if (document.visibilityState !== "visible") return; void refreshDelegate().catch(() => { setSupportInbox(null); setSupportTicketDetail(null); setActiveSection("overview"); }); };
     window.addEventListener("focus", revalidate);
     document.addEventListener("visibilitychange", revalidate);
     return () => { window.removeEventListener("focus", revalidate); document.removeEventListener("visibilitychange", revalidate); };
