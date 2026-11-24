@@ -19,10 +19,11 @@ La console Super Admin conserve les onze rubriques validées : Vue d'ensemble, U
 - **Finances :** conception du modèle comptable, budgets, trésorerie, factures, paiements, partie double, approbations, permissions et contrôles documentée dans docs/CONCEPTION_FINANCES_COMPTABILITE_TRESORERIE_2026-11-24.md. La rubrique affiche l'état de conception sans inventer de soldes. Aucune table financière ni opération de paiement n'est activée.
 - **Relations externes :** conception des partenaires, contacts, conventions, avenants, correspondances, échéances, permissions et confidentialité documentée dans `docs/CONCEPTION_RELATIONS_EXTERNES_PARTENAIRES_CONVENTIONS_2026-11-24.md`. Aucun partenaire fictif n’est affiché.
 - **Ressources :** conception RH, logistique, stocks, équipements, maintenance et service documentaire commun documentée dans `docs/CONCEPTION_RESSOURCES_RH_LOGISTIQUE_DOCUMENTS_2026-11-24.md`. Les documents générés et imprimés devront être archivés avec référence, date, auteur, version et statut. Aucun registre fictif n’est affiché.
+- **Pilotage :** conception des objectifs, KPI, projets, risques, décisions et rapports de direction documentée dans `docs/CONCEPTION_PILOTAGE_KPI_PROJETS_RAPPORTS_2026-11-24.md`. Les mesures devront provenir des modules sources, avec fraîcheur et état de validation ; aucune valeur fictive n’est affichée.
 
 ## Rubriques restantes
 
-Pilotage et Paramètres restent à concevoir et développer. Relations externes et Ressources disposent maintenant de conceptions documentées et d’un état de conception dédié dans le dashboard ; leurs registres et workflows métier ne sont pas encore activés. Les services RH, logistique, documents, secrétariat, tâches, messagerie et calendrier doivent être harmonisés avec le modèle commun avant leur activation. La présence d'une entrée de navigation ne vaut pas livraison du module.
+Paramètres reste à concevoir et développer. Relations externes, Ressources et Pilotage disposent de conceptions documentées et d’un état de conception dédié dans le dashboard ; leurs registres et workflows métier ne sont pas encore activés. Les services RH, logistique, documents, secrétariat, tâches, messagerie et calendrier doivent être harmonisés avec le modèle commun avant leur activation. La présence d'une entrée de navigation ne vaut pas livraison du module.
 
 ## Sécurité et données
 
