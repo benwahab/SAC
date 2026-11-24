@@ -2,7 +2,7 @@
 
 **Date :** 21 novembre 2026
 **Statut :** proposition d'interface. **Aucun code, aucune API, aucune migration D1.**
-**Portée :** parcours Q0 recommandé, sans nouvelle voie d'authentification. Le nouvel appareil se connecte normalement à son compte ; le QR sert seulement à retrouver la demande.
+**Portée :** parcours Q0 documenté pour la variante sécurisée. **Décision du 21 novembre 2026 : l'Option 2 est retenue** ; voir `DECISION_CONNEXION_MULTI_APPAREILS_OPTION_2.md`. Le parcours Q0 reste la référence si l'on revient à l'approbation par le téléphone principal.
 
 ## 1. Principe
 
@@ -281,3 +281,50 @@ L'utilisateur ne voit pas ces contrôles. Ils ne doivent jamais être supprimés
 **QR seul : toujours interdit comme authentification.**
 **Approbation du téléphone principal et comparaison des mots : obligatoires.**
 **Aucun code, endpoint, D1 ou session : NON AUTORISÉS.**
+
+
+## 11. Variante Option 2 — décidée le 21 novembre 2026
+
+L'Option 2 supprime le QR et l'approbation par le téléphone principal.
+
+### Écran N1 — Connexion
+
+**Titre :** Se connecter
+
+**Texte :** Utilisez l'adresse e-mail vérifiée de votre compte et votre mot de passe.
+
+**Actions :**
+
+- **Se connecter** ;
+- **Recevoir un code par e-mail** si ce parcours est disponible.
+
+### Écran N2 — Session ouverte
+
+**Titre :** Bienvenue sur SAC
+
+**Texte :** Votre session est ouverte sur cet appareil.
+
+**Actions :**
+
+- **Continuer**.
+
+### Ce qui disparaît
+
+- le QR d'appairage ;
+- les 3 paires de mots ;
+- l'approbation par le téléphone principal ;
+- la session pending.
+
+### Ce qui reste
+
+- mot de passe vérifié ;
+- compte actif ;
+- e-mail principal vérifié ;
+- limite de tentatives ;
+- session liée à l'appareil ;
+- une seule credential WebAuthn racine par compte ;
+- révocation des sessions.
+
+### Risque affiché à l'utilisateur
+
+Un mot de passe volé suffit pour ouvrir une session sur un nouvel appareil. La révocation d'un appareil ne bloque pas une nouvelle connexion par mot de passe. Cette voie est donc moins forte que le parcours Q0.

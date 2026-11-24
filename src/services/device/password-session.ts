@@ -2,7 +2,7 @@ type FetchPort = typeof fetch;
 
 export interface PasswordSessionResult {
   authenticated: true;
-  securityKeyConfigured: false;
+  securityKeyConfigured: boolean;
   session: { id: string; expiresAt: string };
 }
 

@@ -29,11 +29,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   let securityKeyConfigured = true;
   let credentialId: string | null = null;
   try {
-    const credential = await env.DB.prepare(
+    const deviceCredential = await env.DB.prepare(
       "SELECT credential_id FROM device_root_credentials WHERE device_id = ? AND account_id = ? LIMIT 1",
     ).bind(session.value.deviceId, session.value.accountId).first<{ credential_id: string }>();
-    securityKeyConfigured = Boolean(credential?.credential_id);
-    credentialId = credential?.credential_id ?? null;
+    credentialId = deviceCredential?.credential_id ?? null;
+    const accountCredential = await env.DB.prepare(
+      "SELECT credential_id FROM device_root_credentials WHERE account_id = ? LIMIT 1",
+    ).bind(session.value.accountId).first<{ credential_id: string }>();
+    securityKeyConfigured = Boolean(accountCredential?.credential_id);
   } catch {
     // La session reste utilisable ; aucun rappel n'est affiché si l'état est inconnu.
   }

@@ -4,10 +4,12 @@ import { normalizeRegistrationEmail } from "../../../src/domain/registration-pol
 import { verifyAccountPassword } from "../../lib/security/password-hash.ts";
 import { createSessionToken } from "../../lib/security/session-token.ts";
 import { createSessionCookie } from "../../lib/security/session-cookie.ts";
+import { createDeviceCookie, readDeviceCookie } from "../../lib/security/device-cookie.ts";
 
 interface Env {
   DB: D1Database;
   EMAIL_OTP_HMAC_SECRET?: string;
+  MULTI_DEVICE_PASSWORD_LOGIN_ENABLED?: string;
 }
 
 const HEADERS = {
@@ -22,9 +24,24 @@ const WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
 const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 
-function json(body: unknown, status = 200, cookie?: string): Response {
+interface LegacyAccountRow {
+  id: string;
+  status: string;
+  password_hash: string;
+  device_id: string | null;
+  device_status: string | null;
+  credential_id: string | null;
+}
+
+interface MultiDeviceAccountRow {
+  id: string;
+  status: string;
+  password_hash: string;
+}
+
+function json(body: unknown, status = 200, cookies: string[] = []): Response {
   const headers = new Headers(HEADERS);
-  if (cookie) headers.append("Set-Cookie", cookie);
+  for (const cookie of cookies) headers.append("Set-Cookie", cookie);
   return new Response(JSON.stringify(body), { status, headers });
 }
 
@@ -48,6 +65,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ error: "invalid_credentials" }, 400);
   }
 
+  const multiDeviceEnabled = env.MULTI_DEVICE_PASSWORD_LOGIN_ENABLED === "true";
   const now = Date.now();
   try {
     const rateKey = await crypto.subtle.importKey(
@@ -76,41 +94,73 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       .first<{ attempt_count: number }>();
     if (!rate || rate.attempt_count > MAX_ATTEMPTS) return json({ error: "too_many_attempts" }, 429);
 
-    const account = await env.DB.prepare(
-      `SELECT a.id, a.status, a.password_hash,
-              d.id AS device_id, d.status AS device_status,
-              c.credential_id
-       FROM accounts a
-       JOIN account_identities i ON i.account_id = a.id
-       LEFT JOIN devices d ON d.account_id = a.id
-       LEFT JOIN device_root_credentials c ON c.device_id = d.id AND c.account_id = a.id
-       WHERE i.channel = 'email' AND i.is_primary = 1 AND i.verified_at IS NOT NULL
-         AND i.normalized_value = ?
-       LIMIT 1`,
-    ).bind(email).first<{
-      id: string;
-      status: string;
-      password_hash: string;
-      device_id: string | null;
-      device_status: string | null;
-      credential_id: string | null;
-    }>();
+    let account: LegacyAccountRow | MultiDeviceAccountRow | null;
+    if (multiDeviceEnabled) {
+      account = await env.DB.prepare(
+        `SELECT a.id, a.status, a.password_hash
+         FROM accounts a
+         JOIN account_identities i ON i.account_id = a.id
+         WHERE i.channel = 'email' AND i.is_primary = 1 AND i.verified_at IS NOT NULL
+           AND i.normalized_value = ?
+         LIMIT 1`,
+      ).bind(email).first<MultiDeviceAccountRow>();
+    } else {
+      account = await env.DB.prepare(
+        `SELECT a.id, a.status, a.password_hash,
+                d.id AS device_id, d.status AS device_status,
+                c.credential_id
+         FROM accounts a
+         JOIN account_identities i ON i.account_id = a.id
+         LEFT JOIN devices d ON d.account_id = a.id
+         LEFT JOIN device_root_credentials c ON c.device_id = d.id AND c.account_id = a.id
+         WHERE i.channel = 'email' AND i.is_primary = 1 AND i.verified_at IS NOT NULL
+           AND i.normalized_value = ?
+         LIMIT 1`,
+      ).bind(email).first<LegacyAccountRow>();
+    }
 
     const matches = await verifyAccountPassword(crypto, body.password, account?.password_hash ?? DUMMY_PASSWORD_HASH);
     if (!account || account.status !== "active" || !matches) {
       return json({ error: "invalid_credentials" }, 401);
     }
-    if (account.credential_id) return json({ error: "security_key_required" }, 409);
-    if (account.device_status !== null && account.device_status !== "active") {
-      return json({ error: "root_device_unavailable" }, 409);
-    }
 
-    let deviceId = account.device_id;
-    if (!deviceId) {
-      deviceId = crypto.randomUUID();
-      await env.DB.prepare(
-        "INSERT INTO devices (id, account_id, status, auth_version, created_at, revoked_at) VALUES (?, ?, 'active', 1, ?, NULL)",
-      ).bind(deviceId, account.id, now).run();
+    let deviceId: string;
+    let securityKeyConfigured: boolean;
+
+    if (!multiDeviceEnabled) {
+      const legacy = account as LegacyAccountRow;
+      if (legacy.credential_id) return json({ error: "security_key_required" }, 409);
+      if (legacy.device_status !== null && legacy.device_status !== "active") {
+        return json({ error: "root_device_unavailable" }, 409);
+      }
+      deviceId = legacy.device_id ?? crypto.randomUUID();
+      securityKeyConfigured = false;
+      if (!legacy.device_id) {
+        await env.DB.prepare(
+          "INSERT INTO devices (id, account_id, status, auth_version, created_at, revoked_at) VALUES (?, ?, 'active', 1, ?, NULL)",
+        ).bind(deviceId, account.id, now).run();
+      }
+    } else {
+      const cookieDeviceId = readDeviceCookie(request);
+      const existingDevice = cookieDeviceId
+        ? await env.DB.prepare(
+          "SELECT id, status FROM devices WHERE id = ? AND account_id = ? LIMIT 1",
+        ).bind(cookieDeviceId, account.id).first<{ id: string; status: string }>()
+        : null;
+
+      if (existingDevice?.status === "active") {
+        deviceId = existingDevice.id;
+      } else {
+        deviceId = crypto.randomUUID();
+        await env.DB.prepare(
+          "INSERT INTO devices (id, account_id, status, auth_version, created_at, revoked_at) VALUES (?, ?, 'active', 1, ?, NULL)",
+        ).bind(deviceId, account.id, now).run();
+      }
+
+      const accountCredential = await env.DB.prepare(
+        "SELECT credential_id FROM device_root_credentials WHERE account_id = ? LIMIT 1",
+      ).bind(account.id).first<{ credential_id: string }>();
+      securityKeyConfigured = Boolean(accountCredential?.credential_id);
     }
 
     const session = await createSessionToken(crypto);
@@ -122,11 +172,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
        VALUES (?, ?, ?, ?, 'active', 1, ?, ?, ?, NULL)`,
     ).bind(sessionId, account.id, deviceId, session.tokenHash, now, now, expiresAt).run();
 
+    const cookies = [createSessionCookie(session.token)];
+    if (multiDeviceEnabled) cookies.push(createDeviceCookie(deviceId));
+
     return json({
       authenticated: true,
-      securityKeyConfigured: false,
+      securityKeyConfigured,
       session: { id: sessionId, expiresAt: new Date(expiresAt).toISOString() },
-    }, 201, createSessionCookie(session.token));
+    }, 201, cookies);
   } catch {
     return json({ error: "authentication_unavailable" }, 503);
   }

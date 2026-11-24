@@ -47,6 +47,8 @@ jobs:
         run: npm run test:root-authentication-endpoints
       - name: Test password-only session without a security key
         run: npm run test:password-session
+      - name: Test multi-device password login against isolated D1
+        run: npm run test:password-session-multi-device
       - name: Test session-authenticated security key enrollment
         run: npm run test:start-root-enrollment
       - name: Test root WebAuthn assertion flag policy
@@ -160,6 +162,8 @@ jobs:
         run: python3 tests/d1_admin_missions_schema.test.py
       - name: Test D1 root device enrollment, credential and session constraints
         run: npm run test:d1-root-device-enrollment
+      - name: Test D1 multi-device password login migration and single root credential
+        run: npm run test:d1-multi-device-password-login
       - name: Test optional root enrollment after a password-only session
         run: npm run test:d1-optional-root-enrollment
       - name: Test D1 trusted contact invitation and relationship constraints

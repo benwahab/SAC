@@ -132,3 +132,19 @@ Le journal `admin_audit_events` enregistre l'acteur, l'appareil, la mission, l'a
 API initiale : `GET/POST /api/admin/missions`, `POST /api/admin/missions/:missionId` (suspendre, reprendre, révoquer ou remplacer l'attribution, le périmètre, l'échéance et les permissions) et `GET /api/admin/accounts` (recherche de comptes actifs avec e-mail vérifié). Chaque route exige une session appareil valide et le rôle persistant Super Admin. Le garde `requireMissionPermission` vérifie à chaque opération déléguée la session, la mission active, l'échéance, le périmètre exact et la permission explicitement accordée. Les délégués ne disposent d'aucune route de création ou de gestion de mission. Une première interface `/administration` est intégrée, réservée aux écrans d'au moins 768 px ; elle permet la création, la suspension, la reprise et la révocation de missions et affiche les 50 derniers événements du journal. `GET /api/admin/audit` expose une lecture seule du journal au Super Admin. Le contrôle serveur reste la barrière de sécurité réelle.
 
 Test isolé : `python3 tests/d1_admin_missions_schema.test.py`. Cette migration n'a pas été appliquée à la D1 distante ; toute migration distante nécessite une autorisation explicite.
+
+
+## 0020 — connexion multi-appareils par mot de passe (Option 2)
+
+`0020_multi_device_password_login.sql` prépare la décision produit explicite d'autoriser une session sur un nouvel appareil avec e-mail vérifié + mot de passe, sans QR ni approbation WebAuthn d'un autre appareil.
+
+La migration :
+- supprime l'index unique `devices_one_root_per_account` ;
+- conserve une seule credential WebAuthn racine par compte avec l'index unique `device_root_credentials_one_per_account` ;
+- ajoute l'index `devices_account_status` pour les lectures par compte.
+
+La fonctionnalité est protégée par `MULTI_DEVICE_PASSWORD_LOGIN_ENABLED="true"`. En son absence, `POST /api/auth/password-session` conserve le refus `security_key_required` lorsqu'une credential racine existe.
+
+Tests : `npm run test:password-session` et `npm run test:d1-multi-device-password-login`.
+
+Cette migration n'a **pas** été appliquée à la D1 distante. Toute application distante exige une sauvegarde, une vérification d'unicité des credentials racines et une autorisation explicite distincte. Voir `docs/DECISION_CONNEXION_MULTI_APPAREILS_OPTION_2.md`.
