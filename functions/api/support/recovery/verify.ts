@@ -51,10 +51,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const results = await env.DB.batch([
       env.DB.prepare(
         `UPDATE support_ticket_intake_challenges
-         SET attempt_count = attempt_count + 1, consumed_at = ?
+         SET attempt_count = attempt_count + 1, consumed_at = ?, created_ticket_id = ?
          WHERE id = ? AND delivery_status = 'accepted' AND consumed_at IS NULL
            AND invalidated_at IS NULL AND expires_at > ? AND attempt_count = ? AND attempt_count < max_attempts`,
-      ).bind(now, challenge.id, now, challenge.attempt_count),
+      ).bind(now, ticketId, challenge.id, now, challenge.attempt_count),
       env.DB.prepare(
         `INSERT INTO support_tickets
          (id, public_reference, requester_account_id, category, subject, description, priority, status, created_at, updated_at, version)
