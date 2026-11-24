@@ -20,7 +20,7 @@ type AlertSupervision = {
   byLevel: { level: string; total: number }[];
   byCategory: { category: string; total: number }[];
 };
-type SupportTicket = { id: string; public_reference: string; category: string; subject: string; priority: string; status: string; created_at: number; updated_at: number; requester_email: string };
+type SupportTicket = { id: string; public_reference: string; category: string; subject: string; priority: string; status: string; created_at: number; updated_at: number; requester_email: string | null };
 type SupportInbox = { counts: { new: number; open: number; waiting: number; resolved: number }; tickets: SupportTicket[] };
 type SupportTicketDetail = { ticket: SupportTicket & { description: string; version: number }; messages: { id: string; author_kind: string; body: string; created_at: number }[]; events: { id: string; event_type: string; previous_value: string | null; new_value: string | null; occurred_at: number }[] };
 const PERMISSION_VALUES: Permission[] = ["read", "create", "update", "process", "export", "delete"];
