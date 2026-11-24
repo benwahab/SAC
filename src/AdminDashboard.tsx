@@ -64,19 +64,18 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
     ]);
     const alertResponse = await fetch("/api/admin/alerts", { credentials: "same-origin", cache: "no-store" });
     const supportResponse = await fetch("/api/admin/support", { credentials: "same-origin", cache: "no-store" });
-    if (!missionResponse.ok || !auditResponse.ok || !overviewResponse.ok || !alertResponse.ok || !supportResponse.ok) throw new Error([missionResponse, auditResponse, overviewResponse, alertResponse, supportResponse].some((response) => response.status === 401 || response.status === 403) ? "denied" : "unavailable");
-    const [missionPayload, auditPayload, overviewPayload, alertPayload, supportPayload] = await Promise.all([
+    if (!missionResponse.ok || !auditResponse.ok || !overviewResponse.ok || !alertResponse.ok) throw new Error([missionResponse, auditResponse, overviewResponse, alertResponse].some((response) => response.status === 401 || response.status === 403) ? "denied" : "unavailable");
+    const [missionPayload, auditPayload, overviewPayload, alertPayload] = await Promise.all([
       missionResponse.json() as Promise<{ missions: Mission[] }>,
       auditResponse.json() as Promise<{ events: AuditEvent[] }>,
       overviewResponse.json() as Promise<{ metrics: OverviewMetrics }>,
       alertResponse.json() as Promise<AlertSupervision>,
-      supportResponse.json() as Promise<SupportInbox>,
     ]);
     setMissions(missionPayload.missions);
     setAuditEvents(auditPayload.events);
     setOverviewMetrics(overviewPayload.metrics);
     setAlertSupervision(alertPayload);
-    setSupportInbox(supportPayload);
+    setSupportInbox(supportResponse.ok ? await supportResponse.json() as SupportInbox : null);
     setAccessDenied(false);
   }, []);
 
