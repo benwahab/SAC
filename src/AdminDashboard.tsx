@@ -17,6 +17,9 @@ type AdminAccess = { canAccess: boolean; role: "super_admin" | "delegate" | null
 type OverviewMetrics = { activeAccounts: number; activeAlerts: number; alertsLast24h: number; activeMissions: number; activeDelegates: number; auditEventsLast24h: number };
 type AlertSupervision = {
   summary: { active: number; createdLast24h: number; closedLast24h: number; activeWithResponse: number; activeWithResponsible: number; activeWithoutResponse: number };
+type SupportTicket = { id: string; public_reference: string; category: string; subject: string; priority: string; status: string; created_at: number; updated_at: number; requester_email: string };
+type SupportInbox = { counts: { new: number; open: number; waiting: number; resolved: number }; tickets: SupportTicket[] };
+
   byLevel: { level: string; total: number }[];
   byCategory: { category: string; total: number }[];
 };
@@ -33,6 +36,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [overviewMetrics, setOverviewMetrics] = useState<OverviewMetrics | null>(null);
   const [alertSupervision, setAlertSupervision] = useState<AlertSupervision | null>(null);
+  const [supportInbox, setSupportInbox] = useState<SupportInbox | null>(null);
   const [query, setQuery] = useState("");
   const [accountId, setAccountId] = useState("");
   const [editingMissionId, setEditingMissionId] = useState<string | null>(null);
@@ -56,17 +60,20 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
       fetch("/api/admin/overview", { credentials: "same-origin", cache: "no-store" }),
     ]);
     const alertResponse = await fetch("/api/admin/alerts", { credentials: "same-origin", cache: "no-store" });
-    if (!missionResponse.ok || !auditResponse.ok || !overviewResponse.ok || !alertResponse.ok) throw new Error([missionResponse, auditResponse, overviewResponse, alertResponse].some((response) => response.status === 401 || response.status === 403) ? "denied" : "unavailable");
-    const [missionPayload, auditPayload, overviewPayload, alertPayload] = await Promise.all([
+    const supportResponse = await fetch("/api/admin/support", { credentials: "same-origin", cache: "no-store" });
+    if (!missionResponse.ok || !auditResponse.ok || !overviewResponse.ok || !alertResponse.ok || !supportResponse.ok) throw new Error([missionResponse, auditResponse, overviewResponse, alertResponse, supportResponse].some((response) => response.status === 401 || response.status === 403) ? "denied" : "unavailable");
+    const [missionPayload, auditPayload, overviewPayload, alertPayload, supportPayload] = await Promise.all([
       missionResponse.json() as Promise<{ missions: Mission[] }>,
       auditResponse.json() as Promise<{ events: AuditEvent[] }>,
       overviewResponse.json() as Promise<{ metrics: OverviewMetrics }>,
       alertResponse.json() as Promise<AlertSupervision>,
+      supportResponse.json() as Promise<SupportInbox>,
     ]);
     setMissions(missionPayload.missions);
     setAuditEvents(auditPayload.events);
     setOverviewMetrics(overviewPayload.metrics);
     setAlertSupervision(alertPayload);
+    setSupportInbox(supportPayload);
     setAccessDenied(false);
   }, []);
 
@@ -366,25 +373,17 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
       {activeSection === "support" && <section className="space-y-5">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            { label: language === "fr" ? "Nouveaux tickets" : language === "ar" ? "تذاكر جديدة" : "New tickets" },
-            { label: language === "fr" ? "Tickets ouverts" : language === "ar" ? "تذاكر مفتوحة" : "Open tickets" },
-            { label: language === "fr" ? "En attente" : language === "ar" ? "قيد الانتظار" : "Waiting" },
-            { label: language === "fr" ? "Résolus" : language === "ar" ? "تم حلها" : "Resolved" },
-          ].map((item) => <article key={item.label} className="rounded-2xl border border-emerald-900/10 bg-white/85 p-4 shadow-sm"><p className="text-xs font-bold text-slate-500">{item.label}</p><p className="mt-2 text-2xl font-black text-slate-400">—</p></article>)}
+            { label: language === "fr" ? "Nouveaux tickets" : language === "ar" ? "تذاكر جديدة" : "New tickets", value: supportInbox?.counts.new },
+            { label: language === "fr" ? "Tickets ouverts" : language === "ar" ? "تذاكر مفتوحة" : "Open tickets", value: supportInbox?.counts.open },
+            { label: language === "fr" ? "En attente" : language === "ar" ? "قيد الانتظار" : "Waiting", value: supportInbox?.counts.waiting },
+            { label: language === "fr" ? "Résolus" : language === "ar" ? "تم حلها" : "Resolved", value: supportInbox?.counts.resolved },
+          ].map((item) => <article key={item.label} className="rounded-2xl border border-emerald-900/10 bg-white/85 p-4 shadow-sm"><p className="text-xs font-bold text-slate-500">{item.label}</p><p className="mt-2 text-2xl font-black tabular-nums text-emerald-950">{item.value === undefined ? "—" : item.value.toLocaleString(language)}</p></article>)}
         </div>
-        <article className="rounded-3xl border border-emerald-900/10 bg-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div><h2 className="text-lg font-extrabold">{language === "fr" ? "Centre d’assistance" : language === "ar" ? "مركز المساعدة" : "Support centre"}</h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{language === "fr" ? "Le périmètre fonctionnel et les règles de confidentialité sont documentés. Les tickets, les réponses et les affectations ne sont pas encore activés : aucun faux dossier n’est affiché." : language === "ar" ? "تم توثيق النطاق الوظيفي وقواعد الخصوصية. لم يتم تفعيل التذاكر والردود والإسناد بعد، ولا تُعرض بيانات تجريبية." : "The functional scope and privacy rules are documented. Tickets, replies and assignments are not enabled yet; no sample records are shown."}</p></div>
-            <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-extrabold text-amber-800">{language === "fr" ? "Conception prête" : language === "ar" ? "التصميم جاهز" : "Design prepared"}</span>
-          </div>
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <div className="rounded-xl bg-emerald-50/70 p-4"><p className="text-sm font-bold">{language === "fr" ? "Demandes séparées du SOS" : language === "ar" ? "طلبات منفصلة عن SOS" : "Separate from SOS"}</p><p className="mt-1 text-xs leading-5 text-slate-600">{language === "fr" ? "Un ticket ne crée et ne modifie jamais une alerte." : language === "ar" ? "لا ينشئ طلب الدعم تنبيهاً ولا يعدله." : "A ticket never creates or changes an SOS alert."}</p></div>
-            <div className="rounded-xl bg-emerald-50/70 p-4"><p className="text-sm font-bold">{language === "fr" ? "Accès limité par mission" : language === "ar" ? "وصول محدود حسب المهمة" : "Mission-scoped access"}</p><p className="mt-1 text-xs leading-5 text-slate-600">{language === "fr" ? "Chaque lecture et action sera contrôlée côté serveur." : language === "ar" ? "سيتم التحقق من كل قراءة وإجراء على الخادم." : "Every read and action will be checked server-side."}</p></div>
-            <div className="rounded-xl bg-emerald-50/70 p-4"><p className="text-sm font-bold">{language === "fr" ? "Données minimisées" : language === "ar" ? "تقليل البيانات" : "Data minimization"}</p><p className="mt-1 text-xs leading-5 text-slate-600">{language === "fr" ? "Aucun GPS précis, proche, message SOS ou secret n’est accessible au support." : language === "ar" ? "لا يمكن للدعم الوصول إلى GPS الدقيق أو جهات الاتصال أو رسائل SOS أو الأسرار." : "Support cannot access precise GPS, trusted contacts, SOS messages or secrets."}</p></div>
-          </div>
-          <a href="https://github.com/benwahab/SAC/blob/main/docs/CONCEPTION_ASSISTANCE_SUPPORT_2026-11-24.md" target="_blank" rel="noreferrer" className="mt-5 inline-flex text-sm font-bold text-emerald-800 underline underline-offset-4">{language === "fr" ? "Consulter la conception et les règles du support" : language === "ar" ? "عرض تصميم الدعم وقواعده" : "Review support design and rules"}</a>
+        <article className="rounded-3xl border border-emerald-900/10 bg-white p-5 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-extrabold">{language === "fr" ? "Demandes d’assistance" : language === "ar" ? "طلبات المساعدة" : "Support requests"}</h2><p className="mt-1 text-xs text-slate-500">{language === "fr" ? "100 demandes au maximum · triées par priorité et activité" : language === "ar" ? "حتى 100 طلب · مرتبة حسب الأولوية والنشاط" : "Up to 100 requests · sorted by priority and activity"}</p></div><button type="button" onClick={() => void refreshSuperAdmin().catch(() => setError("unavailable"))} className="rounded-xl border border-emerald-900/15 px-3 py-2 text-xs font-bold">{language === "fr" ? "Actualiser" : language === "ar" ? "تحديث" : "Refresh"}</button></div>
+          {!supportInbox ? <p className="mt-5 text-sm text-slate-500">{language === "fr" ? "Données d’assistance indisponibles." : language === "ar" ? "بيانات المساعدة غير متاحة." : "Support data unavailable."}</p> : supportInbox.tickets.length === 0 ? <p className="mt-5 rounded-xl bg-emerald-50/70 p-5 text-sm text-slate-600">{language === "fr" ? "Aucune demande enregistrée pour le moment." : language === "ar" ? "لا توجد طلبات مسجلة حالياً." : "No support requests have been recorded yet."}</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead><tr className="border-b border-emerald-900/10 text-xs text-slate-500"><th className="p-3">{language === "fr" ? "Référence" : language === "ar" ? "المرجع" : "Reference"}</th><th className="p-3">{language === "fr" ? "Sujet" : language === "ar" ? "الموضوع" : "Subject"}</th><th className="p-3">{language === "fr" ? "Catégorie" : language === "ar" ? "الفئة" : "Category"}</th><th className="p-3">{language === "fr" ? "Demandeur" : language === "ar" ? "مقدم الطلب" : "Requester"}</th><th className="p-3">{language === "fr" ? "État" : language === "ar" ? "الحالة" : "Status"}</th></tr></thead><tbody>{supportInbox.tickets.map((ticket) => <tr key={ticket.id} className="border-b border-emerald-900/10"><td className="p-3 font-mono text-xs">{ticket.public_reference}</td><td className="p-3 font-semibold">{ticket.subject}</td><td className="p-3">{ticket.category}</td><td className="p-3">{ticket.requester_email}</td><td className="p-3">{ticket.status}</td></tr>)}</tbody></table></div>}
         </article>
+        <p className="rounded-xl border border-emerald-900/10 bg-emerald-50/70 p-4 text-xs leading-6 text-emerald-950">{language === "fr" ? "Les tickets sont séparés des alertes SOS. Le premier parcours exige une session de compte active ; la récupération sans connexion fera l’objet d’un flux OTP dédié. Les pièces jointes et les exports ne sont pas activés." : language === "ar" ? "التذاكر منفصلة عن تنبيهات SOS. يتطلب المسار الأول جلسة حساب نشطة؛ وسيُنفذ استرداد الحساب دون تسجيل الدخول عبر OTP منفصل. المرفقات والتصدير غير مفعلين." : "Tickets are separate from SOS alerts. The first intake flow requires an active account session; no-login account recovery will use a dedicated OTP flow. Attachments and exports are not enabled."}</p>
       </section>}
       {activeSection === "security" && <section className="mt-8 rounded-3xl border border-white/90 bg-white/75 p-6 shadow-glass">
         <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-extrabold">{t.audit}</h2><a href="/api/admin/audit/export" className="inline-flex min-h-10 items-center rounded-xl border border-sac-primary-strong/20 bg-white px-4 text-xs font-extrabold text-sac-ink hover:bg-sac-primary/10">{language === "fr" ? "Exporter le journal CSV" : language === "en" ? "Export audit CSV" : "تصدير سجل التدقيق CSV"}</a></div>
