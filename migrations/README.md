@@ -165,4 +165,4 @@ Test local : `npm run test:d1-support-tickets`. Cette migration n'est pas appliq
 
 Les routes `POST /api/support/recovery/request` et `POST /api/support/recovery/verify` permettent de déposer un ticket « accès au compte » sans session, après vérification de la maîtrise de l'adresse e-mail. La réponse de demande reste générique pour limiter l'énumération des comptes. Ce code ne réinitialise pas le mot de passe et ne donne pas accès au compte ; il autorise uniquement l'envoi d'une demande de support associée à un compte actif existant.
 
-Test local : `npm run test:d1-support-intake-otp`. La migration 0022 n'est pas appliquée à la D1 distante. Toute application distante nécessite une autorisation explicite après validation CI.
+Test local : `npm run test:d1-support-intake-otp`. La migration 0022 n'est pas appliquée à la D1 distante. Toute application distante nécessite une autorisation explicite après validation CI. Les routes restent fermées tant que le paramètre Cloudflare SUPPORT_INTAKE_ENABLED n'est pas explicitement égal à true ; ne l'activer qu'après migration, tests, configuration du fournisseur e-mail et validation de l'environnement.
