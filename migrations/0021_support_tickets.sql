@@ -36,6 +36,16 @@ CREATE INDEX support_tickets_requester_created
 CREATE INDEX support_tickets_assignee_status
   ON support_tickets(assigned_account_id, status, updated_at DESC);
 
+CREATE TRIGGER support_ticket_request_rate_guard
+BEFORE INSERT ON support_tickets
+BEGIN
+  SELECT CASE WHEN (
+    SELECT COUNT(*) FROM support_tickets
+    WHERE requester_account_id = NEW.requester_account_id
+      AND created_at > NEW.created_at - 3600000
+  ) >= 5 THEN RAISE(ABORT, 'support_ticket_rate_limited') END;
+END;
+
 CREATE TABLE support_messages (
   id TEXT PRIMARY KEY NOT NULL,
   ticket_id TEXT NOT NULL,
