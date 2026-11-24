@@ -38,15 +38,16 @@ La présence d'une entrée de navigation ne vaut pas livraison du module.
 
 - Aucun nouveau schéma D1 ni aucune migration n'a été créé dans cette phase.
 - Les routes métier existantes gardent leurs gardes serveur ; le répertoire des comptes utilise `requireSuperAdminSession`.
+- La supervision des alertes ne renvoie aucun nom, e-mail, identifiant de citoyen, description libre, destinataire ou emplacement GPS ; elle n’expose que des compteurs et répartitions agrégées.
 - Les données citoyennes sensibles, les coordonnées GPS précises et les secrets cryptographiques ne sont pas exposés par la nouvelle navigation.
 - Les futures rubriques devront utiliser des permissions serveur par ressource, action et périmètre, pas seulement masquer des boutons.
 - Les modules financiers, RH, juridiques et logistiques nécessitent un modèle D1 harmonisé, des validations métier et des tests dédiés avant activation.
 
 ## Étapes suivantes
 
-1. Compléter la Vue d'ensemble avec des agrégats vérifiés et des états de santé mesurés.
-2. Développer la supervision des alertes avec cloisonnement strict des données citoyennes.
-3. Construire l'assistance et le support sans accès général aux alertes privées.
+1. Compléter la Vue d’ensemble avec des états de santé mesurés et des tendances historiques contrôlées.
+2. Développer les workflows d’assistance et de support sans accès général aux alertes privées.
+3. Définir si un traitement individuel des alertes est nécessaire, avec une permission distincte, une justification d’accès et une piste d’audit.
 4. Développer les services d'équipe (tâches, livrables, rapports, messagerie, réunions, calendrier et absences).
 5. Créer le service documentaire commun et les fonctions de secrétariat.
 6. Harmoniser le modèle D1, puis construire les ressources RH et logistiques.
@@ -56,4 +57,4 @@ La présence d'une entrée de navigation ne vaut pas livraison du module.
 
 ## Validation
 
-Les commits de cette phase déclenchent les workflows GitHub Actions. Au moment de la rédaction, les exécutions liées à la navigation et au répertoire utilisateurs sont en attente ou en cours ; aucun succès CI final ni déploiement de production n'est encore revendiqué.
+Les commits de la supervision des alertes déclenchent de nouvelles exécutions GitHub Actions. Au moment de cette mise à jour, les workflows sont encore en cours ; aucun succès CI final ni déploiement de production n’est revendiqué.
