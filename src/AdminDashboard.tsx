@@ -268,11 +268,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-800/60">SAC · {sectionLabel(selectedSection)}</p>
           <p className="mt-1 text-sm text-slate-600">{sectionDetail(selectedSection)}</p>
         </div>
-      <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div><BrandLogo className="h-8 w-auto" /><div className="mt-2 flex flex-wrap items-center gap-3"><h1 className="text-3xl font-black">{t.title}</h1><span className="rounded-full bg-sac-primary/15 px-3 py-1 text-xs font-black text-sac-primary-strong">{t.roleSuperAdmin}</span></div><p className="mt-1 text-sm text-sac-muted">{t.subtitle}</p></div>
-        <a href="/" className="rounded-xl border border-white bg-white/70 px-4 py-3 text-sm font-bold">{t.back}</a>
-      </header>
-      {summary}
+      {activeSection === "overview" && summary}
       {error && <p role="alert" className="mb-5 rounded-xl border border-sac-alert/30 bg-white/80 p-4 text-sm text-sac-alert">{error}</p>}
       {notice && <p role="status" className="mb-5 rounded-xl border border-sac-confirm/30 bg-white/80 p-4 text-sm">{notice}</p>}
       {activeSection === "team" && <section className="rounded-3xl border border-white/90 bg-white/75 p-6 shadow-glass backdrop-blur-xl">
