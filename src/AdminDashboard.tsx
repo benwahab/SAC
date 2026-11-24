@@ -262,7 +262,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
         </article>)}</div>}
       </section>
       <section className="mt-8 rounded-3xl border border-white/90 bg-white/75 p-6 shadow-glass">
-        <h2 className="text-xl font-extrabold">{t.audit}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-extrabold">{t.audit}</h2><a href="/api/admin/audit/export" className="inline-flex min-h-10 items-center rounded-xl border border-sac-primary-strong/20 bg-white px-4 text-xs font-extrabold text-sac-ink hover:bg-sac-primary/10">{language === "fr" ? "Exporter le journal CSV" : language === "en" ? "Export audit CSV" : "تصدير سجل التدقيق CSV"}</a></div>
         {auditEvents.length === 0 ? <p className="mt-4 text-sm text-sac-muted">{t.emptyAudit}</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[680px] text-left text-sm">
           <thead><tr className="border-b border-sac-primary-strong/15 text-xs text-sac-muted"><th className="p-3">{t.actor}</th><th className="p-3">{t.action}</th><th className="p-3">{t.scope}</th><th className="p-3">{t.result}</th><th className="p-3">{t.due}</th></tr></thead>
           <tbody>{auditEvents.map((event) => <tr key={event.id} className="border-b border-sac-primary-strong/10"><td className="p-3">{event.actor_email ?? "—"}</td><td className="p-3">{event.action}</td><td className="p-3">{event.scope_key ?? "—"}</td><td className="p-3">{event.outcome}</td><td className="p-3">{new Date(event.occurred_at).toLocaleString(language)}</td></tr>)}</tbody>
