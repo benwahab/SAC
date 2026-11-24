@@ -59,8 +59,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         `INSERT INTO support_tickets
          (id, public_reference, requester_account_id, category, subject, description, priority, status, created_at, updated_at, version)
          SELECT ?, ?, ?, 'account_access', ?, ?, 'normal', 'new', ?, ?, 1
-         WHERE EXISTS (SELECT 1 FROM support_ticket_intake_challenges WHERE id = ? AND consumed_at = ?)`,
-      ).bind(ticketId, reference, account.id, body.subject.trim(), body.description.trim(), now, now, challenge.id, now),
+         WHERE EXISTS (SELECT 1 FROM support_ticket_intake_challenges WHERE id = ? AND created_ticket_id = ?)`,
+      ).bind(ticketId, reference, account.id, body.subject.trim(), body.description.trim(), now, now, challenge.id, ticketId),
       env.DB.prepare(
         `INSERT INTO support_ticket_events (id, ticket_id, actor_account_id, event_type, new_value, occurred_at)
          SELECT ?, ?, ?, 'created', 'new', ?
