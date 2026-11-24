@@ -2,7 +2,7 @@
 
 **Date :** 24 novembre 2026  
 **Dépôt :** `benwahab/SAC` — branche `main`  
-**Statut :** conception fonctionnelle et sécurité ; aucune migration D1 ni API de ticket créée.
+**Statut :** premier lot de tickets connecté au code ; migration 0021 et API créées dans le dépôt, validation CI en cours ; aucune migration distante appliquée.
 
 ## 1. Objectif et séparation
 
@@ -121,4 +121,4 @@ Avant la migration D1, confirmer :
 5. la durée de conservation et les notifications ;
 6. le modèle de pièces jointes (ou leur exclusion définitive).
 
-Aucune migration D1, aucun endpoint ni traitement de tickets n'est autorisé par cette note seule. Une autorisation explicite est requise après harmonisation du modèle.
+Le premier lot a été codé dans `migrations/0021_support_tickets.sql`, `functions/api/support/tickets.ts`, `functions/api/support/tickets/[ticketId].ts`, `functions/api/support/tickets/[ticketId]/messages.ts`, `functions/api/admin/support/index.ts`, `functions/api/admin/support/[ticketId].ts` et `functions/api/admin/support/[ticketId]/messages.ts`. Les API actuelles permettent la création authentifiée, la consultation du ticket par son propriétaire, les réponses et la supervision/gestion par le Super Admin. Le premier flux n’accepte pas encore de ticket anonyme. Le parcours de récupération sans connexion, avec OTP e-mail dédié, reste à construire. Les affectations aux délégués, les SLA, notifications et pièces jointes restent hors de ce lot. La migration 0021 est locale au dépôt/CI et ne doit pas être appliquée à la D1 distante sans autorisation explicite.
