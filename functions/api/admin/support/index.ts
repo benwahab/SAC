@@ -1,13 +1,13 @@
+import { requireSupportMissionAccess } from "../../../lib/security/require-support-mission-access.ts";
 import { recordAdminReadEvent } from "../../../lib/security/admin-audit.ts";
-import { requireSuperAdminSession } from "../../../lib/security/require-super-admin-session.ts";
 
 interface Env { DB: D1Database; }
 const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" };
 function json(body: unknown, status = 200): Response { return new Response(JSON.stringify(body), { status, headers: HEADERS }); }
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
-  const admin = await requireSuperAdminSession(request, env.DB);
-  if (!admin.ok) return json({ error: admin.status === 401 ? "authentication_required" : admin.status === 403 ? "super_admin_required" : "admin_service_unavailable" }, admin.status);
+  const admin = await requireSupportMissionAccess(request, env.DB, "read");
+  if (!admin.ok) return json({ error: admin.status === 401 ? "authentication_required" : admin.status === 403 ? "support_permission_required" : "admin_service_unavailable" }, admin.status);
   const url = new URL(request.url);
   const status = url.searchParams.get("status");
   const allowed = ["new","open","waiting_requester","waiting_internal","resolved","closed"];
@@ -36,7 +36,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       ).bind(status, status).all<Record<string, unknown>>(),
     ]);
     if (!counts || !tickets.success) return json({ error: "admin_service_unavailable" }, 503);
-    await recordAdminReadEvent(env.DB, admin.value, "admin.support.read", "admin.support.read");
+    await recordAdminReadEvent(env.DB, admin.value, "admin.support.read", "support.read", Date.now(), admin.missionId, "support");
     const number = (value: unknown) => typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : 0;
     return json({
       counts: { new: number(counts.new_count), open: number(counts.open_count), waiting: number(counts.waiting_count), resolved: number(counts.resolved_count) },
