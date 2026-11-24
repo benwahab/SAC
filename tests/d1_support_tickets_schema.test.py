@@ -14,7 +14,7 @@ class SupportTicketSchemaTests(unittest.TestCase):
             status TEXT NOT NULL
           );
           INSERT INTO accounts (id, status) VALUES
-            ('requester', 'active'), ('support', 'active'), ('suspended', 'suspended');
+            ('requester', 'active'), ('support', 'active'), ('suspended', 'suspended'), ('superadmin', 'active');\n          INSERT INTO account_roles (account_id, role) VALUES ('superadmin', 'super_admin');
         """)
         self.db.executescript(MIGRATION.read_text())
 
@@ -67,6 +67,18 @@ class SupportTicketSchemaTests(unittest.TestCase):
               INSERT INTO support_messages (id, ticket_id, author_account_id, author_kind, body, created_at)
               VALUES ('message-1', 'ticket-1', 'requester', 'support', 'Reply', 11)
             """)
+
+    def test_only_super_admin_can_write_support_message(self):
+        self.db.execute("""
+          INSERT INTO support_tickets
+          (id, public_reference, requester_account_id, category, subject, description, created_at, updated_at)
+          VALUES ('ticket-1', 'SAC-ROLE-CHECK-0001', 'requester', 'general_question', 'Question', 'Need help please', 10, 10)
+        """)
+        self.db.execute("""
+          INSERT INTO support_messages (id, ticket_id, author_account_id, author_kind, body, created_at)
+          VALUES ('message-admin', 'ticket-1', 'superadmin', 'support', 'We are reviewing your request', 11)
+        """)
+        self.assertEqual(self.db.execute("SELECT COUNT(*) FROM support_messages").fetchone()[0], 1)
 
     def test_messages_and_events_are_append_only(self):
         self.db.execute("""
