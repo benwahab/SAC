@@ -87,7 +87,8 @@
     "test:extensions-domain": "node --experimental-strip-types --test tests/reminder-schedule.test.ts tests/family-group.test.ts tests/ordinary-notification.test.ts tests/reminder-service.test.ts",
     "test:ordinary-notification-worker-build": "wrangler deploy --dry-run --outdir /tmp/sac-ordinary-notification-delivery-build --config workers/ordinary-notification-delivery/wrangler.toml",
     "test:reminder-d1": "node --experimental-strip-types --test tests/d1-reminder-service.integration.test.ts",
-    "test:account-social-d1": "node --experimental-strip-types --test tests/d1-account-social.integration.test.ts"
+    "test:account-social-d1": "node --experimental-strip-types --test tests/d1-account-social.integration.test.ts",
+    "test:d1-support-tickets": "python3 tests/d1_support_tickets_schema.test.py"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
