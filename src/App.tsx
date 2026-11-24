@@ -8,6 +8,7 @@ import { clearStoredPasskeyCredentialId, getStoredPasskeyCredentialId } from "./
 import PrivateSpacePage from "./PrivateSpacePage";
 import InvitationAcceptancePage from "./InvitationAcceptancePage";
 import AdminDashboard from "./AdminDashboard";
+import SupportIntakePage from "./SupportIntakePage";
 
 
 type LoginPageProps = {
@@ -437,6 +438,7 @@ function LoginPage({ language, setLanguage, returnTo }: LoginPageProps) {
           </div>
         )}
 
+        {mode === "login" && <a href="/assistance" className="mt-5 inline-flex min-h-10 items-center text-sm font-bold text-sac-confirm hover:underline">{language === "fr" ? "Besoin d’aide pour accéder à votre compte ?" : language === "en" ? "Need help accessing your account?" : "هل تحتاج إلى مساعدة للوصول إلى حسابك؟"}</a>}
         {notice && mode !== "complete" && <p role="status" aria-live="polite" className="mt-5 rounded-xl border border-sac-confirm/20 bg-sac-confirm/5 p-4 text-xs leading-6 text-sac-muted">{notice}</p>}
         {error && <p role="alert" aria-live="assertive" className="mt-4 rounded-xl border border-sac-alert/25 bg-sac-alert/5 p-4 text-xs leading-6 text-sac-alert">{error}</p>}
         {mode !== "login" && mode !== "complete" && <a href="/" className="mt-6 inline-flex min-h-10 items-center text-sm font-bold text-sac-confirm hover:underline">{copy.home}</a>}
@@ -491,6 +493,7 @@ export default function App() {
   const t = translations[language];
   const signInLabel = language === "fr" ? "Connexion" : language === "en" ? "Sign in" : "تسجيل الدخول";
   const isLoginPage = window.location.pathname === "/connexion";
+  const isSupportIntakePage = window.location.pathname === "/assistance";
   const isPrivateSpacePage = window.location.pathname === "/espace-prive";
   const isInvitationAcceptancePage = window.location.pathname === "/invitation/accept";
   const isAdminPage = window.location.pathname === "/administration";
@@ -569,6 +572,7 @@ export default function App() {
     }
   };
 
+  if (isSupportIntakePage) return <SupportIntakePage language={language} setLanguage={setLanguage} />;
   if (isLoginPage) return <LoginPage language={language} setLanguage={setLanguage} returnTo={loginReturnTo} />;
   if (isInvitationAcceptancePage) return <InvitationAcceptancePage language={language} setLanguage={setLanguage} />;
   if (isPrivateSpacePage) return <PrivateSpacePage onLogout={() => { window.location.assign("/connexion"); }} />;
