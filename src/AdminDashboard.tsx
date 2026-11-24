@@ -271,7 +271,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
       {activeSection === "overview" && summary}
       {error && <p role="alert" className="mb-5 rounded-xl border border-sac-alert/30 bg-white/80 p-4 text-sm text-sac-alert">{error}</p>}
       {notice && <p role="status" className="mb-5 rounded-xl border border-sac-confirm/30 bg-white/80 p-4 text-sm">{notice}</p>}
-      {activeSection === "team" && <section className="rounded-3xl border border-white/90 bg-white/75 p-6 shadow-glass backdrop-blur-xl">
+      {activeSection === "team" && <>
         <h2 className="text-xl font-extrabold">{t.create}</h2>
         <form onSubmit={createMission} className="mt-5 grid gap-5 md:grid-cols-2">
           <label className="block text-sm font-bold">{t.assignee}
@@ -298,7 +298,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
           {mission.status !== "revoked" && <div className="mt-4 flex flex-wrap gap-2"><button disabled={busy} onClick={() => editMission(mission)} className="rounded-lg border px-3 py-2 text-xs font-bold">{t.edit}</button>{mission.status === "active" ? <button disabled={busy} onClick={() => void manageMission(mission.id, "suspend")} className="rounded-lg border px-3 py-2 text-xs font-bold">{t.suspend}</button> : <button disabled={busy} onClick={() => void manageMission(mission.id, "resume")} className="rounded-lg border px-3 py-2 text-xs font-bold">{t.resume}</button>}<button disabled={busy} onClick={() => void manageMission(mission.id, "revoke")} className="rounded-lg bg-sac-alert px-3 py-2 text-xs font-bold text-white">{t.revoke}</button></div>}
         </article>)}</div>}
       </section>
-      </section>}
+      </>}
       {activeSection === "users" && <section className="rounded-3xl border border-emerald-900/10 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-extrabold">{sectionLabel(consoleSections[1])}</h2><p className="mt-1 text-sm text-slate-600">{language === "fr" ? "Répertoire en lecture seule des comptes actifs disposant d’une adresse e-mail principale vérifiée." : language === "ar" ? "دليل للقراءة فقط للحسابات النشطة التي لديها بريد إلكتروني أساسي تم التحقق منه." : "Read-only directory of active accounts with a verified primary email address."}</p></div><span className="rounded-full bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-900">{accounts.length} / 25</span></div>
         <label className="mt-5 block text-sm font-bold">{language === "fr" ? "Rechercher un compte" : language === "ar" ? "البحث عن حساب" : "Search accounts"}
