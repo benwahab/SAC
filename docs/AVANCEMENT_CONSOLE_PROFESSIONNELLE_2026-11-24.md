@@ -46,7 +46,7 @@ La présence d'une entrée de navigation ne vaut pas livraison du module.
 ## Étapes suivantes
 
 1. Compléter la Vue d’ensemble avec des états de santé mesurés et des tendances historiques contrôlées.
-2. Harmoniser et faire approuver le modèle D1 de l’Assistance avant de créer les tables et API de tickets.
+2. Terminer le flux de récupération de compte sans connexion par OTP e-mail, puis définir les missions Support et leurs autorisations côté serveur.
 3. Définir si un traitement individuel des alertes est nécessaire, avec une permission distincte, une justification d’accès et une piste d’audit.
 4. Développer les services d'équipe (tâches, livrables, rapports, messagerie, réunions, calendrier et absences).
 5. Créer le service documentaire commun et les fonctions de secrétariat.
