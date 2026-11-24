@@ -20,11 +20,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
         `SELECT t.id, t.public_reference, t.requester_account_id, t.category, t.subject, t.description,
                 t.priority, t.status, t.assigned_account_id, t.created_at, t.updated_at,
                 t.resolved_at, t.closed_at, t.version,
-                i.normalized_value AS requester_email
+                CASE WHEN ? = 1 THEN i.normalized_value ELSE NULL END AS requester_email
          FROM support_tickets t JOIN account_identities i ON i.account_id = t.requester_account_id
           AND i.channel = 'email' AND i.is_primary = 1 AND i.verified_at IS NOT NULL
          WHERE t.id = ? LIMIT 1`,
-      ).bind(ticketId).first<Record<string, unknown>>(),
+      ).bind(admin.isSuperAdmin ? 1 : 0, ticketId).first<Record<string, unknown>>(),
       env.DB.prepare("SELECT id, author_kind, body, created_at FROM support_messages WHERE ticket_id = ? ORDER BY created_at, id LIMIT 200").bind(ticketId).all<Record<string, unknown>>(),
       env.DB.prepare("SELECT id, event_type, previous_value, new_value, reason, occurred_at FROM support_ticket_events WHERE ticket_id = ? ORDER BY occurred_at, id LIMIT 200").bind(ticketId).all<Record<string, unknown>>(),
     ]);
