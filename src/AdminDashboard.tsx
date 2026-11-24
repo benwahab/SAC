@@ -22,6 +22,7 @@ type AlertSupervision = {
 };
 type SupportTicket = { id: string; public_reference: string; category: string; subject: string; priority: string; status: string; created_at: number; updated_at: number; requester_email: string };
 type SupportInbox = { counts: { new: number; open: number; waiting: number; resolved: number }; tickets: SupportTicket[] };
+type SupportTicketDetail = { ticket: SupportTicket & { description: string; version: number }; messages: { id: string; author_kind: string; body: string; created_at: number }[]; events: { id: string; event_type: string; previous_value: string | null; new_value: string | null; occurred_at: number }[] };
 const PERMISSION_VALUES: Permission[] = ["read", "create", "update", "process", "export", "delete"];
 
 export default function AdminDashboard({ language = "fr" }: { language?: Language }) {
@@ -36,6 +37,8 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
   const [overviewMetrics, setOverviewMetrics] = useState<OverviewMetrics | null>(null);
   const [alertSupervision, setAlertSupervision] = useState<AlertSupervision | null>(null);
   const [supportInbox, setSupportInbox] = useState<SupportInbox | null>(null);
+  const [supportTicketDetail, setSupportTicketDetail] = useState<SupportTicketDetail | null>(null);
+  const [supportReply, setSupportReply] = useState("");
   const [query, setQuery] = useState("");
   const [accountId, setAccountId] = useState("");
   const [editingMissionId, setEditingMissionId] = useState<string | null>(null);
@@ -75,6 +78,41 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
     setSupportInbox(supportPayload);
     setAccessDenied(false);
   }, []);
+
+  const loadSupportTicket = async (ticketId: string) => {
+    const response = await fetch(`/api/admin/support/${encodeURIComponent(ticketId)}`, { credentials: "same-origin", cache: "no-store" });
+    if (!response.ok) throw new Error("support_ticket_unavailable");
+    setSupportTicketDetail(await response.json() as SupportTicketDetail);
+  };
+
+  const sendSupportReply = async () => {
+    if (!supportTicketDetail || !supportReply.trim() || busy) return;
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/admin/support/${encodeURIComponent(supportTicketDetail.ticket.id)}/messages`, {
+        method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: supportReply.trim() }),
+      });
+      if (!response.ok) throw new Error("support_reply_failed");
+      setSupportReply("");
+      await loadSupportTicket(supportTicketDetail.ticket.id);
+      await refreshSuperAdmin();
+    } catch { setError("unavailable"); } finally { setBusy(false); }
+  };
+
+  const updateSupportStatus = async (status: string) => {
+    if (!supportTicketDetail || busy) return;
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/admin/support/${encodeURIComponent(supportTicketDetail.ticket.id)}`, {
+        method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, expectedVersion: supportTicketDetail.ticket.version }),
+      });
+      if (!response.ok) throw new Error("support_status_failed");
+      await loadSupportTicket(supportTicketDetail.ticket.id);
+      await refreshSuperAdmin();
+    } catch { setError("unavailable"); } finally { setBusy(false); }
+  };
 
   const refreshDelegate = useCallback(async () => {
     const response = await fetch("/api/admin/my-missions", { credentials: "same-origin", cache: "no-store" });
@@ -380,8 +418,16 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
         </div>
         <article className="rounded-3xl border border-emerald-900/10 bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-extrabold">{language === "fr" ? "Demandes d’assistance" : language === "ar" ? "طلبات المساعدة" : "Support requests"}</h2><p className="mt-1 text-xs text-slate-500">{language === "fr" ? "100 demandes au maximum · triées par priorité et activité" : language === "ar" ? "حتى 100 طلب · مرتبة حسب الأولوية والنشاط" : "Up to 100 requests · sorted by priority and activity"}</p></div><button type="button" onClick={() => void refreshSuperAdmin().catch(() => setError("unavailable"))} className="rounded-xl border border-emerald-900/15 px-3 py-2 text-xs font-bold">{language === "fr" ? "Actualiser" : language === "ar" ? "تحديث" : "Refresh"}</button></div>
-          {!supportInbox ? <p className="mt-5 text-sm text-slate-500">{language === "fr" ? "Données d’assistance indisponibles." : language === "ar" ? "بيانات المساعدة غير متاحة." : "Support data unavailable."}</p> : supportInbox.tickets.length === 0 ? <p className="mt-5 rounded-xl bg-emerald-50/70 p-5 text-sm text-slate-600">{language === "fr" ? "Aucune demande enregistrée pour le moment." : language === "ar" ? "لا توجد طلبات مسجلة حالياً." : "No support requests have been recorded yet."}</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead><tr className="border-b border-emerald-900/10 text-xs text-slate-500"><th className="p-3">{language === "fr" ? "Référence" : language === "ar" ? "المرجع" : "Reference"}</th><th className="p-3">{language === "fr" ? "Sujet" : language === "ar" ? "الموضوع" : "Subject"}</th><th className="p-3">{language === "fr" ? "Catégorie" : language === "ar" ? "الفئة" : "Category"}</th><th className="p-3">{language === "fr" ? "Demandeur" : language === "ar" ? "مقدم الطلب" : "Requester"}</th><th className="p-3">{language === "fr" ? "État" : language === "ar" ? "الحالة" : "Status"}</th></tr></thead><tbody>{supportInbox.tickets.map((ticket) => <tr key={ticket.id} className="border-b border-emerald-900/10"><td className="p-3 font-mono text-xs">{ticket.public_reference}</td><td className="p-3 font-semibold">{ticket.subject}</td><td className="p-3">{ticket.category}</td><td className="p-3">{ticket.requester_email}</td><td className="p-3">{ticket.status}</td></tr>)}</tbody></table></div>}
+          {!supportInbox ? <p className="mt-5 text-sm text-slate-500">{language === "fr" ? "Données d’assistance indisponibles." : language === "ar" ? "بيانات المساعدة غير متاحة." : "Support data unavailable."}</p> : supportInbox.tickets.length === 0 ? <p className="mt-5 rounded-xl bg-emerald-50/70 p-5 text-sm text-slate-600">{language === "fr" ? "Aucune demande enregistrée pour le moment." : language === "ar" ? "لا توجد طلبات مسجلة حالياً." : "No support requests have been recorded yet."}</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead><tr className="border-b border-emerald-900/10 text-xs text-slate-500"><th className="p-3">{language === "fr" ? "Référence" : language === "ar" ? "المرجع" : "Reference"}</th><th className="p-3">{language === "fr" ? "Sujet" : language === "ar" ? "الموضوع" : "Subject"}</th><th className="p-3">{language === "fr" ? "Catégorie" : language === "ar" ? "الفئة" : "Category"}</th><th className="p-3">{language === "fr" ? "Demandeur" : language === "ar" ? "مقدم الطلب" : "Requester"}</th><th className="p-3">{language === "fr" ? "État" : language === "ar" ? "الحالة" : "Status"}</th></tr></thead><tbody>{supportInbox.tickets.map((ticket) => <tr key={ticket.id} className="border-b border-emerald-900/10"><td className="p-3 font-mono text-xs"><button type="button" onClick={() => void loadSupportTicket(ticket.id).catch(() => setError("unavailable"))} className="font-bold text-emerald-800 underline underline-offset-4">{ticket.public_reference}</button></td><td className="p-3 font-semibold">{ticket.subject}</td><td className="p-3">{ticket.category}</td><td className="p-3">{ticket.requester_email}</td><td className="p-3">{ticket.status}</td></tr>)}</tbody></table></div>}
         </article>
+        {supportTicketDetail && <article className="rounded-3xl border border-emerald-900/10 bg-white p-5 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-mono text-xs text-emerald-800">{supportTicketDetail.ticket.public_reference}</p><h3 className="mt-1 text-lg font-extrabold">{supportTicketDetail.ticket.subject}</h3><p className="mt-1 text-xs text-slate-500">{supportTicketDetail.ticket.requester_email} · {supportTicketDetail.ticket.category}</p></div><button type="button" onClick={() => setSupportTicketDetail(null)} className="rounded-xl border px-3 py-2 text-xs font-bold">{language === "fr" ? "Fermer" : language === "ar" ? "إغلاق" : "Close"}</button></div>
+          <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm leading-6 whitespace-pre-wrap">{supportTicketDetail.ticket.description}</div>
+          <div className="mt-4 flex flex-wrap gap-2">{(["open","waiting_requester","waiting_internal","resolved","closed"] as const).map(status => <button key={status} type="button" disabled={busy || supportTicketDetail.ticket.status === "closed" || supportTicketDetail.ticket.status === status} onClick={() => void updateSupportStatus(status)} className="rounded-xl border border-emerald-900/15 px-3 py-2 text-xs font-bold disabled:opacity-40">{status}</button>)}</div>
+          <h4 className="mt-5 font-extrabold">{language === "fr" ? "Échanges" : language === "ar" ? "المحادثة" : "Conversation"}</h4>
+          <div className="mt-3 space-y-2">{supportTicketDetail.messages.length === 0 ? <p className="text-sm text-slate-500">{language === "fr" ? "Aucun message complémentaire." : language === "ar" ? "لا توجد رسائل إضافية." : "No additional messages."}</p> : supportTicketDetail.messages.map(message => <div key={message.id} className="rounded-xl bg-emerald-50/60 p-3"><p className="text-[11px] font-extrabold uppercase text-emerald-900">{message.author_kind === "support" ? "SAC · Support" : language === "fr" ? "Demandeur" : language === "ar" ? "مقدم الطلب" : "Requester"} · {new Date(message.created_at).toLocaleString(language)}</p><p className="mt-2 whitespace-pre-wrap text-sm leading-6">{message.body}</p></div>)}</div>
+          {supportTicketDetail.ticket.status !== "closed" && <div className="mt-4 space-y-2"><textarea value={supportReply} onChange={event => setSupportReply(event.target.value)} maxLength={5000} rows={3} placeholder={language === "fr" ? "Écrire une réponse…" : language === "ar" ? "اكتب رداً..." : "Write a reply…"} className="w-full rounded-xl border border-emerald-900/15 p-3 text-sm" /><button type="button" disabled={busy || !supportReply.trim()} onClick={() => void sendSupportReply()} className="rounded-xl bg-emerald-800 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-40">{language === "fr" ? "Envoyer la réponse" : language === "ar" ? "إرسال الرد" : "Send reply"}</button></div>}
+        </article>}
         <p className="rounded-xl border border-emerald-900/10 bg-emerald-50/70 p-4 text-xs leading-6 text-emerald-950">{language === "fr" ? "Les tickets sont séparés des alertes SOS. Le premier parcours exige une session de compte active ; la récupération sans connexion fera l’objet d’un flux OTP dédié. Les pièces jointes et les exports ne sont pas activés." : language === "ar" ? "التذاكر منفصلة عن تنبيهات SOS. يتطلب المسار الأول جلسة حساب نشطة؛ وسيُنفذ استرداد الحساب دون تسجيل الدخول عبر OTP منفصل. المرفقات والتصدير غير مفعلين." : "Tickets are separate from SOS alerts. The first intake flow requires an active account session; no-login account recovery will use a dedicated OTP flow. Attachments and exports are not enabled."}</p>
       </section>}
       {activeSection === "security" && <section className="mt-8 rounded-3xl border border-white/90 bg-white/75 p-6 shadow-glass">
