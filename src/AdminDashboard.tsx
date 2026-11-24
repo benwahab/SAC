@@ -79,6 +79,16 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
     setAccessDenied(false);
   }, []);
 
+  const refreshSupport = useCallback(async () => {
+    const response = await fetch("/api/admin/support", { credentials: "same-origin", cache: "no-store" });
+    if (!response.ok) {
+      setSupportInbox(null);
+      setSupportTicketDetail(null);
+      return;
+    }
+    setSupportInbox(await response.json() as SupportInbox);
+  }, []);
+
   const loadSupportTicket = async (ticketId: string) => {
     const response = await fetch(`/api/admin/support/${encodeURIComponent(ticketId)}`, { credentials: "same-origin", cache: "no-store" });
     if (!response.ok) throw new Error("support_ticket_unavailable");
@@ -96,7 +106,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
       if (!response.ok) throw new Error("support_reply_failed");
       setSupportReply("");
       await loadSupportTicket(supportTicketDetail.ticket.id);
-      await refreshSuperAdmin();
+      await refreshSupport();
     } catch { setError("unavailable"); } finally { setBusy(false); }
   };
 
@@ -110,7 +120,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
       });
       if (!response.ok) throw new Error("support_status_failed");
       await loadSupportTicket(supportTicketDetail.ticket.id);
-      await refreshSuperAdmin();
+      await refreshSupport();
     } catch { setError("unavailable"); } finally { setBusy(false); }
   };
 
@@ -118,9 +128,13 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
     const response = await fetch("/api/admin/my-missions", { credentials: "same-origin", cache: "no-store" });
     if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? "denied" : "unavailable");
     const payload = await response.json() as { missions?: DelegateMission[] };
-    setDelegateMissions(Array.isArray(payload.missions) ? payload.missions : []);
+    const nextMissions = Array.isArray(payload.missions) ? payload.missions : [];
+    setDelegateMissions(nextMissions);
+    const canReadSupport = nextMissions.some((mission) => mission.scopeKey === "support" && mission.status === "active" && mission.permissions.includes("read"));
+    if (canReadSupport) await refreshSupport();
+    else { setSupportInbox(null); setSupportTicketDetail(null); }
     setAccessDenied(false);
-  }, []);
+  }, [refreshSupport]);
 
   useEffect(() => {
     const media = window.matchMedia("(min-width: 768px)");
@@ -296,16 +310,27 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
         <div><BrandLogo className="h-8 w-auto" /><div className="mt-2 flex flex-wrap items-center gap-3"><h1 className="text-3xl font-black">{t.delegateTitle}</h1><span className="rounded-full bg-sac-primary/15 px-3 py-1 text-xs font-black text-sac-primary-strong">{t.roleDelegate}</span></div><p className="mt-1 text-sm text-sac-muted">{t.delegateSubtitle}</p></div>
         <a href="/" className="rounded-xl border border-white bg-white/70 px-4 py-3 text-sm font-bold">{t.back}</a>
       </header>
-      {activeSection === "overview" && <>{summary}{isSuperAdmin && overviewCards}</>}
+      {activeSection === "overview" && <>{summary}</>}
       {error && <p role="alert" className="mb-5 rounded-xl border border-sac-alert/30 bg-white/80 p-4 text-sm text-sac-alert">{error}</p>}
-      <section>
+      <nav aria-label="Espaces de mission" className="mb-6 flex flex-wrap gap-2">
+        <button type="button" onClick={() => setActiveSection("overview")} className={activeSection === "overview" ? "rounded-xl bg-emerald-800 px-4 py-2 text-sm font-bold text-white" : "rounded-xl border border-white bg-white/75 px-4 py-2 text-sm font-bold"}>{language === "fr" ? "Mes missions" : language === "ar" ? "مهامي" : "My missions"}</button>
+        {delegateMissions.some((mission) => mission.scopeKey === "support" && mission.status === "active" && mission.permissions.includes("read")) && <button type="button" onClick={() => setActiveSection("support")} className={activeSection === "support" ? "rounded-xl bg-emerald-800 px-4 py-2 text-sm font-bold text-white" : "rounded-xl border border-white bg-white/75 px-4 py-2 text-sm font-bold"}>{language === "fr" ? "Assistance" : language === "ar" ? "الدعم" : "Support"}</button>}
+      </nav>
+      {activeSection !== "support" && <section>
         <h2 className="mb-4 text-xl font-extrabold">{t.myMissions}</h2>
         {delegateMissions.length === 0 ? <p className="rounded-2xl bg-white/70 p-6 text-sm text-sac-muted">{t.noMissions}</p> : <div className="grid gap-4 md:grid-cols-2">{delegateMissions.map((mission) => <article key={mission.id} className="rounded-2xl border border-white/90 bg-white/80 p-5 shadow-glass">
           <div className="flex flex-wrap items-start justify-between gap-3"><h3 className="font-extrabold">{mission.scopeKey}</h3><span className="rounded-full bg-sac-primary/50 px-3 py-1 text-xs font-bold">{t[mission.status]}</span></div>
           <div className="mt-3 flex flex-wrap gap-2">{mission.permissions.map((permission) => <span key={permission} className="rounded-lg border border-sac-primary-strong/15 px-2 py-1 text-xs">{t.permissions[permission]}</span>)}</div>
           {mission.dueAt && <p className="mt-3 text-xs text-sac-muted">{t.dueOn}: {new Date(mission.dueAt).toLocaleString(language)}</p>}
         </article>)}</div>}
-      </section>
+      </section>}
+      {activeSection === "support" && <section className="space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-extrabold">{language === "fr" ? "File d’assistance" : language === "ar" ? "قائمة طلبات الدعم" : "Support queue"}</h2><p className="mt-1 text-xs text-sac-muted">{language === "fr" ? "Accès limité à votre mission Support." : language === "ar" ? "الوصول محدود بمهمة الدعم الخاصة بك." : "Access is limited to your Support mission."}</p></div><button type="button" onClick={() => void refreshSupport()} className="rounded-xl border border-white bg-white/80 px-3 py-2 text-xs font-bold">{language === "fr" ? "Actualiser" : language === "ar" ? "تحديث" : "Refresh"}</button></div>
+        {!supportInbox ? <p className="rounded-2xl bg-white/70 p-5 text-sm text-sac-muted">{language === "fr" ? "Aucune permission de lecture Support active ou données indisponibles." : language === "ar" ? "لا توجد صلاحية قراءة دعم نشطة أو البيانات غير متاحة." : "No active Support read permission or data unavailable."}</p> : supportInbox.tickets.length === 0 ? <p className="rounded-2xl bg-white/70 p-5 text-sm text-sac-muted">{language === "fr" ? "Aucun ticket dans la file." : language === "ar" ? "لا توجد تذاكر في القائمة." : "No tickets in the queue."}</p> : <div className="overflow-x-auto rounded-2xl border border-white bg-white/80"><table className="w-full min-w-[680px] text-left text-sm"><thead><tr className="border-b border-emerald-900/10 text-xs text-slate-500"><th className="p-3">Référence</th><th className="p-3">Sujet</th><th className="p-3">Catégorie</th><th className="p-3">État</th></tr></thead><tbody>{supportInbox.tickets.map(ticket => <tr key={ticket.id} className="border-b border-emerald-900/10"><td className="p-3 font-mono"><button type="button" onClick={() => void loadSupportTicket(ticket.id)} className="font-bold text-emerald-800 underline underline-offset-4">{ticket.public_reference}</button></td><td className="p-3 font-semibold">{ticket.subject}</td><td className="p-3">{ticket.category}</td><td className="p-3">{ticket.status}</td></tr>)}</tbody></table></div>}
+        {supportTicketDetail && <article className="rounded-2xl border border-white bg-white/85 p-5 shadow-glass"><p className="font-mono text-xs text-emerald-800">{supportTicketDetail.ticket.public_reference}</p><h3 className="mt-1 text-lg font-extrabold">{supportTicketDetail.ticket.subject}</h3><p className="mt-3 whitespace-pre-wrap rounded-xl bg-slate-50 p-4 text-sm leading-6">{supportTicketDetail.ticket.description}</p><div className="mt-4 space-y-2">{supportTicketDetail.messages.map(message => <div key={message.id} className="rounded-xl bg-emerald-50/70 p-3"><p className="text-[11px] font-bold text-emerald-900">{message.author_kind === "support" ? "SAC · Support" : "Demandeur"} · {new Date(message.created_at).toLocaleString(language)}</p><p className="mt-2 whitespace-pre-wrap text-sm">{message.body}</p></div>)}</div>
+          {delegateMissions.some(mission => mission.scopeKey === "support" && mission.status === "active" && mission.permissions.includes("process")) && supportTicketDetail.ticket.status !== "closed" && <div className="mt-4 space-y-3"><div className="flex flex-wrap gap-2">{(supportStatusTransitions[supportTicketDetail.ticket.status] ?? []).map(status => <button key={status} type="button" disabled={busy} onClick={() => void updateSupportStatus(status)} className="rounded-lg border border-emerald-900/15 px-3 py-2 text-xs font-bold disabled:opacity-40">{status}</button>)}</div><textarea value={supportReply} onChange={event => setSupportReply(event.target.value)} maxLength={5000} rows={3} placeholder={language === "fr" ? "Écrire une réponse…" : language === "ar" ? "اكتب رداً..." : "Write a reply…"} className="w-full rounded-xl border border-emerald-900/15 p-3 text-sm" /><button type="button" disabled={busy || !supportReply.trim()} onClick={() => void sendSupportReply()} className="rounded-xl bg-emerald-800 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-40">{language === "fr" ? "Envoyer la réponse" : language === "ar" ? "إرسال الرد" : "Send reply"}</button></div>}
+        </article>}
+      </section>}
     </div>
   </main>;
 
