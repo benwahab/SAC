@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,7 +30,9 @@ class OrdinaryNotificationServiceWorkerTests(unittest.TestCase):
         self.assertIn('data:{url:target}', SW)
 
     def test_sw_cache_version_was_advanced(self):
-        self.assertIn('const CACHE_NAME="sac-shell-v3"', SW)
+        match = re.search(r'const CACHE_NAME="sac-shell-v(\d+)"', SW)
+        self.assertIsNotNone(match)
+        self.assertGreaterEqual(int(match.group(1)), 4)
 
 
 if __name__ == "__main__":
