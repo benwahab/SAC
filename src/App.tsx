@@ -477,7 +477,8 @@ export default function App() {
     };
     void checkAccess();
     media.addEventListener("change", checkAccess);
-    return () => { controller.abort(); media.removeEventListener("change", checkAccess); };
+    window.addEventListener("focus", checkAccess);
+    return () => { controller.abort(); media.removeEventListener("change", checkAccess); window.removeEventListener("focus", checkAccess); };
   }, []);
   const [language, setLanguage] = useState<Language>(() => {
     try {
