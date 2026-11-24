@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { isLanguage, privateTranslations, type Language } from "./i18n/translations";
 import { hashToScreen, screenToHash, type Screen } from "./private/types";
 import { usePrivateData } from "./private/usePrivateData";
-import { BottomNav } from "./private/ui";
+import { BottomNav, DesktopNav } from "./private/ui";
 import Account from "./private/screens/Account";
 import AlertContacts from "./private/screens/AlertContacts";
 import AlertScreen from "./private/screens/AlertScreen";
@@ -68,10 +68,15 @@ export default function PrivateSpacePage({ onLogout }: Props) {
     default: body = <Dashboard {...nav} closeContacts={data.closeContacts} invitations={data.invitations} ownProfile={data.ownProfile} alerts={data.alerts} loading={data.loading} error={data.error} securityKeyConfigured={data.securityKeyConfigured} adminAccess={data.adminAccess} />;
   }
 
+  const current = screen.name === "invite" || screen.name === "contact" ? "contacts" : screen.name === "alert" ? "history" : screen.name === "account" || screen.name === "alertContacts" ? "settings" : screen.name;
+
   return (
     <div className="sac-app" dir={language === "ar" ? "rtl" : "ltr"}>
-      <main className={`mx-auto min-h-svh ${screen.name === "home" ? "max-w-2xl" : "max-w-lg"} bg-sac-canvas`}>{body}</main>
-      <BottomNav current={screen.name === "invite" || screen.name === "contact" ? "contacts" : screen.name === "alert" ? "history" : screen.name === "account" || screen.name === "alertContacts" ? "settings" : screen.name} copy={copy} go={changeScreen} securityKeyConfigured={data.securityKeyConfigured} />
+      <DesktopNav current={current} copy={copy} go={changeScreen} adminAccess={data.adminAccess} />
+      <main className={`mx-auto min-h-svh ${screen.name === "home" ? "max-w-6xl" : "max-w-4xl"} bg-sac-canvas`}>{body}</main>
+      <div className="lg:hidden">
+        <BottomNav current={current} copy={copy} go={changeScreen} securityKeyConfigured={data.securityKeyConfigured} />
+      </div>
     </div>
   );
 }

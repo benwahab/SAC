@@ -1305,6 +1305,8 @@ export interface AdminTranslation {
   saved: string; select: string; back: string; choose: string; edit: string; save: string;
   cancel: string; audit: string; actor: string; action: string; result: string;
   permissionsLabel: string; signIn: string; conflict: string;
+  summaryRole: string; summaryActive: string; summaryDelegates: string; summaryAuditEvents: string; summaryPermissions: string;
+  roleSuperAdmin: string; roleDelegate: string;
   delegateTitle: string; delegateSubtitle: string; myMissions: string; noMissions: string; dueOn: string;
   permissions: Record<AdminPermission, string>;
 }
@@ -1327,6 +1329,8 @@ export const adminTranslations: Record<Language, AdminTranslation> = {
     actor: "Acteur", action: "Action", result: "Résultat",
     permissionsLabel: "Permissions explicitement accordées", signIn: "Se connecter",
     conflict: "La mission a été modifiée entre-temps. Rechargez et réessayez.",
+    summaryRole: "Rôle", summaryActive: "Missions actives", summaryDelegates: "Délégataires", summaryAuditEvents: "Événements d’audit",
+    summaryPermissions: "Permissions accordées", roleSuperAdmin: "Super Admin", roleDelegate: "Délégataire",
     delegateTitle: "Mon espace administration", delegateSubtitle: "Missions qui vous sont attribuées",
     myMissions: "Mes missions", noMissions: "Aucune mission active ne vous est attribuée.", dueOn: "Échéance",
     permissions: { read: "Consulter", create: "Créer", update: "Modifier", process: "Traiter", export: "Exporter", delete: "Supprimer" },
@@ -1348,6 +1352,8 @@ export const adminTranslations: Record<Language, AdminTranslation> = {
     actor: "Actor", action: "Action", result: "Outcome",
     permissionsLabel: "Explicitly granted permissions", signIn: "Sign in",
     conflict: "The mission changed in the meantime. Reload and try again.",
+    summaryRole: "Role", summaryActive: "Active missions", summaryDelegates: "Delegates", summaryAuditEvents: "Audit events",
+    summaryPermissions: "Granted permissions", roleSuperAdmin: "Super Admin", roleDelegate: "Delegate",
     delegateTitle: "My administration space", delegateSubtitle: "Missions assigned to you",
     myMissions: "My missions", noMissions: "No active mission is assigned to you.", dueOn: "Deadline",
     permissions: { read: "Read", create: "Create", update: "Update", process: "Process", export: "Export", delete: "Delete" },
@@ -1369,6 +1375,8 @@ export const adminTranslations: Record<Language, AdminTranslation> = {
     actor: "المنفذ", action: "الإجراء", result: "النتيجة",
     permissionsLabel: "الصلاحيات الممنوحة صراحةً", signIn: "تسجيل الدخول",
     conflict: "تم تعديل المهمة في هذه الأثناء. أعد التحميل وحاول مجدداً.",
+    summaryRole: "الدور", summaryActive: "المهام النشطة", summaryDelegates: "المفوّضون", summaryAuditEvents: "أحداث التدقيق",
+    summaryPermissions: "الصلاحيات الممنوحة", roleSuperAdmin: "المسؤول الأعلى", roleDelegate: "المفوّض",
     delegateTitle: "مساحة الإدارة الخاصة بي", delegateSubtitle: "المهام المسندة إليك",
     myMissions: "مهامي", noMissions: "لا توجد مهمة نشطة مسندة إليك.", dueOn: "الموعد النهائي",
     permissions: { read: "قراءة", create: "إنشاء", update: "تعديل", process: "معالجة", export: "تصدير", delete: "حذف" },

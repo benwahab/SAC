@@ -35,6 +35,10 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const t = adminTranslations[language];
+  const isSuperAdmin = access?.role === "super_admin";
+  const activeMissionCount = isSuperAdmin ? missions.filter((mission) => mission.status === "active").length : delegateMissions.filter((mission) => mission.status === "active").length;
+  const delegateCount = new Set(missions.filter((mission) => mission.status === "active").map((mission) => mission.assignedAccountId)).size;
+  const permissionCount = new Set((isSuperAdmin ? missions : delegateMissions).flatMap((mission) => mission.permissions)).size;
 
   const refreshSuperAdmin = useCallback(async () => {
     const [missionResponse, auditResponse] = await Promise.all([
@@ -187,16 +191,32 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
 
   if (accessDenied) return <main className="min-h-screen bg-sac-primary/20 p-6 text-sac-ink"><section className="mx-auto mt-16 max-w-lg rounded-3xl border border-white/80 bg-white/75 p-8 text-center shadow-glass"><BrandLogo className="mx-auto h-10 w-auto" /><p className="mt-4 text-sm leading-7">{t.denied}</p><div className="mt-6 flex flex-wrap justify-center gap-3"><a href="/connexion" className="inline-flex min-h-11 items-center rounded-xl bg-sac-primary-strong px-5 font-bold text-white">{t.signIn}</a><a href="/" className="inline-flex min-h-11 items-center rounded-xl border border-sac-primary-strong/20 bg-white/70 px-5 font-bold">{t.back}</a></div></section></main>;
 
+  const summaryCards = isSuperAdmin
+    ? [
+      { label: t.summaryRole, value: t.roleSuperAdmin },
+      { label: t.summaryActive, value: activeMissionCount },
+      { label: t.summaryDelegates, value: delegateCount },
+      { label: t.summaryAuditEvents, value: auditEvents.length },
+    ]
+    : [
+      { label: t.summaryRole, value: t.roleDelegate },
+      { label: t.summaryActive, value: activeMissionCount },
+      { label: t.summaryPermissions, value: permissionCount },
+      { label: t.missions, value: delegateMissions.length },
+    ];
+  const summary = <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{summaryCards.map((card) => <div key={card.label} className="rounded-2xl border border-white/90 bg-white/75 p-5 shadow-glass"><p className="text-[11px] font-black uppercase tracking-[.14em] text-sac-muted">{card.label}</p><p className="mt-2 text-2xl font-black text-sac-primary-strong">{card.value}</p></div>)}</section>;
+
   if (access?.role === "delegate") return <main className="min-h-screen bg-sac-primary/15 px-5 py-8 text-sac-ink sm:px-8" dir={language === "ar" ? "rtl" : "ltr"}>
-    <div className="mx-auto max-w-4xl">
-      <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div><BrandLogo className="h-8 w-auto" /><h1 className="mt-2 text-3xl font-black">{t.delegateTitle}</h1><p className="mt-1 text-sm text-sac-muted">{t.delegateSubtitle}</p></div>
+    <div className="mx-auto max-w-6xl">
+      <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div><BrandLogo className="h-8 w-auto" /><div className="mt-2 flex flex-wrap items-center gap-3"><h1 className="text-3xl font-black">{t.delegateTitle}</h1><span className="rounded-full bg-sac-primary/15 px-3 py-1 text-xs font-black text-sac-primary-strong">{t.roleDelegate}</span></div><p className="mt-1 text-sm text-sac-muted">{t.delegateSubtitle}</p></div>
         <a href="/" className="rounded-xl border border-white bg-white/70 px-4 py-3 text-sm font-bold">{t.back}</a>
       </header>
+      {summary}
       {error && <p role="alert" className="mb-5 rounded-xl border border-sac-alert/30 bg-white/80 p-4 text-sm text-sac-alert">{error}</p>}
       <section>
         <h2 className="mb-4 text-xl font-extrabold">{t.myMissions}</h2>
-        {delegateMissions.length === 0 ? <p className="rounded-2xl bg-white/70 p-6 text-sm text-sac-muted">{t.noMissions}</p> : <div className="grid gap-4 lg:grid-cols-2">{delegateMissions.map((mission) => <article key={mission.id} className="rounded-2xl border border-white/90 bg-white/80 p-5 shadow-glass">
+        {delegateMissions.length === 0 ? <p className="rounded-2xl bg-white/70 p-6 text-sm text-sac-muted">{t.noMissions}</p> : <div className="grid gap-4 md:grid-cols-2">{delegateMissions.map((mission) => <article key={mission.id} className="rounded-2xl border border-white/90 bg-white/80 p-5 shadow-glass">
           <div className="flex flex-wrap items-start justify-between gap-3"><h3 className="font-extrabold">{mission.scopeKey}</h3><span className="rounded-full bg-sac-primary/50 px-3 py-1 text-xs font-bold">{t[mission.status]}</span></div>
           <div className="mt-3 flex flex-wrap gap-2">{mission.permissions.map((permission) => <span key={permission} className="rounded-lg border border-sac-primary-strong/15 px-2 py-1 text-xs">{t.permissions[permission]}</span>)}</div>
           {mission.dueAt && <p className="mt-3 text-xs text-sac-muted">{t.dueOn}: {new Date(mission.dueAt).toLocaleString(language)}</p>}
@@ -206,11 +226,12 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
   </main>;
 
   return <main className="min-h-screen bg-sac-primary/15 px-5 py-8 text-sac-ink sm:px-8" dir={language === "ar" ? "rtl" : "ltr"}>
-    <div className="mx-auto max-w-6xl">
-      <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div><BrandLogo className="h-8 w-auto" /><h1 className="mt-2 text-3xl font-black">{t.title}</h1><p className="mt-1 text-sm text-sac-muted">{t.subtitle}</p></div>
+    <div className="mx-auto max-w-7xl">
+      <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div><BrandLogo className="h-8 w-auto" /><div className="mt-2 flex flex-wrap items-center gap-3"><h1 className="text-3xl font-black">{t.title}</h1><span className="rounded-full bg-sac-primary/15 px-3 py-1 text-xs font-black text-sac-primary-strong">{t.roleSuperAdmin}</span></div><p className="mt-1 text-sm text-sac-muted">{t.subtitle}</p></div>
         <a href="/" className="rounded-xl border border-white bg-white/70 px-4 py-3 text-sm font-bold">{t.back}</a>
       </header>
+      {summary}
       {error && <p role="alert" className="mb-5 rounded-xl border border-sac-alert/30 bg-white/80 p-4 text-sm text-sac-alert">{error}</p>}
       {notice && <p role="status" className="mb-5 rounded-xl border border-sac-confirm/30 bg-white/80 p-4 text-sm">{notice}</p>}
       <section className="rounded-3xl border border-white/90 bg-white/75 p-6 shadow-glass backdrop-blur-xl">
@@ -227,13 +248,13 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
           </label>
           <fieldset className="rounded-2xl border border-sac-primary-strong/15 p-4 md:col-span-2"><legend className="px-2 text-sm font-bold">{t.permissionsLabel}</legend><div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{PERMISSION_VALUES.map((value) => <label key={value} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={permissions.includes(value)} onChange={(event) => setPermissions((current) => event.target.checked ? [...current, value] : current.filter((item) => item !== value))} />{t.permissions[value]}</label>)}</div></fieldset>
           <label className="block text-sm font-bold">{t.due}<input type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="mt-2 min-h-11 w-full rounded-xl border border-sac-primary-strong/20 bg-white px-3 font-normal" /></label>
-          <div className="flex items-end"><button type="submit" disabled={busy} className="min-h-12 w-full rounded-xl bg-sac-primary-strong px-5 font-extrabold text-white disabled:opacity-50">{busy ? "…" : editingMissionId ? t.save : t.create}</button>
-            {editingMissionId && <button type="button" disabled={busy} onClick={() => { setEditingMissionId(null); setAccountId(""); setQuery(""); setScopeKey(""); setPermissions(["read"]); setDueAt(""); }} className="mt-2 min-h-10 w-full rounded-xl border px-4 text-sm font-bold">{t.cancel}</button>}</div>
+          <div className="flex flex-col gap-2"><button type="submit" disabled={busy} className="min-h-12 w-full rounded-xl bg-sac-primary-strong px-5 font-extrabold text-white disabled:opacity-50">{busy ? "…" : editingMissionId ? t.save : t.create}</button>
+            {editingMissionId && <button type="button" disabled={busy} onClick={() => { setEditingMissionId(null); setAccountId(""); setQuery(""); setScopeKey(""); setPermissions(["read"]); setDueAt(""); }} className="min-h-10 w-full rounded-xl border px-4 text-sm font-bold">{t.cancel}</button>}</div>
         </form>
       </section>
       <section className="mt-8">
         <h2 className="mb-4 text-xl font-extrabold">{t.missions}</h2>
-        {missions.length === 0 ? <p className="rounded-2xl bg-white/70 p-6 text-sm text-sac-muted">{t.empty}</p> : <div className="grid gap-4 lg:grid-cols-2">{missions.map((mission) => <article key={mission.id} className="rounded-2xl border border-white/90 bg-white/80 p-5 shadow-glass">
+        {missions.length === 0 ? <p className="rounded-2xl bg-white/70 p-6 text-sm text-sac-muted">{t.empty}</p> : <div className="grid gap-4 md:grid-cols-2">{missions.map((mission) => <article key={mission.id} className="rounded-2xl border border-white/90 bg-white/80 p-5 shadow-glass">
           <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="break-all text-xs text-sac-muted">{mission.assignedEmail ?? mission.assignedAccountId}</p><h3 className="mt-1 font-extrabold">{mission.scopeKey}</h3></div><span className="rounded-full bg-sac-primary/50 px-3 py-1 text-xs font-bold">{t[mission.status]}</span></div>
           <div className="mt-3 flex flex-wrap gap-2">{mission.permissions.map((permission) => <span key={permission} className="rounded-lg border border-sac-primary-strong/15 px-2 py-1 text-xs">{t.permissions[permission]}</span>)}</div>
           {mission.dueAt && <p className="mt-3 text-xs text-sac-muted">{new Date(mission.dueAt).toLocaleString(language)}</p>}

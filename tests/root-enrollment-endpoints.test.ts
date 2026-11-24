@@ -128,6 +128,54 @@ test("session endpoint respects persisted suspended account and revoked device s
   assert.equal(updateCalled, false);
 });
 
+test("session endpoint exposes the Super Admin access summary", async () => {
+  const token = await createSessionToken(webcrypto as unknown as Crypto);
+  const now = Date.now();
+  const sessionRow = {
+    session_id: "session-a",
+    account_id: "account-a",
+    device_id: "device-a",
+    token_hash: token.tokenHash,
+    session_status: "active",
+    session_auth_version: 1,
+    created_at: now - 1000,
+    last_activity_at: now - 1000,
+    expires_at: now + 100000,
+    revoked_at: null,
+    account_status: "active",
+    device_status: "active",
+    current_device_auth_version: 1,
+  };
+  const fakeEnv = {
+    DB: {
+      prepare(sql: string) {
+        return {
+          bind() {
+            return {
+              async first() {
+                if (sql.includes("FROM device_sessions")) return sessionRow;
+                if (sql.includes("FROM device_root_credentials")) return null;
+                if (sql.includes("FROM account_roles")) return { allowed: 1 };
+                if (sql.includes("FROM admin_missions")) return { count: 0 };
+                throw new Error("Unexpected query: " + sql);
+              },
+              async run() { return { success: true, meta: { changes: 1 } }; },
+            };
+          },
+        };
+      },
+    } as never,
+  };
+  const request = new Request("https://sac.example/api/auth/session", {
+    headers: { Cookie: SESSION_COOKIE_NAME + "=" + token.token },
+  });
+  const response = await currentSession({ request, env: fakeEnv } as never);
+  assert.equal(response.status, 200);
+  const payload = await response.json() as { authenticated: boolean; adminAccess: { canAccess: boolean; role: string; activeMissions: number } };
+  assert.equal(payload.authenticated, true);
+  assert.deepEqual(payload.adminAccess, { canAccess: true, role: "super_admin", activeMissions: 0 });
+});
+
 test("logout is idempotent when no session cookie is present", async () => {
   const response = await logout({ request: post("logout"), env } as never);
   assert.equal(response.status, 200);

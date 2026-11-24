@@ -1,8 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { AlertTriangle, ArrowLeft, Clock3, History, Home, Settings, ShieldCheck, UsersRound } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Clock3, History, Home, LayoutDashboard, Settings, ShieldCheck, Siren, UsersRound } from "lucide-react";
 import BrandLogo from "../components/BrandLogo";
 import type { PrivateCopy } from "../i18n/translations";
-import type { Screen } from "./types";
+import type { AdminAccess, Screen } from "./types";
 
 export function Halo({ title, eyebrow, onBack, backLabel, children, tone = "orange" }: {
   title: string; eyebrow?: string; onBack?: () => void; backLabel?: string; children?: ReactNode; tone?: "orange" | "alert";
@@ -24,8 +24,8 @@ export function Halo({ title, eyebrow, onBack, backLabel, children, tone = "oran
   );
 }
 
-export function Sheet({ children }: { children: ReactNode }) {
-  return <div className="relative -mt-6 flex flex-col gap-4 rounded-t-[28px] bg-sac-canvas px-4 pb-36 pt-6">{children}</div>;
+export function Sheet({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <div className={"relative -mt-6 flex flex-col gap-4 rounded-t-[28px] bg-sac-canvas px-4 pb-36 pt-6 lg:pb-16 " + className}>{children}</div>;
 }
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -65,6 +65,38 @@ export function ProfileAvatar({ photoUrl, name, size = "md" }: { photoUrl?: stri
 export const fieldClass = "min-h-12 w-full rounded-[14px] border border-[#E8DCD3] bg-white px-4 text-base text-sac-ink outline-none focus:border-sac-primary focus:ring-4 focus:ring-sac-primary/15";
 export const primaryBtn = "inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-sac-primary px-5 text-base font-extrabold text-white shadow-orange disabled:opacity-50 disabled:shadow-none";
 export const ghostBtn = "inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] border border-sac-primary/30 bg-white px-4 text-sm font-bold text-sac-ember disabled:opacity-50";
+
+export function DesktopNav({ current, copy, go, adminAccess }: { current: Screen["name"]; copy: PrivateCopy; go: (screen: Screen) => void; adminAccess: AdminAccess | null }) {
+  const item = (name: Screen["name"], label: string, icon: ReactNode) => (
+    <button type="button" key={name} onClick={() => go({ name } as Screen)} aria-current={current === name ? "page" : undefined}
+      className={"inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-extrabold " + (current === name ? "bg-sac-primary/15 text-sac-primary-strong" : "text-sac-muted hover:bg-sac-primary/10 hover:text-sac-ink")}>
+      {icon}{label}
+    </button>
+  );
+  return (
+    <header className="sticky top-0 z-40 hidden border-b border-sac-primary/10 bg-sac-canvas/95 backdrop-blur-xl lg:block">
+      <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-3">
+        <nav aria-label={copy.navLabel} className="flex items-center gap-1">
+          {item("home", copy.navHome, <Home size={18} />)}
+          {item("contacts", copy.navContacts, <UsersRound size={18} />)}
+          {item("history", copy.navHistory, <History size={18} />)}
+          {item("settings", copy.navSettings, <Settings size={18} />)}
+        </nav>
+        <div className="ms-auto flex items-center gap-2">
+          {adminAccess?.canAccess && (
+            <a href="/administration" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-sac-primary/20 bg-white/70 px-3 text-sm font-extrabold text-sac-primary-strong hover:bg-white">
+              <LayoutDashboard size={17} />{copy.adminSpaceTitle}
+            </a>
+          )}
+          <button type="button" onClick={() => go({ name: "sos" })} aria-label={copy.navSos}
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-sac-alert px-4 text-sm font-black text-white shadow-sos">
+            <Siren size={17} />{copy.navSos}
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
 
 export function BottomNav({ current, copy, go, securityKeyConfigured = true }: { current: Screen["name"]; copy: PrivateCopy; go: (screen: Screen) => void; securityKeyConfigured?: boolean }) {
   const item = (name: Screen["name"], label: string, icon: ReactNode, badge?: number) => (

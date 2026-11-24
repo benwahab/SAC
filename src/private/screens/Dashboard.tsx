@@ -60,7 +60,14 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
         </svg>
         <div className="relative flex items-start justify-between gap-3">
           <span className="grid h-12 w-24 place-items-center rounded-2xl border border-white/80 bg-white/95 px-2 shadow-glass"><BrandLogo className="h-7 w-auto" /></span>
-          <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[.16em] text-white/90">{copy.homeBadgePrivate}</span>
+          <div className="flex items-center gap-2">
+            {adminAccess?.canAccess && (
+              <a href="/administration" aria-label={copy.adminSpaceTitle} title={copy.adminSpaceTitle} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-white/30 bg-white/15 px-3 text-xs font-extrabold text-white hover:bg-white/25 lg:hidden">
+                <LayoutDashboard size={16} /><span className="hidden md:inline">{copy.adminSpaceTitle}</span>
+              </a>
+            )}
+            <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[.16em] text-white/90">{copy.homeBadgePrivate}</span>
+          </div>
         </div>
 
         <div className="relative mt-6 flex items-center gap-3">
@@ -81,11 +88,11 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
 
       </header>
 
-      <Sheet>
-        {error && <Notice kind="error">{error}</Notice>}
+      <Sheet className="lg:grid lg:grid-cols-2 lg:items-start lg:px-6">
+        {error && <div className="lg:col-span-2"><Notice kind="error">{error}</Notice></div>}
 
         {hasContext && (
-          <Card className="!border-sac-primary/20 !bg-white/90">
+          <Card className="!border-sac-primary/20 !bg-white/90 lg:col-span-2">
             <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-[.12em] text-sac-primary-strong"><Info size={16} />{copy.homeContextTitle}</h2>
             <div className="mt-3 flex flex-col gap-2">
               {focus && (
@@ -254,7 +261,7 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
           </div>
         </details>
 
-        <div className="flex items-start gap-3 rounded-2xl border border-sac-primary/15 bg-white/80 p-4">
+        <div className="flex items-start gap-3 rounded-2xl border border-sac-primary/15 bg-white/80 p-4 lg:col-span-2">
           <div className="min-w-0"><p className="text-sm font-extrabold">{firstName || copy.homeGreetingFallback}</p><p className="mt-1 text-xs leading-5 text-sac-muted">{copy.homeFooterEmergency}</p></div>
           {loading && <span className="ms-auto text-xs text-sac-muted">{copy.loading}</span>}
         </div>

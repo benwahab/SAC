@@ -51,7 +51,7 @@ export function usePrivateData(copy: PrivateCopy, onLogout: () => void) {
   const refreshAdminAccess = useCallback(async () => {
     const response = await fetch("/api/admin/access", { credentials: "same-origin", cache: "no-store" });
     if (response.status === 401) { onLogout(); return; }
-    if (!response.ok) { setAdminAccess(null); return; }
+    if (!response.ok) return;
     const accessPayload = await response.json() as Partial<AdminAccess>;
     setAdminAccess(accessPayload.canAccess === true && (accessPayload.role === "super_admin" || accessPayload.role === "delegate")
       ? { canAccess: true, role: accessPayload.role, activeMissions: Number.isSafeInteger(accessPayload.activeMissions) ? accessPayload.activeMissions! : 0 }
@@ -65,6 +65,9 @@ export function usePrivateData(copy: PrivateCopy, onLogout: () => void) {
       if (!session.authenticated || !session.accountId || !session.deviceId) { onLogout(); return; }
       setIdentity({ accountId: session.accountId, deviceId: session.deviceId });
       setSecurityKeyConfigured(session.securityKeyConfigured !== false);
+      if (session.adminAccess?.canAccess && session.adminAccess.role) {
+        setAdminAccess({ canAccess: true, role: session.adminAccess.role, activeMissions: Number.isSafeInteger(session.adminAccess.activeMissions) ? session.adminAccess.activeMissions : 0 });
+      }
       const [response, alertsResponse, profileResponse] = await Promise.all([
         fetch("/api/contacts", { credentials: "same-origin", cache: "no-store" }),
         fetch("/api/alerts", { credentials: "same-origin", cache: "no-store" }),

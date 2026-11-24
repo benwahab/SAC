@@ -86,13 +86,19 @@ export async function completeRootEnrollment(
   return payload;
 }
 
+export interface DeviceSessionAdminAccess {
+  canAccess: boolean;
+  role: "super_admin" | "delegate" | null;
+  activeMissions: number;
+}
+
 export async function getDeviceSession(fetcher: FetchPort = fetch): Promise<{
-  authenticated: boolean; accountId?: string; deviceId?: string; sessionId?: string; securityKeyConfigured?: boolean; credentialId?: string | null;
+  authenticated: boolean; accountId?: string; deviceId?: string; sessionId?: string; securityKeyConfigured?: boolean; credentialId?: string | null; adminAccess?: DeviceSessionAdminAccess;
 }> {
   const response = await fetcher("/api/auth/session", {
     method: "GET", credentials: "same-origin", cache: "no-store",
   });
-  const payload = await readPayload<{ authenticated: boolean; accountId?: string; deviceId?: string; sessionId?: string; securityKeyConfigured?: boolean; credentialId?: string | null }>(response);
+  const payload = await readPayload<{ authenticated: boolean; accountId?: string; deviceId?: string; sessionId?: string; securityKeyConfigured?: boolean; credentialId?: string | null; adminAccess?: DeviceSessionAdminAccess }>(response);
   if (!response.ok || !payload.authenticated) return { authenticated: false };
   if (payload.credentialId) storePasskeyCredentialId(payload.credentialId);
   else if (payload.securityKeyConfigured === false) clearStoredPasskeyCredentialId();

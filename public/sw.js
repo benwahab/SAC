@@ -1,4 +1,4 @@
-const CACHE_NAME="sac-shell-v3";
+const CACHE_NAME="sac-shell-v4";
 const APP_SHELL=["/","/manifest.webmanifest","/brand/sac-icon-192.png","/brand/sac-icon-512.png","/brand/sac-icon-maskable-512.png","/brand/sac-logo.png"];
 
 self.addEventListener("install",event=>{
