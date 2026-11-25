@@ -66,7 +66,7 @@ export async function activatePremiumFromVerifiedPayment(
            amount_xof = 5000,
            billing_interval = 'month',
            current_period_start = excluded.current_period_start,
-           current_period_end = MAX(account_subscriptions.current_period_end, excluded.current_period_end),
+           current_period_end = excluded.current_period_end,
            updated_at = excluded.updated_at
          WHERE account_subscriptions.current_period_end IS NULL
             OR excluded.current_period_end >= account_subscriptions.current_period_end`,
