@@ -1,4 +1,4 @@
-import { acceptContactInvitation, createContactInvitation, withdrawTrustedContact } from "../../functions/lib/trusted-contacts/service.ts";
+import { acceptContactInvitation, createContactInvitation, revokeTrustedContact, withdrawTrustedContact } from "../../functions/lib/trusted-contacts/service.ts";
 import {
   claimDueSosReminders,
   closeSosAlertByAuthor,
@@ -61,21 +61,12 @@ export default {
     }
 
     if (url.pathname === "/revoke") {
-      try {
-        const result = await env.DB.prepare(
-          "UPDATE trusted_contacts SET status='revoked',revoked_at=?,revocation_reason='owner_revoked',revoked_by_account_id=? WHERE owner_account_id=? AND contact_account_id=? AND status='active'",
-        ).bind(now, String(input.owner), String(input.owner), String(input.contact)).run();
-        if (!result.success) return json({ error: "revoke_failed", detail: result.error ?? "d1_update_failed" }, 500);
-        if (result.meta.changes !== 1) {
-          const current = await env.DB.prepare(
-            "SELECT status, revocation_reason, revoked_by_account_id, created_at FROM trusted_contacts WHERE owner_account_id=? AND contact_account_id=? ORDER BY relationship_sequence DESC LIMIT 1",
-          ).bind(String(input.owner), String(input.contact)).first();
-          return json({ error: "not_revoked", changes: result.meta.changes, current }, 409);
-        }
-        return json({ revoked: true });
-      } catch (error) {
-        return json({ error: "revoke_failed", detail: String(error) }, 500);
-      }
+      const result = await revokeTrustedContact(env.DB, {
+        authenticatedOwnerAccountId: String(input.owner),
+        contactAccountId: String(input.contact),
+        now,
+      });
+      return result.ok ? json({ revoked: true }) : json({ error: result.error }, 409);
     }
     if (url.pathname === "/withdraw") {
       const result = await withdrawTrustedContact(env.DB, {
