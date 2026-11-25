@@ -226,3 +226,9 @@ Le snapshot `alert_recipients` n'est pas supprimé ni réécrit : il demeure une
 **Distinction importante :** le retrait volontaire `contact_withdrew` coupe immédiatement tous les accès du proche sortant. La révocation initiée par le propriétaire `owner_revoked` conserve, pour le moment, le comportement historique des alertes déjà actives. Ce comportement reste un arbitrage produit distinct et n'est pas assimilé à la décision de retrait volontaire.
 
 La migration `0026_trusted_contact_withdrawal_access_revocation.sql` ajoute la cause et l'acteur de révocation, les garde-fous D1 et les annulations atomiques associées. Les tests D1 SOS couvrent désormais le retrait pendant une alerte active et l'absence de nouveaux rappels. La migration distante ne doit être déclarée appliquée qu'après exécution de la suite locale/CI, application sur `sac-db`, puis vérification de `d1_migrations`, des colonnes/triggers et de `PRAGMA foreign_key_check`.
+
+## 15. Historique des relations et nouvelle invitation après rupture
+
+Le schéma D1 est ajusté pour qu'une relation ne soit plus identifiée uniquement par la paire propriétaire/proche. Chaque invitation acceptée crée une ligne d'historique distincte, identifiée par son invitation. Un index unique partiel garantit qu'une seule relation active existe pour une même paire à un instant donné.
+
+Ainsi, après `owner_revoked` ou `contact_withdrew`, une nouvelle relation n'est possible qu'au moyen d'une nouvelle invitation et d'une nouvelle acceptation explicite. Les anciennes relations et leurs causes de rupture restent conservées ; aucune relation terminée n'est réactivée.
