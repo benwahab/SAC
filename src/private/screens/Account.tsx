@@ -1,4 +1,4 @@
-import { Camera, KeyRound, Mail, Phone, Save, ShieldCheck, Trash2 } from "lucide-react";
+import { Camera, Crown, KeyRound, Mail, Phone, Save, ShieldCheck, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { OwnProfile, PrivacySettings, ScreenProps } from "../types";
 import { MAX_PROFILE_PHOTO_BYTES } from "../../domain/account-profile";
