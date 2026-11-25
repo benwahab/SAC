@@ -211,3 +211,7 @@ Test d'intégration étendu : `npm run test:sos-d1` (retrait pendant un SOS acti
 ### Historique relationnel et réinvitation
 
 La migration reconstruit également `trusted_contacts` : la clé primaire devient l'identifiant de l'invitation, chaque consentement accepté dispose de sa propre ligne historique et un index unique partiel limite chaque paire propriétaire/proche à une seule relation active. Une relation révoquée n'est jamais réactivée ; une nouvelle invitation acceptée peut créer une nouvelle ligne, sans écraser l'historique antérieur.
+
+### Cloisonnement des alertes historiques
+
+Les contrôles d'accès utilisent la relation la plus récente du couple propriétaire/proche et exigent qu'elle ait été créée au plus tard au déclenchement de l'alerte. Une nouvelle acceptation ne réouvre donc jamais un SOS antérieur. Un ancien lien `contact_withdrew` ne peut pas être contourné par un ancien lien `owner_revoked`.
