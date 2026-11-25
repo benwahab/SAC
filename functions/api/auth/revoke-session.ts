@@ -57,6 +57,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
     if (!result.success) return json({ error: "session_revoke_unavailable" }, 503);
     if (result.meta.changes !== 1) return json({ error: "session_not_found_or_inactive" }, 404);
+
+    // La session fermée disparaît immédiatement de la base, sauf si elle
+    // est référencée par la trace d'enrôlement immuable.
+    const cleanup = await env.DB.prepare(
+      `DELETE FROM device_sessions
+       WHERE id = ?
+         AND account_id = ?
+         AND status = 'revoked'
+         AND NOT EXISTS (
+           SELECT 1 FROM device_enrollment_events e
+           WHERE e.session_id = device_sessions.id
+         )`,
+    ).bind(sessionId, session.value.accountId).run();
+    if (!cleanup.success) return json({ error: "session_revoke_unavailable" }, 503);
     return json({ revoked: true, sessionId });
   } catch {
     return json({ error: "session_revoke_unavailable" }, 503);
