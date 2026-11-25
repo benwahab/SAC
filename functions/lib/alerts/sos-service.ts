@@ -601,6 +601,10 @@ export async function getSosResponsibilityForParticipant(
        WHERE a.id = ?
          AND (a.author_account_id = ? OR EXISTS (
            SELECT 1 FROM alert_recipients r
+           JOIN trusted_contacts t
+             ON t.owner_account_id = a.author_account_id
+            AND t.contact_account_id = r.recipient_account_id
+            AND t.status = 'active'
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          ))
        LIMIT 1`,
