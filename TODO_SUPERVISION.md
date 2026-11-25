@@ -16,7 +16,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [ ] Créer et connecter le projet Cloudflare Pages au dépôt GitHub, branche main, après validation du build.
 - [ ] Configurer le binding D1 DB dans Pages et vérifier /api/health en Preview.
 - [ ] Activer R2 depuis le tableau de bord Cloudflare puis créer le bucket privé SAC.
-- [ ] Finaliser les choix OTP restants, fournisseur e-mail, push, SMS et paiement.
+- [ ] Finaliser les choix OTP restants, push, SMS et paiement. Le fournisseur e-mail Brevo est déjà configuré et fonctionne ; ne pas rouvrir ce choix.
 - [x] Valider le mode de connexion SAC : adresse e-mail + mot de passe (option A) ; OTP e-mail pour vérification initiale, opérations sensibles et réinitialisation, sans OTP systématique à chaque connexion.
 - [x] Documenter les recommandations techniques comptes, OTP et sessions dans `docs/ARBITRAGES_TECHNIQUES_COMPTES_OTP_SESSIONS.md` ; les durées de session (30 jours d'inactivité / 90 jours absolus) sont désormais validées ; le fournisseur e-mail et les protocoles cryptographiques restent à valider.
 - [x] Valider et documenter les cinq états du cycle de vie du compte (en attente de vérification, actif, suspendu, suppression en attente, supprimé).
@@ -1081,3 +1081,20 @@ Le présent bloc actualise les sections de supervision antérieures lorsque cell
 - [x] Ajouter les tests de clôture avec/sans responsable, de mismatch d'alerte, de chronologie et d'état terminal incohérent.
 - [ ] Vérifier le workflow CI complet sur le commit final avant de considérer cette tranche validée.
 - [ ] À l'implémentation SOS, persister clôture, historique de responsabilité, événement d'audit et arrêt des rappels dans la même transaction D1.
+
+
+## Comptes, appareils et sessions — 25 novembre 2026
+
+- [x] Vérifier l'application distante des migrations 0024 (consommation atomique des défis racine) et 0025 (annulation SMS après accusé) dans `d1_migrations`.
+- [x] Confirmer les endpoints existants de liste des sessions, révocation individuelle et déconnexion.
+- [x] Ajouter aux sessions actives les métadonnées non secrètes de l'appareil associé : date d'enregistrement et présence d'une credential racine.
+- [x] Afficher ces métadonnées dans Réglages en français, anglais et arabe, sans exposer de jeton, hash, IP ou GPS.
+- [x] Ajouter un test de l'endpoint de liste des sessions et l'inscrire dans le workflow CI.
+- [x] Documenter les limites : fermer une session n'est pas révoquer l'appareil ; une présence de credential racine n'est pas une preuve cryptographique récente.
+- [ ] Terminer et vérifier le workflow CI et le déploiement Pages du commit final de cette tranche.
+- [ ] Arbitrer puis spécifier la révocation complète d'un appareil secondaire, y compris les effets atomiques sur sessions et push, avant de créer la route.
+- [ ] Arbitrer la réinitialisation renforcée du mot de passe, le changement d'e-mail compromis et les notifications de sécurité avant toute implémentation.
+- [ ] Maintenir séparées récupération de l'accès au compte et récupération de la racine cryptographique ; aucune récupération par OTP seul.
+- [ ] Maintenir les parcours racine non homologués et le GPS précis désactivés tant que les revues et preuves requises ne sont pas terminées.
+
+Référence : `docs/AVANCEMENT_COMPTES_APPAREILS_SESSIONS_2026-11-25.md`.
