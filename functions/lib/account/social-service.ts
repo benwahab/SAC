@@ -85,9 +85,17 @@ function validId(value: unknown): value is string {
 
 async function activeCloseContactCount(db: SocialDatabase, accountId: string): Promise<number> {
   const row = await db.prepare(
-    `SELECT COUNT(*) AS count FROM close_relations
-     WHERE status = 'active' AND (account_low_id = ? OR account_high_id = ?)`,
-  ).bind(accountId, accountId).first<{ count: number }>();
+    `SELECT COUNT(*) AS count FROM (
+       SELECT account_low_id AS contact_id FROM close_relations
+       WHERE status = 'active' AND account_high_id = ?
+       UNION
+       SELECT account_high_id AS contact_id FROM close_relations
+       WHERE status = 'active' AND account_low_id = ?
+       UNION
+       SELECT contact_account_id AS contact_id FROM trusted_contacts
+       WHERE status = 'active' AND owner_account_id = ?
+     )`,
+  ).bind(accountId, accountId, accountId).first<{ count: number }>();
   return Number(row?.count ?? 0);
 }
 
@@ -420,8 +428,16 @@ export async function respondProximityInvitation(
         `UPDATE proximity_invitations SET status = 'accepted', decided_at = ?
          WHERE id = ? AND status = 'pending' AND recipient_account_id = ? AND expires_at > ?
            AND (
-             SELECT COUNT(*) FROM close_relations r
-             WHERE r.status = 'active' AND (r.account_low_id = ? OR r.account_high_id = ?)
+             SELECT COUNT(*) FROM (
+               SELECT r.account_low_id AS contact_id FROM close_relations r
+               WHERE r.status = 'active' AND r.account_high_id = ?
+               UNION
+               SELECT r.account_high_id AS contact_id FROM close_relations r
+               WHERE r.status = 'active' AND r.account_low_id = ?
+               UNION
+               SELECT t.contact_account_id AS contact_id FROM trusted_contacts t
+               WHERE t.status = 'active' AND t.owner_account_id = ?
+             )
            ) < (
              SELECT CASE WHEN EXISTS (
                SELECT 1 FROM account_subscriptions s
@@ -430,18 +446,26 @@ export async function respondProximityInvitation(
              ) THEN 10 ELSE 2 END
            )
            AND (
-             SELECT COUNT(*) FROM close_relations r
-             WHERE r.status = 'active' AND (r.account_low_id = ? OR r.account_high_id = ?)
+             SELECT COUNT(*) FROM (
+               SELECT r.account_low_id AS contact_id FROM close_relations r
+               WHERE r.status = 'active' AND r.account_high_id = ?
+               UNION
+               SELECT r.account_high_id AS contact_id FROM close_relations r
+               WHERE r.status = 'active' AND r.account_low_id = ?
+               UNION
+               SELECT t.contact_account_id AS contact_id FROM trusted_contacts t
+               WHERE t.status = 'active' AND t.owner_account_id = ?
+             )
            ) < (
              SELECT CASE WHEN EXISTS (
                SELECT 1 FROM account_subscriptions s
-               WHERE s.account_id = ? AND s.status = 'active'
+               WHERE s.account_id = ? AND s.status IN ('active', 'cancelled')
                  AND s.current_period_start <= ? AND s.current_period_end > ?
              ) THEN 10 ELSE 2 END
            )`,
       ).bind(now, invitationId, accountId, now,
-        inviterId, inviterId, inviterId, now, now,
-        recipientId, recipientId, recipientId, now, now),
+        inviterId, inviterId, inviterId, inviterId, now, now,
+        recipientId, recipientId, recipientId, recipientId, now, now),
       db.prepare(
         `INSERT INTO close_relations
          (id, account_low_id, account_high_id, invitation_id, status, created_at, removed_at, removed_by_account_id)
