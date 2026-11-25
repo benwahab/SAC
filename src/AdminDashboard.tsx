@@ -4,6 +4,7 @@ import BrandLogo from "./components/BrandLogo";
 import AdminPartners from "./components/AdminPartners";
 import AdminPilotage from "./components/AdminPilotage";
 import AdminResources from "./components/AdminResources";
+import AdminSettings from "./components/AdminSettings";
 
 type Permission = AdminPermission;
 type Account = { id: string; email: string };
@@ -509,19 +510,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
       {activeSection === "external" && <AdminPartners language={language} />}
       {activeSection === "resources" && <AdminResources language={language} />}
       {activeSection === "steering" && <AdminPilotage language={language} />}
-      {activeSection === "settings" && <section className="space-y-5">
-        <article className="rounded-3xl border border-emerald-900/10 bg-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-lg font-extrabold">{language === "fr" ? "Paramètres et configuration" : language === "ar" ? "الإعدادات والتهيئة" : "Settings and configuration"}</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{language === "fr" ? "La gouvernance des paramètres, langues, intégrations, fonctions et versions est documentée. Les changements de configuration ne sont pas encore activés depuis cette rubrique." : language === "ar" ? "تم توثيق حوكمة الإعدادات واللغات والتكاملات والميزات والإصدارات. لم يتم تفعيل تغييرات الإعدادات من هذا القسم بعد." : "Governance for settings, languages, integrations, features and releases is documented. Configuration changes are not yet enabled from this section."}</p></div><span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-extrabold text-amber-800">{language === "fr" ? "Conception" : language === "ar" ? "قيد التصميم" : "Design"}</span></div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[
-            language === "fr" ? "Organisation et langues" : language === "ar" ? "المؤسسة واللغات" : "Organization and languages",
-            language === "fr" ? "Notifications et intégrations" : language === "ar" ? "الإشعارات والتكاملات" : "Notifications and integrations",
-            language === "fr" ? "Sécurité et fonctions" : language === "ar" ? "الأمان والميزات" : "Security and features",
-            language === "fr" ? "Versions et maintenance" : language === "ar" ? "الإصدارات والصيانة" : "Releases and maintenance",
-          ].map(item => <div key={item} className="rounded-xl bg-emerald-50/70 p-4 text-sm font-bold text-emerald-950">{item}</div>)}</div>
-          <p className="mt-5 rounded-xl border border-emerald-900/10 bg-slate-50 p-4 text-xs leading-6 text-slate-600">{language === "fr" ? "Les secrets restent dans les paramètres sécurisés Cloudflare et ne seront jamais relus dans l’interface. L’activation d’une fonction exige les migrations, secrets, tests et autorisations nécessaires." : language === "ar" ? "تبقى الأسرار في إعدادات Cloudflare الآمنة ولن يتم عرضها في الواجهة. يتطلب تفعيل أي ميزة الترحيلات والأسرار والاختبارات والتصاريح اللازمة." : "Secrets remain in secure Cloudflare settings and are never read back into the UI. Feature activation requires the necessary migrations, secrets, tests and approvals."}</p>
-          <a href="https://github.com/benwahab/SAC/blob/main/docs/CONCEPTION_PARAMETRES_CONFIGURATION_INTEGRATIONS_2026-11-24.md" target="_blank" rel="noreferrer" className="mt-5 inline-flex text-sm font-bold text-emerald-800 underline underline-offset-4">{language === "fr" ? "Consulter la conception des paramètres" : language === "ar" ? "عرض تصميم الإعدادات" : "Review settings design"}</a>
-        </article>
-      </section>}
+      {activeSection === "settings" && <AdminSettings language={language} />}
       {activeSection === "security" && <section className="mt-8 rounded-3xl border border-white/90 bg-white/75 p-6 shadow-glass">
         <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-extrabold">{t.audit}</h2><a href="/api/admin/audit/export" className="inline-flex min-h-10 items-center rounded-xl border border-sac-primary-strong/20 bg-white px-4 text-xs font-extrabold text-sac-ink hover:bg-sac-primary/10">{language === "fr" ? "Exporter le journal CSV" : language === "en" ? "Export audit CSV" : "تصدير سجل التدقيق CSV"}</a></div>
         {auditEvents.length === 0 ? <p className="mt-4 text-sm text-sac-muted">{t.emptyAudit}</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[680px] text-left text-sm">
