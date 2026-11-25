@@ -5,6 +5,7 @@ interface Env { DB:D1Database; }
 const H={"Cache-Control":"no-store","Content-Type":"application/json; charset=utf-8","X-Content-Type-Options":"nosniff","Referrer-Policy":"no-referrer","X-Frame-Options":"DENY"};
 const json=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:H});
 const str=(v:unknown,n:number)=>typeof v==="string"?v.trim().slice(0,n):"";
+const validDate=(v:string)=>!v||(/^\\d{4}-\\d{2}-\\d{2}$/.test(v)&&!Number.isNaN(Date.parse(v+"T00:00:00Z")));
 const staffStatuses=["active","leave","suspended","departed"];
 const assetConditions=["new","good","fair","needs_repair","out_of_service"];
 const assetStatuses=["available","assigned","maintenance","retired"];
@@ -31,18 +32,18 @@ export const onRequestPost:PagesFunction<Env>=async({request,env})=>{
  const event=(type:string,id:string,kind:string,summary:string)=>env.DB.prepare("INSERT INTO hr_logistics_events (id,entity_type,entity_id,event_type,summary,actor_account_id,occurred_at) VALUES (?,?,?,?,?,?,?)").bind(crypto.randomUUID(),type,id,kind,summary,actor,now);
  try{
  if(action==="create_staff"){
- const name=str(v.fullName,160),status=str(v.employmentStatus,20)||"active";if(!name||!staffStatuses.includes(status))return json({error:"invalid_staff"},400);
+ const name=str(v.fullName,160),status=str(v.employmentStatus,20)||"active",startDate=str(v.startDate,10);if(!name||!staffStatuses.includes(status)||!validDate(startDate))return json({error:"invalid_staff"},400);
  const id=crypto.randomUUID(),ref=reference("SAC-PER");
  const results=await env.DB.batch([
- env.DB.prepare("INSERT INTO hr_staff (id,staff_reference,account_id,full_name,job_title,department,work_email,work_phone,work_location,employment_status,start_date,notes,created_by,updated_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(id,ref,str(v.accountId,80)||null,name,str(v.jobTitle,120),str(v.department,120),str(v.workEmail,180),str(v.workPhone,60),str(v.workLocation,160),status,str(v.startDate,10)||null,str(v.notes,3000),actor,actor,now,now),
+ env.DB.prepare("INSERT INTO hr_staff (id,staff_reference,account_id,full_name,job_title,department,work_email,work_phone,work_location,employment_status,start_date,notes,created_by,updated_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(id,ref,str(v.accountId,80)||null,name,str(v.jobTitle,120),str(v.department,120),str(v.workEmail,180),str(v.workPhone,60),str(v.workLocation,160),status,startDate||null,str(v.notes,3000),actor,actor,now,now),
  event("staff",id,"created","Création de la fiche du personnel"),audit("hr.staff.created","resources.staff.create")
  ]);return results.every(x=>x.success)?json({created:true,id,reference:ref},201):json({error:"staff_save_failed"},503)
  }
  if(action==="create_asset"){
- const name=str(v.assetName,160),category=str(v.assetCategory,60),condition=str(v.assetCondition,30)||"good",location=str(v.currentLocation,160);if(!name||!category||!assetConditions.includes(condition))return json({error:"invalid_asset"},400);
+ const name=str(v.assetName,160),category=str(v.assetCategory,60),condition=str(v.assetCondition,30)||"good",location=str(v.currentLocation,160),acquiredOn=str(v.acquiredOn,10);if(!name||!category||!assetConditions.includes(condition)||!validDate(acquiredOn))return json({error:"invalid_asset"},400);
  const id=crypto.randomUUID(),ref=reference("SAC-INV");
  const results=await env.DB.batch([
- env.DB.prepare("INSERT INTO logistics_assets (id,inventory_reference,asset_name,asset_category,serial_number,asset_condition,asset_status,current_location,acquired_on,notes,created_by,updated_by,created_at,updated_at) VALUES (?,?,?,?,?,?,'available',?,?,?,?,?,?,?)").bind(id,ref,name,category,str(v.serialNumber,120),condition,location,str(v.acquiredOn,10)||null,str(v.notes,3000),actor,actor,now,now),
+ env.DB.prepare("INSERT INTO logistics_assets (id,inventory_reference,asset_name,asset_category,serial_number,asset_condition,asset_status,current_location,acquired_on,notes,created_by,updated_by,created_at,updated_at) VALUES (?,?,?,?,?,?,'available',?,?,?,?,?,?,?)").bind(id,ref,name,category,str(v.serialNumber,120),condition,location,acquiredOn||null,str(v.notes,3000),actor,actor,now,now),
  event("asset",id,"created","Enregistrement d'un équipement dans l'inventaire"),audit("logistics.asset.created","resources.assets.create")
  ]);return results.every(x=>x.success)?json({created:true,id,reference:ref},201):json({error:"asset_save_failed"},503)
  }
