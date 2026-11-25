@@ -188,7 +188,7 @@ Test de schéma : `python3 tests/d1_root_device_enrollment_schema.test.py`. Vér
 
 ## 0025 — accusé de réception avant escalade SMS SOS
 
-`0025_sos_sms_acknowledgement_gate.sql` renforce le garde D1 de l'escalade : une alerte ne peut être mise en file SMS que si aucun destinataire n'a accusé réception et qu'aucune responsabilité principale n'a été prise. Si l'un de ces événements existe, l'évaluation est enregistrée comme `suppressed` et aucun destinataire n'est ajouté à l'outbox SMS.
+`0025_sos_sms_acknowledgement_gate.sql` renforce le garde D1 de l'escalade : une alerte ne peut être mise en file SMS que si aucun destinataire n'a accusé réception et qu'aucune responsabilité principale n'a été prise. Si l'un de ces événements existe, l'évaluation est enregistrée comme `suppressed` et aucun destinataire n'est ajouté à l'outbox SMS. Un trigger D1 annule aussi toute tâche SMS encore en attente si un accusé arrive après la mise en file mais avant l'envoi.
 
 Le service `scheduleDueSosSmsEscalations` applique la même règle avant l'insertion. Les rappels Web Push conservent leur cadence de cinq minutes et leur seuil choisi. Cette migration ne livre aucun SMS ; l'envoi réel reste soumis au choix et à l'intégration d'un fournisseur.
 
