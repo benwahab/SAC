@@ -363,14 +363,15 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     owner, recipients: [contact], reminders: 1, now: acknowledgedBase,
   });
   assert.equal(acknowledgedAlert.status, 200);
-  const acknowledgedInitialPush = await post<Array<{ id: string; leaseToken: string; reminderNumber: number }>>("/claim", {
+  const acknowledgedInitialPush = await post<Array<{ id: string; alertId: string; leaseToken: string; reminderNumber: number }>>("/claim", {
     now: acknowledgedBase,
   });
-  assert.equal(acknowledgedInitialPush.data.length, 1);
-  assert.equal(acknowledgedInitialPush.data[0].reminderNumber, 0);
+  const acknowledgedInitial = acknowledgedInitialPush.data.find(item => item.alertId === acknowledgedAlert.data.alertId);
+  assert.ok(acknowledgedInitial);
+  assert.equal(acknowledgedInitial.reminderNumber, 0);
   const acknowledgedInitialSent = await post<{ updated: boolean }>("/complete", {
-    reminderId: acknowledgedInitialPush.data[0].id,
-    leaseToken: acknowledgedInitialPush.data[0].leaseToken,
+    reminderId: acknowledgedInitial.id,
+    leaseToken: acknowledgedInitial.leaseToken,
     outcome: "sent",
     now: acknowledgedBase + 1,
   });
@@ -383,14 +384,15 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   assert.equal(acknowledged.status, 200);
   assert.equal(acknowledged.data.recorded, true);
 
-  const acknowledgedReminder = await post<Array<{ id: string; leaseToken: string; reminderNumber: number }>>("/claim", {
+  const acknowledgedReminder = await post<Array<{ id: string; alertId: string; leaseToken: string; reminderNumber: number }>>("/claim", {
     now: acknowledgedBase + 300_000,
   });
-  assert.equal(acknowledgedReminder.data.length, 1);
-  assert.equal(acknowledgedReminder.data[0].reminderNumber, 1);
+  const acknowledgedReminderItem = acknowledgedReminder.data.find(item => item.alertId === acknowledgedAlert.data.alertId);
+  assert.ok(acknowledgedReminderItem);
+  assert.equal(acknowledgedReminderItem.reminderNumber, 1);
   const acknowledgedReminderSent = await post<{ updated: boolean }>("/complete", {
-    reminderId: acknowledgedReminder.data[0].id,
-    leaseToken: acknowledgedReminder.data[0].leaseToken,
+    reminderId: acknowledgedReminderItem.id,
+    leaseToken: acknowledgedReminderItem.leaseToken,
     outcome: "sent",
     now: acknowledgedBase + 300_001,
   });
@@ -415,20 +417,22 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     owner, recipients: [contact], reminders: 1, now: lateAcknowledgementBase,
   });
   assert.equal(lateAcknowledgementAlert.status, 200);
-  const lateInitial = await post<Array<{ id: string; leaseToken: string }>>("/claim", {
+  const lateInitial = await post<Array<{ id: string; alertId: string; leaseToken: string }>>("/claim", {
     now: lateAcknowledgementBase,
   });
-  assert.equal(lateInitial.data.length, 1);
+  const lateInitialItem = lateInitial.data.find(item => item.alertId === lateAcknowledgementAlert.data.alertId);
+  assert.ok(lateInitialItem);
   await post("/complete", {
-    reminderId: lateInitial.data[0].id, leaseToken: lateInitial.data[0].leaseToken,
+    reminderId: lateInitialItem.id, leaseToken: lateInitialItem.leaseToken,
     outcome: "sent", now: lateAcknowledgementBase + 1,
   });
-  const lateReminder = await post<Array<{ id: string; leaseToken: string }>>("/claim", {
+  const lateReminder = await post<Array<{ id: string; alertId: string; leaseToken: string }>>("/claim", {
     now: lateAcknowledgementBase + 300_000,
   });
-  assert.equal(lateReminder.data.length, 1);
+  const lateReminderItem = lateReminder.data.find(item => item.alertId === lateAcknowledgementAlert.data.alertId);
+  assert.ok(lateReminderItem);
   await post("/complete", {
-    reminderId: lateReminder.data[0].id, leaseToken: lateReminder.data[0].leaseToken,
+    reminderId: lateReminderItem.id, leaseToken: lateReminderItem.leaseToken,
     outcome: "sent", now: lateAcknowledgementBase + 300_001,
   });
   const queuedSms = await post<{ evaluationsCreated: number; smsTasksCreated: number }>("/sms-escalate", {
