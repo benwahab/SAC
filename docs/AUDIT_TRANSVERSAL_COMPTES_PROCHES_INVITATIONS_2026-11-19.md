@@ -269,3 +269,17 @@ Le choix produit est précis : le départ volontaire coupe tout accès du proche
 La révocation initiée par le propriétaire reste distincte : les droits déjà ouverts sur un SOS actif conservent leur comportement antérieur, sauf si un retrait volontaire ultérieur du même proche prévaut sur toutes les relations antérieures.
 
 La migration `0026_trusted_contact_withdrawal_access_revocation.sql` a été appliquée à la D1 de production le 25 novembre 2026 à 13:15:49 UTC, après validation complète du commit applicatif `f5d958d4a1250534f2955aeabd01be65c8b1297b` (CI `validate` : succès ; déploiement Cloudflare Pages : succès). Le registre `d1_migrations` confirme 0026 comme dernière migration. La structure `trusted_contacts` expose désormais `relationship_sequence` comme séquence historique monotone ; les garde-fous d'insertion, de révocation, de création de destinataires, d'événements, de rappels, de SMS et la coupure des accès SOS sont présents sur la base de production. Le test D1 SOS et le test d'intégration des invitations passent sur D1 local isolée. Aucun compte ou SOS de production n'a été créé pour simuler ces scénarios.
+
+
+## 14. Décision finale et correction symétrique de la révocation — 2026-11-25
+
+La décision produit est désormais explicite : toute rupture d'une relation active coupe immédiatement et totalement les accès réciproques dépendant de cette relation, que l'initiateur soit le propriétaire (`owner_revoked`) ou le proche (`contact_withdrew`). Le SOS de l'auteur continue ; les autres proches autorisés ne sont pas affectés. L'historique de la relation et son motif restent conservés. Une nouvelle invitation acceptée ne rouvre aucun accès aux SOS antérieurs.
+
+La correction applicative a été engagée sur `main` :
+- les lectures, réponses et services SOS ne reconnaissent plus une relation `owner_revoked` comme une autorisation active ;
+- l'émission de tickets GPS et la validation du participant par le relais GPS exigent une relation active ;
+- la migration `0027_symmetric_trusted_contact_access_revocation.sql` remplace les garde-fous D1 des événements, rappels et tâches SMS ;
+- le déclencheur D1 de révocation s'applique désormais aux deux motifs, annule les rappels et SMS en attente/en cours, supprime les tickets GPS et termine la responsabilité du proche retiré ; il ne ferme pas l'alerte de l'auteur ;
+- le transfert de responsabilité ne peut sélectionner qu'un volontaire dont la relation demeure active.
+
+**État de validation au moment de cette mise à jour :** les commits applicatifs et la migration sont sur `main`, mais la CI du dernier commit est encore en cours. La migration 0027 n'a pas été appliquée à la D1 de production et aucun déploiement réussi de cette tranche n'est encore confirmé. Ne pas considérer la tranche comme terminée avant CI verte, application distante de 0027, vérification du registre D1 et des déclencheurs, puis déploiement Pages confirmé.
