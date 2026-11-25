@@ -1,12 +1,14 @@
 import { Camera, Crown, KeyRound, Mail, Phone, Save, ShieldCheck, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { OwnProfile, PrivacySettings, ScreenProps } from "../types";
+import { fillCopy } from "../../i18n/translations";
 import { MAX_PROFILE_PHOTO_BYTES } from "../../domain/account-profile";
 import { clearStoredPasskeyCredentialId } from "../../services/device/passkey-storage";
 import { accountErrorMessage } from "../errors";
 import { Card, Halo, Notice, ProfileAvatar, Sheet, fieldClass, ghostBtn, primaryBtn } from "../ui";
 
 type PrivacyKey = keyof PrivacySettings;
+type SubscriptionView = { plan: "free" | "premium"; maxTrustedContacts: 2 | 10; activeTrustedContacts: number; periodEnd: number | null; paymentProviderConfigured: boolean };
 
 export default function Account({ copy, go, notice, setNotice, ownProfile, setOwnProfile, refreshProfile, onLogout }: ScreenProps & {
   ownProfile: OwnProfile | null; setOwnProfile: (profile: OwnProfile | null) => void;
@@ -16,6 +18,7 @@ export default function Account({ copy, go, notice, setNotice, ownProfile, setOw
   const [firstName, setFirstName] = useState(ownProfile?.firstName ?? "");
   const [lastName, setLastName] = useState(ownProfile?.lastName ?? "");
   const [loading, setLoading] = useState(!ownProfile);
+  const [subscription, setSubscription] = useState<SubscriptionView | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [problem, setProblem] = useState("");
   const [email, setEmail] = useState("");
@@ -48,6 +51,18 @@ export default function Account({ copy, go, notice, setNotice, ownProfile, setOw
     }
     return () => { active = false; };
   }, [profile, refreshProfile]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch("/api/billing/subscription", { credentials: "same-origin", cache: "no-store", signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("subscription_unavailable");
+        const payload = await response.json() as SubscriptionView;
+        if (payload && (payload.plan === "free" || payload.plan === "premium")) setSubscription(payload);
+      })
+      .catch(() => { if (!controller.signal.aborted) setSubscription(null); });
+    return () => controller.abort();
+  }, []);
 
   function updateProfile(next: OwnProfile) {
     setProfile(next); setOwnProfile(next);
@@ -212,7 +227,8 @@ export default function Account({ copy, go, notice, setNotice, ownProfile, setOw
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs font-black uppercase tracking-[.14em] text-sac-primary-strong">{copy.homeOffersTitle}</p>
-              <h2 className="mt-1 text-xl font-black text-sac-ink">{copy.homeOfferFreeTitle} · {copy.homeOfferFreePrice}</h2>
+              <h2 className="mt-1 text-xl font-black text-sac-ink">{subscription ? (subscription.plan === "premium" ? copy.homeOfferPremiumTitle + " · " + copy.homeOfferPremiumPrice : copy.homeOfferFreeTitle + " · " + copy.homeOfferFreePrice) : copy.loading}</h2>
+              <p className="mt-1 text-xs font-semibold text-sac-muted">{subscription ? fillCopy(copy.dashCircleCount, { n: subscription.activeTrustedContacts }) + " / " + subscription.maxTrustedContacts : copy.homePremiumHowIntro}</p>
               <p className="mt-1 text-sm leading-6 text-sac-muted">{copy.homeOfferFreeText}</p>
             </div>
             <ShieldCheck className="shrink-0 text-sac-confirm" size={22} />
