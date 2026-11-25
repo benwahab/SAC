@@ -552,7 +552,7 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   const ownerRevocation = await post<{ revoked: boolean }>("/revoke", {
     owner, contact: contact2, now: voluntaryBase + 10,
   });
-  assert.equal(ownerRevocation.status, 200);
+  assert.equal(ownerRevocation.status, 200, JSON.stringify(ownerRevocation.data));
   assert.equal(ownerRevocation.data.revoked, true);
   const ownerRevokedRead = await post<{ error: string }>("/read", {
     actor: contact2, alertId: handoverAlert.data.alertId,
