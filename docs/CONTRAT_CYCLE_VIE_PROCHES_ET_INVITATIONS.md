@@ -232,3 +232,7 @@ La migration `0026_trusted_contact_withdrawal_access_revocation.sql` ajoute la c
 Le schéma D1 est ajusté pour qu'une relation ne soit plus identifiée uniquement par la paire propriétaire/proche. Chaque invitation acceptée crée une ligne d'historique distincte, identifiée par son invitation. Un index unique partiel garantit qu'une seule relation active existe pour une même paire à un instant donné.
 
 Ainsi, après `owner_revoked` ou `contact_withdrew`, une nouvelle relation n'est possible qu'au moyen d'une nouvelle invitation et d'une nouvelle acceptation explicite. Les anciennes relations et leurs causes de rupture restent conservées ; aucune relation terminée n'est réactivée.
+
+## 16. Isolation des SOS historiques après une nouvelle invitation
+
+L'autorisation d'un destinataire est liée à la dernière relation acceptée et à sa date de création par rapport au déclenchement du SOS. Une relation acceptée après un SOS ne peut pas autoriser l'accès à ce SOS antérieur. Si la dernière relation se termine par `contact_withdrew`, aucune ancienne relation du même couple ne peut servir de droit de secours. Une nouvelle acceptation ne donne accès qu'aux SOS déclenchés à partir de cette nouvelle relation.
