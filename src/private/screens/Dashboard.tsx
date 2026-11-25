@@ -247,6 +247,7 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
             </div>
             <p className="mt-2 text-xs font-bold leading-5 text-sac-alert">{copy.homeOfferSosFree}</p>
             <p className="mt-1 text-[11px] leading-5 text-sac-muted">{copy.homeOfferPremiumNote}</p>
+            <button type="button" onClick={() => go({ name: "account" })} className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-sac-primary px-4 text-sm font-extrabold text-white transition hover:bg-sac-primary-strong"><Crown size={16} />{copy.homeOfferPremiumCta}</button>
           </div>
 
           <div className="mt-4 flex flex-col gap-2">
