@@ -256,3 +256,48 @@ BEGIN
   ) THEN RAISE(ABORT, 'alert_sms_task_not_eligible') END;
 END;
 
+
+
+-- La responsabilité d'un proche peut se terminer à la suite d'un retrait
+-- volontaire OU d'une révocation par le propriétaire. L'historique de la
+-- relation révoquée fournit alors la preuve serveur, sans fabriquer un
+-- événement "withdrew" au nom du proche lorsque le propriétaire l'a retiré.
+DROP TRIGGER alert_responsibility_immutable_fields;
+CREATE TRIGGER alert_responsibility_immutable_fields
+BEFORE UPDATE ON alert_responsibility_periods
+BEGIN
+  SELECT CASE WHEN
+    NEW.id <> OLD.id OR NEW.alert_id <> OLD.alert_id
+    OR NEW.contact_account_id <> OLD.contact_account_id
+    OR NEW.started_at <> OLD.started_at OR NEW.sequence <> OLD.sequence
+  THEN RAISE(ABORT, 'alert_responsibility_immutable_fields') END;
+  SELECT CASE WHEN OLD.ended_at IS NOT NULL
+    THEN RAISE(ABORT, 'alert_responsibility_already_ended') END;
+  SELECT CASE WHEN NEW.ended_at IS NULL OR NEW.end_reason IS NULL
+    THEN RAISE(ABORT, 'alert_responsibility_invalid_end') END;
+  SELECT CASE WHEN NEW.end_reason = 'alert_closed' AND NOT EXISTS (
+    SELECT 1 FROM alerts a
+    WHERE a.id = OLD.alert_id AND a.status = 'closed_by_author'
+      AND a.closed_at = NEW.ended_at
+  ) THEN RAISE(ABORT, 'alert_responsibility_close_mismatch') END;
+  SELECT CASE WHEN NEW.end_reason = 'withdrawn' AND NOT (
+    EXISTS (
+      SELECT 1 FROM alert_events e
+      WHERE e.alert_id = OLD.alert_id
+        AND e.actor_account_id = OLD.contact_account_id
+        AND e.event_type = 'withdrew'
+        AND e.occurred_at = NEW.ended_at
+    )
+    OR EXISTS (
+      SELECT 1
+      FROM alerts a
+      JOIN trusted_contacts t
+        ON t.owner_account_id = a.author_account_id
+       AND t.contact_account_id = OLD.contact_account_id
+       AND t.status = 'revoked'
+       AND t.revoked_at = NEW.ended_at
+       AND t.revocation_reason IN ('owner_revoked', 'contact_withdrew')
+      WHERE a.id = OLD.alert_id
+    )
+  ) THEN RAISE(ABORT, 'alert_responsibility_withdrawal_missing') END;
+END;
