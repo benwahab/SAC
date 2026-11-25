@@ -70,7 +70,7 @@ BEGIN
             JOIN trusted_contacts t
               ON t.owner_account_id = a.author_account_id
              AND t.contact_account_id = r.recipient_account_id
-             AND t.status = 'active'
+             AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
             WHERE r.alert_id = a.id
               AND r.recipient_account_id = NEW.actor_account_id
           ))
@@ -103,6 +103,7 @@ END;
 CREATE TRIGGER trusted_contacts_revoke_access
 AFTER UPDATE OF status ON trusted_contacts
 WHEN OLD.status = 'active' AND NEW.status = 'revoked'
+  AND NEW.revocation_reason = 'contact_withdrew'
 BEGIN
   UPDATE alert_reminder_outbox
   SET status = 'cancelled',
@@ -218,7 +219,7 @@ BEGIN
     JOIN trusted_contacts t
       ON t.owner_account_id = a.author_account_id
      AND t.contact_account_id = NEW.recipient_account_id
-     AND t.status = 'active'
+     AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
     WHERE a.id = NEW.alert_id
       AND a.status = 'active'
       AND (
@@ -242,7 +243,7 @@ BEGIN
     JOIN trusted_contacts t
       ON t.owner_account_id = a.author_account_id
      AND t.contact_account_id = r.recipient_account_id
-     AND t.status = 'active'
+     AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
     WHERE e.alert_id = NEW.alert_id
       AND e.status = 'queued'
       AND a.status = 'active'
