@@ -1,4 +1,4 @@
-import { withdrawTrustedContact } from "../../functions/lib/trusted-contacts/service.ts";
+import { acceptContactInvitation, createContactInvitation, withdrawTrustedContact } from "../../functions/lib/trusted-contacts/service.ts";
 import {
   claimDueSosReminders,
   closeSosAlertByAuthor,
@@ -73,6 +73,31 @@ export default {
         now,
       });
       return result.ok ? json({ withdrawn: true }) : json({ error: result.error }, 409);
+    }
+    if (url.pathname === "/reinvite") {
+      const ownerId = String(input.owner);
+      const contactId = String(input.contact);
+      const identity = await env.DB.prepare(
+        "SELECT normalized_value FROM account_identities WHERE account_id=? AND channel='email' AND is_primary=1 AND verified_at IS NOT NULL",
+      ).bind(contactId).first<{ normalized_value: string }>();
+      if (!identity) return json({ error: "identity_missing" }, 409);
+      const invitation = await createContactInvitation(env.DB, crypto, {
+        authenticatedAccountId: ownerId,
+        destinationEmail: identity.normalized_value,
+        permissionVersion: "v1",
+        expiresAt: now + 86_400_000,
+        now,
+      });
+      if (!invitation.ok) return json({ error: invitation.error }, 409);
+      const accepted = await acceptContactInvitation(env.DB, crypto, {
+        authenticatedAccountId: contactId,
+        invitationId: invitation.value.invitationId,
+        token: invitation.value.token,
+        permissionVersion: "v1",
+        maxActiveContacts: 2,
+        now: now + 1,
+      });
+      return accepted.ok ? json({ accepted: true }) : json({ error: accepted.error }, 409);
     }
     if (url.pathname === "/create") {
       const result = await createSosAlert(env.DB, crypto, {
