@@ -222,10 +222,24 @@ export function createSosWebPushSender(
         }
         // Revalider l'état juste avant chaque appel externe : un rappel déjà
         // réservé ne doit pas partir si l'auteur a clôturé le SOS entre-temps.
-        const activeAlert = await db.prepare(
-          "SELECT 1 AS active FROM alerts WHERE id = ? AND status = 'active' LIMIT 1",
-        ).bind(envelope.alertId).first<{ active: number }>();
-        if (!activeAlert) return false;
+        const activeAuthorization = await db.prepare(
+          `SELECT 1 AS active
+           FROM alerts a
+           WHERE a.id = ? AND a.status = 'active'
+             AND EXISTS (
+               SELECT 1
+               FROM alert_recipients r
+               JOIN trusted_contacts t
+                 ON t.owner_account_id = a.author_account_id
+                AND t.contact_account_id = r.recipient_account_id
+                AND t.status = 'active'
+                AND t.created_at <= a.created_at
+               WHERE r.alert_id = a.id
+                 AND r.recipient_account_id = ?
+             )
+           LIMIT 1`,
+        ).bind(envelope.alertId, envelope.recipientAccountId).first<{ active: number }>();
+        if (!activeAuthorization) return false;
 
         const outcome = await sendWebPush(subscription, payload, env, { crypto: cryptoProvider, fetcher });
         if (outcome === "accepted") {
