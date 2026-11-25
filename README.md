@@ -13,6 +13,7 @@ SAC est une application de sécurité personnelle et familiale. Elle permet à u
 - [Annexe du modèle de données des services professionnels](docs/ANNEXE_MODELE_DONNEES_SERVICES_PROFESSIONNELS.md)
 - [Audit de l'état réel du code — 18 novembre 2026](docs/AUDIT_ETAT_REEL_CODE_2026-11-18.md)
 - [Arbitrages techniques comptes, OTP et sessions](docs/ARBITRAGES_TECHNIQUES_COMPTES_OTP_SESSIONS.md)
+- [Avancement comptes, appareils et sessions — 25 novembre 2026](docs/AVANCEMENT_COMPTES_APPAREILS_SESSIONS_2026-11-25.md) — endpoints existants, métadonnées d'appareils, limites de révocation et récupération.
 - [Architecture de référence](ARCHITECTURE.md)
 - [Suivi et supervision](TODO_SUPERVISION.md)
 - [Cahier des charges complet](docs/CAHIER_DES_CHARGES_SAC.md)
@@ -45,7 +46,7 @@ Base relationnelle cible : Cloudflare D1. Stockage privé : Cloudflare R2 si act
 
 **Phase : socle technique initial en cours.** Le premier socle React/Vite/TypeScript, l'interface mobile de démarrage, le manifeste PWA, un service worker minimal, les contrats d'adaptateurs Web et une route Pages Functions de vérification D1 sont versionnés. Des contrats TypeScript purs et des tests existent également pour certains cycles métier.
 
-Le SOS réel, l'authentification complète, les alertes métier, la livraison push réelle, les paiements et les migrations métier D1 ne sont pas déclarés opérationnels. Le socle des rappels personnels SAC Santé est livré avec persistance D1, écran personnel et notifications in-app ; le canal push est configuré via les secrets Pages et un endpoint interne protégé, la réception sur appareil réel restant à valider. Le GPS précis reste bloqué par l'exigence de destruction irréversible J+30. La console professionnelle et les services administratifs sont documentés comme conception, pas comme fonctionnalités livrées.
+Le socle d'authentification comprend désormais inscription, vérification e-mail, connexion par mot de passe, sessions serveur et révocation individuelle de session ; la gestion complète des appareils, la récupération de compte et les parcours cryptographiques non homologués restent bloqués. Le moteur SOS et ses notifications sont en cours de validation, sans déclaration de lancement opérationnel. Les paiements ne sont pas activés. Le socle des rappels personnels SAC Santé est livré avec persistance D1, écran personnel et notifications in-app ; le canal push est configuré via les secrets Pages et un endpoint interne protégé, la réception sur appareil réel restant à valider. Le GPS précis reste bloqué par l'exigence de destruction irréversible J+30. La console professionnelle et les services administratifs sont documentés comme conception, pas comme fonctionnalités livrées.
 
 Vérifier `TODO_SUPERVISION.md`, le code, les ressources Cloudflare et les résultats CI récents avant toute affirmation sur l'état d'une fonction.
 
