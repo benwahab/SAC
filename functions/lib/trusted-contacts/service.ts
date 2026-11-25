@@ -323,23 +323,24 @@ export async function withdrawTrustedContact(
   ) return fail("invalid_input");
 
   try {
-    const result = await db.prepare(
+    const updated = await db.prepare(
       `UPDATE trusted_contacts
        SET status = 'revoked', revoked_at = ?,
            revocation_reason = 'contact_withdrew', revoked_by_account_id = ?
        WHERE owner_account_id = ?
          AND contact_account_id = ?
          AND status = 'active'
-         AND created_at <= ?`,
+         AND created_at <= ?
+       RETURNING invitation_id`,
     ).bind(
       now,
       input.authenticatedContactAccountId,
       input.ownerAccountId,
       input.authenticatedContactAccountId,
       now,
-    ).run();
+    ).first<{ invitation_id: string }>();
 
-    if (!result.success || result.meta.changes !== 1) return fail("relationship_not_withdrawn");
+    if (!updated?.invitation_id) return fail("relationship_not_withdrawn");
     return { ok: true, value: { withdrawn: true } };
   } catch {
     return fail("storage_unavailable");
