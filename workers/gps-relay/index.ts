@@ -50,7 +50,7 @@ async function isActiveParticipant(
          JOIN trusted_contacts t
            ON t.owner_account_id = a.author_account_id
           AND t.contact_account_id = r.recipient_account_id
-          AND t.status = 'active'
+          AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
          WHERE r.alert_id = a.id AND r.recipient_account_id = ?
        )) LIMIT 1`,
   ).bind(deviceId, accountId, sessionId, accountId, Date.now(), alertId, accountId, accountId).first<{ allowed: number }>();
