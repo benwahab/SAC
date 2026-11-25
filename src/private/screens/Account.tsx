@@ -249,9 +249,11 @@ export default function Account({ copy, go, notice, setNotice, ownProfile, setOw
           </div>
           <p className="mt-3 rounded-xl bg-sac-confirm/10 p-3 text-xs font-semibold leading-5 text-sac-ink">{copy.homeOfferSosFree}</p>
           <p className="mt-2 text-xs leading-5 text-sac-muted">{copy.homePremiumHowIntro}</p>
-          <button type="button" onClick={() => setNotice(copy.homePremiumHowIntro)} className="mt-3 min-h-11 w-full rounded-xl border border-sac-primary/30 bg-white px-4 text-sm font-extrabold text-sac-primary-strong">
-            {copy.homeOfferPremiumCta}
-          </button>
+          {subscription?.plan !== "premium" && (
+            <button type="button" onClick={() => setNotice(copy.homePremiumHowIntro)} className="mt-3 min-h-11 w-full rounded-xl border border-sac-primary/30 bg-white px-4 text-sm font-extrabold text-sac-primary-strong">
+              {copy.homeOfferPremiumCta}
+            </button>
+          )}
         </Card>
         {notice && <Notice kind="ok">{notice}</Notice>}
         {problem && <Notice kind="error">{problem}</Notice>}
