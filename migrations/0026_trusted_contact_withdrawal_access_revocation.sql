@@ -342,8 +342,7 @@ BEGIN
           AND exited.contact_account_id = t.contact_account_id
           AND exited.revocation_reason = 'contact_withdrew'
           AND (
-            exited.created_at > t.created_at
-            OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+            exited.relationship_sequence > t.relationship_sequence
           )
       )
     WHERE a.id = NEW.alert_id
@@ -377,8 +376,7 @@ BEGIN
           AND exited.contact_account_id = t.contact_account_id
           AND exited.revocation_reason = 'contact_withdrew'
           AND (
-            exited.created_at > t.created_at
-            OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+            exited.relationship_sequence > t.relationship_sequence
           )
       )
     WHERE e.alert_id = NEW.alert_id
