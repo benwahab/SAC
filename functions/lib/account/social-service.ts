@@ -425,7 +425,7 @@ export async function respondProximityInvitation(
            ) < (
              SELECT CASE WHEN EXISTS (
                SELECT 1 FROM account_subscriptions s
-               WHERE s.account_id = ? AND s.status = 'active'
+               WHERE s.account_id = ? AND s.status IN ('active', 'cancelled')
                  AND s.current_period_start <= ? AND s.current_period_end > ?
              ) THEN 10 ELSE 2 END
            )
