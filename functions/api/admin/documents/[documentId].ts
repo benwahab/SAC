@@ -13,7 +13,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
   if (!admin.ok) return json({ error: admin.status === 401 ? "authentication_required" : "super_admin_required" }, admin.status);
   const id = typeof params.documentId === "string" ? params.documentId : "";
   try {
-    const document = await env.DB.prepare("SELECT id, public_reference, title, category, status, current_version, created_at, updated_at, archived_at FROM admin_documents WHERE id = ?").bind(id).first<Record<string, unknown>>();
+    const document = await env.DB.prepare("SELECT id, public_reference, title, category, status, current_version, created_at, updated_at, archived_at FROM admin_documents WHERE id = ?").bind(id).first<{ id: string; public_reference: string; title: string; category: string; status: string; current_version: number; created_at: number; updated_at: number; archived_at: number | null }>();
     if (!document) return json({ error: "document_not_found" }, 404);
     const version = await env.DB.prepare("SELECT v.version_number, v.content, v.created_at, COALESCE(i.normalized_value, 'Compte SAC') AS author_label FROM admin_document_versions v LEFT JOIN account_identities i ON i.account_id = v.author_account_id AND i.channel = 'email' AND i.is_primary = 1 AND i.verified_at IS NOT NULL WHERE v.document_id = ? AND v.version_number = ?").bind(id, document.current_version).first<Record<string, unknown>>();
     const history = await env.DB.prepare("SELECT version_number, created_at FROM admin_document_versions WHERE document_id = ? ORDER BY version_number DESC LIMIT 50").bind(id).all<Record<string, unknown>>();
