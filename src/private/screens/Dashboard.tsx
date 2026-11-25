@@ -58,7 +58,7 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
         <svg className="pointer-events-none absolute -end-20 -top-20 rtl:-scale-x-100" width="360" height="360" viewBox="0 0 360 360" aria-hidden="true">
           <g fill="none" stroke="#fff" strokeWidth="2" opacity=".18"><circle cx="180" cy="180" r="72" /><circle cx="180" cy="180" r="125" /><circle cx="180" cy="180" r="178" /></g>
         </svg>
-        <div className="relative flex items-start justify-between gap-3">
+        <div className="relative flex items-center justify-between gap-3">
           <span className="grid h-12 w-24 place-items-center rounded-2xl border border-white/80 bg-white/95 px-2 shadow-glass"><BrandLogo className="h-7 w-auto" /></span>
           <div className="flex items-center gap-2">
             {adminAccess?.canAccess && (
@@ -67,6 +67,9 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
               </a>
             )}
             <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[.16em] text-white/90">{copy.homeBadgePrivate}</span>
+            <button type="button" onClick={() => go({ name: "account" })} aria-label={copy.accountProfileSection} title={copy.accountProfileSection} className="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-white/20 p-0.5 shadow-glass transition hover:bg-white/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+              <ProfileAvatar photoUrl={ownProfile?.photoUrl} name={[ownProfile?.firstName, ownProfile?.lastName].filter(Boolean).join(" ") || "?"} size="md" />
+            </button>
           </div>
         </div>
 
@@ -159,15 +162,18 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
           </Card>
         </section>
 
-        <section className="flex flex-col gap-3">
-          <SectionTitle title={copy.homeQuickActionsTitle} />
-          <div className="grid grid-cols-2 gap-3">
+        <details className="group rounded-[22px] border border-sac-primary/20 bg-white p-4 shadow-card">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-extrabold text-sac-ink">
+            <span className="flex items-center gap-2"><LayoutDashboard size={18} className="text-sac-primary-strong" />{copy.homeQuickActionsTitle}</span>
+            <ChevronRight size={17} className="shrink-0 text-sac-muted transition-transform group-open:rotate-90 rtl:rotate-180" />
+          </summary>
+          <div className="mt-3 grid grid-cols-2 gap-3">
             <QuickAction icon={<CalendarClock size={21} />} label={copy.homeQuickReminders} onClick={() => go({ name: "reminders" })} />
             <QuickAction icon={<BellRing size={21} />} label={copy.contactsAlertContacts} onClick={() => go({ name: "alertContacts" })} />
             <QuickAction icon={<History size={21} />} label={copy.navHistory} onClick={() => go({ name: "history" })} />
             <QuickAction icon={<Settings size={21} />} label={copy.navSettings} onClick={() => go({ name: "settings" })} />
           </div>
-        </section>
+        </details>
 
         <section className="flex flex-col gap-3">
           <SectionTitle title={copy.dashRecent} />
