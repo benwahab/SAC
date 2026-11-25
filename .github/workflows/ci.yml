@@ -132,6 +132,8 @@ jobs:
         run: npm run test:session-tokens
       - name: Test strict host-only session cookie handling
         run: npm run test:session-cookies
+      - name: Test session listing, device metadata and individual revocation endpoint boundaries
+        run: npm run test:session-management
       - name: Test alert lifecycle domain contract
         run: npm run test:alerts
       - name: Test alert response and responsibility contract
