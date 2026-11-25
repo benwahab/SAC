@@ -92,9 +92,12 @@ export async function activatePremiumFromVerifiedPayment(
       return { ok: true, activated: true, duplicate: false };
     }
     const event = await db.prepare(
-      `SELECT processed_at FROM billing_provider_events
+      `SELECT processed_at, payload_digest FROM billing_provider_events
        WHERE provider = ? AND provider_event_id = ? LIMIT 1`,
-    ).bind(input.provider, input.providerEventId).first<{ processed_at: number | null }>();
+    ).bind(input.provider, input.providerEventId).first<{ processed_at: number | null; payload_digest: string }>();
+    if (event && event.payload_digest !== input.payloadDigest) {
+      return { ok: false, error: "invalid_payment" };
+    }
     if (event?.processed_at !== null && event?.processed_at !== undefined) {
       return { ok: true, activated: false, duplicate: true };
     }
