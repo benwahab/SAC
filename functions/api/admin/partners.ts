@@ -6,6 +6,7 @@ const H={"Cache-Control":"no-store","Content-Type":"application/json; charset=ut
 const json=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:H});
 const str=(v:unknown,n:number)=>typeof v==="string"?v.trim().slice(0,n):"";
 const statuses=["prospect","discussion","active","suspended","ended"];
+const types=["public_body","local_government","ngo","association","technical_partner","financial_partner","supplier","other"];
 export const onRequestGet:PagesFunction<Env>=async({request,env})=>{
  const admin=await requireSuperAdminSession(request,env.DB);if(!admin.ok)return json({error:admin.status===401?"authentication_required":"super_admin_required"},admin.status);
  const q=str(new URL(request.url).searchParams.get("q"),120);
@@ -16,7 +17,7 @@ export const onRequestPost:PagesFunction<Env>=async({request,env})=>{
  const admin=await requireSuperAdminSession(request,env.DB);if(!admin.ok)return json({error:admin.status===401?"authentication_required":"super_admin_required"},admin.status);
  const parsed=await readJsonRequestBody(request,30000);if(!parsed.ok||typeof parsed.value!=="object"||parsed.value===null||Array.isArray(parsed.value))return json({error:"invalid_request"},400);
  const v=parsed.value as Record<string,unknown>,name=str(v.officialName,180),type=str(v.organizationType,60),country=str(v.countryCode,2).toUpperCase(),status=str(v.relationshipStatus,20)||"prospect";
- if(!name||!type||!/^[A-Z]{2}$/.test(country)||!statuses.includes(status))return json({error:"invalid_partner"},400);
+ if(!name||!types.includes(type)||!/^[A-Z]{2}$/.test(country)||!statuses.includes(status))return json({error:"invalid_partner"},400);
  const now=Date.now(),id=crypto.randomUUID(),reference="SAC-PAR-"+new Date(now).toISOString().slice(0,10).replaceAll("-","")+"-"+crypto.randomUUID().slice(0,8).toUpperCase();
  try{const results=await env.DB.batch([
  env.DB.prepare("INSERT INTO partner_organizations (id,public_reference,official_name,organization_type,country_code,intervention_area,relationship_status,cooperation_domain,objectives,source,entered_at,created_by,updated_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?, ?,?,?,?)").bind(id,reference,name,type,country,str(v.interventionArea,240),status,str(v.cooperationDomain,180),str(v.objectives,4000),str(v.source,180),now,admin.value.accountId,admin.value.accountId,now,now),
