@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { adminTranslations, type AdminPermission, type Language } from "./i18n/translations";
 import BrandLogo from "./components/BrandLogo";
+import AdminDocuments from "./components/AdminDocuments";
 
 type Permission = AdminPermission;
 type Account = { id: string; email: string };
@@ -516,19 +517,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
           <a href="https://github.com/benwahab/SAC/blob/main/docs/CONCEPTION_RELATIONS_EXTERNES_PARTENAIRES_CONVENTIONS_2026-11-24.md" target="_blank" rel="noreferrer" className="mt-5 inline-flex text-sm font-bold text-emerald-800 underline underline-offset-4">{language === "fr" ? "Consulter la conception des relations externes" : language === "ar" ? "عرض تصميم العلاقات الخارجية" : "Review external relations design"}</a>
         </article>
       </section>}
-      {activeSection === "resources" && <section className="space-y-5">
-        <article className="rounded-3xl border border-emerald-900/10 bg-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-lg font-extrabold">{language === "fr" ? "Ressources" : language === "ar" ? "الموارد" : "Resources"}</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{language === "fr" ? "La conception couvre les ressources humaines, la logistique, les équipements, les locaux et le service documentaire commun. Les registres réels ne sont pas encore activés." : language === "ar" ? "يشمل التصميم الموارد البشرية واللوجستيات والمعدات والمرافق وخدمة الوثائق المشتركة. لم يتم تفعيل السجلات الفعلية بعد." : "The design covers HR, logistics, equipment, facilities and the shared document service. Live registers are not enabled yet."}</p></div><span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-extrabold text-amber-800">{language === "fr" ? "Conception" : language === "ar" ? "قيد التصميم" : "Design"}</span></div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[
-            language === "fr" ? "Ressources humaines" : language === "ar" ? "الموارد البشرية" : "Human resources",
-            language === "fr" ? "Stocks et logistique" : language === "ar" ? "المخزون واللوجستيات" : "Inventory and logistics",
-            language === "fr" ? "Équipements et maintenance" : language === "ar" ? "المعدات والصيانة" : "Equipment and maintenance",
-            language === "fr" ? "Documents et archives" : language === "ar" ? "الوثائق والأرشيف" : "Documents and archives",
-          ].map(item => <div key={item} className="rounded-xl bg-emerald-50/70 p-4 text-sm font-bold text-emerald-950">{item}</div>)}</div>
-          <p className="mt-5 rounded-xl border border-emerald-900/10 bg-slate-50 p-4 text-xs leading-6 text-slate-600">{language === "fr" ? "Tout document généré ou imprimé devra être archivé avec référence, date, auteur, version et statut. Les dossiers RH sensibles et les documents privés seront accessibles uniquement selon mission." : language === "ar" ? "يجب أرشفة كل مستند يتم إنشاؤه أو طباعته مع المرجع والتاريخ والمؤلف والإصدار والحالة. وستُقيد ملفات الموارد البشرية الحساسة والوثائق الخاصة حسب المهمة." : "Every generated or printed document must be archived with a reference, date, author, version and status. Sensitive HR files and private documents will be mission-scoped."}</p>
-          <a href="https://github.com/benwahab/SAC/blob/main/docs/CONCEPTION_RESSOURCES_RH_LOGISTIQUE_DOCUMENTS_2026-11-24.md" target="_blank" rel="noreferrer" className="mt-5 inline-flex text-sm font-bold text-emerald-800 underline underline-offset-4">{language === "fr" ? "Consulter la conception des ressources et documents" : language === "ar" ? "عرض تصميم الموارد والوثائق" : "Review resources and document design"}</a>
-        </article>
-      </section>}
+      {activeSection === "resources" && <AdminDocuments language={language} />}
       {activeSection === "steering" && <section className="space-y-5">
         <article className="rounded-3xl border border-emerald-900/10 bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-lg font-extrabold">{language === "fr" ? "Pilotage et rapports" : language === "ar" ? "الإدارة والتقارير" : "Management and reporting"}</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{language === "fr" ? "La conception couvre les objectifs, KPI, projets, risques, décisions et rapports de direction. Les indicateurs seront calculés depuis les modules sources sans ressaisie." : language === "ar" ? "يشمل التصميم الأهداف ومؤشرات الأداء والمشاريع والمخاطر والقرارات وتقارير الإدارة. سيتم حساب المؤشرات من وحدات المصدر دون إعادة إدخال البيانات." : "The design covers objectives, KPIs, projects, risks, decisions and executive reports. Metrics will be calculated from source modules without duplicate entry."}</p></div><span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-extrabold text-amber-800">{language === "fr" ? "Conception" : language === "ar" ? "قيد التصميم" : "Design"}</span></div>
