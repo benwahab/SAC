@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { getDeviceSession } from "../services/device/root-enrollment";
 import type { PrivateCopy } from "../i18n/translations";
-import type { AdminAccess, CloseContact, Contact, OwnProfile, ProximityInvitation, SosAlert } from "./types";
+import type { AdminAccess, CloseContact, Contact, OwnProfile, ProximityInvitation, SosAlert, TrustedByContact } from "./types";
 
 export function usePrivateData(copy: PrivateCopy, onLogout: () => void) {
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [trustedBy, setTrustedBy] = useState<TrustedByContact[]>([]);
   const [closeContacts, setCloseContacts] = useState<CloseContact[]>([]);
   const [invitations, setInvitations] = useState<ProximityInvitation[]>([]);
   const [ownProfile, setOwnProfile] = useState<OwnProfile | null>(null);
@@ -74,12 +75,13 @@ export function usePrivateData(copy: PrivateCopy, onLogout: () => void) {
         fetch("/api/account/profile", { credentials: "same-origin", cache: "no-store" }),
         refreshAdminAccess(),
       ]);
-      const payload = await response.json() as { contacts?: Contact[] };
+      const payload = await response.json() as { contacts?: Contact[]; trustedBy?: TrustedByContact[] };
       if (!response.ok || !Array.isArray(payload.contacts)) {
         if (response.status === 401) onLogout();
         throw new Error(copy.loadContactsError);
       }
       setContacts(payload.contacts);
+      setTrustedBy(Array.isArray(payload.trustedBy) ? payload.trustedBy : []);
       const profilePayload = await profileResponse.json() as { profile?: OwnProfile };
       if (profileResponse.ok && profilePayload.profile) setOwnProfile(profilePayload.profile);
       else if (profileResponse.status === 401) onLogout();
@@ -106,7 +108,7 @@ export function usePrivateData(copy: PrivateCopy, onLogout: () => void) {
     };
   }, [refreshAdminAccess]);
   return {
-    contacts, setContacts, closeContacts, invitations, ownProfile, setOwnProfile,
+    contacts, setContacts, trustedBy, setTrustedBy, closeContacts, invitations, ownProfile, setOwnProfile,
     alerts, loading, socialLoading, error, socialError, refresh, refreshProfile, refreshSocial,
     identity, securityKeyConfigured, adminAccess,
   };
