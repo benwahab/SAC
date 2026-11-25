@@ -50,7 +50,7 @@ Cette présentation évite de faire croire qu'un même téléphone ayant plusieu
 
 Les migrations `0024_root_authentication_session_claim.sql` et `0025_sos_sms_acknowledgement_gate.sql` sont inscrites dans `d1_migrations` de la base distante `sac-db`. La tranche de métadonnées appareil/session ne crée aucune migration.
 
-Le test `tests/session-management-endpoints.test.ts` couvre désormais la réponse de liste authentifiée et vérifie que les métadonnées d'appareil sont renvoyées sans secret. Le workflow CI exécute ce test via `npm run test:session-management`.
+Le test `tests/session-management-endpoints.test.ts` couvre désormais la réponse de liste authentifiée, l'absence de secrets, la révocation limitée au compte de la session authentifiée, le refus de révoquer la session courante et les gardes same-origin. Le workflow CI exécute ce test via `npm run test:session-management`. La tranche a été validée sur le commit `15bf6b130db78b604cbddd7ddee2870639caa2d5` : CI complète réussie et déploiement Pages réussi.
 
 ## 6. Prochaines étapes, dans l'ordre sûr
 
