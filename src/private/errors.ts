@@ -29,6 +29,7 @@ export function socialErrorMessage(copy: PrivateCopy, code: string | undefined):
     case "relationship_already_active": return copy.inviteErrAlready;
     case "invitation_already_pending": return copy.inviteErrAlready;
     case "rate_limited": return copy.inviteErrRateLimited;
+    case "contact_limit_reached": return copy.contactsLimit;
     case "contact_not_found": return copy.contactsErrNotFound;
     default: return copy.contactsErrInvite;
   }
