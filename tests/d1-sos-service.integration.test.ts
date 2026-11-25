@@ -500,4 +500,26 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     alertId: voluntaryAlert.data.alertId,
   });
   assert.equal(withdrawnSmsState.data.rows.length, 0);
+
+  // Une nouvelle acceptation restaure les droits pour les alertes futures
+  // uniquement ; elle ne rouvre jamais l'ancien SOS.
+  const reinvited = await post<{ accepted: boolean }>("/reinvite", {
+    owner, contact, now: voluntaryBase + 2,
+  });
+  assert.equal(reinvited.status, 200);
+  assert.equal(reinvited.data.accepted, true);
+  const oldAlertAfterReinvite = await post<{ error: string }>("/read", {
+    actor: contact, alertId: voluntaryAlert.data.alertId,
+  });
+  assert.equal(oldAlertAfterReinvite.status, 404);
+
+  const futureAlert = await post<{ alertId: string }>("/create", {
+    owner, recipients: [contact], reminders: 1, now: voluntaryBase + 3,
+  });
+  assert.equal(futureAlert.status, 200);
+  const futureAlertRead = await post<{ isAuthor: boolean }>("/read", {
+    actor: contact, alertId: futureAlert.data.alertId,
+  });
+  assert.equal(futureAlertRead.status, 200);
+  assert.equal(futureAlertRead.data.isAuthor, false);
 });
