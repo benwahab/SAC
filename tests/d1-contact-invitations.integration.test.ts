@@ -44,7 +44,14 @@ async function post<T>(path: string, body: unknown): Promise<{ status: number; d
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
   });
-  return { status: response.status, data: await response.json() as T };
+  const raw = await response.text();
+  let data: T;
+  try {
+    data = JSON.parse(raw) as T;
+  } catch {
+    throw new Error(`Expected JSON from ${path}, received HTTP ${response.status}: ${raw.slice(0, 2000)}`);
+  }
+  return { status: response.status, data };
 }
 
 test(
