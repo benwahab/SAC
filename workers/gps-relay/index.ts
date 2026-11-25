@@ -164,6 +164,7 @@ export class GpsRelayRoom extends DurableObject<Env> {
     return new Response(null, { status: 101, webSocket: client, headers: { "Sec-WebSocket-Protocol": offered.protocol } });
   }
 
+  // Revalide périodiquement les sockets inactifs ; chaque émission reste aussi protégée par un contrôle immédiat.
   async alarm(): Promise<void> {
     for (const [socket, identity] of this.sockets) {
       if (socket.readyState !== WebSocket.OPEN ||
