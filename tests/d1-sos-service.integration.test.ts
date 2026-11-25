@@ -24,7 +24,12 @@ async function command(args: string[]): Promise<string> {
 }
 async function post<T>(path: string, data: unknown): Promise<{ status: number; data: T }> {
   const response = await fetch(BASE + path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) });
-  return { status: response.status, data: await response.json() as T };
+  const raw = await response.text();
+  try {
+    return { status: response.status, data: JSON.parse(raw) as T };
+  } catch {
+    throw new Error(`Expected JSON from ${path}, received HTTP ${response.status}: ${raw.slice(0, 2000)}`);
+  }
 }
 
 test("SOS service persists alerts, enforces participants, processes reminders and closes safely in isolated D1", { timeout: 180_000 }, async (t) => {
