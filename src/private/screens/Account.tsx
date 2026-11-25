@@ -208,6 +208,35 @@ export default function Account({ copy, go, notice, setNotice, ownProfile, setOw
     <>
       <Halo title={copy.accountTitle} eyebrow={copy.privateSpace} onBack={() => go({ name: "settings" })} backLabel={copy.back}><p className="mt-1 text-sm text-white/90">{copy.accountIntro}</p></Halo>
       <Sheet>
+        <Card className="!border-sac-primary/20 !bg-white/95">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-black uppercase tracking-[.14em] text-sac-primary-strong">{copy.homeOffersTitle}</p>
+              <h2 className="mt-1 text-xl font-black text-sac-ink">{copy.homeOfferFreeTitle} · {copy.homeOfferFreePrice}</h2>
+              <p className="mt-1 text-sm leading-6 text-sac-muted">{copy.homeOfferFreeText}</p>
+            </div>
+            <ShieldCheck className="shrink-0 text-sac-confirm" size={22} />
+          </div>
+          <ul className="mt-3 space-y-2 text-sm leading-6 text-sac-ink">
+            <li>• {copy.homeOfferFreePoint1}</li>
+            <li>• {copy.homeOfferFreePoint2}</li>
+            <li>• {copy.homeOfferFreePoint3}</li>
+          </ul>
+          <div className="mt-4 rounded-2xl border border-sac-primary/15 bg-sac-canvas p-3">
+            <p className="flex items-center gap-2 font-extrabold text-sac-ink"><Crown size={17} className="text-sac-primary-strong" />{copy.homeOfferPremiumTitle} · {copy.homeOfferPremiumPrice}</p>
+            <p className="mt-1 text-sm leading-6 text-sac-muted">{copy.homeOfferPremiumText}</p>
+            <ul className="mt-2 space-y-1.5 text-sm leading-6 text-sac-ink">
+              <li>• {copy.homeOfferPremiumPoint1}</li>
+              <li>• {copy.homeOfferPremiumPoint2}</li>
+              <li>• {copy.homeOfferPremiumPoint3}</li>
+            </ul>
+          </div>
+          <p className="mt-3 rounded-xl bg-sac-confirm/10 p-3 text-xs font-semibold leading-5 text-sac-ink">{copy.homeOfferSosFree}</p>
+          <p className="mt-2 text-xs leading-5 text-sac-muted">{copy.homePremiumHowIntro}</p>
+          <button type="button" onClick={() => setNotice(copy.homePremiumHowIntro)} className="mt-3 min-h-11 w-full rounded-xl border border-sac-primary/30 bg-white px-4 text-sm font-extrabold text-sac-primary-strong">
+            {copy.homeOfferPremiumCta}
+          </button>
+        </Card>
         {notice && <Notice kind="ok">{notice}</Notice>}
         {problem && <Notice kind="error">{problem}</Notice>}
         {loading ? <p className="py-6 text-center text-sm text-sac-muted">{copy.loading}</p> : !profile ? (
