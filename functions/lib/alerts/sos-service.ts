@@ -262,7 +262,7 @@ export async function getSosAlertForParticipant(
            JOIN trusted_contacts t
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = r.recipient_account_id
-            AND t.status = 'active'
+            AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          ))
        LIMIT 1`,
@@ -344,7 +344,7 @@ export async function respondToSosAlert(
        JOIN trusted_contacts t
          ON t.owner_account_id = a.author_account_id
         AND t.contact_account_id = r.recipient_account_id
-        AND t.status = 'active'
+        AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
        WHERE a.id = ? AND a.status = 'active'
          AND r.recipient_account_id = ? AND a.created_at <= ?
        LIMIT 1`,
@@ -542,7 +542,7 @@ export async function listSosEventsForParticipant(
            JOIN trusted_contacts t
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = r.recipient_account_id
-            AND t.status = 'active'
+            AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          )
        ) LIMIT 1`,
@@ -604,7 +604,7 @@ export async function getSosResponsibilityForParticipant(
            JOIN trusted_contacts t
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = r.recipient_account_id
-            AND t.status = 'active'
+            AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          ))
        LIMIT 1`,
@@ -666,7 +666,7 @@ export async function claimDueSosReminders(
            JOIN trusted_contacts t
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = alert_reminder_outbox.recipient_account_id
-            AND t.status = 'active'
+            AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
            WHERE a.id = alert_reminder_outbox.alert_id AND a.status = 'active')`,
     ).bind(now, now).run();
     if (!exhausted.success) return fail("storage_unavailable");
@@ -684,7 +684,7 @@ export async function claimDueSosReminders(
          JOIN trusted_contacts t
            ON t.owner_account_id = a.author_account_id
           AND t.contact_account_id = r.recipient_account_id
-          AND t.status = 'active'
+          AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
          WHERE a.status = 'active'
            AND r.scheduled_at <= ?
            AND r.attempt_count < 5
@@ -724,7 +724,7 @@ export async function claimDueSosReminders(
            JOIN trusted_contacts t
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = ?
-            AND t.status = 'active'
+            AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
            WHERE a.id = ? AND a.status = 'active'
              AND NOT EXISTS (
                SELECT 1 FROM alert_reminder_outbox existing
@@ -884,7 +884,7 @@ export async function dispatchDueSosReminders(
        JOIN trusted_contacts t
          ON t.owner_account_id = a.author_account_id
         AND t.contact_account_id = r.recipient_account_id
-        AND t.status = 'active'
+        AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
        WHERE r.id = ? AND r.status = 'processing'
          AND r.lease_token = ? AND r.lease_until > ?
        LIMIT 1`,
@@ -1034,7 +1034,7 @@ export async function scheduleDueSosSmsEscalations(
            JOIN trusted_contacts t
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = r.recipient_account_id
-            AND t.status = 'active'
+            AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
            WHERE e.alert_id = ? AND e.status = 'queued'
              AND r.recipient_account_id = ?`,
         ).bind(
