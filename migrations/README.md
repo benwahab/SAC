@@ -207,3 +207,7 @@ Les API de lecture et d'action, la création de ticket GPS, les workers de rappe
 La révocation du propriétaire (`owner_revoked`) conserve provisoirement le comportement historique des alertes déjà actives ; elle n'est pas confondue avec le retrait volontaire.
 
 Test d'intégration étendu : `npm run test:sos-d1` (retrait pendant un SOS actif, lecture refusée, rappels annulés, aucune tâche SMS destinée au proche sortant). Application distante à confirmer après test, puis vérifier la ligne 0026 dans `d1_migrations`, les nouvelles colonnes/triggers et `PRAGMA foreign_key_check` avant de déclarer la migration opérationnelle.
+
+### Historique relationnel et réinvitation
+
+La migration reconstruit également `trusted_contacts` : la clé primaire devient l'identifiant de l'invitation, chaque consentement accepté dispose de sa propre ligne historique et un index unique partiel limite chaque paire propriétaire/proche à une seule relation active. Une relation révoquée n'est jamais réactivée ; une nouvelle invitation acceptée peut créer une nouvelle ligne, sans écraser l'historique antérieur.
