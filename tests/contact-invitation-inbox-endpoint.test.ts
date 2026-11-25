@@ -116,6 +116,7 @@ test("contact invitation inbox is scoped to the authenticated account and never 
   assert.ok(sentQuery);
   assert.equal(receivedQuery.values[0], "account-current");
   assert.equal(sentQuery.values[0], "account-current");
+  assert.match(receivedQuery.sql, /recipient\.id = \?/);
   assert.match(receivedQuery.sql, /recipient_identity\.normalized_value = invitation\.destination_email/);
   assert.match(sentQuery.sql, /invitation\.inviter_account_id = \?/);
 });
