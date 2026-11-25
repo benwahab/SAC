@@ -6,6 +6,7 @@ const H={"Cache-Control":"no-store","Content-Type":"application/json; charset=ut
 const json=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:H});
 const str=(v:unknown,n:number)=>typeof v==="string"?v.trim().slice(0,n):"";
 const statuses=["prospect","discussion","active","suspended","ended"];
+const types=["public_body","local_government","ngo","association","technical_partner","financial_partner","supplier","other"];
 export const onRequestGet:PagesFunction<Env>=async({request,env,params})=>{
  const admin=await requireSuperAdminSession(request,env.DB);if(!admin.ok)return json({error:admin.status===401?"authentication_required":"super_admin_required"},admin.status);
  const id=typeof params.partnerId==="string"?params.partnerId:"";
@@ -37,9 +38,9 @@ export const onRequestPost:PagesFunction<Env>=async({request,env,params})=>{
  }
  if(action!=="update")return json({error:"invalid_action"},400);
  const status=str(v.relationshipStatus,20);if(!statuses.includes(status))return json({error:"invalid_status"},400);
- const name=str(v.officialName,180);if(!name)return json({error:"invalid_partner"},400);
+ const name=str(v.officialName,180),type=str(v.organizationType,60),country=str(v.countryCode,2).toUpperCase();if(!name||!types.includes(type)||!/^[A-Z]{2}$/.test(country))return json({error:"invalid_partner"},400);
  const results=await env.DB.batch([
- env.DB.prepare("UPDATE partner_organizations SET official_name=?,organization_type=?,country_code=?,intervention_area=?,relationship_status=?,cooperation_domain=?,objectives=?,source=?,updated_by=?,updated_at=?,last_activity_at=? WHERE id=?").bind(name,str(v.organizationType,60),str(v.countryCode,2).toUpperCase(),str(v.interventionArea,240),status,str(v.cooperationDomain,180),str(v.objectives,4000),str(v.source,180),admin.value.accountId,now,now,id),
+ env.DB.prepare("UPDATE partner_organizations SET official_name=?,organization_type=?,country_code=?,intervention_area=?,relationship_status=?,cooperation_domain=?,objectives=?,source=?,updated_by=?,updated_at=?,last_activity_at=? WHERE id=?").bind(name,type,country,str(v.interventionArea,240),status,str(v.cooperationDomain,180),str(v.objectives,4000),str(v.source,180),admin.value.accountId,now,now,id),
  env.DB.prepare("INSERT INTO partner_events (id,organization_id,event_type,summary,actor_account_id,occurred_at) VALUES (?,?, 'updated', ?, ?, ?)").bind(crypto.randomUUID(),id,"Mise à jour de la fiche partenaire",admin.value.accountId,now),
  env.DB.prepare("INSERT INTO admin_audit_events (id,actor_account_id,actor_device_id,action,scope_key,permission_used,outcome,occurred_at) VALUES (?,?,?,'partner.updated','external','partners.update','success',?)").bind(crypto.randomUUID(),admin.value.accountId,admin.value.deviceId,now)
  ]);return results.every(x=>x.success)?json({updated:true}):json({error:"partner_update_failed"},503)
