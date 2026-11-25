@@ -65,7 +65,8 @@ export default {
         const result = await env.DB.prepare(
           "UPDATE trusted_contacts SET status='revoked',revoked_at=?,revocation_reason='owner_revoked',revoked_by_account_id=? WHERE owner_account_id=? AND contact_account_id=? AND status='active'",
         ).bind(now, String(input.owner), String(input.owner), String(input.contact)).run();
-        return result.success && result.meta.changes === 1 ? json({ revoked: true }) : json({ error: "not_revoked" }, 409);
+        if (!result.success) return json({ error: "revoke_failed", detail: result.error ?? "d1_update_failed" }, 500);
+        return result.meta.changes === 1 ? json({ revoked: true }) : json({ error: "not_revoked", changes: result.meta.changes }, 409);
       } catch (error) {
         return json({ error: "revoke_failed", detail: String(error) }, 500);
       }
