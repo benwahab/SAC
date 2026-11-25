@@ -66,7 +66,13 @@ export default {
           "UPDATE trusted_contacts SET status='revoked',revoked_at=?,revocation_reason='owner_revoked',revoked_by_account_id=? WHERE owner_account_id=? AND contact_account_id=? AND status='active'",
         ).bind(now, String(input.owner), String(input.owner), String(input.contact)).run();
         if (!result.success) return json({ error: "revoke_failed", detail: result.error ?? "d1_update_failed" }, 500);
-        return result.meta.changes === 1 ? json({ revoked: true }) : json({ error: "not_revoked", changes: result.meta.changes }, 409);
+        if (result.meta.changes !== 1) {
+          const current = await env.DB.prepare(
+            "SELECT status, revocation_reason, revoked_by_account_id, created_at FROM trusted_contacts WHERE owner_account_id=? AND contact_account_id=? ORDER BY relationship_sequence DESC LIMIT 1",
+          ).bind(String(input.owner), String(input.contact)).first();
+          return json({ error: "not_revoked", changes: result.meta.changes, current }, 409);
+        }
+        return json({ revoked: true });
       } catch (error) {
         return json({ error: "revoke_failed", detail: String(error) }, 500);
       }
