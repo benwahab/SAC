@@ -253,3 +253,19 @@ Le propriétaire et le proche disposent tous deux du droit de mettre fin à une 
 Cette décision corrige le point ouvert « révocation unilatérale seulement » ci-dessus : le droit symétrique est désormais validé au niveau produit, mais **pas encore implémenté**. Le code inspecté contient toujours uniquement `POST /api/contacts/revoke` pour l'action du propriétaire.
 
 La validation ne tranche pas les droits post-retrait pendant un SOS déjà actif, les rappels opaques, les positions, l'accusé de réception, la coordination, la notification de l'autre partie ni le délai anti-abus de réinvitation proposé. Le SOS de l'auteur doit rester actif ; aucune modification de son état ne découle du départ du proche. Ces règles doivent être précisées avant toute modification API/D1/SOS/GPS.
+
+## 13. Réalisation du retrait volontaire et de la coupure d'accès SOS (2026-11-25)
+
+Le retrait volontaire est désormais implémenté dans le code :
+- route authentifiée `POST /api/contacts/withdraw` ;
+- affichage des relations acceptées entrantes dans l'écran Contacts d'alerte et commande de sortie ;
+- cause et acteur persistés sur `trusted_contacts` ;
+- annulation D1 des rappels et tâches SMS en attente, suppression des tickets GPS ;
+- filtrage des lectures/actions SOS et revalidation du droit d'accès dans le worker GPS et le worker de rappels ;
+- fin de la responsabilité du proche sortant et transfert au prochain volontaire encore éligible si nécessaire.
+
+Le choix produit est précis : le départ volontaire coupe tout accès du proche sortant, y compris aux alertes actives et aux notifications neutres ; il ne ferme pas le SOS de l'auteur. Le snapshot de destinataires est conservé pour l'historique.
+
+La révocation initiée par le propriétaire reste distincte : les droits déjà ouverts sur un SOS actif conservent leur comportement antérieur, dans l'attente d'un arbitrage dédié.
+
+Migration créée : `0026_trusted_contact_withdrawal_access_revocation.sql`. État d'application distante à vérifier séparément ; ne pas déduire son application du seul commit GitHub.
