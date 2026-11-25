@@ -33,7 +33,7 @@ L'adresse e-mail est obligatoire pour toute inscription SAC et constitue une con
 | Révocation | Déjà validé | Vérifier l'état de la session, du compte, de l'appareil et sa auth_version côté serveur ; une révocation doit être effective à la requête suivante. |
 | Réseau/IP | Déjà validé | Un changement d'adresse IP ou de réseau ne bloque jamais à lui seul un utilisateur. |
 | Capacitor | Bloquant avant natif | Spécification séparée du stockage sécurisé natif, des jetons et de leur rotation. Ne pas réutiliser automatiquement le modèle cookie web. |
-| Fournisseur e-mail | Choisi, configuration bloquée | Resend est le fournisseur retenu ; domaine vérifié, compte fournisseur et secret restent à configurer avant tout envoi réel. |
+| Fournisseur e-mail | **Brevo configuré et fonctionnel** | Brevo est le fournisseur retenu pour SAC. L'utilisateur a confirmé le 25 novembre 2026 que la configuration existante fonctionne ; ne pas demander une reconfiguration ni remplacer le fournisseur. |
 | Mode de connexion | Validé le 18-11-2026 | Option A : adresse e-mail + mot de passe. L'OTP e-mail vérifie l'adresse à l'inscription, sécurise certaines opérations et permet la réinitialisation du mot de passe ; il n'est pas requis à chaque connexion par défaut. |
 | Appareil racine | Bloquant | Le certificat secondaire actuel est expérimental et ne lie pas encore défi serveur, nonce, identifiant de cérémonie et expiration dans un transcript signé canonique. |
 | Kit de récupération | Bloquant | Le secret est généré localement, affiché une seule fois et à usage unique. Le protocole de preuve doit faire l'objet d'une spécification cryptographique et d'une revue indépendante avant code. |
