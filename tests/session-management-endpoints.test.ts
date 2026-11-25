@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { webcrypto } from "node:crypto";
+import { createSessionCookie } from "../functions/lib/security/session-cookie.ts";
+import { createSessionToken } from "../functions/lib/security/session-token.ts";
+import { getSessionExpiresAt } from "../src/domain/auth-policy.ts";
 import { onRequestGet as listSessions } from "../functions/api/auth/sessions.ts";
 import { onRequestPost as revokeSession } from "../functions/api/auth/revoke-session.ts";
 
@@ -46,4 +50,77 @@ test("session revocation requires same-origin JSON and an authenticated session"
   } as never);
   assert.equal(response.status, 401);
   assert.deepEqual(await response.json(), { error: "authentication_required" });
+});
+
+
+test("session list returns only safe device metadata for the authenticated account", async () => {
+  const now = Date.now();
+  const issued = await createSessionToken(webcrypto as unknown as Crypto);
+  const createdAt = now - 10_000;
+  const lastActivityAt = now - 1_000;
+  const expiresAt = Date.parse(getSessionExpiresAt({
+    createdAt: new Date(createdAt).toISOString(),
+    lastActivityAt: new Date(lastActivityAt).toISOString(),
+  }) as string);
+  const authRow = {
+    session_id: "session-current",
+    account_id: "account-current",
+    device_id: "device-root",
+    token_hash: issued.tokenHash,
+    session_status: "active",
+    session_auth_version: 1,
+    created_at: createdAt,
+    last_activity_at: lastActivityAt,
+    expires_at: expiresAt,
+    revoked_at: null,
+    account_status: "active",
+    device_status: "active",
+    current_device_auth_version: 1,
+  };
+  const sessionRows = [{
+    id: "session-current",
+    device_id: "device-root",
+    created_at: createdAt,
+    last_activity_at: lastActivityAt,
+    expires_at: expiresAt,
+    device_created_at: createdAt - 5_000,
+    root_credential_configured: 1,
+  }];
+  const db = {
+    prepare(sql: string) {
+      return {
+        bind() { return this; },
+        async first() { return authRow; },
+        async run() { return { success: true, meta: { changes: 1 } }; },
+        async all() { return { success: true, results: sessionRows }; },
+      };
+    },
+  };
+  const response = await listSessions({
+    request: new Request("https://sac.example/api/auth/sessions", {
+      headers: { Cookie: createSessionCookie(issued.token) },
+    }),
+    env: { DB: db as never },
+  } as never);
+
+  assert.equal(response.status, 200);
+  const payload = await response.json() as {
+    currentSessionId: string;
+    sessions: Array<{
+      id: string; deviceId: string; deviceCreatedAt: number;
+      rootCredentialConfigured: boolean; current: boolean;
+    }>;
+  };
+  assert.equal(payload.currentSessionId, "session-current");
+  assert.deepEqual(payload.sessions, [{
+    id: "session-current",
+    deviceId: "device-root",
+    deviceCreatedAt: createdAt - 5_000,
+    rootCredentialConfigured: true,
+    createdAt,
+    lastActivityAt,
+    expiresAt,
+    current: true,
+  }]);
+  assert.equal(JSON.stringify(payload).includes(issued.token), false);
 });
