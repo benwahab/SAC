@@ -74,6 +74,16 @@ export default function Settings({ copy, language, go, setLanguage, onLogout, se
     }
   }
 
+  const deviceGroups = Array.from(
+    sessions.reduce((groups, session) => {
+      const existing = groups.get(session.deviceId) ?? [];
+      existing.push(session);
+      groups.set(session.deviceId, existing);
+      return groups;
+    }, new Map<string, SessionInfo[]>()),
+    ([deviceId, deviceSessions]) => ({ deviceId, sessions: deviceSessions }),
+  );
+
   function securityKeyErrorMessage(reason: unknown): string {
     if (reason instanceof Error) {
       if (reason.message === "webauthn_not_supported" || reason.message.includes("ne prend pas en charge")) return copy.securityKeyUnsupported;
@@ -158,24 +168,37 @@ export default function Settings({ copy, language, go, setLanguage, onLogout, se
             <p className="mt-3 text-sm text-sac-muted">{copy.settingsSessionsEmpty}</p>
           ) : (
             <ul className="mt-3 space-y-3">
-              {sessions.map((session) => (
-                <li key={session.id} className="rounded-2xl border border-white/90 bg-white/80 p-3">
-                  <p className="font-extrabold">{session.current ? copy.settingsSessionsCurrent : copy.settingsSessionsOther}</p>
-                  <dl className="mt-2 space-y-1 text-xs leading-5 text-sac-muted">
-                    <div><dt className="inline font-semibold">{copy.settingsSessionsDeviceType}: </dt><dd className="inline">{session.rootCredentialConfigured ? copy.settingsSessionsRootDevice : copy.settingsSessionsDeviceWithoutRoot}</dd></div>
-                    <div><dt className="inline font-semibold">{copy.settingsSessionsDeviceCreated}: </dt><dd className="inline">{new Date(session.deviceCreatedAt).toLocaleString(locale)}</dd></div>
-                    <div><dt className="inline font-semibold">{copy.settingsSessionsCreated}: </dt><dd className="inline">{new Date(session.createdAt).toLocaleString(locale)}</dd></div>
-                    <div><dt className="inline font-semibold">{copy.settingsSessionsLastActive}: </dt><dd className="inline">{new Date(session.lastActivityAt).toLocaleString(locale)}</dd></div>
-                    <div><dt className="inline font-semibold">{copy.settingsSessionsExpires}: </dt><dd className="inline">{new Date(session.expiresAt).toLocaleString(locale)}</dd></div>
-                  </dl>
-                  {!session.current && (
-                    <button type="button" disabled={revokingSessionId !== null} onClick={() => void revokeSession(session.id)}
-                      className="mt-3 min-h-11 rounded-xl border border-sac-alert/30 bg-sac-alert/5 px-3 text-sm font-bold text-sac-alert disabled:opacity-50">
-                      {revokingSessionId === session.id ? copy.pushWait : copy.settingsSessionsRevoke}
-                    </button>
-                  )}
-                </li>
-              ))}
+              {deviceGroups.map((device, index) => {
+                const first = device.sessions[0];
+                return (
+                  <li key={device.deviceId} className="rounded-2xl border border-white/90 bg-white/80 p-3">
+                    <p className="font-extrabold">{copy.settingsSessionsDevice} {index + 1}</p>
+                    <dl className="mt-2 space-y-1 text-xs leading-5 text-sac-muted">
+                      <div><dt className="inline font-semibold">{copy.settingsSessionsDeviceType}: </dt><dd className="inline">{first.rootCredentialConfigured ? copy.settingsSessionsRootDevice : copy.settingsSessionsDeviceWithoutRoot}</dd></div>
+                      <div><dt className="inline font-semibold">{copy.settingsSessionsDeviceCreated}: </dt><dd className="inline">{new Date(first.deviceCreatedAt).toLocaleString(locale)}</dd></div>
+                      <div><dt className="inline font-semibold">{copy.settingsSessionsCount}: </dt><dd className="inline">{device.sessions.length}</dd></div>
+                    </dl>
+                    <ul className="mt-3 space-y-2 border-t border-sac-primary/10 pt-3">
+                      {device.sessions.map((session) => (
+                        <li key={session.id} className="rounded-xl bg-sac-sand/70 p-3">
+                          <p className="text-sm font-bold">{session.current ? copy.settingsSessionsCurrent : copy.settingsSessionsOther}</p>
+                          <dl className="mt-2 space-y-1 text-xs leading-5 text-sac-muted">
+                            <div><dt className="inline font-semibold">{copy.settingsSessionsCreated}: </dt><dd className="inline">{new Date(session.createdAt).toLocaleString(locale)}</dd></div>
+                            <div><dt className="inline font-semibold">{copy.settingsSessionsLastActive}: </dt><dd className="inline">{new Date(session.lastActivityAt).toLocaleString(locale)}</dd></div>
+                            <div><dt className="inline font-semibold">{copy.settingsSessionsExpires}: </dt><dd className="inline">{new Date(session.expiresAt).toLocaleString(locale)}</dd></div>
+                          </dl>
+                          {!session.current && (
+                            <button type="button" disabled={revokingSessionId !== null} onClick={() => void revokeSession(session.id)}
+                              className="mt-3 min-h-11 rounded-xl border border-sac-alert/30 bg-sac-alert/5 px-3 text-sm font-bold text-sac-alert disabled:opacity-50">
+                              {revokingSessionId === session.id ? copy.pushWait : copy.settingsSessionsRevoke}
+                            </button>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                );
+              })}
             </ul>
           )}
           {sessionsNotice && <p role="status" className="mt-3 text-sm font-semibold text-sac-confirm">{sessionsNotice}</p>}
