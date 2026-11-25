@@ -14,9 +14,10 @@ DROP TRIGGER alert_recipient_insert_guard;
 -- après une révocation. Chaque invitation acceptée devient désormais une ligne
 -- d'historique distincte ; une seule relation active reste possible par paire.
 CREATE TABLE trusted_contacts_rebuilt (
+  relationship_sequence INTEGER PRIMARY KEY AUTOINCREMENT,
   owner_account_id TEXT NOT NULL,
   contact_account_id TEXT NOT NULL,
-  invitation_id TEXT NOT NULL PRIMARY KEY,
+  invitation_id TEXT NOT NULL UNIQUE,
   permission_version TEXT NOT NULL CHECK (length(trim(permission_version)) BETWEEN 1 AND 128),
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'revoked')),
   created_at INTEGER NOT NULL CHECK (created_at > 0),
@@ -99,6 +100,7 @@ BEGIN
     NEW.owner_account_id <> OLD.owner_account_id
     OR NEW.contact_account_id <> OLD.contact_account_id
     OR NEW.invitation_id <> OLD.invitation_id
+    OR NEW.relationship_sequence <> OLD.relationship_sequence
     OR NEW.permission_version <> OLD.permission_version
     OR NEW.created_at <> OLD.created_at
   THEN RAISE(ABORT, 'trusted_contact_identity_immutable') END;
@@ -176,7 +178,7 @@ BEGIN
                 AND exited.contact_account_id = t.contact_account_id
                 AND exited.revocation_reason = 'contact_withdrew'
                 AND (
-                  exited.rowid > t.rowid
+                  exited.relationship_sequence > t.relationship_sequence
                 )
             )
             WHERE r.alert_id = a.id
