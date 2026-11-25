@@ -259,6 +259,10 @@ export async function getSosAlertForParticipant(
        WHERE a.id = ?
          AND (a.author_account_id = ? OR EXISTS (
            SELECT 1 FROM alert_recipients r
+           JOIN trusted_contacts t
+             ON t.owner_account_id = a.author_account_id
+            AND t.contact_account_id = r.recipient_account_id
+            AND t.status = 'active'
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          ))
        LIMIT 1`,
@@ -337,6 +341,10 @@ export async function respondToSosAlert(
       `SELECT a.created_at
        FROM alerts a
        JOIN alert_recipients r ON r.alert_id = a.id
+       JOIN trusted_contacts t
+         ON t.owner_account_id = a.author_account_id
+        AND t.contact_account_id = r.recipient_account_id
+        AND t.status = 'active'
        WHERE a.id = ? AND a.status = 'active'
          AND r.recipient_account_id = ? AND a.created_at <= ?
        LIMIT 1`,
@@ -531,6 +539,10 @@ export async function listSosEventsForParticipant(
        WHERE a.id = ? AND (
          a.author_account_id = ? OR EXISTS (
            SELECT 1 FROM alert_recipients r
+           JOIN trusted_contacts t
+             ON t.owner_account_id = a.author_account_id
+            AND t.contact_account_id = r.recipient_account_id
+            AND t.status = 'active'
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          )
        ) LIMIT 1`,
@@ -647,6 +659,10 @@ export async function claimDueSosReminders(
        SET status = 'failed', processed_at = ?, lease_until = NULL, lease_token = NULL
        WHERE status = 'processing' AND lease_until <= ? AND attempt_count >= 5
          AND EXISTS (SELECT 1 FROM alerts a
+           JOIN trusted_contacts t
+             ON t.owner_account_id = a.author_account_id
+            AND t.contact_account_id = alert_reminder_outbox.recipient_account_id
+            AND t.status = 'active'
            WHERE a.id = alert_reminder_outbox.alert_id AND a.status = 'active')`,
     ).bind(now, now).run();
     if (!exhausted.success) return fail("storage_unavailable");
@@ -661,6 +677,10 @@ export async function claimDueSosReminders(
          SELECT r.id
          FROM alert_reminder_outbox r
          JOIN alerts a ON a.id = r.alert_id
+         JOIN trusted_contacts t
+           ON t.owner_account_id = a.author_account_id
+          AND t.contact_account_id = r.recipient_account_id
+          AND t.status = 'active'
          WHERE a.status = 'active'
            AND r.scheduled_at <= ?
            AND r.attempt_count < 5
@@ -697,6 +717,10 @@ export async function claimDueSosReminders(
            (id, alert_id, recipient_account_id, reminder_number, scheduled_at, created_at)
            SELECT ?, a.id, ?, ?, ?, ?
            FROM alerts a
+           JOIN trusted_contacts t
+             ON t.owner_account_id = a.author_account_id
+            AND t.contact_account_id = ?
+            AND t.status = 'active'
            WHERE a.id = ? AND a.status = 'active'
              AND NOT EXISTS (
                SELECT 1 FROM alert_reminder_outbox existing
@@ -706,7 +730,7 @@ export async function claimDueSosReminders(
              )`,
         ).bind(
           cryptoProvider.randomUUID(), row.recipient_account_id, nextNumber,
-          now + 300_000, now, row.alert_id,
+          now + 300_000, now, row.recipient_account_id, row.alert_id,
           row.recipient_account_id, nextNumber,
         );
       });
@@ -849,6 +873,21 @@ export async function dispatchDueSosReminders(
   let completionErrors = 0;
 
   for (const reminder of claimed.value) {
+    const stillAuthorized = await db.prepare(
+      `SELECT 1 AS allowed
+       FROM alert_reminder_outbox r
+       JOIN alerts a ON a.id = r.alert_id AND a.status = 'active'
+       JOIN trusted_contacts t
+         ON t.owner_account_id = a.author_account_id
+        AND t.contact_account_id = r.recipient_account_id
+        AND t.status = 'active'
+       WHERE r.id = ? AND r.status = 'processing'
+         AND r.lease_token = ? AND r.lease_until > ?
+       LIMIT 1`,
+    ).bind(reminder.id, reminder.leaseToken, input.now ?? Date.now())
+      .first<{ allowed: number }>();
+    if (!stillAuthorized) continue;
+
     let accepted = false;
     try {
       accepted = await sender.send({
@@ -932,7 +971,7 @@ export async function scheduleDueSosSmsEscalations(
            SELECT COUNT(*) FROM alert_reminder_outbox r
            WHERE r.alert_id = a.id
              AND r.reminder_number = a.push_reminder_limit
-             AND r.status IN ('sent', 'failed')
+             AND r.status IN ('sent', 'failed', 'cancelled')
          ) = (
            SELECT COUNT(*) FROM alert_recipients r
            WHERE r.alert_id = a.id
@@ -987,6 +1026,11 @@ export async function scheduleDueSosSmsEscalations(
            SELECT ?, e.alert_id, r.recipient_account_id, 'pending', e.threshold_reached_at, ?
            FROM alert_sms_escalations e
            JOIN alert_recipients r ON r.alert_id = e.alert_id
+           JOIN alerts a ON a.id = e.alert_id
+           JOIN trusted_contacts t
+             ON t.owner_account_id = a.author_account_id
+            AND t.contact_account_id = r.recipient_account_id
+            AND t.status = 'active'
            WHERE e.alert_id = ? AND e.status = 'queued'
              AND r.recipient_account_id = ?`,
         ).bind(
