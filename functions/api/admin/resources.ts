@@ -5,7 +5,7 @@ interface Env { DB:D1Database; }
 const H={"Cache-Control":"no-store","Content-Type":"application/json; charset=utf-8","X-Content-Type-Options":"nosniff","Referrer-Policy":"no-referrer","X-Frame-Options":"DENY"};
 const json=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:H});
 const str=(v:unknown,n:number)=>typeof v==="string"?v.trim().slice(0,n):"";
-const validDate=(v:string)=>!v||(/^\\d{4}-\\d{2}-\\d{2}$/.test(v)&&!Number.isNaN(Date.parse(v+"T00:00:00Z")));
+const validDate=(v:string)=>!v||(/^\d{4}-\d{2}-\d{2}$/.test(v)&&!Number.isNaN(Date.parse(v+"T00:00:00Z")));
 const staffStatuses=["active","leave","suspended","departed"];
 const assetConditions=["new","good","fair","needs_repair","out_of_service"];
 const assetStatuses=["available","assigned","maintenance","retired"];
