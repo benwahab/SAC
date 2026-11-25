@@ -250,9 +250,9 @@ Le test est lancé par `npm run test:contact-invitation-inbox` et inscrit dans l
 
 Le propriétaire et le proche disposent tous deux du droit de mettre fin à une relation active. Le proche peut se retirer de son propre gré, à tout moment, sans justification ni approbation du propriétaire. La cause d'audit devra distinguer `owner_revoked` de `contact_withdrew`.
 
-Cette décision corrige le point ouvert « révocation unilatérale seulement » ci-dessus : le droit symétrique est désormais validé au niveau produit, mais **pas encore implémenté**. Le code inspecté contient toujours uniquement `POST /api/contacts/revoke` pour l'action du propriétaire.
+Cette décision corrige le point ouvert « révocation unilatérale seulement » ci-dessus : le droit symétrique est validé au niveau produit et une route dédiée de retrait volontaire a depuis été ajoutée. Le retrait est réalisé par le compte du proche authentifié ; l'identifiant du propriétaire est une cible relationnelle, jamais une identité fournie pour se faire passer pour lui.
 
-La validation ne tranche pas les droits post-retrait pendant un SOS déjà actif, les rappels opaques, les positions, l'accusé de réception, la coordination, la notification de l'autre partie ni le délai anti-abus de réinvitation proposé. Le SOS de l'auteur doit rester actif ; aucune modification de son état ne découle du départ du proche. Ces règles doivent être précisées avant toute modification API/D1/SOS/GPS.
+Arbitrage final du 25 novembre : le retrait volontaire coupe immédiatement et totalement l'accès du proche à tous les SOS actifs, y compris notifications neutres, positions, contenu, accusés, coordination et rappels. Le SOS de l'auteur reste actif et les autres proches autorisés ne sont pas affectés. Une nouvelle invitation acceptée ne restaure aucun accès aux alertes antérieures ; elle ouvre seulement les alertes futures. Le délai anti-abus de réinvitation reste une proposition non validée.
 
 ## 13. Réalisation du retrait volontaire et de la coupure d'accès SOS (2026-11-25)
 
@@ -266,6 +266,6 @@ Le retrait volontaire est désormais implémenté dans le code :
 
 Le choix produit est précis : le départ volontaire coupe tout accès du proche sortant, y compris aux alertes actives et aux notifications neutres ; il ne ferme pas le SOS de l'auteur. Le snapshot de destinataires est conservé pour l'historique.
 
-La révocation initiée par le propriétaire reste distincte : les droits déjà ouverts sur un SOS actif conservent leur comportement antérieur, dans l'attente d'un arbitrage dédié.
+La révocation initiée par le propriétaire reste distincte : les droits déjà ouverts sur un SOS actif conservent leur comportement antérieur, sauf si un retrait volontaire ultérieur du même proche prévaut sur toutes les relations antérieures.
 
-Migration créée : `0026_trusted_contact_withdrawal_access_revocation.sql`. État d'application distante à vérifier séparément ; ne pas déduire son application du seul commit GitHub.
+La migration `0026_trusted_contact_withdrawal_access_revocation.sql` reconstruit l'historique des relations et met en place les garde-fous d'accès. Au dernier contrôle, la migration 0025 est la dernière enregistrée sur la D1 de production : **0026 n'est pas encore appliquée**. Une première exécution CI a confirmé le test D1 SOS, mais le test d'intégration des invitations a échoué sur une réponse HTML inattendue ; le test a été instrumenté pour révéler le corps de réponse et la nouvelle exécution CI est en cours. Ne pas appliquer 0026 tant que la validation complète n'est pas verte.
