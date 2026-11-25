@@ -173,3 +173,12 @@ Test local : `npm run test:d1-support-intake-otp`. La migration 0022 n'est pas a
 `0023_support_mission_permissions.sql` étend le garde D1 des réponses support : le Super Admin conserve l'accès global, tandis qu'un collaborateur ne peut répondre que s'il possède une mission active, non expirée, de périmètre exact `support`, avec la permission `process`. L'API applique le même contrôle serveur ; la lecture des tickets exige la permission `read`. Les événements d'audit des actions déléguées conservent l'identifiant de mission et le périmètre. Une mission Finance, une mission suspendue ou expirée, ou une permission sans `process` ne permet pas de répondre.
 
 Test local : `npm run test:d1-support-tickets`. Cette migration n'est pas appliquée à la D1 distante.
+
+
+## 0024 — consommation atomique des défis WebAuthn de connexion
+
+`0024_root_authentication_session_claim.sql` lie la consommation d'un défi WebAuthn à un identifiant unique de tentative de création de session. La contrainte unique et le trigger D1 rendent ce lien immuable et obligatoire dès qu'un défi est consommé.
+
+`POST /api/auth/login` utilise cet identifiant comme condition pour mettre à jour le compteur de la credential puis insérer la session. Une validation concurrente perdante ne peut donc ni mettre à jour la credential ni créer une session orpheline. Si une étape conditionnelle échoue, l'API renvoie un conflit et ne remet aucun cookie de session.
+
+Test de schéma : `python3 tests/d1_root_device_enrollment_schema.test.py`. Vérifier la CI et la migration distante avant de considérer ce correctif comme opérationnel.
