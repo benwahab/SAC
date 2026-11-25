@@ -189,3 +189,20 @@ Le retrait ne doit jamais clôturer ni suspendre le SOS de l'auteur. Les droits 
 ### Conséquence technique
 
 Le code actuel ne fournit qu'une route de révocation par le propriétaire et le service n'enregistre pas encore l'acteur/cause de rupture. L'API de retrait volontaire, l'autorisation par l'identité du proche, l'audit `contact_withdrew`, les tests de concurrence et la migration éventuelle restent à réaliser après revue du modèle et des effets SOS. Aucun changement de code ou de D1 n'est inclus dans cette décision documentaire.
+## 13. Décision produit validée — coupure totale immédiate après retrait volontaire (2026-11-25)
+
+Lorsqu'un proche quitte volontairement le cercle de confiance, sa révocation d'accès est immédiate et totale, y compris si un SOS est déjà actif.
+
+Dès que la rupture est confirmée côté serveur :
+- aucun accès aux positions GPS, actuelles ou ultérieures ;
+- aucun accès au contenu, à l'état ou à l'évolution du SOS ;
+- aucun rappel, y compris les notifications neutres ;
+- aucun accusé de réception, aucune action de volontariat et aucun accès à la coordination ;
+- aucune nouvelle notification liée à ce SOS ;
+- aucune consultation ou récupération ultérieure des données de l'alerte via les interfaces ou API du proche sortant.
+
+Le SOS de la personne en détresse continue sans interruption. Le retrait du proche ne clôture pas l'alerte et ne modifie pas les droits des autres proches encore autorisés.
+
+Cette règle doit être appliquée côté serveur à chaque lecture, livraison push, relais GPS, accusé et action, et pas uniquement en masquant l'interface ou en supprimant l'abonnement push. Les abonnements et tâches de livraison destinés au proche sortant doivent être invalidés ; les opérations déjà en file doivent recontrôler l'autorisation juste avant livraison. Les caches et sessions ne doivent pas permettre de conserver un accès après la rupture.
+
+Cette décision porte sur le retrait volontaire du proche. Le traitement symétrique d'un retrait initié par le propriétaire devra être harmonisé et vérifié avant de considérer la révocation comme complète. Aucun changement de code ou de migration D1 n'est inclus dans cette mise à jour documentaire.
