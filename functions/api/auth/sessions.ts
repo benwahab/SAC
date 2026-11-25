@@ -20,6 +20,21 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   try {
     const now = Date.now();
+
+    // Retire les sessions terminées/expirées devenues inutiles. Une session
+    // référencée par l'événement immuable d'enrôlement reste conservée pour
+    // préserver l'intégrité de cette trace de sécurité.
+    const cleanup = await env.DB.prepare(
+      `DELETE FROM device_sessions
+       WHERE account_id = ?
+         AND (status = 'revoked' OR expires_at <= ?)
+         AND NOT EXISTS (
+           SELECT 1 FROM device_enrollment_events e
+           WHERE e.session_id = device_sessions.id
+         )`,
+    ).bind(session.value.accountId, now).run();
+    if (!cleanup.success) return json({ error: "session_list_unavailable" }, 503);
+
     const result = await env.DB.prepare(
       `SELECT s.id, s.device_id, s.created_at, s.last_activity_at, s.expires_at,
               d.created_at AS device_created_at,
