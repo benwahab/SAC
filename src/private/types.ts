@@ -1,6 +1,7 @@
 import type { Language, PrivateCopy } from "../i18n/translations";
 
 export type Contact = { accountId: string; email: string; createdAt: number };
+export type TrustedByContact = { ownerAccountId: string; email: string; createdAt: number };
 export type PrivacySettings = {
   searchByName: boolean; searchByEmail: boolean;
   photoVisibleInSearch: boolean; photoVisibleToContacts: boolean;
