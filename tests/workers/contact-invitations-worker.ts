@@ -5,6 +5,7 @@ import {
   declineContactInvitation,
   listTrustedContacts,
   revokeTrustedContact,
+  withdrawTrustedContact,
 } from "../../functions/lib/trusted-contacts/service.ts";
 
 interface Env {
@@ -145,6 +146,15 @@ export default {
         now: Number(body.now),
       });
       return result.ok ? json(result.value) : json({ error: result.error }, 409);
+    }
+
+    if (url.pathname === "/withdraw") {
+      const result = await withdrawTrustedContact(env.DB, {
+        authenticatedContactAccountId: String(input.contactId),
+        ownerAccountId: String(input.ownerId),
+        now: Number(input.now),
+      });
+      return result.ok ? json({ withdrawn: true }) : json({ error: result.error }, 409);
     }
 
     if (url.pathname === "/contacts") {
