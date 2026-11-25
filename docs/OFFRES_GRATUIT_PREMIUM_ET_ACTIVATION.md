@@ -85,7 +85,7 @@ Les textes des offres publiques et l'espace privé ont été harmonisés avec le
 
 Le contrôle de capacité est implémenté côté serveur dans les deux parcours d'invitation actuellement présents :
 - `proximity_invitations` / `close_relations` : le plafond du propriétaire et celui du destinataire sont vérifiés ; l'acceptation inclut des conditions SQL atomiques pour éviter les dépassements concurrents ;
-- `contact_invitations` / `trusted_contacts` : le plafond du propriétaire est résolu côté serveur au moment de l'envoi et de l'acceptation.
+- `contact_invitations` / `trusted_contacts` : le plafond du propriétaire est résolu côté serveur au moment de l'acceptation. Une invitation en attente ne réserve pas de place ; si le cercle est plein à l'acceptation, la relation n'est pas créée.
 
 La formule est résolue par `functions/lib/billing/plan.ts`. En l'absence d'un abonnement Premium actif dont la période payée est valide, le compte est gratuit (2 contacts). `GET /api/billing/subscription` expose uniquement la formule, le plafond, le nombre de contacts et la fin de période. La migration `0028_account_subscriptions_and_billing_events.sql` a été appliquée à la D1 de production le 25 novembre 2026 ; le registre contient 28 migrations et `PRAGMA foreign_key_check` ne retourne aucune anomalie. `functions/lib/billing/activation.ts` contient le mécanisme serveur idempotent qui pourra activer Premium après validation cryptographique et métier du paiement par un adaptateur fournisseur.
 
