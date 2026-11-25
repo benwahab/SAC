@@ -165,6 +165,7 @@ BEGIN
               ON t.owner_account_id = a.author_account_id
              AND t.contact_account_id = r.recipient_account_id
              AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+             AND t.created_at <= a.created_at
             WHERE r.alert_id = a.id
               AND r.recipient_account_id = NEW.actor_account_id
           ))
@@ -181,7 +182,8 @@ BEGIN
               AND r.recipient_account_id = NEW.actor_account_id
               AND t.status = 'revoked'
               AND t.revoked_at = NEW.occurred_at
-              AND t.revoked_by_account_id IS NOT NULL\n              AND t.created_at <= a.created_at
+              AND t.revoked_by_account_id IS NOT NULL
+              AND t.created_at <= a.created_at
           ))
       )
   ) THEN RAISE(ABORT, 'alert_event_not_authorized_or_out_of_order') END;
@@ -219,6 +221,7 @@ BEGIN
     AND alert_id IN (
       SELECT a.id FROM alerts a
       WHERE a.author_account_id = NEW.owner_account_id AND a.status = 'active'
+        AND a.created_at >= NEW.created_at
     );
 
   DELETE FROM gps_relay_tickets
@@ -226,6 +229,7 @@ BEGIN
     AND alert_id IN (
       SELECT a.id FROM alerts a
       WHERE a.author_account_id = NEW.owner_account_id AND a.status = 'active'
+        AND a.created_at >= NEW.created_at
     );
 
   -- Un proche ayant accepté la prise en charge est retiré de la coordination.
@@ -237,7 +241,7 @@ BEGIN
   JOIN alert_recipients r ON r.alert_id = a.id
     AND r.recipient_account_id = NEW.contact_account_id
   WHERE a.author_account_id = NEW.owner_account_id
-    AND a.status = 'active'
+    AND a.status = 'active' AND a.created_at >= NEW.created_at
     AND EXISTS (
       SELECT 1 FROM alert_events v
       WHERE v.alert_id = a.id AND v.actor_account_id = NEW.contact_account_id
@@ -269,6 +273,7 @@ BEGIN
   FROM alert_events e
   JOIN alerts a ON a.id = e.alert_id AND a.status = 'active'
   WHERE a.author_account_id = NEW.owner_account_id
+    AND a.created_at >= NEW.created_at
     AND e.event_type = 'volunteered'
     AND e.actor_account_id <> NEW.contact_account_id
     AND e.server_sequence = (
@@ -314,6 +319,7 @@ BEGIN
       ON t.owner_account_id = a.author_account_id
      AND t.contact_account_id = NEW.recipient_account_id
      AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+     AND t.created_at <= a.created_at
     WHERE a.id = NEW.alert_id
       AND a.status = 'active'
       AND (
@@ -338,6 +344,7 @@ BEGIN
       ON t.owner_account_id = a.author_account_id
      AND t.contact_account_id = r.recipient_account_id
      AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+     AND t.created_at <= a.created_at
     WHERE e.alert_id = NEW.alert_id
       AND e.status = 'queued'
       AND a.status = 'active'
