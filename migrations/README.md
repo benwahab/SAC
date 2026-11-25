@@ -184,3 +184,12 @@ Test local : `npm run test:d1-support-tickets`. **Application distante vérifié
 Test de schéma : `python3 tests/d1_root_device_enrollment_schema.test.py`. Vérifier la CI et la migration distante avant de considérer ce correctif comme opérationnel.
 
 **Application distante vérifiée le 25 novembre 2026 :** migration 0024 appliquée à `sac-db`, entrée présente dans `d1_migrations`, colonne `consumed_by_request_id`, index unique et trigger de protection vérifiés ; `PRAGMA foreign_key_check` ne retourne aucune anomalie. La CI complète du commit de code et des tests a réussi (`45604417853`) et le déploiement Cloudflare Pages du commit documentaire précédent est réussi ; un dernier déploiement suivra cette mise à jour documentaire.
+
+
+## 0025 — accusé de réception avant escalade SMS SOS
+
+`0025_sos_sms_acknowledgement_gate.sql` renforce le garde D1 de l'escalade : une alerte ne peut être mise en file SMS que si aucun destinataire n'a accusé réception et qu'aucune responsabilité principale n'a été prise. Si l'un de ces événements existe, l'évaluation est enregistrée comme `suppressed` et aucun destinataire n'est ajouté à l'outbox SMS.
+
+Le service `scheduleDueSosSmsEscalations` applique la même règle avant l'insertion. Les rappels Web Push conservent leur cadence de cinq minutes et leur seuil choisi. Cette migration ne livre aucun SMS ; l'envoi réel reste soumis au choix et à l'intégration d'un fournisseur.
+
+Test d'intégration : `npm run test:sos-d1`, incluant désormais le scénario « accusé de réception sans volontaire ».
