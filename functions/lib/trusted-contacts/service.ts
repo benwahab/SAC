@@ -12,6 +12,7 @@ export type ContactInvitationServiceError =
   | "invitation_not_created"
   | "invalid_or_expired_invitation"
   | "relationship_not_revoked"
+  | "relationship_not_withdrawn"
   | "relationship_already_active"
   | "contact_limit_reached"
   | "storage_unavailable";
@@ -283,12 +284,13 @@ export async function revokeTrustedContact(
   try {
     const result = await db.prepare(
       `UPDATE trusted_contacts
-       SET status = 'revoked', revoked_at = ?
+       SET status = 'revoked', revoked_at = ?,
+           revocation_reason = 'owner_revoked', revoked_by_account_id = ?
        WHERE owner_account_id = ?
          AND contact_account_id = ?
          AND status = 'active'
          AND created_at <= ?`,
-    ).bind(now, input.authenticatedOwnerAccountId, input.contactAccountId, now).run();
+    ).bind(now, input.authenticatedOwnerAccountId, input.authenticatedOwnerAccountId, input.contactAccountId, now).run();
 
     if (!result.success || result.meta.changes !== 1) return fail("relationship_not_revoked");
     return { ok: true, value: { revoked: true } };
@@ -297,6 +299,52 @@ export async function revokeTrustedContact(
   }
 }
 
+/**
+ * A trusted contact may terminate their own accepted relationship at any time.
+ * The authenticated account ID must come from the server-side device session.
+ * D1's revocation trigger atomically cancels SOS deliveries, revokes GPS tickets,
+ * records the withdrawal event and transfers an active responsibility if possible.
+ */
+export async function withdrawTrustedContact(
+  db: InvitationDatabase,
+  input: {
+    readonly authenticatedContactAccountId: string;
+    readonly ownerAccountId: string;
+    readonly now?: number;
+  },
+): Promise<ContactInvitationServiceResult<{ readonly withdrawn: true }>> {
+  const now = input.now ?? Date.now();
+  if (
+    !input.authenticatedContactAccountId.trim() ||
+    !input.ownerAccountId.trim() ||
+    input.authenticatedContactAccountId === input.ownerAccountId ||
+    !Number.isSafeInteger(now) ||
+    now < 0
+  ) return fail("invalid_input");
+
+  try {
+    const result = await db.prepare(
+      `UPDATE trusted_contacts
+       SET status = 'revoked', revoked_at = ?,
+           revocation_reason = 'contact_withdrew', revoked_by_account_id = ?
+       WHERE owner_account_id = ?
+         AND contact_account_id = ?
+         AND status = 'active'
+         AND created_at <= ?`,
+    ).bind(
+      now,
+      input.authenticatedContactAccountId,
+      input.ownerAccountId,
+      input.authenticatedContactAccountId,
+      now,
+    ).run();
+
+    if (!result.success || result.meta.changes !== 1) return fail("relationship_not_withdrawn");
+    return { ok: true, value: { withdrawn: true } };
+  } catch {
+    return fail("storage_unavailable");
+  }
+}
 export async function listTrustedContacts(
   db: InvitationDatabase,
   authenticatedAccountId: string,
