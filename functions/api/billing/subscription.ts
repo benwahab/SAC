@@ -27,9 +27,17 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     const [plan, count] = await Promise.all([
       getAccountPlan(env.DB, accountId),
       env.DB.prepare(
-        `SELECT COUNT(*) AS count FROM close_relations
-         WHERE status = 'active' AND (account_low_id = ? OR account_high_id = ?)`,
-      ).bind(accountId, accountId).first<{ count: number }>(),
+        `SELECT COUNT(*) AS count FROM (
+           SELECT account_low_id AS contact_id FROM close_relations
+           WHERE status = 'active' AND account_high_id = ?
+           UNION
+           SELECT account_high_id AS contact_id FROM close_relations
+           WHERE status = 'active' AND account_low_id = ?
+           UNION
+           SELECT contact_account_id AS contact_id FROM trusted_contacts
+           WHERE status = 'active' AND owner_account_id = ?
+         )`,
+      ).bind(accountId, accountId, accountId).first<{ count: number }>(),
     ]);
 
     return json({
