@@ -63,7 +63,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
               CASE WHEN a.author_account_id = ? THEN 'author' ELSE 'recipient' END AS participant_role
        FROM alerts a
        WHERE a.author_account_id = ?
-          OR EXISTS (SELECT 1 FROM alert_recipients r JOIN trusted_contacts t ON t.owner_account_id = a.author_account_id AND t.contact_account_id = r.recipient_account_id AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked')) AND t.created_at <= a.created_at WHERE r.alert_id = a.id AND r.recipient_account_id = ?)
+          OR EXISTS (SELECT 1 FROM alert_recipients r JOIN trusted_contacts t ON t.owner_account_id = a.author_account_id AND t.contact_account_id = r.recipient_account_id AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked')) AND t.created_at <= a.created_at AND t.invitation_id = (SELECT latest.invitation_id FROM trusted_contacts latest WHERE latest.owner_account_id = a.author_account_id AND latest.contact_account_id = t.contact_account_id ORDER BY latest.created_at DESC, latest.invitation_id DESC LIMIT 1) WHERE r.alert_id = a.id AND r.recipient_account_id = ?)
        ORDER BY a.created_at DESC, a.id DESC LIMIT 50`,
     ).bind(session.value.accountId, session.value.accountId, session.value.accountId).all<{
       id: string; category: string; level: string; custom_description: string | null;
