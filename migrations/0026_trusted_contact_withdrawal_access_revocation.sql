@@ -261,6 +261,7 @@ BEGIN
     AND alert_id IN (
       SELECT a.id FROM alerts a
       WHERE a.author_account_id = NEW.owner_account_id AND a.status = 'active'
+        AND a.created_at >= NEW.created_at
     );
 
   -- Si le proche sortant était responsable, le prochain volontaire encore
