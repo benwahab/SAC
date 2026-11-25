@@ -438,7 +438,7 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   const queuedSms = await post<{ evaluationsCreated: number; smsTasksCreated: number }>("/sms-escalate", {
     now: lateAcknowledgementBase + 300_002,
   });
-  assert.deepEqual(queuedSms.data, { evaluationsCreated: 1, smsTasksCreated: 1 });
+  assert.deepEqual(queuedSms.data, { evaluationsCreated: 1, evaluationsSuppressed: 0, smsTasksCreated: 1 });
   const acknowledgementAfterQueue = await post<{ recorded: boolean }>("/respond", {
     actor: contact, alertId: lateAcknowledgementAlert.data.alertId,
     action: "acknowledge", now: lateAcknowledgementBase + 300_003,
