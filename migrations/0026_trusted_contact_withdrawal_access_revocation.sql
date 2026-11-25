@@ -118,6 +118,28 @@ END;
 
 -- L'événement de retrait est append-only. Une fois la relation révoquée,
 -- aucun nouvel événement fonctionnel ne peut être ajouté par l'ancien proche.
+DROP TRIGGER alert_recipient_insert_guard;
+CREATE TRIGGER alert_recipient_insert_guard
+BEFORE INSERT ON alert_recipients
+BEGIN
+  SELECT CASE WHEN NOT EXISTS (
+    SELECT 1 FROM alerts a
+    JOIN trusted_contacts t
+      ON t.owner_account_id = a.author_account_id
+     AND t.contact_account_id = NEW.recipient_account_id
+     AND t.status = 'active'
+     AND t.created_at <= a.created_at
+    JOIN accounts contact
+      ON contact.id = NEW.recipient_account_id AND contact.status = 'active'
+    WHERE a.id = NEW.alert_id
+      AND a.status = 'active'
+      AND NEW.selected_at = a.created_at
+  ) THEN RAISE(ABORT, 'alert_recipient_not_trusted_at_trigger') END;
+  SELECT CASE WHEN NEW.recipient_account_id = (
+    SELECT author_account_id FROM alerts WHERE id = NEW.alert_id
+  ) THEN RAISE(ABORT, 'alert_author_cannot_be_recipient') END;
+END;
+
 DROP TRIGGER alert_event_insert_guard;
 CREATE TRIGGER alert_event_insert_guard
 BEFORE INSERT ON alert_events
@@ -159,7 +181,7 @@ BEGIN
               AND r.recipient_account_id = NEW.actor_account_id
               AND t.status = 'revoked'
               AND t.revoked_at = NEW.occurred_at
-              AND t.revoked_by_account_id IS NOT NULL
+              AND t.revoked_by_account_id IS NOT NULL\n              AND t.created_at <= a.created_at
           ))
       )
   ) THEN RAISE(ABORT, 'alert_event_not_authorized_or_out_of_order') END;
@@ -186,7 +208,7 @@ BEGIN
     AND status IN ('pending', 'processing')
     AND alert_id IN (
       SELECT a.id FROM alerts a
-      WHERE a.author_account_id = NEW.owner_account_id AND a.status = 'active'
+      WHERE a.author_account_id = NEW.owner_account_id AND a.status = 'active' AND a.created_at >= NEW.created_at
     );
 
   UPDATE alert_sms_outbox
