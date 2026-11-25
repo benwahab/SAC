@@ -29,7 +29,13 @@ L'interface Réglages affiche ces informations en français, anglais et arabe. L
 
 Le statut « credential racine enregistrée » décrit uniquement la présence d'une ligne D1 associée. Il ne constitue pas une preuve cryptographique récente, ne prouve pas que la clé est disponible et ne confère pas à lui seul une autorité de révocation.
 
-## 3. Limites importantes — ne pas contourner
+## 3. Amélioration complémentaire — regroupement par appareil
+
+La console Réglages regroupe maintenant les sessions par identifiant d'appareil, au lieu de présenter chaque session comme un appareil distinct. Pour chaque appareil, l'interface affiche une seule fois ses métadonnées et le nombre de sessions actives ; les détails et la fermeture restent propres à chaque session. Les libellés sont disponibles en français, anglais et arabe.
+
+Cette présentation évite de faire croire qu'un même téléphone ayant plusieurs sessions correspond à plusieurs appareils. Elle ne permet toujours pas de révoquer l'appareil entier.
+
+## 4. Limites importantes — ne pas contourner
 
 - Fermer une session ne révoque pas l'appareil entier.
 - La révocation d'un appareil doit invalider atomiquement toutes ses sessions et ses abonnements push ; le trigger D1 de révocation des appareils supprime déjà les abonnements push associés.
@@ -40,13 +46,13 @@ Le statut « credential racine enregistrée » décrit uniquement la présence d
 - La récupération de compte sans appareil fiable ne peut pas créer une nouvelle racine ni approuver un nouvel appareil.
 - Aucune migration D1 n'est requise pour cette amélioration de métadonnées.
 
-## 4. Migrations et vérifications
+## 5. Migrations et vérifications
 
 Les migrations `0024_root_authentication_session_claim.sql` et `0025_sos_sms_acknowledgement_gate.sql` sont inscrites dans `d1_migrations` de la base distante `sac-db`. La tranche de métadonnées appareil/session ne crée aucune migration.
 
 Le test `tests/session-management-endpoints.test.ts` couvre désormais la réponse de liste authentifiée et vérifie que les métadonnées d'appareil sont renvoyées sans secret. Le workflow CI exécute ce test via `npm run test:session-management`.
 
-## 5. Prochaines étapes, dans l'ordre sûr
+## 6. Prochaines étapes, dans l'ordre sûr
 
 1. Terminer les tests CI et vérifier le déploiement Pages du commit correspondant.
 2. Spécifier et faire approuver la révocation complète d'un appareil secondaire depuis une preuve de confiance appropriée.
@@ -55,6 +61,6 @@ Le test `tests/session-management-endpoints.test.ts` couvre désormais la répon
 5. Concevoir séparément la récupération d'accès au compte et la récupération de la racine ; ne jamais les fusionner.
 6. Maintenir désactivés les parcours non homologués et ne pas activer le GPS précis tant que la destruction irréversible J+30 n'est pas prouvée.
 
-## 6. Fournisseur e-mail
+## 7. Fournisseur e-mail
 
 Le fournisseur e-mail SAC est **Brevo**. L'utilisateur a confirmé le 25 novembre 2026 que la configuration existante fonctionne. Ne pas demander une nouvelle configuration, ne pas remplacer le fournisseur et ne pas bloquer cette tranche sur ce sujet.
