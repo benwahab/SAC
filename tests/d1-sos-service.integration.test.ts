@@ -522,4 +522,41 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   });
   assert.equal(futureAlertRead.status, 200);
   assert.equal(futureAlertRead.data.isAuthor, false);
+
+  const reinvitedSecond = await post<{ accepted: boolean }>("/reinvite", {
+    owner, contact: contact2, now: voluntaryBase + 4,
+  });
+  assert.equal(reinvitedSecond.status, 200);
+  assert.equal(reinvitedSecond.data.accepted, true);
+
+  const handoverAlert = await post<{ alertId: string }>("/create", {
+    owner, recipients: [contact, contact2], reminders: 1, now: voluntaryBase + 6,
+  });
+  assert.equal(handoverAlert.status, 200);
+  const firstVolunteer = await post<{ responsibilityAssigned: boolean }>("/respond", {
+    actor: contact, alertId: handoverAlert.data.alertId, action: "volunteer", now: voluntaryBase + 7,
+  });
+  assert.equal(firstVolunteer.status, 200);
+  assert.equal(firstVolunteer.data.responsibilityAssigned, true);
+  const nextVolunteer = await post<{ responsibilityAssigned: boolean }>("/respond", {
+    actor: contact2, alertId: handoverAlert.data.alertId, action: "volunteer", now: voluntaryBase + 8,
+  });
+  assert.equal(nextVolunteer.status, 200);
+  assert.equal(nextVolunteer.data.responsibilityAssigned, false);
+
+  const withdrawLead = await post<{ withdrawn: boolean }>("/withdraw", {
+    owner, contact, now: voluntaryBase + 9,
+  });
+  assert.equal(withdrawLead.status, 200);
+  assert.equal(withdrawLead.data.withdrawn, true);
+
+  const transferredLead = await post<{ assigned: boolean; isSelf: boolean }>("/responsibility", {
+    actor: contact2, alertId: handoverAlert.data.alertId,
+  });
+  assert.equal(transferredLead.status, 200);
+  assert.deepEqual(transferredLead.data, { assigned: true, isSelf: true });
+  const formerLeadLockedOut = await post<{ error: string }>("/responsibility", {
+    actor: contact, alertId: handoverAlert.data.alertId,
+  });
+  assert.equal(formerLeadLockedOut.status, 404);
 });
