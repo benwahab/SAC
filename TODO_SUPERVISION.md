@@ -1089,6 +1089,7 @@ Le présent bloc actualise les sections de supervision antérieures lorsque cell
 - [x] Confirmer les endpoints existants de liste des sessions, révocation individuelle et déconnexion.
 - [x] Ajouter aux sessions actives les métadonnées non secrètes de l'appareil associé : date d'enregistrement et présence d'une credential racine.
 - [x] Afficher ces métadonnées dans Réglages en français, anglais et arabe, sans exposer de jeton, hash, IP ou GPS.
+- [x] Regrouper les sessions par appareil dans Réglages, afficher le nombre de sessions par appareil et conserver la révocation individuelle de chaque session.
 - [x] Ajouter un test de l'endpoint de liste des sessions et l'inscrire dans le workflow CI.
 - [x] Documenter les limites : fermer une session n'est pas révoquer l'appareil ; une présence de credential racine n'est pas une preuve cryptographique récente.
 - [ ] Terminer et vérifier le workflow CI et le déploiement Pages du commit final de cette tranche.
