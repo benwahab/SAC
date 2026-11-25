@@ -18,7 +18,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
     const document = await env.DB.prepare("SELECT id FROM admin_documents WHERE id = ?").bind(documentId).first();
     if (!document) return json({ error: "document_not_found" }, 404);
     const rows = await env.DB.prepare("SELECT id, version_number, file_name, content_type, size_bytes, uploaded_by, created_at FROM admin_document_attachments WHERE document_id = ? ORDER BY created_at DESC, id DESC").bind(documentId).all<Record<string, unknown>>();
-    return json({ attachments: rows.results ?? [] });
+    return json({ attachments: rows.results ?? [], storageConfigured: Boolean(env.DOCUMENTS) });
   } catch { return json({ error: "attachment_service_unavailable" }, 503); }
 };
 
