@@ -47,6 +47,10 @@ async function isActiveParticipant(
      WHERE a.id = ? AND a.status = 'active'
        AND (a.author_account_id = ? OR EXISTS (
          SELECT 1 FROM alert_recipients r
+         JOIN trusted_contacts t
+           ON t.owner_account_id = a.author_account_id
+          AND t.contact_account_id = r.recipient_account_id
+          AND t.status = 'active'
          WHERE r.alert_id = a.id AND r.recipient_account_id = ?
        )) LIMIT 1`,
   ).bind(deviceId, accountId, sessionId, accountId, Date.now(), alertId, accountId, accountId).first<{ allowed: number }>();
@@ -152,7 +156,9 @@ export class GpsRelayRoom extends DurableObject<Env> {
     const identity = this.sockets.get(sender);
     if (!identity) return;
     if (!(await isActiveParticipant(this.env.DB, alertId, identity.accountId, identity.deviceId, identity.sessionId))) {
-      this.closeRoom(4001, "alert_closed");
+      sender.close(4003, "access_revoked");
+      this.sockets.delete(sender);
+      this.broadcastPresence(sender, { type: "participant-disconnected", connectionId: identity.connectionId, role: identity.role });
       return;
     }
     if (typeof raw !== "string" || raw.length > 16_384) {
@@ -197,6 +203,13 @@ export class GpsRelayRoom extends DurableObject<Env> {
         message.recipientConnectionId,
       );
       if (socket !== sender && isTarget && socket.readyState === WebSocket.OPEN) {
+        if (target.role === "recipient" &&
+            !(await isActiveParticipant(this.env.DB, alertId, target.accountId, target.deviceId, target.sessionId))) {
+          socket.close(4003, "access_revoked");
+          this.sockets.delete(socket);
+          this.broadcastPresence(socket, { type: "participant-disconnected", connectionId: target.connectionId, role: target.role });
+          continue;
+        }
         try { socket.send(outgoing); } catch { this.sockets.delete(socket); }
       }
     }
