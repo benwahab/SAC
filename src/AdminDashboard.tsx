@@ -4,6 +4,7 @@ import BrandLogo from "./components/BrandLogo";
 import AdminDocuments from "./components/AdminDocuments";
 import AdminPartners from "./components/AdminPartners";
 import AdminPilotage from "./components/AdminPilotage";
+import AdminResources from "./components/AdminResources";
 
 type Permission = AdminPermission;
 type Account = { id: string; email: string };
@@ -507,7 +508,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
         </article>
       </section>}
       {activeSection === "external" && <AdminPartners language={language} />}
-      {activeSection === "resources" && <AdminDocuments language={language} />}
+      {activeSection === "resources" && <AdminResources language={language} />}
       {activeSection === "steering" && <AdminPilotage language={language} />}
       {activeSection === "settings" && <section className="space-y-5">
         <article className="rounded-3xl border border-emerald-900/10 bg-white p-6 shadow-sm">
