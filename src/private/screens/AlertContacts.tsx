@@ -1,10 +1,11 @@
 import { MailPlus, ShieldCheck, UserRoundMinus, UsersRound } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import type { Contact, ScreenProps } from "../types";
+import type { Contact, ScreenProps, TrustedByContact } from "../types";
 import { Avatar, Card, Halo, Notice, Sheet, fieldClass, ghostBtn, primaryBtn } from "../ui";
 
-export default function AlertContacts({ copy, go, notice, setNotice, contacts, setContacts, loading, error, refresh }: ScreenProps & {
+export default function AlertContacts({ copy, go, notice, setNotice, contacts, setContacts, trustedBy, setTrustedBy, loading, error, refresh }: ScreenProps & {
   contacts: Contact[]; setContacts: (contacts: Contact[]) => void;
+  trustedBy: TrustedByContact[]; setTrustedBy: (contacts: TrustedByContact[]) => void;
   loading: boolean; error: string; refresh: () => Promise<void>;
 }) {
   const [email, setEmail] = useState("");
@@ -55,12 +56,47 @@ export default function AlertContacts({ copy, go, notice, setNotice, contacts, s
     finally { setBusy(false); }
   }
 
+  async function leave(ownerAccountId: string) {
+    if (busy || !window.confirm(copy.trustedByConfirm)) return;
+    setBusy(true); setProblem(""); setNotice("");
+    try {
+      const response = await fetch("/api/contacts/withdraw", {
+        method: "POST", credentials: "same-origin", cache: "no-store",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ownerAccountId }),
+      });
+      const payload = await response.json() as { withdrawn?: boolean };
+      if (!response.ok || payload.withdrawn !== true) throw new Error(copy.trustedByError);
+      setTrustedBy(trustedBy.filter((relationship) => relationship.ownerAccountId !== ownerAccountId));
+      setNotice(copy.trustedByDone);
+      await refresh();
+    } catch (reason) {
+      setProblem(reason instanceof Error ? reason.message : copy.trustedByError);
+    } finally { setBusy(false); }
+  }
+
   return (
     <>
       <Halo title={copy.alertContactsTitle} eyebrow={copy.privateSpace} onBack={() => go({ name: "contacts" })} backLabel={copy.back}><p className="mt-1 text-sm text-white/90">{copy.alertContactsIntro}</p></Halo>
       <Sheet>
         {notice && <Notice kind="ok">{notice}</Notice>}
         {(problem || error) && <Notice kind="error">{problem || error}</Notice>}
+        <Card>
+          <h2 className="flex items-center gap-2 font-extrabold"><ShieldCheck size={18} />{copy.trustedByTitle}</h2>
+          <p className="mt-1 text-sm leading-6 text-sac-muted">{copy.trustedByIntro}</p>
+          {loading ? <p className="mt-2 text-sm text-sac-muted">{copy.loading}</p> : trustedBy.length === 0 ? <p className="mt-2 text-sm text-sac-muted">{copy.alertContactsEmpty}</p> : (
+            <ul className="mt-2 divide-y divide-[#F0EAE5]">
+              {trustedBy.map((relationship) => (
+                <li key={relationship.ownerAccountId} className="flex items-center gap-3 py-3">
+                  <Avatar email={relationship.email} />
+                  <div className="min-w-0 flex-1"><p className="truncate font-bold" dir="ltr">{relationship.email}</p><p className="text-xs text-sac-muted">{copy.contactVerified}</p></div>
+                  <button type="button" disabled={busy} onClick={() => void leave(relationship.ownerAccountId)} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-[14px] border border-sac-alert/25 bg-sac-alert/5 px-3 text-xs font-bold text-sac-alert disabled:opacity-50"><UserRoundMinus size={15} />{copy.trustedByWithdraw}</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
         <Card>
           <h2 className="flex items-center gap-2 font-extrabold"><UsersRound size={18} />{copy.alertContactsTitle}</h2>
           {loading ? <p className="mt-2 text-sm text-sac-muted">{copy.loading}</p> : contacts.length === 0 ? <p className="mt-2 text-sm text-sac-muted">{copy.alertContactsEmpty}</p> : (
