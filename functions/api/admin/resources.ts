@@ -76,6 +76,7 @@ export const onRequestPost:PagesFunction<Env>=async({request,env})=>{
  if(action==="update_staff_status"){
  const id=str(v.staffId,80),status=str(v.employmentStatus,20);if(!id||!staffStatuses.includes(status))return json({error:"invalid_staff_status"},400);
  const exists=await env.DB.prepare("SELECT id FROM hr_staff WHERE id=?").bind(id).first();if(!exists)return json({error:"staff_not_found"},404);
+ if(status==="departed"){const assigned=await env.DB.prepare("SELECT id FROM logistics_asset_assignments WHERE staff_id=? AND returned_at IS NULL LIMIT 1").bind(id).first();if(assigned)return json({error:"staff_has_assigned_assets"},409)}
  const results=await env.DB.batch([env.DB.prepare("UPDATE hr_staff SET employment_status=?,updated_by=?,updated_at=?,end_date=CASE WHEN ?='departed' THEN date('now') ELSE end_date END WHERE id=?").bind(status,actor,now,status,id),event("staff",id,"status_changed","Changement du statut du personnel"),audit("hr.staff.status.updated","resources.staff.update")]);
  return results.every(x=>x.success)?json({updated:true}):json({error:"staff_update_failed"},503)
  }
