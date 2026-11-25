@@ -64,7 +64,7 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
             AND t.contact_account_id = r.recipient_account_id
             AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
             AND t.created_at <= a.created_at
-            AND NOT EXISTS (SELECT 1 FROM trusted_contacts exited WHERE exited.owner_account_id = t.owner_account_id AND exited.contact_account_id = t.contact_account_id AND exited.revocation_reason = 'contact_withdrew' AND (exited.created_at > t.created_at OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)))
+            AND NOT EXISTS (SELECT 1 FROM trusted_contacts exited WHERE exited.owner_account_id = t.owner_account_id AND exited.contact_account_id = t.contact_account_id AND exited.revocation_reason = 'contact_withdrew' AND (exited.rowid > t.rowid))
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          ))
        LIMIT 1`,
@@ -92,7 +92,7 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
             AND t.contact_account_id = r.recipient_account_id
             AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
             AND t.created_at <= a.created_at
-            AND NOT EXISTS (SELECT 1 FROM trusted_contacts exited WHERE exited.owner_account_id = t.owner_account_id AND exited.contact_account_id = t.contact_account_id AND exited.revocation_reason = 'contact_withdrew' AND (exited.created_at > t.created_at OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)))
+            AND NOT EXISTS (SELECT 1 FROM trusted_contacts exited WHERE exited.owner_account_id = t.owner_account_id AND exited.contact_account_id = t.contact_account_id AND exited.revocation_reason = 'contact_withdrew' AND (exited.rowid > t.rowid))
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          ))`,
     ).bind(
