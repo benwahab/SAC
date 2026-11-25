@@ -3,6 +3,7 @@ import { adminTranslations, type AdminPermission, type Language } from "./i18n/t
 import BrandLogo from "./components/BrandLogo";
 import AdminDocuments from "./components/AdminDocuments";
 import AdminPartners from "./components/AdminPartners";
+import AdminPilotage from "./components/AdminPilotage";
 
 type Permission = AdminPermission;
 type Account = { id: string; email: string };
@@ -507,19 +508,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
       </section>}
       {activeSection === "external" && <AdminPartners language={language} />}
       {activeSection === "resources" && <AdminDocuments language={language} />}
-      {activeSection === "steering" && <section className="space-y-5">
-        <article className="rounded-3xl border border-emerald-900/10 bg-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-lg font-extrabold">{language === "fr" ? "Pilotage et rapports" : language === "ar" ? "الإدارة والتقارير" : "Management and reporting"}</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{language === "fr" ? "La conception couvre les objectifs, KPI, projets, risques, décisions et rapports de direction. Les indicateurs seront calculés depuis les modules sources sans ressaisie." : language === "ar" ? "يشمل التصميم الأهداف ومؤشرات الأداء والمشاريع والمخاطر والقرارات وتقارير الإدارة. سيتم حساب المؤشرات من وحدات المصدر دون إعادة إدخال البيانات." : "The design covers objectives, KPIs, projects, risks, decisions and executive reports. Metrics will be calculated from source modules without duplicate entry."}</p></div><span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-extrabold text-amber-800">{language === "fr" ? "Conception" : language === "ar" ? "قيد التصميم" : "Design"}</span></div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[
-            language === "fr" ? "Objectifs et plans d’action" : language === "ar" ? "الأهداف وخطط العمل" : "Objectives and action plans",
-            language === "fr" ? "Indicateurs KPI" : language === "ar" ? "مؤشرات الأداء" : "KPIs",
-            language === "fr" ? "Projets, jalons et risques" : language === "ar" ? "المشاريع والمراحل والمخاطر" : "Projects, milestones and risks",
-            language === "fr" ? "Rapports et décisions" : language === "ar" ? "التقارير والقرارات" : "Reports and decisions",
-          ].map(item => <div key={item} className="rounded-xl bg-emerald-50/70 p-4 text-sm font-bold text-emerald-950">{item}</div>)}</div>
-          <p className="mt-5 rounded-xl border border-emerald-900/10 bg-slate-50 p-4 text-xs leading-6 text-slate-600">{language === "fr" ? "Les valeurs calculées, déclarées, vérifiées et validées seront distinguées. Les données SOS individuelles, salaires et dossiers RH privés restent exclus des vues de direction." : language === "ar" ? "سيتم التمييز بين القيم المحسوبة والمصرح بها والمتحقق منها والمعتمدة. وتُستبعد تنبيهات SOS الفردية والرواتب وملفات الموارد البشرية الخاصة من لوحات الإدارة." : "Calculated, declared, verified and approved values will be distinguished. Individual SOS data, salaries and private HR records remain excluded from executive views."}</p>
-          <a href="https://github.com/benwahab/SAC/blob/main/docs/CONCEPTION_PILOTAGE_KPI_PROJETS_RAPPORTS_2026-11-24.md" target="_blank" rel="noreferrer" className="mt-5 inline-flex text-sm font-bold text-emerald-800 underline underline-offset-4">{language === "fr" ? "Consulter la conception du pilotage" : language === "ar" ? "عرض تصميم الإدارة" : "Review management design"}</a>
-        </article>
-      </section>}
+      {activeSection === "steering" && <AdminPilotage language={language} />}
       {activeSection === "settings" && <section className="space-y-5">
         <article className="rounded-3xl border border-emerald-900/10 bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-lg font-extrabold">{language === "fr" ? "Paramètres et configuration" : language === "ar" ? "الإعدادات والتهيئة" : "Settings and configuration"}</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{language === "fr" ? "La gouvernance des paramètres, langues, intégrations, fonctions et versions est documentée. Les changements de configuration ne sont pas encore activés depuis cette rubrique." : language === "ar" ? "تم توثيق حوكمة الإعدادات واللغات والتكاملات والميزات والإصدارات. لم يتم تفعيل تغييرات الإعدادات من هذا القسم بعد." : "Governance for settings, languages, integrations, features and releases is documented. Configuration changes are not yet enabled from this section."}</p></div><span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-extrabold text-amber-800">{language === "fr" ? "Conception" : language === "ar" ? "قيد التصميم" : "Design"}</span></div>
