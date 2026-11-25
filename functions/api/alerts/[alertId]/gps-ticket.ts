@@ -63,6 +63,7 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = r.recipient_account_id
             AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+            AND t.created_at <= a.created_at
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          ))
        LIMIT 1`,
@@ -89,6 +90,7 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = r.recipient_account_id
             AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+            AND t.created_at <= a.created_at
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          ))`,
     ).bind(
