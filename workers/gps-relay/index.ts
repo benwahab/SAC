@@ -50,7 +50,7 @@ async function isActiveParticipant(
          JOIN trusted_contacts t
            ON t.owner_account_id = a.author_account_id
           AND t.contact_account_id = r.recipient_account_id
-          AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+          AND t.status = 'active'
           AND t.created_at <= a.created_at
           AND NOT EXISTS (SELECT 1 FROM trusted_contacts exited WHERE exited.owner_account_id = t.owner_account_id AND exited.contact_account_id = t.contact_account_id AND exited.revocation_reason = 'contact_withdrew' AND (exited.relationship_sequence > t.relationship_sequence))
          WHERE r.alert_id = a.id AND r.recipient_account_id = ?
