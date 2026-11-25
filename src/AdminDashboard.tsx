@@ -15,6 +15,7 @@ type DelegateMission = {
 };
 type AdminAccess = { canAccess: boolean; role: "super_admin" | "delegate" | null; activeMissions: number };
 type OverviewMetrics = { activeAccounts: number; activeAlerts: number; alertsLast24h: number; activeMissions: number; activeDelegates: number; auditEventsLast24h: number };
+type PlatformHealth = { ok: boolean; service: string; database: "connected" | "unavailable" | "schema_incomplete" };
 type AlertSupervision = {
   summary: { active: number; createdLast24h: number; closedLast24h: number; activeWithResponse: number; activeWithResponsible: number; activeWithoutResponse: number };
   byLevel: { level: string; total: number }[];
@@ -35,6 +36,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [overviewMetrics, setOverviewMetrics] = useState<OverviewMetrics | null>(null);
+  const [platformHealth, setPlatformHealth] = useState<PlatformHealth | null>(null);
   const [alertSupervision, setAlertSupervision] = useState<AlertSupervision | null>(null);
   const [supportInbox, setSupportInbox] = useState<SupportInbox | null>(null);
   const [supportTicketDetail, setSupportTicketDetail] = useState<SupportTicketDetail | null>(null);
@@ -74,10 +76,11 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
 
 
   const refreshSuperAdmin = useCallback(async () => {
-    const [missionResponse, auditResponse, overviewResponse] = await Promise.all([
+    const [missionResponse, auditResponse, overviewResponse, healthResponse] = await Promise.all([
       fetch("/api/admin/missions", { credentials: "same-origin", cache: "no-store" }),
       fetch("/api/admin/audit?limit=50", { credentials: "same-origin", cache: "no-store" }),
       fetch("/api/admin/overview", { credentials: "same-origin", cache: "no-store" }),
+      fetch("/api/health", { credentials: "same-origin", cache: "no-store" }).catch(() => null),
     ]);
     const alertResponse = await fetch("/api/admin/alerts", { credentials: "same-origin", cache: "no-store" });
     const supportResponse = await fetch("/api/admin/support", { credentials: "same-origin", cache: "no-store" });
@@ -91,6 +94,12 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
     setMissions(missionPayload.missions);
     setAuditEvents(auditPayload.events);
     setOverviewMetrics(overviewPayload.metrics);
+    if (healthResponse?.ok) {
+      const healthPayload = await healthResponse.json() as PlatformHealth;
+      setPlatformHealth(healthPayload);
+    } else {
+      setPlatformHealth(null);
+    }
     setAlertSupervision(alertPayload);
     setSupportInbox(supportResponse.ok ? await supportResponse.json() as SupportInbox : null);
     setAccessDenied(false);
@@ -327,7 +336,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
     : language === "ar"
       ? [{ label: "الحسابات النشطة", value: overviewMetrics?.activeAccounts }, { label: "التنبيهات النشطة", value: overviewMetrics?.activeAlerts }, { label: "التنبيهات · 24 ساعة", value: overviewMetrics?.alertsLast24h }, { label: "المهام النشطة", value: overviewMetrics?.activeMissions }, { label: "المفوضون النشطون", value: overviewMetrics?.activeDelegates }, { label: "أحداث التدقيق · 24 ساعة", value: overviewMetrics?.auditEventsLast24h }]
       : [{ label: "Active accounts", value: overviewMetrics?.activeAccounts }, { label: "Active alerts", value: overviewMetrics?.activeAlerts }, { label: "Alerts · 24h", value: overviewMetrics?.alertsLast24h }, { label: "Active missions", value: overviewMetrics?.activeMissions }, { label: "Active delegates", value: overviewMetrics?.activeDelegates }, { label: "Audit events · 24h", value: overviewMetrics?.auditEventsLast24h }];
-  const overviewCards = <section className="mb-8"><div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-sm font-extrabold text-emerald-950">{language === "fr" ? "Activité réelle de la plateforme" : language === "ar" ? "النشاط الفعلي للمنصة" : "Live platform activity"}</h2><span className="text-[11px] text-slate-500">{language === "fr" ? "Période glissante de 24 heures" : language === "ar" ? "آخر 24 ساعة" : "Rolling 24-hour period"}</span></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{overviewLabels.map((metric) => <div key={metric.label} className="rounded-2xl border border-emerald-900/10 bg-white/85 p-4 shadow-sm"><p className="text-xs font-bold text-slate-500">{metric.label}</p><p className="mt-2 text-2xl font-black tabular-nums text-emerald-950">{metric.value === undefined ? "—" : metric.value.toLocaleString(language)}</p></div>)}</div>{!overviewMetrics && <p className="mt-3 text-xs text-slate-500">{language === "fr" ? "Indicateurs indisponibles : actualise la page ou réessaie plus tard." : language === "ar" ? "المؤشرات غير متاحة: حدّث الصفحة أو أعد المحاولة لاحقاً." : "Metrics unavailable: refresh the page or try again later."}</p>}</section>;
+  const overviewCards = <section className="mb-8"><div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-sm font-extrabold text-emerald-950">{language === "fr" ? "Activité réelle de la plateforme" : language === "ar" ? "النشاط الفعلي للمنصة" : "Live platform activity"}</h2><span className="text-[11px] text-slate-500">{language === "fr" ? "Période glissante de 24 heures" : language === "ar" ? "آخر 24 ساعة" : "Rolling 24-hour period"}</span></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{overviewLabels.map((metric) => <div key={metric.label} className="rounded-2xl border border-emerald-900/10 bg-white/85 p-4 shadow-sm"><p className="text-xs font-bold text-slate-500">{metric.label}</p><p className="mt-2 text-2xl font-black tabular-nums text-emerald-950">{metric.value === undefined ? "—" : metric.value.toLocaleString(language)}</p></div>)}</div>{!overviewMetrics && <p className="mt-3 text-xs text-slate-500">{language === "fr" ? "Indicateurs indisponibles : actualise la page ou réessaie plus tard." : language === "ar" ? "المؤشرات غير متاحة: حدّث الصفحة ou أعد المحاولة لاحقاً." : "Metrics unavailable: refresh the page or try again later."}</p>}<article className="mt-4 rounded-2xl border border-emerald-900/10 bg-white/85 p-4 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="text-sm font-extrabold text-emerald-950">{language === "fr" ? "Connectivité technique" : language === "ar" ? "الاتصال التقني" : "Technical connectivity"}</h3><p className="mt-1 text-xs text-slate-500">{language === "fr" ? "Contrôle API et base D1 — ne constitue pas un test du parcours SOS." : language === "ar" ? "فحص واجهة API وقاعدة D1 — لا يمثل اختباراً لمسار SOS." : "API and D1 check — this is not an SOS flow test."}</p></div><span className={platformHealth?.ok ? "rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900" : "rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900"}>{platformHealth?.ok ? (language === "fr" ? "Disponible" : language === "ar" ? "متصل" : "Available") : (language === "fr" ? "Indisponible" : language === "ar" ? "غير متاح" : "Unavailable")}</span></div><div className="mt-3 flex flex-wrap gap-4 text-xs text-slate-600"><span>{language === "fr" ? "API" : language === "ar" ? "واجهة API" : "API"} : {platformHealth?.ok ? "OK" : "—"}</span><span>{language === "fr" ? "Base D1" : language === "ar" ? "قاعدة D1" : "D1 database"} : {platformHealth?.database === "connected" ? (language === "fr" ? "Connectée" : language === "ar" ? "متصلة" : "Connected") : platformHealth?.database === "schema_incomplete" ? (language === "fr" ? "Schéma incomplet" : language === "ar" ? "المخطط غير مكتمل" : "Schema incomplete") : (language === "fr" ? "Indisponible" : language === "ar" ? "غير متاحة" : "Unavailable")}</span></div></article></section>;
 
   if (access?.role === "delegate") return <main className="min-h-screen bg-sac-primary/15 px-5 py-8 text-sac-ink sm:px-8" dir={language === "ar" ? "rtl" : "ltr"}>
     <div className="mx-auto max-w-6xl">
