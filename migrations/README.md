@@ -182,3 +182,5 @@ Test local : `npm run test:d1-support-tickets`. **Application distante vérifié
 `POST /api/auth/login` utilise cet identifiant comme condition pour mettre à jour le compteur de la credential puis insérer la session. Une validation concurrente perdante ne peut donc ni mettre à jour la credential ni créer une session orpheline. Si une étape conditionnelle échoue, l'API renvoie un conflit et ne remet aucun cookie de session.
 
 Test de schéma : `python3 tests/d1_root_device_enrollment_schema.test.py`. Vérifier la CI et la migration distante avant de considérer ce correctif comme opérationnel.
+
+**Application distante vérifiée le 25 novembre 2026 :** migration 0024 appliquée à `sac-db`, entrée présente dans `d1_migrations`, colonne `consumed_by_request_id`, index unique et trigger de protection vérifiés ; `PRAGMA foreign_key_check` ne retourne aucune anomalie. La CI complète du commit de code et des tests a réussi (`45604417853`) et le déploiement Cloudflare Pages du commit documentaire précédent est réussi ; un dernier déploiement suivra cette mise à jour documentaire.
