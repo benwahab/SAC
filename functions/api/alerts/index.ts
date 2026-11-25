@@ -63,7 +63,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
               CASE WHEN a.author_account_id = ? THEN 'author' ELSE 'recipient' END AS participant_role
        FROM alerts a
        WHERE a.author_account_id = ?
-          OR EXISTS (SELECT 1 FROM alert_recipients r JOIN trusted_contacts t ON t.owner_account_id = a.author_account_id AND t.contact_account_id = r.recipient_account_id AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked')) AND t.created_at <= a.created_at AND NOT EXISTS (SELECT 1 FROM trusted_contacts exited WHERE exited.owner_account_id = t.owner_account_id AND exited.contact_account_id = t.contact_account_id AND exited.revocation_reason = 'contact_withdrew' AND (exited.rowid > t.rowid)) WHERE r.alert_id = a.id AND r.recipient_account_id = ?)
+          OR EXISTS (SELECT 1 FROM alert_recipients r JOIN trusted_contacts t ON t.owner_account_id = a.author_account_id AND t.contact_account_id = r.recipient_account_id AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked')) AND t.created_at <= a.created_at AND NOT EXISTS (SELECT 1 FROM trusted_contacts exited WHERE exited.owner_account_id = t.owner_account_id AND exited.contact_account_id = t.contact_account_id AND exited.revocation_reason = 'contact_withdrew' AND (exited.relationship_sequence > t.relationship_sequence)) WHERE r.alert_id = a.id AND r.recipient_account_id = ?)
        ORDER BY a.created_at DESC, a.id DESC LIMIT 50`,
     ).bind(session.value.accountId, session.value.accountId, session.value.accountId).all<{
       id: string; category: string; level: string; custom_description: string | null;
