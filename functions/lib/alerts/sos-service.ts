@@ -262,7 +262,7 @@ export async function getSosAlertForParticipant(
            JOIN trusted_contacts t
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = r.recipient_account_id
-            AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+            AND t.status = 'active'
             AND t.created_at <= a.created_at
             AND NOT EXISTS (
               SELECT 1 FROM trusted_contacts exited
@@ -354,7 +354,7 @@ export async function respondToSosAlert(
        JOIN trusted_contacts t
          ON t.owner_account_id = a.author_account_id
         AND t.contact_account_id = r.recipient_account_id
-        AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+        AND t.status = 'active'
             AND t.created_at <= a.created_at
             AND NOT EXISTS (
               SELECT 1 FROM trusted_contacts exited
@@ -562,7 +562,7 @@ export async function listSosEventsForParticipant(
            JOIN trusted_contacts t
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = r.recipient_account_id
-            AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+            AND t.status = 'active'
             AND t.created_at <= a.created_at
             AND NOT EXISTS (
               SELECT 1 FROM trusted_contacts exited
@@ -634,7 +634,7 @@ export async function getSosResponsibilityForParticipant(
            JOIN trusted_contacts t
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = r.recipient_account_id
-            AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+            AND t.status = 'active'
             AND t.created_at <= a.created_at
             AND NOT EXISTS (
               SELECT 1 FROM trusted_contacts exited
@@ -706,7 +706,7 @@ export async function claimDueSosReminders(
            JOIN trusted_contacts t
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = alert_reminder_outbox.recipient_account_id
-            AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+            AND t.status = 'active'
             AND t.created_at <= a.created_at
             AND NOT EXISTS (
               SELECT 1 FROM trusted_contacts exited
@@ -734,7 +734,7 @@ export async function claimDueSosReminders(
          JOIN trusted_contacts t
            ON t.owner_account_id = a.author_account_id
           AND t.contact_account_id = r.recipient_account_id
-          AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+          AND t.status = 'active'
             AND t.created_at <= a.created_at
             AND NOT EXISTS (
               SELECT 1 FROM trusted_contacts exited
@@ -784,7 +784,7 @@ export async function claimDueSosReminders(
            JOIN trusted_contacts t
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = ?
-            AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+            AND t.status = 'active'
             AND t.created_at <= a.created_at
             AND NOT EXISTS (
               SELECT 1 FROM trusted_contacts exited
@@ -954,7 +954,7 @@ export async function dispatchDueSosReminders(
        JOIN trusted_contacts t
          ON t.owner_account_id = a.author_account_id
         AND t.contact_account_id = r.recipient_account_id
-        AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+        AND t.status = 'active'
             AND t.created_at <= a.created_at
             AND NOT EXISTS (
               SELECT 1 FROM trusted_contacts exited
@@ -1114,7 +1114,7 @@ export async function scheduleDueSosSmsEscalations(
            JOIN trusted_contacts t
              ON t.owner_account_id = a.author_account_id
             AND t.contact_account_id = r.recipient_account_id
-            AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
+            AND t.status = 'active'
             AND t.created_at <= a.created_at
             AND NOT EXISTS (
               SELECT 1 FROM trusted_contacts exited
