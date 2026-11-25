@@ -214,4 +214,4 @@ La migration reconstruit également `trusted_contacts` : la clé primaire devien
 
 ### Cloisonnement des alertes historiques
 
-Les contrôles d'accès utilisent la relation la plus récente du couple propriétaire/proche et exigent qu'elle ait été créée au plus tard au déclenchement de l'alerte. Une nouvelle acceptation ne réouvre donc jamais un SOS antérieur. Un ancien lien `contact_withdrew` ne peut pas être contourné par un ancien lien `owner_revoked`.
+Les contrôles d'accès retiennent une relation créée avant le déclenchement du SOS et vérifient qu'aucun retrait volontaire ultérieur n'a invalidé ce droit. Un retrait volontaire prévaut donc sur toutes les relations antérieures du même couple, même celles révoquées auparavant par le propriétaire. Une nouvelle acceptation ne réouvre aucun SOS antérieur ; elle autorise seulement les SOS futurs.
