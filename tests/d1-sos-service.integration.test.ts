@@ -449,4 +449,55 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   });
   assert.equal(cancelledQueuedSms.data.evaluation.status, "queued");
   assert.deepEqual(cancelledQueuedSms.data.rows.map(row => row.status), ["cancelled"]);
+
+  // Le proche peut rompre lui-même la relation. La coupure est totale,
+  // même pour un SOS déjà actif et même pour les rappels déjà programmés.
+  const voluntaryBase = now + 5_000_000;
+  const voluntaryAlert = await post<{ alertId: string }>("/create", {
+    owner, recipients: [contact], reminders: 1, now: voluntaryBase,
+  });
+  assert.equal(voluntaryAlert.status, 200);
+  const voluntaryWithdraw = await post<{ withdrawn: boolean }>("/withdraw", {
+    owner, contact, now: voluntaryBase + 1,
+  });
+  assert.equal(voluntaryWithdraw.status, 200);
+  assert.equal(voluntaryWithdraw.data.withdrawn, true);
+
+  const withdrawnRead = await post<{ error: string }>("/read", {
+    actor: contact, alertId: voluntaryAlert.data.alertId,
+  });
+  assert.equal(withdrawnRead.status, 404);
+  const withdrawnEvents = await post<{ error: string }>("/events", {
+    actor: contact, alertId: voluntaryAlert.data.alertId,
+  });
+  assert.equal(withdrawnEvents.status, 404);
+  const withdrawnResponsibility = await post<{ error: string }>("/responsibility", {
+    actor: contact, alertId: voluntaryAlert.data.alertId,
+  });
+  assert.equal(withdrawnResponsibility.status, 404);
+
+  const ownerStillSeesAlert = await post<{ isAuthor: boolean }>("/read", {
+    actor: owner, alertId: voluntaryAlert.data.alertId,
+  });
+  assert.equal(ownerStillSeesAlert.status, 200);
+  assert.equal(ownerStillSeesAlert.data.isAuthor, true);
+
+  const withdrawnPushState = await post<{ rows: Array<{ reminder_number: number; status: string }> }>("/push-state", {
+    alertId: voluntaryAlert.data.alertId,
+  });
+  assert.deepEqual(withdrawnPushState.data.rows.map(row => [row.reminder_number, row.status]), [
+    [0, "cancelled"], [1, "cancelled"],
+  ]);
+
+  const noWithdrawnPush = await post<Record<string, number>>("/dispatch", {
+    now: voluntaryBase + 300_000,
+  });
+  assert.equal(noWithdrawnPush.status, 200);
+  assert.equal(noWithdrawnPush.data.claimed, 0);
+  assert.equal(noWithdrawnPush.data.providerAccepted, 0);
+  assert.equal(noWithdrawnPush.data.smsTasksCreated, 0);
+  const withdrawnSmsState = await post<{ rows: unknown[] }>("/sms-state", {
+    alertId: voluntaryAlert.data.alertId,
+  });
+  assert.equal(withdrawnSmsState.data.rows.length, 0);
 });
