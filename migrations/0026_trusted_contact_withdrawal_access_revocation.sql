@@ -176,8 +176,7 @@ BEGIN
                 AND exited.contact_account_id = t.contact_account_id
                 AND exited.revocation_reason = 'contact_withdrew'
                 AND (
-                  exited.created_at > t.created_at
-                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                  exited.rowid > t.rowid
                 )
             )
             WHERE r.alert_id = a.id
