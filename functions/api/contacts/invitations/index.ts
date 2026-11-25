@@ -157,7 +157,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
     if (!result.ok) {
       const status = result.error === "invalid_input" ? 400 :
-        result.error === "self_invitation" || result.error === "relationship_already_active" ? 409 :
+        result.error === "self_invitation" || result.error === "relationship_already_active" || result.error === "contact_limit_reached" ? 409 :
         result.error === "account_not_eligible" ? 403 : 503;
       return json({ error: result.error }, status);
     }
