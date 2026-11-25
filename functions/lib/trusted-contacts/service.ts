@@ -2,7 +2,6 @@ import {
   digestContactInvitationToken,
   generateContactInvitationToken,
 } from "../security/contact-invitation-token.ts";
-import { getAccountPlan } from "../billing/plan.ts";
 
 type InvitationDatabase = Pick<D1Database, "prepare" | "batch">;
 
@@ -87,14 +86,6 @@ export async function createContactInvitation(
     if (!owner) return fail("account_not_eligible");
     if (owner.email === destinationEmail) return fail("self_invitation");
 
-    const [plan, activeContacts] = await Promise.all([
-      getAccountPlan(db, input.authenticatedAccountId, now),
-      db.prepare(
-        `SELECT COUNT(*) AS count FROM trusted_contacts
-         WHERE owner_account_id = ? AND status = 'active'`,
-      ).bind(input.authenticatedAccountId).first<{ count: number }>(),
-    ]);
-    if (Number(activeContacts?.count ?? 0) >= plan.maxTrustedContacts) return fail("contact_limit_reached");
 
     const existingRelationship = await db.prepare(
       `SELECT 1 AS present
