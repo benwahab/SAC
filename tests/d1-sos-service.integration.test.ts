@@ -408,4 +408,41 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   });
   assert.equal(acknowledgedSmsState.data.evaluation.status, "suppressed");
   assert.equal(acknowledgedSmsState.data.rows.length, 0);
+
+  // Si le SMS a déjà été mis en file, un accusé tardif annule encore l'envoi en attente.
+  const lateAcknowledgementBase = now + 4_000_000;
+  const lateAcknowledgementAlert = await post<{ alertId: string }>("/create", {
+    owner, recipients: [contact], reminders: 1, now: lateAcknowledgementBase,
+  });
+  assert.equal(lateAcknowledgementAlert.status, 200);
+  const lateInitial = await post<Array<{ id: string; leaseToken: string }>>("/claim", {
+    now: lateAcknowledgementBase,
+  });
+  assert.equal(lateInitial.data.length, 1);
+  await post("/complete", {
+    reminderId: lateInitial.data[0].id, leaseToken: lateInitial.data[0].leaseToken,
+    outcome: "sent", now: lateAcknowledgementBase + 1,
+  });
+  const lateReminder = await post<Array<{ id: string; leaseToken: string }>>("/claim", {
+    now: lateAcknowledgementBase + 300_000,
+  });
+  assert.equal(lateReminder.data.length, 1);
+  await post("/complete", {
+    reminderId: lateReminder.data[0].id, leaseToken: lateReminder.data[0].leaseToken,
+    outcome: "sent", now: lateAcknowledgementBase + 300_001,
+  });
+  const queuedSms = await post<{ evaluationsCreated: number; smsTasksCreated: number }>("/sms-escalate", {
+    now: lateAcknowledgementBase + 300_002,
+  });
+  assert.deepEqual(queuedSms.data, { evaluationsCreated: 1, smsTasksCreated: 1 });
+  const acknowledgementAfterQueue = await post<{ recorded: boolean }>("/respond", {
+    actor: contact, alertId: lateAcknowledgementAlert.data.alertId,
+    action: "acknowledge", now: lateAcknowledgementBase + 300_003,
+  });
+  assert.equal(acknowledgementAfterQueue.data.recorded, true);
+  const cancelledQueuedSms = await post<{ evaluation: { status: string }; rows: Array<{ status: string }> }>("/sms-state", {
+    alertId: lateAcknowledgementAlert.data.alertId,
+  });
+  assert.equal(cancelledQueuedSms.data.evaluation.status, "queued");
+  assert.deepEqual(cancelledQueuedSms.data.rows.map(row => row.status), ["cancelled"]);
 });
