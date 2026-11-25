@@ -11,6 +11,14 @@ ALTER TABLE trusted_contacts
 ALTER TABLE trusted_contacts
   ADD COLUMN revoked_by_account_id TEXT REFERENCES accounts(id) ON DELETE RESTRICT;
 
+-- Les relations déjà révoquées avant cette migration l'ont été par leur propriétaire.
+-- Conserver leur comportement historique pour les SOS déjà actifs.
+DROP TRIGGER trusted_contact_guard_update;
+UPDATE trusted_contacts
+SET revocation_reason = 'owner_revoked',
+    revoked_by_account_id = owner_account_id
+WHERE status = 'revoked' AND revocation_reason IS NULL;
+
 CREATE INDEX trusted_contacts_active_recipient
   ON trusted_contacts(contact_account_id, owner_account_id)
   WHERE status = 'active';
