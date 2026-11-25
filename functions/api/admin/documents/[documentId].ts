@@ -1,6 +1,6 @@
-import { requireSuperAdminSession } from "../../../../lib/security/require-super-admin-session.ts";
-import { guardSameOriginJsonPost } from "../../../../lib/security/http-request-guard.ts";
-import { readJsonRequestBody } from "../../../../lib/security/json-request-body.ts";
+import { requireSuperAdminSession } from "../../../lib/security/require-super-admin-session.ts";
+import { guardSameOriginJsonPost } from "../../../lib/security/http-request-guard.ts";
+import { readJsonRequestBody } from "../../../lib/security/json-request-body.ts";
 
 interface Env { DB: D1Database; }
 const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY" };
