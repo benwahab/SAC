@@ -87,15 +87,14 @@ Le contrôle de capacité est implémenté côté serveur dans les deux parcours
 - `proximity_invitations` / `close_relations` : le plafond du propriétaire et celui du destinataire sont vérifiés ; l'acceptation inclut des conditions SQL atomiques pour éviter les dépassements concurrents ;
 - `contact_invitations` / `trusted_contacts` : le plafond du propriétaire est résolu côté serveur au moment de l'envoi et de l'acceptation.
 
-La formule est résolue par `functions/lib/billing/plan.ts`. En l'absence d'un abonnement Premium actif dont la période payée est valide, le compte est gratuit (2 contacts). `GET /api/billing/subscription` expose uniquement la formule, le plafond, le nombre de contacts et la fin de période. La migration `0028_account_subscriptions_and_billing_events.sql` ajoute le stockage D1 des abonnements et le registre idempotent des événements du prestataire. `functions/lib/billing/activation.ts` contient le mécanisme serveur idempotent qui pourra activer Premium après validation cryptographique et métier du paiement par un adaptateur fournisseur.
+La formule est résolue par `functions/lib/billing/plan.ts`. En l'absence d'un abonnement Premium actif dont la période payée est valide, le compte est gratuit (2 contacts). `GET /api/billing/subscription` expose uniquement la formule, le plafond, le nombre de contacts et la fin de période. La migration `0028_account_subscriptions_and_billing_events.sql` a été appliquée à la D1 de production le 25 novembre 2026 ; le registre contient 28 migrations et `PRAGMA foreign_key_check` ne retourne aucune anomalie. `functions/lib/billing/activation.ts` contient le mécanisme serveur idempotent qui pourra activer Premium après validation cryptographique et métier du paiement par un adaptateur fournisseur.
 
 **Le paiement réel et l'activation Premium après paiement ne sont pas encore disponibles.** Aucun prestataire n'a été choisi/configuré. Le schéma et le contrôle d'entitlement sont préparés, mais aucun endpoint de checkout ni webhook de paiement n'est encore branché. Il ne faut donc ni simuler une transaction ni présenter un compte comme Premium avant intégration et vérification du prestataire.
 
 Avant d'activer la souscription réelle, il reste à :
 1. choisir le prestataire de paiement et les moyens exacts disponibles au Niger ;
 2. implémenter son adaptateur de création de paiement et de vérification webhook, puis activer l'abonnement uniquement après preuve serveur authentifiée ;
-3. appliquer la migration D1 0028 après CI verte et vérification de la base cible ;
-4. couvrir les scénarios paiement réussi, échec, annulation, rejeu webhook, expiration, rétrogradation et dépassement concurrent de quota ;
-5. tester le parcours complet sur l'environnement de test du prestataire avant activation en production.
+3. implémenter et tester les scénarios paiement réussi, échec, annulation, rejeu webhook, expiration, rétrogradation et dépassement concurrent de quota ;
+4. tester le parcours complet sur l'environnement de test du prestataire avant activation en production.
 
 Ne jamais activer une migration distante ou une intégration de paiement sans vérifier l'environnement et les secrets concernés.
