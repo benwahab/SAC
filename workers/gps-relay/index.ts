@@ -217,10 +217,4 @@ export class GpsRelayRoom extends DurableObject<Env> {
     }
   }
 
-  private closeRoom(code: number, reason: string): void {
-    for (const socket of this.sockets.keys()) {
-      try { socket.close(code, reason); } catch { /* already closed */ }
-    }
-    this.sockets.clear();
-  }
 }
