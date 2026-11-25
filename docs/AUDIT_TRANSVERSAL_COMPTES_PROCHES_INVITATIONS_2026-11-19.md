@@ -246,3 +246,10 @@ Un test de route dédié a été ajouté dans `tests/contact-invitation-inbox-en
 - les réponses restent `no-store` et portent les en-têtes de protection attendus.
 
 Le test est lancé par `npm run test:contact-invitation-inbox` et inscrit dans le workflow CI. Il ne modifie aucune permission, aucun quota et aucun comportement de révocation. Aucune migration D1 n'est requise.
+## 12. Décision produit confirmée — droit du proche de quitter la relation (2026-11-25)
+
+Le propriétaire et le proche disposent tous deux du droit de mettre fin à une relation active. Le proche peut se retirer de son propre gré, à tout moment, sans justification ni approbation du propriétaire. La cause d'audit devra distinguer `owner_revoked` de `contact_withdrew`.
+
+Cette décision corrige le point ouvert « révocation unilatérale seulement » ci-dessus : le droit symétrique est désormais validé au niveau produit, mais **pas encore implémenté**. Le code inspecté contient toujours uniquement `POST /api/contacts/revoke` pour l'action du propriétaire.
+
+La validation ne tranche pas les droits post-retrait pendant un SOS déjà actif, les rappels opaques, les positions, l'accusé de réception, la coordination, la notification de l'autre partie ni le délai anti-abus de réinvitation proposé. Le SOS de l'auteur doit rester actif ; aucune modification de son état ne découle du départ du proche. Ces règles doivent être précisées avant toute modification API/D1/SOS/GPS.
