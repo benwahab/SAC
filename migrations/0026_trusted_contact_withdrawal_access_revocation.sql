@@ -4,24 +4,88 @@
 
 PRAGMA foreign_keys = ON;
 
-ALTER TABLE trusted_contacts
-  ADD COLUMN revocation_reason TEXT
-  CHECK (revocation_reason IS NULL OR revocation_reason IN ('owner_revoked', 'contact_withdrew'));
-
-ALTER TABLE trusted_contacts
-  ADD COLUMN revoked_by_account_id TEXT REFERENCES accounts(id) ON DELETE RESTRICT;
-
--- Les relations déjà révoquées avant cette migration l'ont été par leur propriétaire.
--- Conserver leur comportement historique pour les SOS déjà actifs.
+-- Les relations déjà révoquées avant cette migration l'ont été par leur
+-- propriétaire. Leur historique et leurs droits SOS historiques sont préservés.
 DROP TRIGGER trusted_contact_guard_update;
-UPDATE trusted_contacts
-SET revocation_reason = 'owner_revoked',
-    revoked_by_account_id = owner_account_id
-WHERE status = 'revoked' AND revocation_reason IS NULL;
+DROP TRIGGER trusted_contact_insert_guard;
 
+-- La clé historique (propriétaire, proche) empêchait toute nouvelle relation
+-- après une révocation. Chaque invitation acceptée devient désormais une ligne
+-- d'historique distincte ; une seule relation active reste possible par paire.
+CREATE TABLE trusted_contacts_rebuilt (
+  owner_account_id TEXT NOT NULL,
+  contact_account_id TEXT NOT NULL,
+  invitation_id TEXT NOT NULL PRIMARY KEY,
+  permission_version TEXT NOT NULL CHECK (length(trim(permission_version)) BETWEEN 1 AND 128),
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'revoked')),
+  created_at INTEGER NOT NULL CHECK (created_at > 0),
+  revoked_at INTEGER,
+  revocation_reason TEXT CHECK (revocation_reason IS NULL OR revocation_reason IN ('owner_revoked', 'contact_withdrew')),
+  revoked_by_account_id TEXT,
+  FOREIGN KEY (owner_account_id) REFERENCES accounts(id) ON DELETE RESTRICT,
+  FOREIGN KEY (contact_account_id) REFERENCES accounts(id) ON DELETE RESTRICT,
+  FOREIGN KEY (invitation_id) REFERENCES contact_invitations(id) ON DELETE RESTRICT,
+  FOREIGN KEY (revoked_by_account_id) REFERENCES accounts(id) ON DELETE RESTRICT,
+  CHECK (owner_account_id <> contact_account_id),
+  CHECK (
+    (status = 'active' AND revoked_at IS NULL
+      AND revocation_reason IS NULL AND revoked_by_account_id IS NULL)
+    OR
+    (status = 'revoked' AND revoked_at IS NOT NULL AND revoked_at >= created_at
+      AND revocation_reason IN ('owner_revoked', 'contact_withdrew')
+      AND revoked_by_account_id IS NOT NULL
+      AND (
+        (revocation_reason = 'owner_revoked' AND revoked_by_account_id = owner_account_id)
+        OR
+        (revocation_reason = 'contact_withdrew' AND revoked_by_account_id = contact_account_id)
+      ))
+  )
+);
+
+INSERT INTO trusted_contacts_rebuilt
+  (owner_account_id, contact_account_id, invitation_id, permission_version,
+   status, created_at, revoked_at, revocation_reason, revoked_by_account_id)
+SELECT owner_account_id, contact_account_id, invitation_id, permission_version,
+       status, created_at, revoked_at,
+       CASE WHEN status = 'revoked' THEN 'owner_revoked' ELSE NULL END,
+       CASE WHEN status = 'revoked' THEN owner_account_id ELSE NULL END
+FROM trusted_contacts;
+
+DROP TABLE trusted_contacts;
+ALTER TABLE trusted_contacts_rebuilt RENAME TO trusted_contacts;
+
+CREATE INDEX trusted_contacts_owner_status
+  ON trusted_contacts(owner_account_id, status, created_at DESC);
+CREATE INDEX trusted_contacts_contact_status
+  ON trusted_contacts(contact_account_id, status, created_at DESC);
 CREATE INDEX trusted_contacts_active_recipient
   ON trusted_contacts(contact_account_id, owner_account_id)
   WHERE status = 'active';
+CREATE UNIQUE INDEX trusted_contacts_one_active_pair
+  ON trusted_contacts(owner_account_id, contact_account_id)
+  WHERE status = 'active';
+
+CREATE TRIGGER trusted_contact_insert_guard
+BEFORE INSERT ON trusted_contacts
+BEGIN
+  SELECT CASE WHEN NOT EXISTS (
+    SELECT 1
+    FROM contact_invitations i
+    WHERE i.id = NEW.invitation_id
+      AND i.status = 'accepted'
+      AND i.inviter_account_id = NEW.owner_account_id
+      AND i.recipient_account_id = NEW.contact_account_id
+      AND i.permission_version = NEW.permission_version
+      AND i.decided_at = NEW.created_at
+  ) THEN RAISE(ABORT, 'trusted_contact_requires_matching_acceptance') END;
+
+  SELECT CASE WHEN EXISTS (
+    SELECT 1 FROM trusted_contacts t
+    WHERE t.owner_account_id = NEW.owner_account_id
+      AND t.contact_account_id = NEW.contact_account_id
+      AND t.status = 'active'
+  ) THEN RAISE(ABORT, 'trusted_contact_relationship_already_exists') END;
+END;
 
 CREATE TRIGGER trusted_contacts_revocation_guard
 BEFORE UPDATE ON trusted_contacts
