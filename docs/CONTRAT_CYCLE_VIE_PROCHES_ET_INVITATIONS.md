@@ -206,3 +206,23 @@ Le SOS de la personne en détresse continue sans interruption. Le retrait du pro
 Cette règle doit être appliquée côté serveur à chaque lecture, livraison push, relais GPS, accusé et action, et pas uniquement en masquant l'interface ou en supprimant l'abonnement push. Les abonnements et tâches de livraison destinés au proche sortant doivent être invalidés ; les opérations déjà en file doivent recontrôler l'autorisation juste avant livraison. Les caches et sessions ne doivent pas permettre de conserver un accès après la rupture.
 
 Cette décision porte sur le retrait volontaire du proche. Le traitement symétrique d'un retrait initié par le propriétaire devra être harmonisé et vérifié avant de considérer la révocation comme complète. Aucun changement de code ou de migration D1 n'est inclus dans cette mise à jour documentaire.
+
+## 14. Mise en œuvre technique — retrait volontaire et coupure totale (2026-11-25)
+
+Cette section précise et remplace les points techniques encore ouverts des sections 12 et 13.
+
+La règle validée est implémentée dans le dépôt :
+- `POST /api/contacts/withdraw` authentifie le proche par sa session serveur ; l'identifiant du propriétaire est uniquement la cible de la relation ;
+- `trusted_contacts` conserve la relation terminée et enregistre `revocation_reason='contact_withdrew'` ainsi que l'acteur ;
+- le proche sortant perd l'accès à toutes les alertes de ce propriétaire, y compris celles déjà actives : lecture, chronologie, responsabilité, accusé, volontariat et nouveaux tickets GPS ;
+- les rappels SOS en attente ou en cours et les tâches SMS déjà mises en file sont annulés ; les tickets GPS non consommés sont supprimés ;
+- le worker GPS vérifie encore l'autorisation de chaque participant avant le relais d'une trame, et ferme la connexion d'un participant devenu non autorisé ;
+- un proche sortant qui assurait la responsabilité principale est retiré de cette responsabilité ; le prochain volontaire encore éligible peut prendre le relais ;
+- le SOS de l'auteur reste actif et les autres proches autorisés ne sont pas affectés ;
+- l'écran « Contacts d'alerte » expose les relations acceptées dont l'utilisateur est lui-même le proche, avec une action « Quitter ce cercle » en français, anglais et arabe.
+
+Le snapshot `alert_recipients` n'est pas supprimé ni réécrit : il demeure une preuve historique du destinataire choisi au déclenchement. Il ne suffit plus à lui seul à autoriser le proche sortant.
+
+**Distinction importante :** le retrait volontaire `contact_withdrew` coupe immédiatement tous les accès du proche sortant. La révocation initiée par le propriétaire `owner_revoked` conserve, pour le moment, le comportement historique des alertes déjà actives. Ce comportement reste un arbitrage produit distinct et n'est pas assimilé à la décision de retrait volontaire.
+
+La migration `0026_trusted_contact_withdrawal_access_revocation.sql` ajoute la cause et l'acteur de révocation, les garde-fous D1 et les annulations atomiques associées. Les tests D1 SOS couvrent désormais le retrait pendant une alerte active et l'absence de nouveaux rappels. La migration distante ne doit être déclarée appliquée qu'après exécution de la suite locale/CI, application sur `sac-db`, puis vérification de `d1_migrations`, des colonnes/triggers et de `PRAGMA foreign_key_check`.
