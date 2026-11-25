@@ -8,6 +8,9 @@ import { Card, Halo, Notice, Sheet } from "../ui";
 
 type SessionInfo = {
   id: string;
+  deviceId: string;
+  deviceCreatedAt: number;
+  rootCredentialConfigured: boolean;
   createdAt: number;
   lastActivityAt: number;
   expiresAt: number;
@@ -159,6 +162,8 @@ export default function Settings({ copy, language, go, setLanguage, onLogout, se
                 <li key={session.id} className="rounded-2xl border border-white/90 bg-white/80 p-3">
                   <p className="font-extrabold">{session.current ? copy.settingsSessionsCurrent : copy.settingsSessionsOther}</p>
                   <dl className="mt-2 space-y-1 text-xs leading-5 text-sac-muted">
+                    <div><dt className="inline font-semibold">{copy.settingsSessionsDeviceType}: </dt><dd className="inline">{session.rootCredentialConfigured ? copy.settingsSessionsRootDevice : copy.settingsSessionsDeviceWithoutRoot}</dd></div>
+                    <div><dt className="inline font-semibold">{copy.settingsSessionsDeviceCreated}: </dt><dd className="inline">{new Date(session.deviceCreatedAt).toLocaleString(locale)}</dd></div>
                     <div><dt className="inline font-semibold">{copy.settingsSessionsCreated}: </dt><dd className="inline">{new Date(session.createdAt).toLocaleString(locale)}</dd></div>
                     <div><dt className="inline font-semibold">{copy.settingsSessionsLastActive}: </dt><dd className="inline">{new Date(session.lastActivityAt).toLocaleString(locale)}</dd></div>
                     <div><dt className="inline font-semibold">{copy.settingsSessionsExpires}: </dt><dd className="inline">{new Date(session.expiresAt).toLocaleString(locale)}</dd></div>
