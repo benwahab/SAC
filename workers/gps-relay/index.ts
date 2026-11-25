@@ -40,24 +40,28 @@ async function hashTicket(ticket: string): Promise<string> {
 async function isActiveParticipant(
   db: D1Database, alertId: string, accountId: string, deviceId: string, sessionId: string,
 ): Promise<boolean> {
-  const row = await db.prepare(
-    `SELECT 1 AS allowed FROM alerts a
-     JOIN devices d ON d.id = ? AND d.account_id = ? AND d.status = 'active'
-     JOIN device_sessions s ON s.id = ? AND s.account_id = ? AND s.device_id = d.id
-       AND s.status = 'active' AND s.expires_at > ?
-     WHERE a.id = ? AND a.status = 'active'
-       AND (a.author_account_id = ? OR EXISTS (
-         SELECT 1 FROM alert_recipients r
-         JOIN trusted_contacts t
-           ON t.owner_account_id = a.author_account_id
-          AND t.contact_account_id = r.recipient_account_id
-          AND t.status = 'active'
-          AND t.created_at <= a.created_at
-          AND NOT EXISTS (SELECT 1 FROM trusted_contacts exited WHERE exited.owner_account_id = t.owner_account_id AND exited.contact_account_id = t.contact_account_id AND exited.revocation_reason = 'contact_withdrew' AND (exited.relationship_sequence > t.relationship_sequence))
-         WHERE r.alert_id = a.id AND r.recipient_account_id = ?
-       )) LIMIT 1`,
-  ).bind(deviceId, accountId, sessionId, accountId, Date.now(), alertId, accountId, accountId).first<{ allowed: number }>();
-  return row?.allowed === 1;
+  try {
+    const row = await db.prepare(
+      `SELECT 1 AS allowed FROM alerts a
+       JOIN devices d ON d.id = ? AND d.account_id = ? AND d.status = 'active'
+       JOIN device_sessions s ON s.id = ? AND s.account_id = ? AND s.device_id = d.id
+         AND s.status = 'active' AND s.expires_at > ?
+       WHERE a.id = ? AND a.status = 'active'
+         AND (a.author_account_id = ? OR EXISTS (
+           SELECT 1 FROM alert_recipients r
+           JOIN trusted_contacts t
+             ON t.owner_account_id = a.author_account_id
+            AND t.contact_account_id = r.recipient_account_id
+            AND t.status = 'active'
+            AND t.created_at <= a.created_at
+            AND NOT EXISTS (SELECT 1 FROM trusted_contacts exited WHERE exited.owner_account_id = t.owner_account_id AND exited.contact_account_id = t.contact_account_id AND exited.revocation_reason = 'contact_withdrew' AND (exited.relationship_sequence > t.relationship_sequence))
+           WHERE r.alert_id = a.id AND r.recipient_account_id = ?
+         )) LIMIT 1`,
+    ).bind(deviceId, accountId, sessionId, accountId, Date.now(), alertId, accountId, accountId).first<{ allowed: number }>();
+    return row?.allowed === 1;
+  } catch {
+    return false;
+  }
 }
 
 export default {
