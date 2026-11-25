@@ -26,12 +26,13 @@ export const onRequestPatch: PagesFunction<Env> = async ({request,env}) => {
   const task=await env.DB.prepare("SELECT id,status FROM admin_mission_tasks WHERE id=? AND assigned_account_id=?").bind(taskId,session.value.accountId).first<{id:string;status:string}>();
   if(!task) return json({error:"task_not_found"},404);
   if(task.status==="done") return json({error:"task_closed"},409);
+  const nextStatus=status as "in_progress"|"blocked"|"submitted";
   const now=Date.now();
   const result=await env.DB.batch([
-   env.DB.prepare("UPDATE admin_mission_tasks SET status=?,updated_at=?,version=version+1 WHERE id=? AND assigned_account_id=? AND version=(SELECT version FROM admin_mission_tasks WHERE id=?)").bind(status,now,taskId,session.value.accountId,taskId),
-   env.DB.prepare("INSERT INTO admin_mission_task_events(id,task_id,actor_account_id,from_status,to_status,note,occurred_at) VALUES(?,?,?,?,?,?,?)").bind(crypto.randomUUID(),taskId,session.value.accountId,task.status,status,note,now)
+   env.DB.prepare("UPDATE admin_mission_tasks SET status=?,updated_at=?,version=version+1 WHERE id=? AND assigned_account_id=? AND version=(SELECT version FROM admin_mission_tasks WHERE id=?)").bind(nextStatus,now,taskId,session.value.accountId,taskId),
+   env.DB.prepare("INSERT INTO admin_mission_task_events(id,task_id,actor_account_id,from_status,to_status,note,occurred_at) VALUES(?,?,?,?,?,?,?)").bind(crypto.randomUUID(),taskId,session.value.accountId,task.status,nextStatus,note,now)
   ]);
   if(result.some(x=>!x.success)) return json({error:"service_unavailable"},503);
-  return json({updated:true,status});
+  return json({updated:true,status:nextStatus});
  } catch { return json({error:"service_unavailable"},503); }
 };
