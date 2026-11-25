@@ -156,7 +156,7 @@ Tests : `npm run test:password-session` et `npm run test:d1-multi-device-passwor
 
 Les catégories et états sont contrôlés par contraintes D1. La base limite la création à cinq tickets par compte et par heure. Les changements de statut sont soumis à des transitions autorisées dans l’API. Les tickets sont liés à un demandeur actif, les messages du demandeur sont limités à ses propres tickets, les messages et événements sont append-only. Les pièces jointes ne sont pas incluses. L'API citoyenne `GET/POST /api/support/tickets` permet de consulter ses demandes et d'en créer ; la console Super Admin lit les compteurs et la file via `GET /api/admin/support`.
 
-Test local : `npm run test:d1-support-tickets`. Cette migration n'est pas appliquée à la D1 distante. Toute application distante nécessite une autorisation explicite après validation de la CI.
+Test local : `npm run test:d1-support-tickets`. **Application distante vérifiée le 25 novembre 2026** sur `sac-db` ; l'entrée 0021 est enregistrée dans `d1_migrations`.
 
 
 ## 0022 — OTP e-mail pour les demandes d'assistance sans session
@@ -165,14 +165,14 @@ Test local : `npm run test:d1-support-tickets`. Cette migration n'est pas appliq
 
 Les routes `POST /api/support/recovery/request` et `POST /api/support/recovery/verify` permettent de déposer un ticket « accès au compte » sans session, après vérification de la maîtrise de l'adresse e-mail. La réponse de demande reste générique pour limiter l'énumération des comptes. Ce code ne réinitialise pas le mot de passe et ne donne pas accès au compte ; il autorise uniquement l'envoi d'une demande de support associée à un compte actif existant.
 
-Test local : `npm run test:d1-support-intake-otp`. La migration 0022 n'est pas appliquée à la D1 distante. Toute application distante nécessite une autorisation explicite après validation CI. Les routes restent fermées tant que le paramètre Cloudflare SUPPORT_INTAKE_ENABLED n'est pas explicitement égal à true ; ne l'activer qu'après migration, tests, configuration du fournisseur e-mail et validation de l'environnement.
+Test local : `npm run test:d1-support-intake-otp`. **Application distante vérifiée le 25 novembre 2026** sur `sac-db` ; l'entrée 0022 est enregistrée dans `d1_migrations`. Les routes restent fermées tant que le paramètre Cloudflare SUPPORT_INTAKE_ENABLED n'est pas explicitement égal à true ; ne l'activer qu'après migration, tests, configuration du fournisseur e-mail et validation de l'environnement.
 
 
 ## 0023 — permissions de mission pour l'assistance
 
 `0023_support_mission_permissions.sql` étend le garde D1 des réponses support : le Super Admin conserve l'accès global, tandis qu'un collaborateur ne peut répondre que s'il possède une mission active, non expirée, de périmètre exact `support`, avec la permission `process`. L'API applique le même contrôle serveur ; la lecture des tickets exige la permission `read`. Les événements d'audit des actions déléguées conservent l'identifiant de mission et le périmètre. Une mission Finance, une mission suspendue ou expirée, ou une permission sans `process` ne permet pas de répondre.
 
-Test local : `npm run test:d1-support-tickets`. Cette migration n'est pas appliquée à la D1 distante.
+Test local : `npm run test:d1-support-tickets`. **Application distante vérifiée le 25 novembre 2026** sur `sac-db` ; l'entrée 0023 est enregistrée dans `d1_migrations`.
 
 
 ## 0024 — consommation atomique des défis WebAuthn de connexion
