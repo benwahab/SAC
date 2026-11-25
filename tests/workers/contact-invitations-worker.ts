@@ -150,9 +150,9 @@ export default {
 
     if (url.pathname === "/withdraw") {
       const result = await withdrawTrustedContact(env.DB, {
-        authenticatedContactAccountId: String(input.contactId),
-        ownerAccountId: String(input.ownerId),
-        now: Number(input.now),
+        authenticatedContactAccountId: String(body.contactId ?? ""),
+        ownerAccountId: String(body.ownerId ?? ""),
+        now: Number(body.now),
       });
       return result.ok ? json({ withdrawn: true }) : json({ error: result.error }, 409);
     }
