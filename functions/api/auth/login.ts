@@ -142,11 +142,27 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
     const session = await createSessionToken(crypto);
     const sessionId = crypto.randomUUID();
+    const claimId = crypto.randomUUID();
     const expiresAt = now + 30 * 24 * 60 * 60 * 1000;
     const results = await env.DB.batch([
-      env.DB.prepare("UPDATE root_authentication_challenges SET consumed_at = ?, attempt_count = attempt_count + 1 WHERE id = ? AND consumed_at IS NULL AND expires_at > ? AND attempt_count < 5").bind(now, challenge.id, now),
-      env.DB.prepare("UPDATE device_root_credentials SET sign_count = ?, last_used_at = ? WHERE device_id = ? AND account_id = ? AND credential_id = ? AND sign_count = ?").bind(signCount, now, challenge.device_id, challenge.account_id, challenge.credential_id, challenge.sign_count),
-      env.DB.prepare("INSERT INTO device_sessions (id, account_id, device_id, token_hash, status, auth_version, created_at, last_activity_at, expires_at, revoked_at) VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?, NULL)").bind(sessionId, challenge.account_id, challenge.device_id, session.tokenHash, challenge.auth_version, now, now, expiresAt),
+      env.DB.prepare(
+        "UPDATE root_authentication_challenges SET consumed_at = ?, attempt_count = attempt_count + 1, consumed_by_request_id = ? WHERE id = ? AND consumed_at IS NULL AND expires_at > ? AND attempt_count = ? AND attempt_count < 5",
+      ).bind(now, claimId, challenge.id, now, challenge.attempt_count),
+      env.DB.prepare(
+        "UPDATE device_root_credentials SET sign_count = ?, last_used_at = ? WHERE device_id = ? AND account_id = ? AND credential_id = ? AND sign_count = ? AND EXISTS (SELECT 1 FROM root_authentication_challenges WHERE id = ? AND consumed_by_request_id = ?)",
+      ).bind(signCount, now, challenge.device_id, challenge.account_id, challenge.credential_id, challenge.sign_count, challenge.id, claimId),
+      env.DB.prepare(
+        `INSERT INTO device_sessions
+         (id, account_id, device_id, token_hash, status, auth_version, created_at, last_activity_at, expires_at, revoked_at)
+         SELECT ?, ?, ?, ?, 'active', ?, ?, ?, ?, NULL
+         WHERE EXISTS (
+           SELECT 1 FROM root_authentication_challenges ch
+           JOIN device_root_credentials c ON c.device_id = ch.device_id AND c.account_id = ch.account_id
+           WHERE ch.id = ? AND ch.consumed_by_request_id = ?
+             AND c.credential_id = ? AND c.sign_count = ? AND c.last_used_at = ?
+         )`,
+      ).bind(sessionId, challenge.account_id, challenge.device_id, session.tokenHash, challenge.auth_version, now, now, expiresAt,
+        challenge.id, claimId, challenge.credential_id, signCount, now),
     ]);
     if (results.some(result => !result.success || result.meta.changes !== 1)) return json({ error: "authentication_conflict" }, 409);
     return json({ authenticated: true, session: { id: sessionId, expiresAt: new Date(expiresAt).toISOString() } }, 200, createSessionCookie(session.token));
