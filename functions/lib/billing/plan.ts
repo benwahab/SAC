@@ -31,7 +31,7 @@ export async function getAccountPlan(
   }>();
 
   if (
-    row?.status === "active" &&
+    (row?.status === "active" || row?.status === "cancelled") &&
     typeof row.current_period_start === "number" &&
     typeof row.current_period_end === "number" &&
     row.current_period_start <= now &&
