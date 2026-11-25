@@ -166,6 +166,13 @@ BEGIN
              AND t.contact_account_id = r.recipient_account_id
              AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
              AND t.created_at <= a.created_at
+             AND t.invitation_id = (
+              SELECT latest.invitation_id FROM trusted_contacts latest
+              WHERE latest.owner_account_id = a.author_account_id
+                AND latest.contact_account_id = r.recipient_account_id
+              ORDER BY latest.created_at DESC, latest.invitation_id DESC
+              LIMIT 1
+            )
             WHERE r.alert_id = a.id
               AND r.recipient_account_id = NEW.actor_account_id
           ))
@@ -184,6 +191,13 @@ BEGIN
               AND t.revoked_at = NEW.occurred_at
               AND t.revoked_by_account_id IS NOT NULL
               AND t.created_at <= a.created_at
+             AND t.invitation_id = (
+              SELECT latest.invitation_id FROM trusted_contacts latest
+              WHERE latest.owner_account_id = a.author_account_id
+                AND latest.contact_account_id = r.recipient_account_id
+              ORDER BY latest.created_at DESC, latest.invitation_id DESC
+              LIMIT 1
+            )
           ))
       )
   ) THEN RAISE(ABORT, 'alert_event_not_authorized_or_out_of_order') END;
@@ -321,6 +335,13 @@ BEGIN
      AND t.contact_account_id = NEW.recipient_account_id
      AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
      AND t.created_at <= a.created_at
+     AND t.invitation_id = (
+        SELECT latest.invitation_id FROM trusted_contacts latest
+        WHERE latest.owner_account_id = a.author_account_id
+          AND latest.contact_account_id = NEW.recipient_account_id
+        ORDER BY latest.created_at DESC, latest.invitation_id DESC
+        LIMIT 1
+      )
     WHERE a.id = NEW.alert_id
       AND a.status = 'active'
       AND (
@@ -346,6 +367,13 @@ BEGIN
      AND t.contact_account_id = r.recipient_account_id
      AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
      AND t.created_at <= a.created_at
+     AND t.invitation_id = (
+        SELECT latest.invitation_id FROM trusted_contacts latest
+        WHERE latest.owner_account_id = a.author_account_id
+          AND latest.contact_account_id = r.recipient_account_id
+        ORDER BY latest.created_at DESC, latest.invitation_id DESC
+        LIMIT 1
+      )
     WHERE e.alert_id = NEW.alert_id
       AND e.status = 'queued'
       AND a.status = 'active'
