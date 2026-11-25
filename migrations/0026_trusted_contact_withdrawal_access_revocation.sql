@@ -8,6 +8,7 @@ PRAGMA foreign_keys = ON;
 -- propriétaire. Leur historique et leurs droits SOS historiques sont préservés.
 DROP TRIGGER trusted_contact_guard_update;
 DROP TRIGGER trusted_contact_insert_guard;
+DROP TRIGGER alert_recipient_insert_guard;
 
 -- La clé historique (propriétaire, proche) empêchait toute nouvelle relation
 -- après une révocation. Chaque invitation acceptée devient désormais une ligne
@@ -122,7 +123,6 @@ END;
 
 -- L'événement de retrait est append-only. Une fois la relation révoquée,
 -- aucun nouvel événement fonctionnel ne peut être ajouté par l'ancien proche.
-DROP TRIGGER alert_recipient_insert_guard;
 CREATE TRIGGER alert_recipient_insert_guard
 BEFORE INSERT ON alert_recipients
 BEGIN
