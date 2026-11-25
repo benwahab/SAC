@@ -264,12 +264,15 @@ export async function getSosAlertForParticipant(
             AND t.contact_account_id = r.recipient_account_id
             AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
             AND t.created_at <= a.created_at
-            AND t.invitation_id = (
-              SELECT latest.invitation_id FROM trusted_contacts latest
-              WHERE latest.owner_account_id = a.author_account_id
-                AND latest.contact_account_id = t.contact_account_id
-              ORDER BY latest.created_at DESC, latest.invitation_id DESC
-              LIMIT 1
+            AND NOT EXISTS (
+              SELECT 1 FROM trusted_contacts exited
+              WHERE exited.owner_account_id = t.owner_account_id
+                AND exited.contact_account_id = t.contact_account_id
+                AND exited.revocation_reason = 'contact_withdrew'
+                AND (
+                  exited.created_at > t.created_at
+                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                )
             )
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          ))
@@ -354,12 +357,15 @@ export async function respondToSosAlert(
         AND t.contact_account_id = r.recipient_account_id
         AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
             AND t.created_at <= a.created_at
-            AND t.invitation_id = (
-              SELECT latest.invitation_id FROM trusted_contacts latest
-              WHERE latest.owner_account_id = a.author_account_id
-                AND latest.contact_account_id = t.contact_account_id
-              ORDER BY latest.created_at DESC, latest.invitation_id DESC
-              LIMIT 1
+            AND NOT EXISTS (
+              SELECT 1 FROM trusted_contacts exited
+              WHERE exited.owner_account_id = t.owner_account_id
+                AND exited.contact_account_id = t.contact_account_id
+                AND exited.revocation_reason = 'contact_withdrew'
+                AND (
+                  exited.created_at > t.created_at
+                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                )
             )
        WHERE a.id = ? AND a.status = 'active'
          AND r.recipient_account_id = ? AND a.created_at <= ?
@@ -560,12 +566,15 @@ export async function listSosEventsForParticipant(
             AND t.contact_account_id = r.recipient_account_id
             AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
             AND t.created_at <= a.created_at
-            AND t.invitation_id = (
-              SELECT latest.invitation_id FROM trusted_contacts latest
-              WHERE latest.owner_account_id = a.author_account_id
-                AND latest.contact_account_id = t.contact_account_id
-              ORDER BY latest.created_at DESC, latest.invitation_id DESC
-              LIMIT 1
+            AND NOT EXISTS (
+              SELECT 1 FROM trusted_contacts exited
+              WHERE exited.owner_account_id = t.owner_account_id
+                AND exited.contact_account_id = t.contact_account_id
+                AND exited.revocation_reason = 'contact_withdrew'
+                AND (
+                  exited.created_at > t.created_at
+                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                )
             )
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          )
@@ -630,12 +639,15 @@ export async function getSosResponsibilityForParticipant(
             AND t.contact_account_id = r.recipient_account_id
             AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
             AND t.created_at <= a.created_at
-            AND t.invitation_id = (
-              SELECT latest.invitation_id FROM trusted_contacts latest
-              WHERE latest.owner_account_id = a.author_account_id
-                AND latest.contact_account_id = t.contact_account_id
-              ORDER BY latest.created_at DESC, latest.invitation_id DESC
-              LIMIT 1
+            AND NOT EXISTS (
+              SELECT 1 FROM trusted_contacts exited
+              WHERE exited.owner_account_id = t.owner_account_id
+                AND exited.contact_account_id = t.contact_account_id
+                AND exited.revocation_reason = 'contact_withdrew'
+                AND (
+                  exited.created_at > t.created_at
+                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                )
             )
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
          ))
@@ -700,12 +712,15 @@ export async function claimDueSosReminders(
             AND t.contact_account_id = alert_reminder_outbox.recipient_account_id
             AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
             AND t.created_at <= a.created_at
-            AND t.invitation_id = (
-              SELECT latest.invitation_id FROM trusted_contacts latest
-              WHERE latest.owner_account_id = a.author_account_id
-                AND latest.contact_account_id = t.contact_account_id
-              ORDER BY latest.created_at DESC, latest.invitation_id DESC
-              LIMIT 1
+            AND NOT EXISTS (
+              SELECT 1 FROM trusted_contacts exited
+              WHERE exited.owner_account_id = t.owner_account_id
+                AND exited.contact_account_id = t.contact_account_id
+                AND exited.revocation_reason = 'contact_withdrew'
+                AND (
+                  exited.created_at > t.created_at
+                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                )
             )
            WHERE a.id = alert_reminder_outbox.alert_id AND a.status = 'active')`,
     ).bind(now, now).run();
@@ -726,12 +741,15 @@ export async function claimDueSosReminders(
           AND t.contact_account_id = r.recipient_account_id
           AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
             AND t.created_at <= a.created_at
-            AND t.invitation_id = (
-              SELECT latest.invitation_id FROM trusted_contacts latest
-              WHERE latest.owner_account_id = a.author_account_id
-                AND latest.contact_account_id = t.contact_account_id
-              ORDER BY latest.created_at DESC, latest.invitation_id DESC
-              LIMIT 1
+            AND NOT EXISTS (
+              SELECT 1 FROM trusted_contacts exited
+              WHERE exited.owner_account_id = t.owner_account_id
+                AND exited.contact_account_id = t.contact_account_id
+                AND exited.revocation_reason = 'contact_withdrew'
+                AND (
+                  exited.created_at > t.created_at
+                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                )
             )
          WHERE a.status = 'active'
            AND r.scheduled_at <= ?
@@ -774,12 +792,15 @@ export async function claimDueSosReminders(
             AND t.contact_account_id = ?
             AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
             AND t.created_at <= a.created_at
-            AND t.invitation_id = (
-              SELECT latest.invitation_id FROM trusted_contacts latest
-              WHERE latest.owner_account_id = a.author_account_id
-                AND latest.contact_account_id = t.contact_account_id
-              ORDER BY latest.created_at DESC, latest.invitation_id DESC
-              LIMIT 1
+            AND NOT EXISTS (
+              SELECT 1 FROM trusted_contacts exited
+              WHERE exited.owner_account_id = t.owner_account_id
+                AND exited.contact_account_id = t.contact_account_id
+                AND exited.revocation_reason = 'contact_withdrew'
+                AND (
+                  exited.created_at > t.created_at
+                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                )
             )
            WHERE a.id = ? AND a.status = 'active'
              AND NOT EXISTS (
@@ -942,12 +963,15 @@ export async function dispatchDueSosReminders(
         AND t.contact_account_id = r.recipient_account_id
         AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
             AND t.created_at <= a.created_at
-            AND t.invitation_id = (
-              SELECT latest.invitation_id FROM trusted_contacts latest
-              WHERE latest.owner_account_id = a.author_account_id
-                AND latest.contact_account_id = t.contact_account_id
-              ORDER BY latest.created_at DESC, latest.invitation_id DESC
-              LIMIT 1
+            AND NOT EXISTS (
+              SELECT 1 FROM trusted_contacts exited
+              WHERE exited.owner_account_id = t.owner_account_id
+                AND exited.contact_account_id = t.contact_account_id
+                AND exited.revocation_reason = 'contact_withdrew'
+                AND (
+                  exited.created_at > t.created_at
+                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                )
             )
        WHERE r.id = ? AND r.status = 'processing'
          AND r.lease_token = ? AND r.lease_until > ?
@@ -1100,12 +1124,15 @@ export async function scheduleDueSosSmsEscalations(
             AND t.contact_account_id = r.recipient_account_id
             AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
             AND t.created_at <= a.created_at
-            AND t.invitation_id = (
-              SELECT latest.invitation_id FROM trusted_contacts latest
-              WHERE latest.owner_account_id = a.author_account_id
-                AND latest.contact_account_id = t.contact_account_id
-              ORDER BY latest.created_at DESC, latest.invitation_id DESC
-              LIMIT 1
+            AND NOT EXISTS (
+              SELECT 1 FROM trusted_contacts exited
+              WHERE exited.owner_account_id = t.owner_account_id
+                AND exited.contact_account_id = t.contact_account_id
+                AND exited.revocation_reason = 'contact_withdrew'
+                AND (
+                  exited.created_at > t.created_at
+                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                )
             )
            WHERE e.alert_id = ? AND e.status = 'queued'
              AND r.recipient_account_id = ?`,
