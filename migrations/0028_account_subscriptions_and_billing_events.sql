@@ -28,6 +28,10 @@ CREATE TABLE account_subscriptions (
 CREATE INDEX account_subscriptions_active_period
   ON account_subscriptions(status, current_period_end);
 
+CREATE UNIQUE INDEX account_subscriptions_provider_ref
+  ON account_subscriptions(provider, provider_subscription_ref)
+  WHERE provider_subscription_ref IS NOT NULL;
+
 CREATE TABLE billing_provider_events (
   provider TEXT NOT NULL,
   provider_event_id TEXT NOT NULL,
