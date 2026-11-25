@@ -356,4 +356,56 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   });
   assert.equal(suppressedState.data.evaluation.status, "suppressed");
   assert.equal(suppressedState.data.rows.length, 0);
+
+  // Un simple accusé de réception suffit à empêcher le SMS, même sans volontaire.
+  const acknowledgedBase = now + 3_000_000;
+  const acknowledgedAlert = await post<{ alertId: string }>("/create", {
+    owner, recipients: [contact], reminders: 1, now: acknowledgedBase,
+  });
+  assert.equal(acknowledgedAlert.status, 200);
+  const acknowledgedInitialPush = await post<Array<{ id: string; leaseToken: string; reminderNumber: number }>>("/claim", {
+    now: acknowledgedBase,
+  });
+  assert.equal(acknowledgedInitialPush.data.length, 1);
+  assert.equal(acknowledgedInitialPush.data[0].reminderNumber, 0);
+  const acknowledgedInitialSent = await post<{ updated: boolean }>("/complete", {
+    reminderId: acknowledgedInitialPush.data[0].id,
+    leaseToken: acknowledgedInitialPush.data[0].leaseToken,
+    outcome: "sent",
+    now: acknowledgedBase + 1,
+  });
+  assert.equal(acknowledgedInitialSent.data.updated, true);
+
+  const acknowledged = await post<{ recorded: boolean }>("/respond", {
+    actor: contact, alertId: acknowledgedAlert.data.alertId,
+    action: "acknowledge", now: acknowledgedBase + 2,
+  });
+  assert.equal(acknowledged.status, 200);
+  assert.equal(acknowledged.data.recorded, true);
+
+  const acknowledgedReminder = await post<Array<{ id: string; leaseToken: string; reminderNumber: number }>>("/claim", {
+    now: acknowledgedBase + 300_000,
+  });
+  assert.equal(acknowledgedReminder.data.length, 1);
+  assert.equal(acknowledgedReminder.data[0].reminderNumber, 1);
+  const acknowledgedReminderSent = await post<{ updated: boolean }>("/complete", {
+    reminderId: acknowledgedReminder.data[0].id,
+    leaseToken: acknowledgedReminder.data[0].leaseToken,
+    outcome: "sent",
+    now: acknowledgedBase + 300_001,
+  });
+  assert.equal(acknowledgedReminderSent.data.updated, true);
+
+  const acknowledgementSuppressesSms = await post<{
+    evaluationsCreated: number; evaluationsSuppressed: number; smsTasksCreated: number;
+  }>("/sms-escalate", { now: acknowledgedBase + 300_002 });
+  assert.equal(acknowledgementSuppressesSms.status, 200);
+  assert.deepEqual(acknowledgementSuppressesSms.data, {
+    evaluationsCreated: 1, evaluationsSuppressed: 1, smsTasksCreated: 0,
+  });
+  const acknowledgedSmsState = await post<{ evaluation: { status: string }; rows: unknown[] }>("/sms-state", {
+    alertId: acknowledgedAlert.data.alertId,
+  });
+  assert.equal(acknowledgedSmsState.data.evaluation.status, "suppressed");
+  assert.equal(acknowledgedSmsState.data.rows.length, 0);
 });
