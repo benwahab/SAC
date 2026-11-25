@@ -226,3 +226,8 @@ Les contrôles d'accès retiennent une relation créée avant le déclenchement 
 - le montant autorisé est fixé à 5 000 XOF par période mensuelle.
 
 Le service `functions/lib/billing/plan.ts` est l'autorité serveur pour le plafond de contacts (2 gratuit, 10 Premium). Les deux parcours d'invitation doivent utiliser cette autorité. L'activation d'un abonnement ne peut être ajoutée qu'à un webhook fournisseur dont la signature, le montant, la devise et la référence ont été vérifiés. La migration doit être appliquée à la D1 cible après CI verte ; aucun paiement réel n'est actif tant qu'un prestataire n'est pas choisi et configuré.
+
+
+### Application de 0028 en production — 25 novembre 2026
+
+La migration `0028_account_subscriptions_and_billing_events.sql` a été appliquée à la D1 de production `sac-db` après succès du workflow CI `45644736708` sur le commit `975832fc24e672a491f3acff002c0a48f7667d10`. Le registre `d1_migrations` confirme 28 migrations. Les deux tables, leurs colonnes et index ont été vérifiés ; `PRAGMA foreign_key_check` ne retourne aucune ligne. Les tables sont vides, aucun compte n'a été activé Premium. Le déploiement Pages correspondant est `e3a6b0a7-0f70-45a5-977a-d332f35868dc` (production, succès).
