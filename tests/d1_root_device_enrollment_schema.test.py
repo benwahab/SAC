@@ -14,6 +14,8 @@ class RootDeviceEnrollmentSchemaTests(unittest.TestCase):
             "0001_account_email_otp.sql",
             "0006_email_otp_delivery_state.sql",
             "0007_root_device_enrollment.sql",
+            "0012_root_authentication_challenges.sql",
+            "0024_root_authentication_session_claim.sql",
         ):
             self.db.executescript((ROOT / "migrations" / migration).read_text())
         self.now = int(time.time() * 1000)
@@ -99,6 +101,84 @@ class RootDeviceEnrollmentSchemaTests(unittest.TestCase):
         )
         self.db.commit()
         return ceremony, device, session
+
+    def _create_authentication_challenge(self, challenge_id, now):
+        _, device, _ = self._complete_enrollment()
+        self.db.execute(
+            """INSERT INTO root_authentication_challenges
+            (id,account_id,device_id,origin,challenge_digest,created_at,expires_at,consumed_at,attempt_count)
+            VALUES (?,?,?,'https://sac.example',?,?,?,NULL,0)""",
+            (challenge_id, self.account_id, device, "a" * 64, now, now + 300000),
+        )
+        self.db.commit()
+        return device
+
+    def test_authentication_challenge_can_be_claimed_by_only_one_session_attempt(self):
+        now = self.now + 500
+        challenge_id = "aaaaaaaa-2222-4222-8222-222222222222"
+        claim_id = "bbbbbbbb-2222-4222-8222-222222222222"
+        self._create_authentication_challenge(challenge_id, now)
+
+        first = self.db.execute(
+            """UPDATE root_authentication_challenges
+            SET consumed_at=?, attempt_count=attempt_count+1, consumed_by_request_id=?
+            WHERE id=? AND consumed_at IS NULL AND expires_at>? AND attempt_count=0""",
+            (now + 1, claim_id, challenge_id, now),
+        )
+        self.assertEqual(first.rowcount, 1)
+
+        replay = self.db.execute(
+            """UPDATE root_authentication_challenges
+            SET consumed_at=?, attempt_count=attempt_count+1, consumed_by_request_id=?
+            WHERE id=? AND consumed_at IS NULL AND expires_at>? AND attempt_count=0""",
+            (now + 2, "cccccccc-2222-4222-8222-222222222222", challenge_id, now),
+        )
+        self.assertEqual(replay.rowcount, 0)
+        row = self.db.execute(
+            "SELECT consumed_at, attempt_count, consumed_by_request_id FROM root_authentication_challenges WHERE id=?",
+            (challenge_id,),
+        ).fetchone()
+        self.assertEqual(row, (now + 1, 1, claim_id))
+
+    def test_authentication_challenge_claim_is_required_immutable_and_unique(self):
+        now = self.now + 600
+        first_id = "dddddddd-2222-4222-8222-222222222222"
+        second_id = "eeeeeeee-2222-4222-8222-222222222222"
+        claim_id = "ffffffff-2222-4222-8222-222222222222"
+        self._create_authentication_challenge(first_id, now)
+
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute(
+                "UPDATE root_authentication_challenges SET consumed_at=?, attempt_count=attempt_count+1 WHERE id=?",
+                (now + 1, first_id),
+            )
+
+        self.db.execute(
+            """UPDATE root_authentication_challenges
+            SET consumed_at=?, attempt_count=attempt_count+1, consumed_by_request_id=?
+            WHERE id=?""",
+            (now + 1, claim_id, first_id),
+        )
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute(
+                "UPDATE root_authentication_challenges SET consumed_by_request_id=? WHERE id=?",
+                ("11111111-2222-4222-8222-222222222222", first_id),
+            )
+
+        self.db.execute(
+            """INSERT INTO root_authentication_challenges
+            (id,account_id,device_id,origin,challenge_digest,created_at,expires_at,consumed_at,attempt_count)
+            SELECT ?,account_id,device_id,origin,?, ?, ?,NULL,0
+            FROM root_authentication_challenges WHERE id=?""",
+            (second_id, "b" * 64, now + 2, now + 300002, first_id),
+        )
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute(
+                """UPDATE root_authentication_challenges
+                SET consumed_at=?, attempt_count=attempt_count+1, consumed_by_request_id=?
+                WHERE id=?""",
+                (now + 3, claim_id, second_id),
+            )
 
     def test_persists_one_root_device_credential_and_bound_session_atomically(self):
         ceremony, device, session = self._complete_enrollment()
