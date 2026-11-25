@@ -22,6 +22,7 @@ interface SocketIdentity {
   sessionId: string;
   role: "author" | "recipient";
   connectionId: string;
+  alertId: string;
 }
 
 function json(body: unknown, status = 200): Response {
@@ -141,7 +142,7 @@ export class GpsRelayRoom extends DurableObject<Env> {
     }
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
-    const identity: SocketIdentity = { accountId, deviceId, sessionId, role, connectionId: crypto.randomUUID() };
+    const identity: SocketIdentity = { accountId, deviceId, sessionId, role, connectionId: crypto.randomUUID(), alertId };
     server.accept();
     this.sockets.set(server, identity);
     server.addEventListener("message", (event) => { void this.handleMessage(server, alertId, event.data); });
@@ -162,9 +163,12 @@ export class GpsRelayRoom extends DurableObject<Env> {
   async alarm(): Promise<void> {
     for (const [socket, identity] of this.sockets) {
       if (socket.readyState !== WebSocket.OPEN ||
-        !(await isActiveParticipant(this.env.DB, [...this.sockets.values()][0]?.connectionId ?? "", identity.accountId, identity.deviceId, identity.sessionId))) {
+        !(await isActiveParticipant(this.env.DB, identity.alertId, identity.accountId, identity.deviceId, identity.sessionId))) {
         try { socket.close(4003, "access_revoked"); } catch {}
         this.sockets.delete(socket);
+        await this.broadcastPresence(identity.alertId, socket, {
+          type: "participant-disconnected", connectionId: identity.connectionId, role: identity.role,
+        });
         continue;
       }
     }
