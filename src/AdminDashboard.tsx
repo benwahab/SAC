@@ -4,6 +4,7 @@ import BrandLogo from "./components/BrandLogo";
 import AdminPartners from "./components/AdminPartners";
 import AdminPilotage from "./components/AdminPilotage";
 import AdminMissionTasks from "./components/AdminMissionTasks";
+import MyMissionTasks from "./components/MyMissionTasks";
 import AdminResources from "./components/AdminResources";
 import AdminSettings from "./components/AdminSettings";
 
@@ -355,6 +356,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
         <button type="button" onClick={() => setActiveSection("overview")} className={activeSection === "overview" ? "rounded-xl bg-emerald-800 px-4 py-2 text-sm font-bold text-white" : "rounded-xl border border-white bg-white/75 px-4 py-2 text-sm font-bold"}>{language === "fr" ? "Mes missions" : language === "ar" ? "مهامي" : "My missions"}</button>
         {delegateMissions.some((mission) => mission.scopeKey === "support" && mission.status === "active" && mission.permissions.includes("read")) && <button type="button" onClick={() => setActiveSection("support")} className={activeSection === "support" ? "rounded-xl bg-emerald-800 px-4 py-2 text-sm font-bold text-white" : "rounded-xl border border-white bg-white/75 px-4 py-2 text-sm font-bold"}>{language === "fr" ? "Assistance" : language === "ar" ? "الدعم" : "Support"}</button>}
       </nav>
+      <MyMissionTasks language={language} />
       {activeSection !== "support" && <section>
         <h2 className="mb-4 text-xl font-extrabold">{t.myMissions}</h2>
         {delegateMissions.length === 0 ? <p className="rounded-2xl bg-white/70 p-6 text-sm text-sac-muted">{t.noMissions}</p> : <div className="grid gap-4 md:grid-cols-2">{delegateMissions.map((mission) => <article key={mission.id} className="rounded-2xl border border-white/90 bg-white/80 p-5 shadow-glass">
