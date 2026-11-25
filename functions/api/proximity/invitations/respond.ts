@@ -16,7 +16,7 @@ function json(body: unknown, status = 200): Response {
 }
 function statusFor(error: SocialError): number {
   if (error === "storage_unavailable") return 503;
-  if (error === "relationship_already_active") return 409;
+  if (error === "relationship_already_active" || error === "contact_limit_reached") return 409;
   if (error === "invalid_or_expired_invitation") return 409;
   return 400;
 }
