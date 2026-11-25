@@ -3,6 +3,7 @@ import { guardSameOriginJsonPost } from "../../../lib/security/http-request-guar
 import { readJsonRequestBody } from "../../../lib/security/json-request-body.ts";
 import { digestContactInvitationToken } from "../../../lib/security/contact-invitation-token.ts";
 import { acceptContactInvitation } from "../../../lib/trusted-contacts/service.ts";
+import { getAccountPlan } from "../../../lib/billing/plan.ts";
 
 interface Env { DB: D1Database; }
 
@@ -53,23 +54,24 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   try {
     const digest = await digestContactInvitationToken(crypto, body.token);
     const invitation = await env.DB.prepare(
-      `SELECT permission_version
+      `SELECT permission_version, inviter_account_id
        FROM contact_invitations
        WHERE id = ?
          AND token_digest = ?
          AND status = 'pending'
          AND expires_at > ?
        LIMIT 1`,
-    ).bind(body.invitationId, digest, Date.now()).first<{ permission_version: string }>();
+    ).bind(body.invitationId, digest, Date.now()).first<{ permission_version: string; inviter_account_id: string }>();
 
     if (!invitation) return json({ error: "invalid_or_expired_invitation" }, 409);
 
+    const ownerPlan = await getAccountPlan(env.DB, invitation.inviter_account_id, Date.now());
     const result = await acceptContactInvitation(env.DB, crypto, {
       authenticatedAccountId: session.value.accountId,
       invitationId: body.invitationId,
       token: body.token,
       permissionVersion: invitation.permission_version,
-      maxActiveContacts: 2,
+      maxActiveContacts: ownerPlan.maxTrustedContacts,
     });
 
     if (!result.ok) {
