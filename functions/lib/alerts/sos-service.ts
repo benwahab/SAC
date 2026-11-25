@@ -967,6 +967,10 @@ export async function scheduleDueSosSmsEscalations(
           `INSERT OR IGNORE INTO alert_sms_escalations
            (alert_id, threshold_reached_at, evaluated_at, status)
            SELECT a.id, ?, ?, CASE WHEN EXISTS (
+             SELECT 1 FROM alert_events acknowledged
+             WHERE acknowledged.alert_id = a.id
+               AND acknowledged.event_type = 'acknowledged'
+           ) OR EXISTS (
              SELECT 1 FROM alert_responsibility_periods p
              WHERE p.alert_id = a.id
            ) THEN 'suppressed' ELSE 'queued' END
