@@ -1099,3 +1099,18 @@ Le présent bloc actualise les sections de supervision antérieures lorsque cell
 - [ ] Maintenir les parcours racine non homologués et le GPS précis désactivés tant que les revues et preuves requises ne sont pas terminées.
 
 Référence : `docs/AVANCEMENT_COMPTES_APPAREILS_SESSIONS_2026-11-25.md`.
+
+## Avancement de la console Super Admin — 25 novembre 2026
+
+Cette section reflète les vérifications et modifications les plus récentes. Elle complète les anciennes sections de conception et ne les réécrit pas rétroactivement.
+
+- [x] Vérifier l'historique de migrations de la base Cloudflare D1 distante `sac-db` : les migrations `0001` à `0028` sont enregistrées comme appliquées dans `d1_migrations`.
+- [x] Ajouter à la vue d'ensemble un contrôle réel de connectivité de `/api/health`, affichant séparément l'état de l'API et de D1 en français, anglais et arabe.
+- [x] Ajouter l'actualisation manuelle des indicateurs et du contrôle de connectivité depuis la vue d'ensemble.
+- [x] Préserver la distinction entre connectivité API/D1 et disponibilité réelle du parcours SOS : le contrôle de santé ne valide pas les notifications, le chiffrement, les appareils ou la transmission SOS.
+- [x] Synchroniser la documentation du module Assistance avec l'état réel des migrations D1.
+- [ ] Compléter les modules métier de la console : finances/comptabilité/trésorerie, relations externes, ressources/RH/logistique/documents, pilotage et paramètres.
+- [ ] Intégrer le stockage documentaire privé avec Cloudflare R2 et ses contrôles d'accès. Le compte Cloudflare répond actuellement à l'API R2 avec l'erreur 10042 demandant l'activation de R2 depuis le tableau de bord Cloudflare ; aucun bucket SAC n'est encore créé.
+- [ ] Exécuter et vérifier les contrôles CI des commits de cette séquence avant de déclarer le lot validé.
+
+Les modules non livrés doivent rester identifiés comme tels dans l'interface. Aucun montant, partenaire, document, membre du personnel ou indicateur de direction fictif ne doit être présenté comme une donnée réelle.
