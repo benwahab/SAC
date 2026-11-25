@@ -191,3 +191,46 @@ Cette section complète l'audit initial après lecture du code actuel sur `main`
 ### Décision de sécurité pour la suite
 
 Les contrôles d'identité de session, d'origine, d'e-mail vérifié, de token à usage unique et de transition conditionnelle sont présents. La suite peut renforcer les tests de routes et la fiabilité de livraison sans modifier les permissions métier. En revanche, la révocation symétrique, les quotas, les droits pendant une alerte active et les délais anti-abus restent des arbitrages explicites : aucun de ces comportements ne doit être activé par défaut.
+## 11. Analyse technique de la livraison Brevo — 2026-11-25
+
+### Chemin effectivement exécuté
+
+Le parcours de création suit actuellement cette séquence synchrone :
+
+1. `createContactInvitation` crée une invitation D1 avec un condensat du token ; le token brut reste uniquement en mémoire.
+2. `sendContactInvitationEmail` construit le lien HTTPS et appelle le module partagé `sendBrevoTransactionalEmail`.
+3. Si l'envoi retourne `ok: false`, `createAndSendContactInvitation` appelle `cancelPendingContactInvitation`, qui passe l'invitation de `pending` à `revoked`.
+4. La route renvoie une erreur HTTP et ne restitue pas au client un état de livraison exploitable.
+
+### Défauts confirmés
+
+- Aucun journal/outbox d'e-mails ni registre des tentatives n'apparaît dans les migrations actuelles (0001–0025) ou dans le chemin d'invitation inspecté.
+- L'identifiant Brevo `messageId` n'est conservé que dans le résultat en mémoire ; la route ne le persiste pas.
+- Le code traite de la même manière une réponse HTTP non-2xx, une erreur réseau/timeout et une réponse 2xx dont le JSON est illisible ou ne contient pas de `messageId`.
+- Une exception réseau après acceptation côté Brevo, un timeout après traitement, ou une réponse 2xx illisible peuvent donc conduire à la révocation d'un lien qui a peut-être déjà été envoyé.
+- Aucun mécanisme de relance ou de réconciliation n'est présent dans ce parcours.
+- Le code ne fournit pas de garantie d'idempotence côté Brevo. Ne pas ajouter un en-tête ou prétendre à une déduplication fournisseur sans preuve explicite que l'API Brevo utilisée le prend en charge.
+
+### Conséquence de sécurité et d'expérience
+
+Le risque principal n'est pas une fuite du token : celui-ci n'est pas persisté en clair et n'est pas journalisé par ce chemin. Le risque est l'incohérence entre l'e-mail potentiellement reçu et l'état D1 : le destinataire clique sur un lien qui a été révoqué automatiquement. À l'inverse, relancer aveuglément après un timeout peut envoyer plusieurs invitations valides ou plusieurs e-mails.
+
+### Architecture nécessaire avant une correction complète
+
+Une outbox fiable doit enregistrer l'événement de livraison dans D1 et permettre de distinguer au minimum :
+- `queued` : demande enregistrée, aucun appel fournisseur commencé ;
+- `sending` : tentative réservée par un bail atomique ;
+- `accepted` : Brevo a répondu avec un `messageId` valide ;
+- `rejected` : rejet explicite et non ambigu du fournisseur ;
+- `uncertain` : l'appel a pu être traité, mais SAC ne peut pas prouver son résultat ;
+- `retryable` : échec transitoire dont la non-acceptation est suffisamment établie.
+
+Le token brut nécessaire à une relance ne peut pas être récupéré à partir de son condensat. Il ne faut donc ni le stocker en clair ni créer une relance automatique qui ne peut pas reconstruire exactement le même lien. Une conception de relance doit prévoir un secret de chiffrement dédié, une durée de conservation limitée, une protection stricte des données chiffrées et une procédure de rotation ; à défaut, la relance doit créer explicitement un nouveau token et invalider l'ancien selon une règle produit documentée.
+
+Les baux doivent empêcher deux workers de traiter simultanément la même tentative. Les transitions d'état doivent être conditionnelles et atomiques. Les réponses API et l'interface doivent différencier un refus certain d'un résultat incertain, sans prétendre qu'un e-mail est livré lorsque seule l'acceptation API est connue.
+
+### Périmètre de décision
+
+Aucune modification de quota, de durée d'invitation, de permissions des proches, de révocation ou de comportement SOS n'est requise pour traiter ce défaut. En revanche, le stockage chiffré du token, sa durée de conservation, la stratégie de relance et la conduite à tenir après un état `uncertain` sont des choix de sécurité/produit qui doivent être définis avant une migration et une mise en production.
+
+**Décision de cette tranche :** conserver le fournisseur Brevo et son intégration actuelle ; ne pas introduire de relance aveugle ni de nouvelle table incomplète. Le défaut est documenté précisément afin que la future outbox soit conçue avec une stratégie de secret et de résultat ambigu cohérente.
