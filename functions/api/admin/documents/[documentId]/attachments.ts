@@ -8,7 +8,7 @@ function sameOrigin(request: Request): boolean {
   if (!origin) return false;
   try { return new URL(origin).origin === new URL(request.url).origin; } catch { return false; }
 }
-const safeName = (name: string) => name.replace(/[\\/\\0-\\x1f\\x7f]/g, "_").replace(/\s+/g, " ").trim().slice(0, 240) || "document";
+const safeName = (name: string) => name.replace(/[\\/\0-\x1f\x7f]/g, "_").replace(/\s+/g, " ").trim().slice(0, 240) || "document";
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env, params }) => {
   const admin = await requireSuperAdminSession(request, env.DB);
@@ -30,8 +30,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }
   const documentId = typeof params.documentId === "string" ? params.documentId : "";
   if (!request.body) return json({ error: "file_required" }, 400);
   const url = new URL(request.url);
-  let requestedName = url.searchParams.get("filename") || "document";
-  try { requestedName = decodeURIComponent(requestedName); } catch { return json({ error: "invalid_file_name" }, 400); }
+  const requestedName = url.searchParams.get("filename") || "document";
   const fileName = safeName(requestedName);
   const contentType = request.headers.get("Content-Type")?.slice(0, 180) || "application/octet-stream";
   try {
