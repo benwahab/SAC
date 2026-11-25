@@ -124,3 +124,118 @@ test("session list returns only safe device metadata for the authenticated accou
   }]);
   assert.equal(JSON.stringify(payload).includes(issued.token), false);
 });
+
+
+test("session revocation is scoped to the authenticated account and active sessions", async () => {
+  const now = Date.now();
+  const issued = await createSessionToken(webcrypto as unknown as Crypto);
+  const createdAt = now - 20_000;
+  const lastActivityAt = now - 1_000;
+  const expiresAt = Date.parse(getSessionExpiresAt({
+    createdAt: new Date(createdAt).toISOString(),
+    lastActivityAt: new Date(lastActivityAt).toISOString(),
+  }) as string);
+  const authRow = {
+    session_id: "session-current",
+    account_id: "account-current",
+    device_id: "device-root",
+    token_hash: issued.tokenHash,
+    session_status: "active",
+    session_auth_version: 1,
+    created_at: createdAt,
+    last_activity_at: lastActivityAt,
+    expires_at: expiresAt,
+    revoked_at: null,
+    account_status: "active",
+    device_status: "active",
+    current_device_auth_version: 1,
+  };
+  const statements: Array<{ sql: string; values: unknown[] }> = [];
+  const db = {
+    prepare(sql: string) {
+      let values: unknown[] = [];
+      statements.push({ sql, values });
+      return {
+        bind(...args: unknown[]) { values = args; statements[statements.length - 1].values = args; return this; },
+        async first() { return authRow; },
+        async run() { return { success: true, meta: { changes: 1 } }; },
+        async all() { return { success: true, results: [] }; },
+      };
+    },
+  };
+  const targetSessionId = "123e4567-e89b-42d3-a456-426614174000";
+  const response = await revokeSession({
+    request: new Request("https://sac.example/api/auth/revoke-session", {
+      method: "POST",
+      headers: {
+        Cookie: createSessionCookie(issued.token),
+        Origin: "https://sac.example",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ sessionId: targetSessionId }),
+    }),
+    env: { DB: db as never },
+  } as never);
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { revoked: true, sessionId: targetSessionId });
+  const revoke = statements.find((item) => item.sql.includes("SET status = 'revoked'"));
+  assert.ok(revoke);
+  assert.match(revoke.sql, /account_id = \?/);
+  assert.match(revoke.sql, /status = 'active'/);
+  assert.match(revoke.sql, /expires_at > \?/);
+  assert.deepEqual(revoke.values.slice(1, 3), [targetSessionId, "account-current"]);
+});
+
+test("session revocation cannot revoke the current session through the other-session endpoint", async () => {
+  const now = Date.now();
+  const issued = await createSessionToken(webcrypto as unknown as Crypto);
+  const createdAt = now - 20_000;
+  const lastActivityAt = now - 1_000;
+  const expiresAt = Date.parse(getSessionExpiresAt({
+    createdAt: new Date(createdAt).toISOString(),
+    lastActivityAt: new Date(lastActivityAt).toISOString(),
+  }) as string);
+  const authRow = {
+    session_id: "123e4567-e89b-42d3-a456-426614174000",
+    account_id: "account-current",
+    device_id: "device-root",
+    token_hash: issued.tokenHash,
+    session_status: "active",
+    session_auth_version: 1,
+    created_at: createdAt,
+    last_activity_at: lastActivityAt,
+    expires_at: expiresAt,
+    revoked_at: null,
+    account_status: "active",
+    device_status: "active",
+    current_device_auth_version: 1,
+  };
+  const executed: string[] = [];
+  const db = {
+    prepare(sql: string) {
+      executed.push(sql);
+      return {
+        bind() { return this; },
+        async first() { return authRow; },
+        async run() { return { success: true, meta: { changes: 1 } }; },
+      };
+    },
+  };
+  const response = await revokeSession({
+    request: new Request("https://sac.example/api/auth/revoke-session", {
+      method: "POST",
+      headers: {
+        Cookie: createSessionCookie(issued.token),
+        Origin: "https://sac.example",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ sessionId: authRow.session_id }),
+    }),
+    env: { DB: db as never },
+  } as never);
+
+  assert.equal(response.status, 409);
+  assert.deepEqual(await response.json(), { error: "cannot_revoke_current_session" });
+  assert.equal(executed.some((sql) => sql.includes("SET status = 'revoked'")), false);
+});
