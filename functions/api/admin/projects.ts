@@ -11,12 +11,13 @@ const ref=()=> "SAC-PRJ-"+new Date().toISOString().slice(0,10).replaceAll("-",""
 export const onRequestGet:PagesFunction<Env>=async({request,env})=>{
  const admin=await requireSuperAdminSession(request,env.DB);if(!admin.ok)return json({error:admin.status===401?"authentication_required":"super_admin_required"},admin.status);
  const q=str(new URL(request.url).searchParams.get("q"),120);
- try{const [projects,milestones,events,summary]=await Promise.all([
+ try{const [projects,milestones,risks,events,summary]=await Promise.all([
  env.DB.prepare("SELECT id,public_reference,title,description,project_status,priority,progress_percent,starts_on,ends_on,created_at,updated_at FROM initiatives WHERE (?='' OR title LIKE '%'||?||'%' OR public_reference LIKE '%'||?||'%') ORDER BY updated_at DESC LIMIT 200").bind(q,q,q).all<Record<string,unknown>>(),
  env.DB.prepare("SELECT m.id,m.project_id,m.title,m.description,m.due_on,m.milestone_status,m.created_at,m.updated_at FROM project_milestones m INNER JOIN initiatives p ON p.id=m.project_id WHERE (?='' OR p.title LIKE '%'||?||'%' OR m.title LIKE '%'||?||'%') ORDER BY CASE WHEN m.due_on IS NULL THEN 1 ELSE 0 END,m.due_on LIMIT 500").bind(q,q,q).all<Record<string,unknown>>(),
+ env.DB.prepare("SELECT id,project_id,title,description,probability,impact,mitigation_plan,risk_status,review_on,created_at,updated_at FROM project_risks WHERE (?='' OR title LIKE '%'||?||'%') ORDER BY updated_at DESC LIMIT 300").bind(q,q).all<Record<string,unknown>>(),
  env.DB.prepare("SELECT id,project_id,milestone_id,event_type,summary,occurred_at FROM project_events ORDER BY occurred_at DESC LIMIT 100").all<Record<string,unknown>>(),
  env.DB.prepare("SELECT COUNT(*) AS total_projects,SUM(CASE WHEN project_status='active' THEN 1 ELSE 0 END) AS active_projects,SUM(CASE WHEN project_status='completed' THEN 1 ELSE 0 END) AS completed_projects,(SELECT COUNT(*) FROM project_milestones WHERE milestone_status IN ('pending','in_progress','delayed')) AS open_milestones FROM initiatives").first<Record<string,number>>()
- ]);return json({projects:projects.results??[],milestones:milestones.results??[],events:events.results??[],summary})}catch{return json({error:"project_service_unavailable"},503)}
+ ]);return json({projects:projects.results??[],milestones:milestones.results??[],risks:risks.results??[],events:events.results??[],summary})}catch{return json({error:"project_service_unavailable"},503)}
 };
 export const onRequestPost:PagesFunction<Env>=async({request,env})=>{
  const guard=guardSameOriginJsonPost(request);if(guard)return guard;
@@ -54,6 +55,26 @@ export const onRequestPost:PagesFunction<Env>=async({request,env})=>{
  env.DB.prepare("INSERT INTO project_events (id,project_id,event_type,summary,actor_account_id,occurred_at) VALUES (?,?, 'updated', ?, ?, ?)").bind(crypto.randomUUID(),id,"Mise à jour de l'état et de l'avancement du projet",actor,now),
  audit("project.updated","steering.manage_projects")
  ]);return results.every(x=>x.success)?json({updated:true}):json({error:"project_update_failed"},503)
+ }
+ if(action==="create_risk"){
+ const projectId=str(v.projectId,80),title=str(v.title,180),description=str(v.description,3000),mitigation=str(v.mitigationPlan,4000),probability=Number(v.probability),impact=Number(v.impact),review=str(v.reviewOn,10),status=str(v.status,20)||"open";
+ if(!projectId||!title||!Number.isInteger(probability)||probability<1||probability>5||!Number.isInteger(impact)||impact<1||impact>5||!["open","mitigating","accepted","closed"].includes(status)||!validDate(review))return json({error:"invalid_risk"},400);
+ const project=await env.DB.prepare("SELECT id FROM initiatives WHERE id=?").bind(projectId).first();if(!project)return json({error:"project_not_found"},404);
+ const id=crypto.randomUUID();
+ const results=await env.DB.batch([
+ env.DB.prepare("INSERT INTO project_risks (id,project_id,title,description,probability,impact,mitigation_plan,risk_status,review_on,created_by,updated_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(id,projectId,title,description,probability,impact,mitigation,status,review||null,actor,actor,now,now),
+ env.DB.prepare("INSERT INTO project_risk_events (id,risk_id,event_type,summary,actor_account_id,occurred_at) VALUES (?,?, 'created', ?, ?, ?)").bind(crypto.randomUUID(),id,"Création du risque projet",actor,now),
+ audit("project.risk.created","steering.manage_risks")
+ ]);return results.every(x=>x.success)?json({created:true,id},201):json({error:"risk_save_failed"},503)
+ }
+ if(action==="update_risk"){
+ const id=str(v.riskId,80),status=str(v.status,20);if(!id||!["open","mitigating","accepted","closed"].includes(status))return json({error:"invalid_risk_update"},400);
+ const risk=await env.DB.prepare("SELECT id FROM project_risks WHERE id=?").bind(id).first();if(!risk)return json({error:"risk_not_found"},404);
+ const results=await env.DB.batch([
+ env.DB.prepare("UPDATE project_risks SET risk_status=?,updated_by=?,updated_at=? WHERE id=?").bind(status,actor,now,id),
+ env.DB.prepare("INSERT INTO project_risk_events (id,risk_id,event_type,summary,actor_account_id,occurred_at) VALUES (?,?, 'status_changed', ?, ?, ?)").bind(crypto.randomUUID(),id,"Mise à jour du statut du risque",actor,now),
+ audit("project.risk.updated","steering.manage_risks")
+ ]);return results.every(x=>x.success)?json({updated:true}):json({error:"risk_update_failed"},503)
  }
  if(action==="update_milestone"){
  const id=str(v.milestoneId,80),status=str(v.status,20);if(!id||!milestoneStatuses.includes(status))return json({error:"invalid_milestone_update"},400);
