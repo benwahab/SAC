@@ -68,6 +68,10 @@ CREATE UNIQUE INDEX trusted_contacts_one_active_pair
 CREATE TRIGGER trusted_contact_insert_guard
 BEFORE INSERT ON trusted_contacts
 BEGIN
+  SELECT CASE WHEN NEW.status <> 'active' OR NEW.revoked_at IS NOT NULL
+    OR NEW.revocation_reason IS NOT NULL OR NEW.revoked_by_account_id IS NOT NULL
+    THEN RAISE(ABORT, 'trusted_contact_must_start_active') END;
+
   SELECT CASE WHEN NOT EXISTS (
     SELECT 1
     FROM contact_invitations i
