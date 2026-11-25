@@ -83,7 +83,7 @@ Le statut affiché par le navigateur, une URL de retour, une capture d'écran ou
 
 Les textes des offres publiques et l'espace privé ont été harmonisés avec les décisions commerciales ci-dessus. Le bouton « Découvrir Premium » mène à « Mon compte ». Cette page lit désormais la formule et le nombre de contacts depuis une API authentifiée.
 
-Le contrôle de capacité est implémenté côté serveur dans les deux parcours d'invitation actuellement présents :
+Le contrôle de capacité est implémenté côté serveur dans les deux parcours d'invitation actuellement présents. Le nombre de contacts est calculé sur l'union dédupliquée des relations actives des deux systèmes, afin qu'un même proche ne soit pas compté deux fois et qu'un compte ne puisse pas contourner le plafond en utilisant les deux parcours :
 - `proximity_invitations` / `close_relations` : le plafond du propriétaire et celui du destinataire sont vérifiés ; l'acceptation inclut des conditions SQL atomiques pour éviter les dépassements concurrents ;
 - `contact_invitations` / `trusted_contacts` : le plafond du propriétaire est résolu côté serveur au moment de l'acceptation. Une invitation en attente ne réserve pas de place ; si le cercle est plein à l'acceptation, la relation n'est pas créée.
 
