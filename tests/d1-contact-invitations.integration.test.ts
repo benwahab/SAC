@@ -237,5 +237,39 @@ test(
     assert.equal(afterRevoke.status, 200);
     assert.equal(afterRevoke.data.contacts.length, 1);
     assert.equal((afterRevoke.data.contacts[0] as { accountId: string }).accountId, contact2Id);
+
+    // Une relation terminée reste dans l'historique, mais une nouvelle
+    // invitation acceptée peut créer une nouvelle relation distincte.
+    const reinviteNow = now + 6;
+    const reinvite = await post<{ invitationId: string; token: string }>("/create", {
+      ownerId, destinationEmail: contactEmail,
+      expiresAt: now + 24 * 60 * 60 * 1000, now: reinviteNow,
+    });
+    assert.equal(reinvite.status, 200);
+    const reaccepted = await post<{ contactAccountId: string }>("/accept", {
+      contactId, invitationId: reinvite.data.invitationId,
+      token: reinvite.data.token, now: reinviteNow + 1,
+    });
+    assert.equal(reaccepted.status, 200);
+    assert.equal(reaccepted.data.contactAccountId, contactId);
+
+    const voluntary = await post<{ withdrawn: boolean }>("/withdraw", {
+      ownerId, contactId, now: reinviteNow + 2,
+    });
+    assert.equal(voluntary.status, 200);
+    assert.equal(voluntary.data.withdrawn, true);
+
+    const thirdInviteNow = reinviteNow + 3;
+    const thirdInvite = await post<{ invitationId: string; token: string }>("/create", {
+      ownerId, destinationEmail: contactEmail,
+      expiresAt: now + 24 * 60 * 60 * 1000, now: thirdInviteNow,
+    });
+    assert.equal(thirdInvite.status, 200);
+    const thirdAcceptance = await post<{ contactAccountId: string }>("/accept", {
+      contactId, invitationId: thirdInvite.data.invitationId,
+      token: thirdInvite.data.token, now: thirdInviteNow + 1,
+    });
+    assert.equal(thirdAcceptance.status, 200);
+    assert.equal(thirdAcceptance.data.contactAccountId, contactId);
   },
 );
