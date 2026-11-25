@@ -283,3 +283,27 @@ La correction applicative a été engagée sur `main` :
 - le transfert de responsabilité ne peut sélectionner qu'un volontaire dont la relation demeure active.
 
 **État de validation au moment de cette mise à jour :** les commits applicatifs et la migration sont sur `main`, mais la CI du dernier commit est encore en cours. La migration 0027 n'a pas été appliquée à la D1 de production et aucun déploiement réussi de cette tranche n'est encore confirmé. Ne pas considérer la tranche comme terminée avant CI verte, application distante de 0027, vérification du registre D1 et des déclencheurs, puis déploiement Pages confirmé.
+
+
+## 15. Validation finale, application D1 et déploiements — 2026-11-25
+
+La tranche de révocation symétrique est maintenant validée et déployée.
+
+### Validation
+- CI complète réussie sur le commit `4a81ba7adba7252a6c0a130b6527ae794a0adbf4` (`SAC quality checks`, run `45635926073`).
+- Les 27 migrations s'appliquent sur la base D1 locale isolée.
+- Le test D1 SOS couvre le retrait par le propriétaire pendant qu'un proche assure la responsabilité : le proche retiré perd immédiatement la lecture, les événements et la responsabilité ; les rappels en attente sont annulés ; le SOS reste accessible à son auteur ; une nouvelle invitation acceptée ne redonne aucun accès à l'ancien SOS, mais permet l'accès à un nouveau SOS.
+- Le retrait volontaire reste couvert par les tests existants.
+
+### D1 de production
+- Migration `0027_symmetric_trusted_contact_access_revocation.sql` appliquée le `2026-11-25 14:40:58`.
+- Registre D1 vérifié : 27 migrations enregistrées, dont 0027.
+- Cinq déclencheurs critiques vérifiés présents : `trusted_contacts_revoke_access`, `alert_event_insert_guard`, `alert_reminder_insert_guard`, `alert_sms_outbox_insert_guard` et `alert_responsibility_immutable_fields`.
+- Vérification sans données de test de production : 0 relation de confiance, 0 alerte SOS et 0 ticket GPS au moment du contrôle.
+
+### Déploiements
+- Pages SAC : déploiement de production `ca624fc7-22b5-4873-a9b2-725bb6cb4b3d`, commit `4a81ba7adba7252a6c0a130b6527ae794a0adbf4`, étapes build et deploy réussies.
+- GPS relay Worker `sac-gps-relay` : version `9ed28bad-28b9-49c1-a994-759fa4e8fc6d`, déploiement `85f4b930-452c-458a-99eb-62a5203582a2`, 100 % du trafic. Le contenu actif a été relu après upload ; les contrôles d'autorisation actifs et la fermeture périodique des sockets révoqués sont présents.
+- Les notifications Push refont le contrôle de la relation juste avant chaque envoi. Le relais GPS vérifie chaque émission et présence ; les sockets inactifs sont revalidés toutes les cinq secondes et fermés si l'autorisation a disparu.
+
+La décision produit et son implémentation remplacent les anciennes exceptions de maintien d'accès après une révocation initiée par le propriétaire. Les données déjà reçues avant la rupture ne peuvent pas être effacées à distance.
