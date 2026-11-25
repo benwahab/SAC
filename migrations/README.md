@@ -193,3 +193,5 @@ Test de schéma : `python3 tests/d1_root_device_enrollment_schema.test.py`. Vér
 Le service `scheduleDueSosSmsEscalations` applique la même règle avant l'insertion. Les rappels Web Push conservent leur cadence de cinq minutes et leur seuil choisi. Cette migration ne livre aucun SMS ; l'envoi réel reste soumis au choix et à l'intégration d'un fournisseur.
 
 Test d'intégration : `npm run test:sos-d1`, incluant désormais le scénario « accusé de réception sans volontaire ».
+
+**Application distante vérifiée le 25 novembre 2026** sur `sac-db` : entrée 0025 présente dans `d1_migrations`, triggers `alert_sms_escalation_insert_guard` et `alert_acknowledgement_cancels_pending_sms` présents, `PRAGMA foreign_key_check` sans anomalie. CI complète réussie sur le commit `73e85e99e428fcf6a275cb62030210139ef79cb8` (workflow `45608513553`) et déploiement Cloudflare Pages production réussi.
