@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { adminTranslations, type AdminPermission, type Language } from "./i18n/translations";
 import BrandLogo from "./components/BrandLogo";
-import AdminDocuments from "./components/AdminDocuments";
 import AdminPartners from "./components/AdminPartners";
 import AdminPilotage from "./components/AdminPilotage";
 import AdminResources from "./components/AdminResources";
