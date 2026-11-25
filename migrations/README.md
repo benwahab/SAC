@@ -195,3 +195,15 @@ Le service `scheduleDueSosSmsEscalations` applique la même règle avant l'inser
 Test d'intégration : `npm run test:sos-d1`, incluant désormais le scénario « accusé de réception sans volontaire ».
 
 **Application distante vérifiée le 25 novembre 2026** sur `sac-db` : entrée 0025 présente dans `d1_migrations`, triggers `alert_sms_escalation_insert_guard` et `alert_acknowledgement_cancels_pending_sms` présents, `PRAGMA foreign_key_check` sans anomalie. CI complète réussie sur le commit `73e85e99e428fcf6a275cb62030210139ef79cb8` (workflow `45608513553`) et déploiement Cloudflare Pages production réussi.
+
+## 0026 — retrait volontaire d'un proche et coupure immédiate des accès SOS
+
+`0026_trusted_contact_withdrawal_access_revocation.sql` ajoute à `trusted_contacts` la cause de révocation (`owner_revoked` ou `contact_withdrew`) et le compte qui l'a initiée. Une garde D1 empêche la modification ou la réactivation d'une relation terminée et vérifie que l'acteur correspond à la cause.
+
+Pour un retrait volontaire, un trigger D1 annule atomiquement les rappels SOS et tâches SMS encore en attente/en cours et supprime les tickets GPS non consommés. Il consigne le retrait d'un volontaire et termine sa période de responsabilité ; un autre volontaire encore éligible peut prendre le relais. Le snapshot historique `alert_recipients` est conservé.
+
+Les API de lecture et d'action, la création de ticket GPS, les workers de rappels et le relais WebSocket vérifient la relation active. Le proche sortant ne reçoit plus de rappels, même neutres, et ne peut plus consulter ni agir sur les alertes concernées. Le SOS de l'auteur reste actif.
+
+La révocation du propriétaire (`owner_revoked`) conserve provisoirement le comportement historique des alertes déjà actives ; elle n'est pas confondue avec le retrait volontaire.
+
+Test d'intégration étendu : `npm run test:sos-d1` (retrait pendant un SOS actif, lecture refusée, rappels annulés, aucune tâche SMS destinée au proche sortant). Application distante à confirmer après test, puis vérifier la ligne 0026 dans `d1_migrations`, les nouvelles colonnes/triggers et `PRAGMA foreign_key_check` avant de déclarer la migration opérationnelle.
