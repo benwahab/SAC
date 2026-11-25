@@ -66,6 +66,7 @@ BEGIN
 END;
 
 
+DROP TRIGGER trusted_contacts_revoke_access;
 CREATE TRIGGER trusted_contacts_revoke_access
 AFTER UPDATE OF status ON trusted_contacts
 WHEN OLD.status = 'active' AND NEW.status = 'revoked'
@@ -147,12 +148,24 @@ BEGIN
     
     AND e.event_type = 'volunteered'
     AND e.actor_account_id <> NEW.contact_account_id
+    AND EXISTS (
+      SELECT 1 FROM trusted_contacts eligible
+      WHERE eligible.owner_account_id = NEW.owner_account_id
+        AND eligible.contact_account_id = e.actor_account_id
+        AND eligible.status = 'active'
+    )
     AND e.server_sequence = (
       SELECT MIN(candidate.server_sequence)
       FROM alert_events candidate
       WHERE candidate.alert_id = e.alert_id
         AND candidate.event_type = 'volunteered'
         AND candidate.actor_account_id <> NEW.contact_account_id
+        AND EXISTS (
+          SELECT 1 FROM trusted_contacts eligible
+          WHERE eligible.owner_account_id = NEW.owner_account_id
+            AND eligible.contact_account_id = candidate.actor_account_id
+            AND eligible.status = 'active'
+        )
         AND NOT EXISTS (
           SELECT 1 FROM alert_events withdrew
           WHERE withdrew.alert_id = candidate.alert_id
