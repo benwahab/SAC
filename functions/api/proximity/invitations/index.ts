@@ -21,7 +21,8 @@ function statusFor(error: SocialError): number {
     case "self_invitation":
     case "relationship_already_active":
     case "invitation_already_pending":
-    case "invitation_limit_reached": return 409;
+    case "invitation_limit_reached":
+    case "contact_limit_reached": return 409;
     case "account_not_eligible": return 403;
     case "storage_unavailable": return 503;
     default: return 400;
