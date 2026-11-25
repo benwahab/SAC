@@ -8,6 +8,7 @@ import {
 } from "../../../src/domain/account-profile.ts";
 import { consumeRateLimit } from "./rate-limit.ts";
 import { logAccountEvent, photoUrl } from "./profile-service.ts";
+import { getAccountPlan } from "../billing/plan.ts";
 
 type SocialDatabase = Pick<D1Database, "prepare" | "batch">;
 
@@ -24,6 +25,7 @@ export type SocialError =
   | "relationship_already_active"
   | "invitation_already_pending"
   | "invitation_limit_reached"
+  | "contact_limit_reached"
   | "invalid_or_expired_invitation"
   | "contact_not_found"
   | "permission_not_found"
@@ -79,6 +81,22 @@ function escapeLike(value: string): string {
 
 function validId(value: unknown): value is string {
   return typeof value === "string" && value.length >= 1 && value.length <= 128 && value.trim() === value;
+}
+
+async function activeCloseContactCount(db: SocialDatabase, accountId: string): Promise<number> {
+  const row = await db.prepare(
+    `SELECT COUNT(*) AS count FROM close_relations
+     WHERE status = 'active' AND (account_low_id = ? OR account_high_id = ?)`,
+  ).bind(accountId, accountId).first<{ count: number }>();
+  return Number(row?.count ?? 0);
+}
+
+async function hasCloseContactCapacity(db: SocialDatabase, accountId: string, now: number): Promise<boolean> {
+  const [plan, count] = await Promise.all([
+    getAccountPlan(db, accountId, now),
+    activeCloseContactCount(db, accountId),
+  ]);
+  return count < plan.maxTrustedContacts;
 }
 
 function mapInvitationRow(row: Record<string, unknown>, direction: "received" | "sent"): ProximityInvitationView {
@@ -226,6 +244,7 @@ export async function sendProximityInvitation(
     if (statuses.get(inviterAccountId) !== "active" || statuses.get(recipientAccountId) !== "active") {
       return fail("account_not_eligible");
     }
+    if (!(await hasCloseContactCapacity(db, inviterAccountId, now))) return fail("contact_limit_reached");
 
     const privacy = await db.prepare(
       `SELECT search_by_name, search_by_email
@@ -365,6 +384,11 @@ export async function respondProximityInvitation(
     }
 
     if (action === "accept") {
+      const [inviterHasCapacity, recipientHasCapacity] = await Promise.all([
+        hasCloseContactCapacity(db, inviterId, now),
+        hasCloseContactCapacity(db, recipientId, now),
+      ]);
+      if (!inviterHasCapacity || !recipientHasCapacity) return fail("contact_limit_reached");
       const accounts = await db.prepare(
         "SELECT id, status FROM accounts WHERE id IN (?, ?)",
       ).bind(inviterId, recipientId).all<{ id: string; status: string }>();
@@ -394,8 +418,30 @@ export async function respondProximityInvitation(
     const results = await db.batch([
       db.prepare(
         `UPDATE proximity_invitations SET status = 'accepted', decided_at = ?
-         WHERE id = ? AND status = 'pending' AND recipient_account_id = ? AND expires_at > ?`,
-      ).bind(now, invitationId, accountId, now),
+         WHERE id = ? AND status = 'pending' AND recipient_account_id = ? AND expires_at > ?
+           AND (
+             SELECT COUNT(*) FROM close_relations r
+             WHERE r.status = 'active' AND (r.account_low_id = ? OR r.account_high_id = ?)
+           ) < (
+             SELECT CASE WHEN EXISTS (
+               SELECT 1 FROM account_subscriptions s
+               WHERE s.account_id = ? AND s.status = 'active'
+                 AND s.current_period_start <= ? AND s.current_period_end > ?
+             ) THEN 10 ELSE 2 END
+           )
+           AND (
+             SELECT COUNT(*) FROM close_relations r
+             WHERE r.status = 'active' AND (r.account_low_id = ? OR r.account_high_id = ?)
+           ) < (
+             SELECT CASE WHEN EXISTS (
+               SELECT 1 FROM account_subscriptions s
+               WHERE s.account_id = ? AND s.status = 'active'
+                 AND s.current_period_start <= ? AND s.current_period_end > ?
+             ) THEN 10 ELSE 2 END
+           )`,
+      ).bind(now, invitationId, accountId, now,
+        inviterId, inviterId, inviterId, now, now,
+        recipientId, recipientId, recipientId, now, now),
       db.prepare(
         `INSERT INTO close_relations
          (id, account_low_id, account_high_id, invitation_id, status, created_at, removed_at, removed_by_account_id)
@@ -406,6 +452,11 @@ export async function respondProximityInvitation(
     ]);
 
     if (results.length !== 2 || results.some((result) => !result.success || result.meta.changes !== 1)) {
+      const [inviterHasCapacity, recipientHasCapacity] = await Promise.all([
+        hasCloseContactCapacity(db, inviterId, now),
+        hasCloseContactCapacity(db, recipientId, now),
+      ]);
+      if (!inviterHasCapacity || !recipientHasCapacity) return fail("contact_limit_reached");
       return fail("invalid_or_expired_invitation");
     }
     await logAccountEvent(db, accountId, "proximity_invitation_accepted", { invitationId, relationId }, now);
