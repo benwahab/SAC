@@ -243,7 +243,7 @@ BEGIN
     AND alert_id IN (
       SELECT a.id FROM alerts a
       WHERE a.author_account_id = NEW.owner_account_id AND a.status = 'active'
-        AND a.created_at >= NEW.created_at
+        
     );
 
   -- Un proche ayant accepté la prise en charge est retiré de la coordination.
@@ -255,7 +255,7 @@ BEGIN
   JOIN alert_recipients r ON r.alert_id = a.id
     AND r.recipient_account_id = NEW.contact_account_id
   WHERE a.author_account_id = NEW.owner_account_id
-    AND a.status = 'active' AND a.created_at >= NEW.created_at
+    AND a.status = 'active' 
     AND EXISTS (
       SELECT 1 FROM alert_events v
       WHERE v.alert_id = a.id AND v.actor_account_id = NEW.contact_account_id
@@ -275,7 +275,7 @@ BEGIN
     AND alert_id IN (
       SELECT a.id FROM alerts a
       WHERE a.author_account_id = NEW.owner_account_id AND a.status = 'active'
-        AND a.created_at >= NEW.created_at
+        
     );
 
   -- Si le proche sortant était responsable, le prochain volontaire encore
@@ -288,7 +288,7 @@ BEGIN
   FROM alert_events e
   JOIN alerts a ON a.id = e.alert_id AND a.status = 'active'
   WHERE a.author_account_id = NEW.owner_account_id
-    AND a.created_at >= NEW.created_at
+    
     AND e.event_type = 'volunteered'
     AND e.actor_account_id <> NEW.contact_account_id
     AND e.server_sequence = (
