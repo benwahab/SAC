@@ -236,3 +236,18 @@ Ainsi, après `owner_revoked` ou `contact_withdrew`, une nouvelle relation n'est
 ## 16. Isolation des SOS historiques après une nouvelle invitation
 
 Le droit d'accès à un SOS repose sur une relation qui existait au déclenchement de l'alerte et qui n'a pas été suivie d'un retrait volontaire. Un retrait volontaire ultérieur invalide l'accès à toutes les alertes actives et historiques issues de ce cercle, même si une relation antérieure avait été révoquée par le propriétaire. Une nouvelle invitation acceptée ouvre uniquement les SOS futurs ; elle ne restaure jamais l'accès aux anciens SOS. Une révocation initiée par le propriétaire, sans retrait volontaire ultérieur, conserve le comportement historique des alertes déjà actives.
+
+
+## 17. Décision produit validée — coupure totale symétrique après toute rupture (2026-11-25)
+
+La règle de coupure totale immédiate s'applique à toute rupture de la relation, quel que soit l'initiateur :
+- owner_revoked : le propriétaire retire le proche ;
+- contact_withdrew : le proche quitte volontairement le cercle.
+
+Dès que la rupture est confirmée atomiquement côté serveur, les deux personnes perdent immédiatement tout accès réciproque aux données et fonctions qui dépendaient de cette relation, y compris pendant un SOS actif : détail et état du SOS, chronologie et mises à jour, positions GPS actuelles et futures, rappels et notifications, accusés de réception, volontariat, coordination et responsabilité. Aucun accès ne peut être rétabli par une session, un cache, un abonnement push, une tâche déjà en file, un ticket GPS ou une nouvelle relation ultérieure.
+
+Le SOS de l'auteur continue sans interruption. Les autres proches qui disposent encore d'une relation valide ne sont pas affectés. Les informations déjà reçues ou copiées localement avant la rupture ne peuvent pas être effacées à distance ; aucune promesse d'effacement rétroactif n'est faite.
+
+L'historique de la relation est conservé avec la cause exacte et l'identité de l'initiateur. Toute nouvelle relation exige une nouvelle invitation et une nouvelle acceptation explicite. Une nouvelle relation n'accorde aucun accès aux SOS antérieurs.
+
+Cette décision remplace toute disposition antérieure qui maintenait des droits après une révocation initiée par le propriétaire. Les gardes D1, les API de lecture/action, les workers push/SMS et le relais GPS doivent appliquer la même règle, avec vérification d'autorisation au dernier point d'accès ou de livraison.
