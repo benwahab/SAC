@@ -59,7 +59,7 @@ export default function PrivateSpacePage({ onLogout }: Props) {
     case "contact": body = <CloseContact {...nav} id={screen.id} refreshSocial={data.refreshSocial} />; break;
     case "invite": body = <Invite {...nav} refreshSocial={data.refreshSocial} />; break;
     case "account": body = <Account {...nav} ownProfile={data.ownProfile} setOwnProfile={data.setOwnProfile} refreshProfile={data.refreshProfile} onLogout={onLogout} />; break;
-    case "alertContacts": body = <AlertContacts {...nav} contacts={data.contacts} setContacts={data.setContacts} loading={data.loading} error={data.error} refresh={data.refresh} />; break;
+    case "alertContacts": body = <AlertContacts {...nav} contacts={data.contacts} setContacts={data.setContacts} trustedBy={data.trustedBy} setTrustedBy={data.setTrustedBy} loading={data.loading} error={data.error} refresh={data.refresh} />; break;
     case "sos": body = <Sos {...shared} contacts={data.contacts} refresh={data.refresh} />; break;
     case "history": body = <HistoryScreen {...nav} alerts={data.alerts} loading={data.loading} error={data.error} />; break;
     case "reminders": body = <Reminders {...nav} />; break;
