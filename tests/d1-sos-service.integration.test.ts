@@ -72,18 +72,6 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   assert.equal(invalidZeroReminder.status, 409);
   assert.equal(invalidSixReminders.status, 409);
 
-  const revokedAfterTrigger = await post<{ revoked: boolean }>("/revoke", { owner, contact: contact2, now: now + 1 });
-  assert.equal(revokedAfterTrigger.status, 200);
-  assert.equal(revokedAfterTrigger.data.revoked, true);
-  const snapshottedAfterRevocation = await post<{ isAuthor: boolean }>("/read", { actor: contact2, alertId });
-  assert.equal(snapshottedAfterRevocation.status, 200);
-  assert.equal(snapshottedAfterRevocation.data.isAuthor, false);
-
-  const revokedContactCannotJoinNewAlert = await post<{ error: string }>("/create", {
-    owner, recipients: [contact2], reminders: 1, now: now + 2,
-  });
-  assert.equal(revokedContactCannotJoinNewAlert.status, 409);
-
   const outsiderRead = await post<{ error: string }>("/read", { actor: outsider, alertId });
   assert.equal(outsiderRead.status, 404);
   const recipientRead = await post<{ isAuthor: boolean; alert: { recipientSnapshot: Array<{ contactUserId: string }> } }>("/read", { actor: contact, alertId });
@@ -523,12 +511,6 @@ test("SOS service persists alerts, enforces participants, processes reminders an
   assert.equal(futureAlertRead.status, 200);
   assert.equal(futureAlertRead.data.isAuthor, false);
 
-  const reinvitedSecond = await post<{ accepted: boolean }>("/reinvite", {
-    owner, contact: contact2, now: voluntaryBase + 4,
-  });
-  assert.equal(reinvitedSecond.status, 200);
-  assert.equal(reinvitedSecond.data.accepted, true);
-
   const handoverAlert = await post<{ alertId: string }>("/create", {
     owner, recipients: [contact, contact2], reminders: 1, now: voluntaryBase + 6,
   });
@@ -559,4 +541,53 @@ test("SOS service persists alerts, enforces participants, processes reminders an
     actor: contact, alertId: handoverAlert.data.alertId,
   });
   assert.equal(formerLeadLockedOut.status, 404);
+
+  // Le propriétaire coupe à son tour la relation : mêmes interdictions
+  // immédiates que lors du retrait volontaire, sans fermer le SOS.
+  const ownerRevocation = await post<{ revoked: boolean }>("/revoke", {
+    owner, contact: contact2, now: voluntaryBase + 10,
+  });
+  assert.equal(ownerRevocation.status, 200);
+  assert.equal(ownerRevocation.data.revoked, true);
+  const ownerRevokedRead = await post<{ error: string }>("/read", {
+    actor: contact2, alertId: handoverAlert.data.alertId,
+  });
+  assert.equal(ownerRevokedRead.status, 404);
+  const ownerRevokedEvents = await post<{ error: string }>("/events", {
+    actor: contact2, alertId: handoverAlert.data.alertId,
+  });
+  assert.equal(ownerRevokedEvents.status, 404);
+  const ownerRevokedResponsibility = await post<{ error: string }>("/responsibility", {
+    actor: contact2, alertId: handoverAlert.data.alertId,
+  });
+  assert.equal(ownerRevokedResponsibility.status, 404);
+  const ownerStillSeesHandover = await post<{ isAuthor: boolean }>("/read", {
+    actor: owner, alertId: handoverAlert.data.alertId,
+  });
+  assert.equal(ownerStillSeesHandover.status, 200);
+  assert.equal(ownerStillSeesHandover.data.isAuthor, true);
+  const ownerRevokedPush = await post<{ rows: Array<{ status: string }> }>("/push-state", {
+    alertId: handoverAlert.data.alertId,
+  });
+  assert.ok(ownerRevokedPush.data.rows.every(row => row.status === "cancelled"));
+
+  // Une nouvelle invitation acceptée ne rouvre pas l'ancien SOS.
+  const ownerRevokedReinvite = await post<{ accepted: boolean }>("/reinvite", {
+    owner, contact: contact2, now: voluntaryBase + 11,
+  });
+  assert.equal(ownerRevokedReinvite.status, 200);
+  assert.equal(ownerRevokedReinvite.data.accepted, true);
+  const oldAlertRemainsForbidden = await post<{ error: string }>("/read", {
+    actor: contact2, alertId: handoverAlert.data.alertId,
+  });
+  assert.equal(oldAlertRemainsForbidden.status, 404);
+  const postReinviteAlert = await post<{ alertId: string }>("/create", {
+    owner, recipients: [contact2], reminders: 1, now: voluntaryBase + 12,
+  });
+  assert.equal(postReinviteAlert.status, 200);
+  const postReinviteRead = await post<{ isAuthor: boolean }>("/read", {
+    actor: contact2, alertId: postReinviteAlert.data.alertId,
+  });
+  assert.equal(postReinviteRead.status, 200);
+  assert.equal(postReinviteRead.data.isAuthor, false);
 });
