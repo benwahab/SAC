@@ -388,6 +388,48 @@ export async function listTrustedContacts(
 }
 
 
+export async function listTrustedBy(
+  db: InvitationDatabase,
+  authenticatedContactAccountId: string,
+): Promise<ContactInvitationServiceResult<Array<{
+  readonly ownerAccountId: string;
+  readonly email: string;
+  readonly createdAt: number;
+}>>> {
+  if (!authenticatedContactAccountId.trim()) return fail("invalid_input");
+  try {
+    const result = await db.prepare(
+      `SELECT t.owner_account_id AS owner_account_id,
+              i.normalized_value AS email,
+              t.created_at AS created_at
+       FROM trusted_contacts t
+       JOIN accounts a ON a.id = t.owner_account_id AND a.status = 'active'
+       JOIN account_identities i ON i.account_id = t.owner_account_id
+       WHERE t.contact_account_id = ?
+         AND t.status = 'active'
+         AND i.channel = 'email'
+         AND i.is_primary = 1
+         AND i.verified_at IS NOT NULL
+       ORDER BY t.created_at DESC, t.owner_account_id
+       LIMIT 50`,
+    ).bind(authenticatedContactAccountId).all<{
+      owner_account_id: string;
+      email: string;
+      created_at: number;
+    }>();
+    if (!result.success) return fail("storage_unavailable");
+    return {
+      ok: true,
+      value: (result.results ?? []).map((row) => ({
+        ownerAccountId: row.owner_account_id,
+        email: row.email,
+        createdAt: row.created_at,
+      })),
+    };
+  } catch {
+    return fail("storage_unavailable");
+  }
+}
 /** Cancels an unsent invitation after delivery failure; caller must be its owner. */
 export async function cancelPendingContactInvitation(
   db: InvitationDatabase,
