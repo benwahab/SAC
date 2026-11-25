@@ -170,3 +170,22 @@ Pas d'implémentation avant arbitrage des points produit, alignement des contrat
 ## Référence complémentaire — anti-harcèlement et abus
 
 Lire `CONTRAT_PREVENTION_ABUS_USURPATION_ET_SATURATION.md` avec `PROPOSITIONS_ARBITRAGE_INVITATIONS_ET_REVOCATION.md`. Les seuils d'invitation, refroidissements et relances restent des propositions à confirmer ; aucune valeur chiffrée n'est approuvée par le contrat de prévention. Préserver le refus, le consentement explicite, la révocation et l'impossibilité de contourner ces choix par de nouveaux comptes ou groupes.
+## 12. Décision produit validée — retrait volontaire d'un proche (2026-11-25)
+
+Le droit de rupture est **symétrique et validé** :
+- le propriétaire du cercle peut retirer un proche actif ;
+- le proche peut quitter lui-même la relation à tout moment, sans justification et sans autorisation du propriétaire ;
+- la demande est authentifiée côté serveur et la rupture est effective immédiatement après confirmation atomique en D1 ;
+- l'audit distingue les causes `owner_revoked` et `contact_withdrew` ;
+- la relation et sa preuve historique de consentement sont conservées ; la relation terminée n'est jamais réactivée ;
+- toute relation ultérieure exige un nouvel acte de mise en relation et une nouvelle acceptation explicite du proche.
+
+Cette validation porte sur le droit de quitter la relation. Elle **ne valide pas automatiquement** les délais anti-abus proposés, le blocage de réinvitation de 90 jours, les notifications ni les droits détaillés pendant un SOS déjà actif. Ces éléments restent soumis à arbitrage séparé.
+
+### Conséquence pendant un SOS déjà actif
+
+Le retrait ne doit jamais clôturer ni suspendre le SOS de l'auteur. Les droits du proche sortant pendant cette alerte (rappels opaques, lecture, accusé, volontariat, coordination et positions) restent à arbitrer avant toute implémentation croisée avec le moteur SOS/GPS. En attendant, aucune nouvelle permission ne doit être accordée par simple hypothèse.
+
+### Conséquence technique
+
+Le code actuel ne fournit qu'une route de révocation par le propriétaire et le service n'enregistre pas encore l'acteur/cause de rupture. L'API de retrait volontaire, l'autorisation par l'identité du proche, l'audit `contact_withdrew`, les tests de concurrence et la migration éventuelle restent à réaliser après revue du modèle et des effets SOS. Aucun changement de code ou de D1 n'est inclus dans cette décision documentaire.
