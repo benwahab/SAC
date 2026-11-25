@@ -210,7 +210,7 @@ Test d'intégration étendu : `npm run test:sos-d1` (retrait pendant un SOS acti
 
 ### Historique relationnel et réinvitation
 
-La migration reconstruit également `trusted_contacts` : la clé primaire devient l'identifiant de l'invitation, chaque consentement accepté dispose de sa propre ligne historique et un index unique partiel limite chaque paire propriétaire/proche à une seule relation active. Une relation révoquée n'est jamais réactivée ; une nouvelle invitation acceptée peut créer une nouvelle ligne, sans écraser l'historique antérieur.
+La migration reconstruit également `trusted_contacts` : chaque consentement accepté dispose de sa propre ligne historique, dotée d'une séquence technique monotone et d'un identifiant d'invitation unique. Un index unique partiel limite chaque paire propriétaire/proche à une seule relation active. Une relation révoquée n'est jamais réactivée ; une nouvelle invitation acceptée peut créer une nouvelle ligne, sans écraser l'historique antérieur.
 
 ### Cloisonnement des alertes historiques
 
