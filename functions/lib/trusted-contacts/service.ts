@@ -169,9 +169,18 @@ export async function acceptContactInvitation(
            AND permission_version = ?
            AND expires_at > ?
            AND inviter_account_id <> ?
-           AND (SELECT COUNT(*) FROM trusted_contacts t
-                WHERE t.owner_account_id = contact_invitations.inviter_account_id
-                  AND t.status = 'active') < ?
+           AND (
+             SELECT COUNT(*) FROM (
+               SELECT r.account_low_id AS contact_id FROM close_relations r
+               WHERE r.status = 'active' AND r.account_high_id = contact_invitations.inviter_account_id
+               UNION
+               SELECT r.account_high_id AS contact_id FROM close_relations r
+               WHERE r.status = 'active' AND r.account_low_id = contact_invitations.inviter_account_id
+               UNION
+               SELECT t.contact_account_id AS contact_id FROM trusted_contacts t
+               WHERE t.owner_account_id = contact_invitations.inviter_account_id AND t.status = 'active'
+             )
+           ) < ?
            AND EXISTS (
              SELECT 1
              FROM accounts a
@@ -211,8 +220,16 @@ export async function acceptContactInvitation(
     if (results.length !== 2 || !results[0].success || results[0].meta.changes !== 1) {
       const limitCheck = await db.prepare(
         `SELECT
-           (SELECT COUNT(*) FROM trusted_contacts t
-            WHERE t.owner_account_id = i.inviter_account_id AND t.status = 'active') AS active_count
+           (SELECT COUNT(*) FROM (
+             SELECT r.account_low_id AS contact_id FROM close_relations r
+             WHERE r.status = 'active' AND r.account_high_id = i.inviter_account_id
+             UNION
+             SELECT r.account_high_id AS contact_id FROM close_relations r
+             WHERE r.status = 'active' AND r.account_low_id = i.inviter_account_id
+             UNION
+             SELECT t.contact_account_id AS contact_id FROM trusted_contacts t
+             WHERE t.owner_account_id = i.inviter_account_id AND t.status = 'active'
+           )) AS active_count
          FROM contact_invitations i
          JOIN accounts a ON a.id = ?
            AND a.status = 'active'
