@@ -270,8 +270,7 @@ export async function getSosAlertForParticipant(
                 AND exited.contact_account_id = t.contact_account_id
                 AND exited.revocation_reason = 'contact_withdrew'
                 AND (
-                  exited.created_at > t.created_at
-                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                  exited.rowid > t.rowid
                 )
             )
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
@@ -363,8 +362,7 @@ export async function respondToSosAlert(
                 AND exited.contact_account_id = t.contact_account_id
                 AND exited.revocation_reason = 'contact_withdrew'
                 AND (
-                  exited.created_at > t.created_at
-                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                  exited.rowid > t.rowid
                 )
             )
        WHERE a.id = ? AND a.status = 'active'
@@ -572,8 +570,7 @@ export async function listSosEventsForParticipant(
                 AND exited.contact_account_id = t.contact_account_id
                 AND exited.revocation_reason = 'contact_withdrew'
                 AND (
-                  exited.created_at > t.created_at
-                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                  exited.rowid > t.rowid
                 )
             )
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
@@ -645,8 +642,7 @@ export async function getSosResponsibilityForParticipant(
                 AND exited.contact_account_id = t.contact_account_id
                 AND exited.revocation_reason = 'contact_withdrew'
                 AND (
-                  exited.created_at > t.created_at
-                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                  exited.rowid > t.rowid
                 )
             )
            WHERE r.alert_id = a.id AND r.recipient_account_id = ?
@@ -718,8 +714,7 @@ export async function claimDueSosReminders(
                 AND exited.contact_account_id = t.contact_account_id
                 AND exited.revocation_reason = 'contact_withdrew'
                 AND (
-                  exited.created_at > t.created_at
-                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                  exited.rowid > t.rowid
                 )
             )
            WHERE a.id = alert_reminder_outbox.alert_id AND a.status = 'active')`,
@@ -747,8 +742,7 @@ export async function claimDueSosReminders(
                 AND exited.contact_account_id = t.contact_account_id
                 AND exited.revocation_reason = 'contact_withdrew'
                 AND (
-                  exited.created_at > t.created_at
-                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                  exited.rowid > t.rowid
                 )
             )
          WHERE a.status = 'active'
@@ -798,8 +792,7 @@ export async function claimDueSosReminders(
                 AND exited.contact_account_id = t.contact_account_id
                 AND exited.revocation_reason = 'contact_withdrew'
                 AND (
-                  exited.created_at > t.created_at
-                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                  exited.rowid > t.rowid
                 )
             )
            WHERE a.id = ? AND a.status = 'active'
@@ -969,8 +962,7 @@ export async function dispatchDueSosReminders(
                 AND exited.contact_account_id = t.contact_account_id
                 AND exited.revocation_reason = 'contact_withdrew'
                 AND (
-                  exited.created_at > t.created_at
-                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                  exited.rowid > t.rowid
                 )
             )
        WHERE r.id = ? AND r.status = 'processing'
@@ -1130,8 +1122,7 @@ export async function scheduleDueSosSmsEscalations(
                 AND exited.contact_account_id = t.contact_account_id
                 AND exited.revocation_reason = 'contact_withdrew'
                 AND (
-                  exited.created_at > t.created_at
-                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                  exited.rowid > t.rowid
                 )
             )
            WHERE e.alert_id = ? AND e.status = 'queued'
