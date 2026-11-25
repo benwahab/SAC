@@ -53,3 +53,20 @@ BEGIN
       )
   ) THEN RAISE(ABORT, 'alert_sms_escalation_not_eligible') END;
 END;
+
+-- Si un accusé arrive après la mise en file mais avant l'envoi SMS,
+-- annuler les tâches encore en attente. Le processed_at respecte la contrainte
+-- même si l'horodatage d'événement est antérieur à la création de la tâche.
+CREATE TRIGGER alert_acknowledgement_cancels_pending_sms
+AFTER INSERT ON alert_events
+WHEN NEW.event_type = 'acknowledged'
+BEGIN
+  UPDATE alert_sms_outbox
+  SET status = 'cancelled',
+      processed_at = CASE
+        WHEN NEW.occurred_at >= created_at THEN NEW.occurred_at
+        ELSE created_at
+      END
+  WHERE alert_id = NEW.alert_id
+    AND status = 'pending';
+END;
