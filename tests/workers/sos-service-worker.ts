@@ -1,3 +1,4 @@
+import { withdrawTrustedContact } from "../../functions/lib/trusted-contacts/service.ts";
 import {
   claimDueSosReminders,
   closeSosAlertByAuthor,
@@ -61,9 +62,17 @@ export default {
 
     if (url.pathname === "/revoke") {
       const result = await env.DB.prepare(
-        "UPDATE trusted_contacts SET status='revoked',revoked_at=? WHERE owner_account_id=? AND contact_account_id=? AND status='active'",
-      ).bind(now, String(input.owner), String(input.contact)).run();
+        "UPDATE trusted_contacts SET status='revoked',revoked_at=?,revocation_reason='owner_revoked',revoked_by_account_id=? WHERE owner_account_id=? AND contact_account_id=? AND status='active'",
+      ).bind(now, String(input.owner), String(input.owner), String(input.contact)).run();
       return result.success && result.meta.changes === 1 ? json({ revoked: true }) : json({ error: "not_revoked" }, 409);
+    }
+    if (url.pathname === "/withdraw") {
+      const result = await withdrawTrustedContact(env.DB, {
+        authenticatedContactAccountId: String(input.contact),
+        ownerAccountId: String(input.owner),
+        now,
+      });
+      return result.ok ? json({ withdrawn: true }) : json({ error: result.error }, 409);
     }
     if (url.pathname === "/create") {
       const result = await createSosAlert(env.DB, crypto, {
