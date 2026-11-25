@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { adminTranslations, type AdminPermission, type Language } from "./i18n/translations";
 import BrandLogo from "./components/BrandLogo";
 import AdminDocuments from "./components/AdminDocuments";
+import AdminPartners from "./components/AdminPartners";
 
 type Permission = AdminPermission;
 type Account = { id: string; email: string };
@@ -504,19 +505,7 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
           <a href="https://github.com/benwahab/SAC/blob/main/docs/CONCEPTION_FINANCES_COMPTABILITE_TRESORERIE_2026-11-24.md" target="_blank" rel="noreferrer" className="mt-5 inline-flex text-sm font-bold text-emerald-800 underline underline-offset-4">{language === "fr" ? "Consulter la conception financière et les contrôles" : language === "ar" ? "عرض التصميم المالي والضوابط" : "Review finance design and controls"}</a>
         </article>
       </section>}
-      {activeSection === "external" && <section className="space-y-5">
-        <article className="rounded-3xl border border-emerald-900/10 bg-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-lg font-extrabold">{language === "fr" ? "Relations externes" : language === "ar" ? "العلاقات الخارجية" : "External relations"}</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{language === "fr" ? "Le modèle des partenaires, conventions, correspondances et engagements est documenté. Le répertoire réel et les circuits de validation restent à construire." : language === "ar" ? "تم توثيق نموذج الشركاء والاتفاقيات والمراسلات والالتزامات. لا يزال دليل البيانات الفعلي ومسارات الاعتماد قيد التطوير." : "The model for partners, agreements, correspondence and commitments is documented. The live directory and approval workflows remain to be built."}</p></div><span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-extrabold text-amber-800">{language === "fr" ? "Conception" : language === "ar" ? "قيد التصميم" : "Design"}</span></div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[
-            language === "fr" ? "Organisations partenaires" : language === "ar" ? "المنظمات الشريكة" : "Partner organizations",
-            language === "fr" ? "Conventions et avenants" : language === "ar" ? "الاتفاقيات والتعديلات" : "Agreements and amendments",
-            language === "fr" ? "Correspondances" : language === "ar" ? "المراسلات" : "Correspondence",
-            language === "fr" ? "Échéances et engagements" : language === "ar" ? "المواعيد والالتزامات" : "Deadlines and commitments",
-          ].map(item => <div key={item} className="rounded-xl bg-emerald-50/70 p-4 text-sm font-bold text-emerald-950">{item}</div>)}</div>
-          <p className="mt-5 rounded-xl border border-emerald-900/10 bg-slate-50 p-4 text-xs leading-6 text-slate-600">{language === "fr" ? "Aucun partenaire fictif n’est affiché. Les contacts et documents contractuels seront cloisonnés par mission ; les fournisseurs, paiements et documents partagés utiliseront leurs modules de référence." : language === "ar" ? "لا يتم عرض شركاء وهميين. سيتم تقييد جهات الاتصال والوثائق التعاقدية حسب المهمة، وستستخدم بيانات الموردين والمدفوعات والوثائق وحداتها المرجعية." : "No fictional partners are shown. Contacts and contract documents will be scoped by mission; suppliers, payments and shared documents will use their source modules."}</p>
-          <a href="https://github.com/benwahab/SAC/blob/main/docs/CONCEPTION_RELATIONS_EXTERNES_PARTENAIRES_CONVENTIONS_2026-11-24.md" target="_blank" rel="noreferrer" className="mt-5 inline-flex text-sm font-bold text-emerald-800 underline underline-offset-4">{language === "fr" ? "Consulter la conception des relations externes" : language === "ar" ? "عرض تصميم العلاقات الخارجية" : "Review external relations design"}</a>
-        </article>
-      </section>}
+      {activeSection === "external" && <AdminPartners language={language} />}
       {activeSection === "resources" && <AdminDocuments language={language} />}
       {activeSection === "steering" && <section className="space-y-5">
         <article className="rounded-3xl border border-emerald-900/10 bg-white p-6 shadow-sm">
