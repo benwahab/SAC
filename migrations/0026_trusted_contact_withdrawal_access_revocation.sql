@@ -170,12 +170,15 @@ BEGIN
              AND t.contact_account_id = r.recipient_account_id
              AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
              AND t.created_at <= a.created_at
-             AND t.invitation_id = (
-              SELECT latest.invitation_id FROM trusted_contacts latest
-              WHERE latest.owner_account_id = a.author_account_id
-                AND latest.contact_account_id = r.recipient_account_id
-              ORDER BY latest.created_at DESC, latest.invitation_id DESC
-              LIMIT 1
+             AND NOT EXISTS (
+              SELECT 1 FROM trusted_contacts exited
+              WHERE exited.owner_account_id = t.owner_account_id
+                AND exited.contact_account_id = t.contact_account_id
+                AND exited.revocation_reason = 'contact_withdrew'
+                AND (
+                  exited.created_at > t.created_at
+                  OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+                )
             )
             WHERE r.alert_id = a.id
               AND r.recipient_account_id = NEW.actor_account_id
@@ -193,15 +196,8 @@ BEGIN
               AND r.recipient_account_id = NEW.actor_account_id
               AND t.status = 'revoked'
               AND t.revoked_at = NEW.occurred_at
-              AND t.revoked_by_account_id IS NOT NULL
-              AND t.created_at <= a.created_at
-             AND t.invitation_id = (
-              SELECT latest.invitation_id FROM trusted_contacts latest
-              WHERE latest.owner_account_id = a.author_account_id
-                AND latest.contact_account_id = r.recipient_account_id
-              ORDER BY latest.created_at DESC, latest.invitation_id DESC
-              LIMIT 1
-            )
+              AND t.revocation_reason = 'contact_withdrew'
+              AND t.revoked_by_account_id = NEW.actor_account_id
           ))
       )
   ) THEN RAISE(ABORT, 'alert_event_not_authorized_or_out_of_order') END;
@@ -228,7 +224,7 @@ BEGIN
     AND status IN ('pending', 'processing')
     AND alert_id IN (
       SELECT a.id FROM alerts a
-      WHERE a.author_account_id = NEW.owner_account_id AND a.status = 'active' AND a.created_at >= NEW.created_at
+      WHERE a.author_account_id = NEW.owner_account_id AND a.status = 'active'
     );
 
   UPDATE alert_sms_outbox
@@ -239,7 +235,7 @@ BEGIN
     AND alert_id IN (
       SELECT a.id FROM alerts a
       WHERE a.author_account_id = NEW.owner_account_id AND a.status = 'active'
-        AND a.created_at >= NEW.created_at
+
     );
 
   DELETE FROM gps_relay_tickets
@@ -339,12 +335,15 @@ BEGIN
      AND t.contact_account_id = NEW.recipient_account_id
      AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
      AND t.created_at <= a.created_at
-     AND t.invitation_id = (
-        SELECT latest.invitation_id FROM trusted_contacts latest
-        WHERE latest.owner_account_id = a.author_account_id
-          AND latest.contact_account_id = NEW.recipient_account_id
-        ORDER BY latest.created_at DESC, latest.invitation_id DESC
-        LIMIT 1
+     AND NOT EXISTS (
+        SELECT 1 FROM trusted_contacts exited
+        WHERE exited.owner_account_id = t.owner_account_id
+          AND exited.contact_account_id = t.contact_account_id
+          AND exited.revocation_reason = 'contact_withdrew'
+          AND (
+            exited.created_at > t.created_at
+            OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+          )
       )
     WHERE a.id = NEW.alert_id
       AND a.status = 'active'
@@ -371,12 +370,15 @@ BEGIN
      AND t.contact_account_id = r.recipient_account_id
      AND (t.status = 'active' OR (t.status = 'revoked' AND t.revocation_reason = 'owner_revoked'))
      AND t.created_at <= a.created_at
-     AND t.invitation_id = (
-        SELECT latest.invitation_id FROM trusted_contacts latest
-        WHERE latest.owner_account_id = a.author_account_id
-          AND latest.contact_account_id = r.recipient_account_id
-        ORDER BY latest.created_at DESC, latest.invitation_id DESC
-        LIMIT 1
+     AND NOT EXISTS (
+        SELECT 1 FROM trusted_contacts exited
+        WHERE exited.owner_account_id = t.owner_account_id
+          AND exited.contact_account_id = t.contact_account_id
+          AND exited.revocation_reason = 'contact_withdrew'
+          AND (
+            exited.created_at > t.created_at
+            OR (exited.created_at = t.created_at AND exited.invitation_id > t.invitation_id)
+          )
       )
     WHERE e.alert_id = NEW.alert_id
       AND e.status = 'queued'
