@@ -282,17 +282,19 @@ export async function revokeTrustedContact(
   ) return fail("invalid_input");
 
   try {
-    const result = await db.prepare(
+    const updated = await db.prepare(
       `UPDATE trusted_contacts
        SET status = 'revoked', revoked_at = ?,
            revocation_reason = 'owner_revoked', revoked_by_account_id = ?
        WHERE owner_account_id = ?
          AND contact_account_id = ?
          AND status = 'active'
-         AND created_at <= ?`,
-    ).bind(now, input.authenticatedOwnerAccountId, input.authenticatedOwnerAccountId, input.contactAccountId, now).run();
+         AND created_at <= ?
+       RETURNING invitation_id`,
+    ).bind(now, input.authenticatedOwnerAccountId, input.authenticatedOwnerAccountId, input.contactAccountId, now)
+      .first<{ invitation_id: string }>();
 
-    if (!result.success || result.meta.changes !== 1) return fail("relationship_not_revoked");
+    if (!updated?.invitation_id) return fail("relationship_not_revoked");
     return { ok: true, value: { revoked: true } };
   } catch {
     return fail("storage_unavailable");
