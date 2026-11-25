@@ -21,7 +21,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   try {
     const now = Date.now();
     const result = await env.DB.prepare(
-      `SELECT s.id, s.created_at, s.last_activity_at, s.expires_at
+      `SELECT s.id, s.device_id, s.created_at, s.last_activity_at, s.expires_at,
+              d.created_at AS device_created_at,
+              CASE WHEN EXISTS (
+                SELECT 1 FROM device_root_credentials rc
+                WHERE rc.device_id = d.id AND rc.account_id = d.account_id
+              ) THEN 1 ELSE 0 END AS root_credential_configured
        FROM device_sessions s
        JOIN devices d ON d.id = s.device_id AND d.account_id = s.account_id
        JOIN accounts a ON a.id = s.account_id AND a.status = 'active'
@@ -33,7 +38,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
        ORDER BY s.last_activity_at DESC, s.created_at DESC, s.id DESC
        LIMIT 50`,
     ).bind(session.value.accountId, now).all<{
-      id: string; created_at: number; last_activity_at: number; expires_at: number;
+      id: string; device_id: string; created_at: number; last_activity_at: number;
+      expires_at: number; device_created_at: number; root_credential_configured: number;
     }>();
 
     if (!result.success) return json({ error: "session_list_unavailable" }, 503);
@@ -41,6 +47,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       currentSessionId: session.value.sessionId,
       sessions: (result.results ?? []).map((item) => ({
         id: item.id,
+        deviceId: item.device_id,
+        deviceCreatedAt: item.device_created_at,
+        rootCredentialConfigured: item.root_credential_configured === 1,
         createdAt: item.created_at,
         lastActivityAt: item.last_activity_at,
         expiresAt: item.expires_at,
