@@ -140,6 +140,49 @@ class RootDeviceEnrollmentSchemaTests(unittest.TestCase):
         ).fetchone()
         self.assertEqual(row, (now + 1, 1, claim_id))
 
+    def test_session_insert_is_bound_to_the_exact_consumed_challenge_claim_and_counter(self):
+        now = self.now + 700
+        challenge_id = "12121212-2222-4222-8222-222222222222"
+        claim_id = "13131313-2222-4222-8222-222222222222"
+        device = self._create_authentication_challenge(challenge_id, now)
+        credential = self.db.execute(
+            "SELECT credential_id FROM device_root_credentials WHERE device_id=?",
+            (device,),
+        ).fetchone()[0]
+        self.db.execute(
+            """UPDATE root_authentication_challenges
+            SET consumed_at=?, attempt_count=attempt_count+1, consumed_by_request_id=?
+            WHERE id=? AND consumed_at IS NULL AND expires_at>? AND attempt_count=0""",
+            (now + 1, claim_id, challenge_id, now),
+        )
+        self.db.execute(
+            "UPDATE device_root_credentials SET sign_count=1,last_used_at=? WHERE device_id=?",
+            (now + 1, device),
+        )
+
+        insert_sql = """INSERT INTO device_sessions
+            (id,account_id,device_id,token_hash,status,auth_version,created_at,last_activity_at,expires_at,revoked_at)
+            SELECT ?, ?, ?, ?, 'active', 1, ?, ?, ?, NULL
+            WHERE EXISTS (
+              SELECT 1 FROM root_authentication_challenges ch
+              JOIN device_root_credentials c ON c.device_id=ch.device_id AND c.account_id=ch.account_id
+              WHERE ch.id=? AND ch.consumed_by_request_id=?
+                AND c.credential_id=? AND c.sign_count=1 AND c.last_used_at=?
+            )"""
+        params = (
+            "14141414-2222-4222-8222-222222222222", self.account_id, device, "a" * 64,
+            now + 1, now + 1, now + 1 + 2592000000,
+            challenge_id, "ffffffff-2222-4222-8222-222222222222", credential, now + 1,
+        )
+        blocked = self.db.execute(insert_sql, params)
+        self.assertEqual(blocked.rowcount, 0)
+        self.assertEqual(self.db.execute("SELECT COUNT(*) FROM device_sessions WHERE id=?", (params[0],)).fetchone()[0], 0)
+
+        valid_params = (*params[:8], claim_id, credential, now + 1)
+        inserted = self.db.execute(insert_sql, valid_params)
+        self.assertEqual(inserted.rowcount, 1)
+        self.assertEqual(self.db.execute("SELECT COUNT(*) FROM device_sessions WHERE id=?", (params[0],)).fetchone()[0], 1)
+
     def test_authentication_challenge_claim_is_required_immutable_and_unique(self):
         now = self.now + 600
         first_id = "dddddddd-2222-4222-8222-222222222222"
