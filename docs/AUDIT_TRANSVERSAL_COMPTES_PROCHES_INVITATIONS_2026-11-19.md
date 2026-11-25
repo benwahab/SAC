@@ -163,3 +163,31 @@ L'audit antérieur de la boîte de réception avait déjà constaté l'absence d
 ## Conclusion
 
 Les mécanismes d'invitation et de relation de confiance ont de bonnes protections de base. Le modèle directionnel, la preuve d'identité du destinataire, le token à usage unique et la révocation terminale sont des fondations solides. Le système n'est toutefois pas complet sur la gouvernance du compte, les quotas et la gestion des invitations entrantes. Les prochaines modifications devront commencer par les décisions P0 et un audit de l'ensemble des sessions/appareils, sans déployer ni appliquer de migration distante.
+
+## 10. Re-vérification des routes de production — 2026-11-25
+
+Cette section complète l'audit initial après lecture du code actuel sur `main`. Elle ne transforme pas les propositions produit en décisions.
+
+### Contrôles confirmés
+
+- Les routes de liste des proches, création d'invitation, lecture d'une invitation, acceptation, refus, boîte de réception et révocation utilisent `requireAuthenticatedDeviceSession`.
+- Les routes POST de création, acceptation, refus et révocation appliquent également `guardSameOriginJsonPost`.
+- Les identifiants propriétaire/destinataire transmis au service proviennent de la session authentifiée ; la route de révocation ne fait pas confiance à un propriétaire fourni par le navigateur.
+- L'acceptation revalide dans D1 le compte actif, l'e-mail principal vérifié correspondant à la destination, le token, l'état pending, l'expiration et la version de permission. La transition et la création de relation sont groupées dans un batch D1.
+- L'acceptation concurrente ou le rejeu ne doit pas créer une seconde relation : la mise à jour conditionnelle exige `status = 'pending'`.
+- La boîte de réception existe désormais : `GET /api/contacts/invitations/inbox`. Elle renvoie les invitations reçues et envoyées, uniquement pour le compte de la session, avec une limite de 50 par liste. Elle n'expose pas les tokens.
+- Les réponses des routes portent `Cache-Control: no-store`, `X-Content-Type-Options: nosniff` et `Referrer-Policy: no-referrer`.
+
+### Écarts et risques qui restent ouverts
+
+1. **Deux familles de parcours coexistent.** Le code contient les routes `/api/contacts/invitations/*` et `/api/proximity/invitations/*`, avec des écrans et contrats distincts. Il faut cartographier leur usage effectif avant d'en retirer une ou de fusionner les modèles.
+2. **Quota codé en dur à 2** dans `functions/api/contacts/invitations/accept.ts`. Le service supporte 2 ou 10, mais la route force 2. Aucun changement à 10 ne doit être fait sans matrice d'offres confirmée.
+3. **Révocation unilatérale seulement.** `POST /api/contacts/revoke` autorise le propriétaire à retirer son proche. Le droit du proche de quitter la relation reste une proposition non approuvée ; ne pas l'activer par supposition.
+4. **Effet sur une alerte déjà active non arbitré.** Le snapshot SOS historique et les droits futurs de lecture, d'accusé, de volontariat, de coordination et de rappel après révocation doivent être décidés avant toute modification croisée du moteur SOS ou du GPS.
+5. **Acceptation et consentement des permissions.** La route lit la version de permission depuis D1 au moment de l'acceptation et la transmet au service. Le parcours d'acceptation présente actuellement un consentement général à rejoindre le cercle, pas une liste de permissions détaillées. La définition et l'affichage des permissions restent à consolider avant d'élargir les droits.
+6. **Réponse API minimale.** La route d'acceptation renvoie encore les identifiants internes des deux comptes. Aucun besoin client démontré n'a été établi dans cet audit ; vérifier les consommateurs avant de réduire la réponse à un simple booléen.
+7. **Livraison e-mail synchrone.** Le risque de résultat fournisseur ambigu décrit plus haut reste présent ; l'outbox/réconciliation est une amélioration technique indépendante des règles produit, mais elle doit préserver le comportement Brevo déjà opérationnel.
+
+### Décision de sécurité pour la suite
+
+Les contrôles d'identité de session, d'origine, d'e-mail vérifié, de token à usage unique et de transition conditionnelle sont présents. La suite peut renforcer les tests de routes et la fiabilité de livraison sans modifier les permissions métier. En revanche, la révocation symétrique, les quotas, les droits pendant une alerte active et les délais anti-abus restent des arbitrages explicites : aucun de ces comportements ne doit être activé par défaut.
