@@ -111,7 +111,7 @@ test("contact invitation inbox is scoped to the authenticated account and never 
   assert.equal(JSON.stringify(payload).includes(issued.token), false);
   assert.equal(JSON.stringify(payload).includes("token_digest"), false);
   const receivedQuery = queries.find((query) => query.sql.includes("inviter_identity.normalized_value"));
-  const sentQuery = queries.find((query) => query.sql.includes("destination_email"));
+  const sentQuery = queries.find((query) => query.sql.includes("SELECT invitation.id, invitation.destination_email"));
   assert.ok(receivedQuery);
   assert.ok(sentQuery);
   assert.equal(receivedQuery.values[0], "account-current");
