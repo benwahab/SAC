@@ -234,3 +234,15 @@ Les baux doivent empêcher deux workers de traiter simultanément la même tenta
 Aucune modification de quota, de durée d'invitation, de permissions des proches, de révocation ou de comportement SOS n'est requise pour traiter ce défaut. En revanche, le stockage chiffré du token, sa durée de conservation, la stratégie de relance et la conduite à tenir après un état `uncertain` sont des choix de sécurité/produit qui doivent être définis avant une migration et une mise en production.
 
 **Décision de cette tranche :** conserver le fournisseur Brevo et son intégration actuelle ; ne pas introduire de relance aveugle ni de nouvelle table incomplète. Le défaut est documenté précisément afin que la future outbox soit conçue avec une stratégie de secret et de résultat ambigu cohérente.
+
+### Vérification supplémentaire — boîte de réception des invitations (25 novembre 2026)
+
+Un test de route dédié a été ajouté dans `tests/contact-invitation-inbox-endpoint.test.ts` :
+
+- l'accès sans session authentifiée est refusé avant toute lecture des invitations ;
+- les requêtes reçues et envoyées utilisent exclusivement l'identifiant du compte issu de la session ;
+- la boîte reçue exige que l'e-mail principal du destinataire soit vérifié et corresponde exactement à l'adresse de destination ;
+- la réponse n'expose ni token, ni digest de token ;
+- les réponses restent `no-store` et portent les en-têtes de protection attendus.
+
+Le test est lancé par `npm run test:contact-invitation-inbox` et inscrit dans le workflow CI. Il ne modifie aucune permission, aucun quota et aucun comportement de révocation. Aucune migration D1 n'est requise.
