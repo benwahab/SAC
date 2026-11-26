@@ -102,6 +102,7 @@ export default {
     headers.set("X-SAC-Device-ID", consumed.device_id);
     headers.set("X-SAC-Session-ID", consumed.session_id);
     headers.set("X-SAC-Role", consumed.role);
+    if (!env.GPS_ROOMS) return json({ error: "gps_service_unavailable" }, 503);
     const room = env.GPS_ROOMS.get(env.GPS_ROOMS.idFromName(alertId));
     return room.fetch(new Request(request, { headers }));
   },
