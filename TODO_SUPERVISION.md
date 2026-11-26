@@ -15,7 +15,7 @@ Ce fichier suit les étapes réelles du projet. Une tâche ne passe à « termin
 - [x] Créer et vérifier l'existence de la base D1 officielle `sac-db` (UUID confirmé par l'API Cloudflare le 17 novembre 2026, vide, région WEUR, réplication désactivée).
 - [ ] Créer et connecter le projet Cloudflare Pages au dépôt GitHub, branche main, après validation du build.
 - [ ] Configurer le binding D1 DB dans Pages et vérifier /api/health en Preview.
-- [ ] Activer R2 depuis le tableau de bord Cloudflare puis créer le bucket privé SAC.
+- [x] R2 activé et buckets privés dédiés créés le 26 novembre 2026 : `sac-private-documents` (Production) et `sac-private-documents-preview` (Preview). Domaines publics `r2.dev` désactivés, aucun domaine personnalisé.
 - [ ] Finaliser les choix OTP restants, push, SMS et paiement. Le fournisseur e-mail Brevo est déjà configuré et fonctionne ; ne pas rouvrir ce choix.
 - [x] Valider le mode de connexion SAC : adresse e-mail + mot de passe (option A) ; OTP e-mail pour vérification initiale, opérations sensibles et réinitialisation, sans OTP systématique à chaque connexion.
 - [x] Documenter les recommandations techniques comptes, OTP et sessions dans `docs/ARBITRAGES_TECHNIQUES_COMPTES_OTP_SESSIONS.md` ; les durées de session (30 jours d'inactivité / 90 jours absolus) sont désormais validées ; le fournisseur e-mail et les protocoles cryptographiques restent à valider.
@@ -1110,7 +1110,7 @@ Cette section reflète les vérifications et modifications les plus récentes. E
 - [x] Préserver la distinction entre connectivité API/D1 et disponibilité réelle du parcours SOS : le contrôle de santé ne valide pas les notifications, le chiffrement, les appareils ou la transmission SOS.
 - [x] Synchroniser la documentation du module Assistance avec l'état réel des migrations D1.
 - [ ] Compléter les modules métier de la console : finances/comptabilité/trésorerie, relations externes, ressources/RH/logistique/documents, pilotage et paramètres.
-- [ ] Intégrer le stockage documentaire privé avec Cloudflare R2 et ses contrôles d'accès. Le compte Cloudflare répond actuellement à l'API R2 avec l'erreur 10042 demandant l'activation de R2 depuis le tableau de bord Cloudflare ; aucun bucket SAC n'est encore créé.
+- [ ] Raccorder les buckets R2 SAC à Pages Functions (`DOCUMENTS`) après validation des contrôles obligatoires : limites de taille/type, validation MIME, analyse anti-malware, chiffrement, accès serveur et conservation/sauvegarde. Les buckets privés Production/Preview existent depuis le 26 novembre 2026 ; aucun objet n'a été migré et aucune liaison applicative n'est encore activée.
 - [ ] Exécuter et vérifier les contrôles CI des commits de cette séquence avant de déclarer le lot validé.
 
 Les modules non livrés doivent rester identifiés comme tels dans l'interface. Aucun montant, partenaire, document, membre du personnel ou indicateur de direction fictif ne doit être présenté comme une donnée réelle.
