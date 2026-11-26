@@ -465,22 +465,35 @@ export default function App() {
 
   useEffect(() => {
     const media = window.matchMedia("(min-width: 768px)");
-    const controller = new AbortController();
+    let disposed = false;
+    let requestController: AbortController | null = null;
     const checkAccess = async () => {
+      requestController?.abort();
+      requestController = new AbortController();
       if (!media.matches) { setAdminAccessAvailable(false); return; }
       try {
-        const response = await fetch("/api/admin/access", { credentials: "same-origin", cache: "no-store", signal: controller.signal });
-        if (!response.ok) { setAdminAccessAvailable(false); return; }
+        const response = await fetch("/api/admin/access", { credentials: "same-origin", cache: "no-store", signal: requestController.signal });
+        if (!response.ok) { if (!disposed) setAdminAccessAvailable(false); return; }
         const access = await response.json() as { canAccess?: boolean; role?: "super_admin" | "delegate" | null };
-        setAdminAccessAvailable(access.canAccess === true && (access.role === "super_admin" || access.role === "delegate"));
+        if (!disposed) setAdminAccessAvailable(access.canAccess === true && (access.role === "super_admin" || access.role === "delegate"));
       } catch {
-        if (!controller.signal.aborted) setAdminAccessAvailable(false);
+        if (!disposed && !requestController.signal.aborted) setAdminAccessAvailable(false);
       }
     };
+    const onVisibilityChange = () => { if (document.visibilityState === "visible") void checkAccess(); };
     void checkAccess();
     media.addEventListener("change", checkAccess);
     window.addEventListener("focus", checkAccess);
-    return () => { controller.abort(); media.removeEventListener("change", checkAccess); window.removeEventListener("focus", checkAccess); };
+    window.addEventListener("pageshow", checkAccess);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      disposed = true;
+      requestController?.abort();
+      media.removeEventListener("change", checkAccess);
+      window.removeEventListener("focus", checkAccess);
+      window.removeEventListener("pageshow", checkAccess);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
   }, []);
   const [language, setLanguage] = useState<Language>(() => {
     try {
