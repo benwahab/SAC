@@ -1,6 +1,7 @@
 const ALLOWED_PUSH_HOSTS = new Set([
   "fcm.googleapis.com",
   "fcmregistrations.googleapis.com",
+  "jmt17.google.com",
   "updates.push.services.mozilla.com",
   "push.services.mozilla.com",
   "web.push.apple.com",

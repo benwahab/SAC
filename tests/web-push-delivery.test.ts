@@ -40,6 +40,7 @@ async function makeFixture() {
 test("la politique commune valide les fournisseurs Push et les clés P-256 avant stockage", async () => {
   const fixture = await makeFixture();
   assert.equal(isAllowedPushEndpoint(fixture.subscription.endpoint)?.origin, "https://fcm.googleapis.com");
+  assert.equal(isAllowedPushEndpoint("https://jmt17.google.com/fcm/send/test-endpoint-token")?.origin, "https://jmt17.google.com");
   assert.equal(isAllowedPushEndpoint("https://evil.example/push"), null);
   assert.equal(isAllowedPushEndpoint("https://fcm.googleapis.com:8443/push"), null);
   assert.equal(await isValidPushSubscriptionPublicKey(fixture.subscription.keys.p256dh, cryptoProvider), true);
