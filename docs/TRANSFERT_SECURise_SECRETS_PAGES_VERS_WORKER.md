@@ -35,9 +35,9 @@ Préparer le Worker applicatif `sac-app` pour qu'il reprenne les paramètres né
 | `EMAIL_OTP_HMAC_SECRET` | Secret | HMAC des codes OTP, challenge WebAuthn et politique de connexion | Réutiliser exactement la clé existante ; la changer invaliderait les défis OTP en cours et pourrait affecter les contrôles liés |
 | `INTERNAL_DISPATCH_TOKEN` | Secret | Authentifie les appels au point d'entrée `/api/internal/ordinary-notification-dispatch` | Doit correspondre au secret du Worker de dispatch ordinaire pendant la transition |
 | `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` | Secret critique | Chiffre/déchiffre les abonnements Push conservés dans D1 | Réutiliser exactement la clé existante. Une nouvelle clé rendrait les abonnements déjà stockés illisibles ; aucune rotation sans procédure de rechiffrement/réabonnement |
-| `PUSH_VAPID_PUBLIC_KEY` | Variable | Clé publique publiée aux navigateurs et utilisée pour l'autorisation VAPID | Réutiliser la clé correspondant à la clé privée existante |
+| `PUSH_VAPID_PUBLIC_KEY` | Valeur de configuration (actuellement secret_text sur le Worker SOS) | Clé publique publiée aux navigateurs et utilisée pour l'autorisation VAPID | Reprendre exactement la valeur actuellement configurée sur `sac-sos-notification-delivery` ; ne pas la régénérer |
 | `PUSH_VAPID_PRIVATE_JWK` | Secret critique | Clé privée EC P-256 utilisée pour signer les autorisations VAPID | Réutiliser la clé privée existante ; vérifier que sa partie publique correspond exactement à `PUSH_VAPID_PUBLIC_KEY` |
-| `PUSH_VAPID_SUBJECT` | Variable | Sujet VAPID, généralement une adresse de contact `mailto:` ou URL | Reprendre la valeur actuelle |
+| `PUSH_VAPID_SUBJECT` | Valeur de configuration (actuellement secret_text sur le Worker SOS) | Sujet VAPID, généralement une adresse de contact `mailto:` ou URL | Reprendre exactement la valeur actuellement configurée sur `sac-sos-notification-delivery` |
 | `WEBAUTHN_RP_ID` | Variable de sécurité | Identifiant RP WebAuthn ; doit correspondre au domaine de l'origine finale | Définir après décision du domaine final, pas à partir d'une URL temporaire |
 | `WEBAUTHN_RP_NAME` | Variable | Nom affiché du RP dans les options d'enrôlement | Reprendre le nom produit validé |
 | `WEBAUTHN_ALLOWED_ORIGINS` | Variable de sécurité | Tableau JSON d'origines HTTPS exactes autorisées (le code utilise JSON, pas une liste séparée par virgules) | Construire uniquement à partir des origines finales et des origines de prévisualisation explicitement nécessaires |
@@ -53,13 +53,13 @@ Préparer le Worker applicatif `sac-app` pour qu'il reprenne les paramètres né
 |---|---|---|
 | `sac-ordinary-notification-delivery` | `PAGES_DISPATCH_URL`, `INTERNAL_DISPATCH_TOKEN` | Le token doit être identique à celui attendu par le Worker applicatif après bascule. Garder l'URL Pages tant que Pages est le service actif ; ne la changer qu'après validation du Worker cible. |
 | `sac-sos-notification-delivery` | `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_PRIVATE_JWK`, `PUSH_VAPID_SUBJECT`, liaison D1 `DB` | Les clés Push doivent être identiques à celles utilisées par l'application qui chiffre les abonnements et envoie les notifications. Ne pas les régénérer. |
-| `sac-gps-relay` | `GPS_RELAY_E2EE_READY`, liaison D1 `DB`, binding Durable Object `GPS_ROOMS` | Le code actuel du relais valide des tickets à usage unique stockés dans D1 ; l'interface Worker inspectée ne déclare pas `GPS_RELAY_HMAC_SECRET`. Ne pas transférer ce secret à ce Worker sans preuve d'un consommateur actif. |
+| `sac-gps-relay` | `GPS_RELAY_E2EE_READY`, **secret `GPS_RELAY_HMAC_SECRET`**, liaison D1 `DB`, binding Durable Object `GPS_ROOMS` | Vérification Cloudflare directe : le Worker possède bien le binding secret `GPS_RELAY_HMAC_SECRET`. Il doit rester sur ce Worker ; il ne doit pas être déplacé vers `sac-app`. |
 | `sac-notification-retention-purge` | Liaison D1 `DB` | Aucun secret applicatif supplémentaire n'est déclaré dans sa configuration inspectée. |
 
 ## Paramètres Pages recensés mais non à recopier aveuglément
 
 - `APP_BASE_URL` : le paramètre existe dans Pages mais son consommateur actif n'a pas été établi pendant cet audit ciblé. Ne pas le transférer avant d'avoir identifié le code qui le lit et l'URL attendue.
-- `GPS_RELAY_HMAC_SECRET` : le paramètre existe dans Pages, mais il n'est pas déclaré par le Worker `sac-gps-relay` actuellement inspecté ni par la route GPS actuelle qui émet les tickets D1 à usage unique. Ne pas le copier dans `sac-app` ni le supprimer de Pages avant un audit complet des références et de l'historique.
+- `GPS_RELAY_HMAC_SECRET` : vérification Cloudflare directe du Worker `sac-gps-relay` : le secret est bien attaché à ce Worker. Il reste à sa place et ne doit pas être transféré à `sac-app`. Ne pas le supprimer ni le faire tourner pendant la migration.
 - `BREVO_FROM_EMAIL`, `BREVO_FROM_NAME`, `MULTI_DEVICE_PASSWORD_LOGIN_ENABLED` et les paramètres WebAuthn apparaissent actuellement dans Pages avec le type `secret_text`. Cela ne les rend pas automatiquement confidentiels : leur type cible doit être choisi selon leur usage, sans afficher leurs valeurs.
 
 ## Risques de rotation à traiter avant tout changement
@@ -110,3 +110,18 @@ Préparer le Worker applicatif `sac-app` pour qu'il reprenne les paramètres né
 - Cloudflare : le Worker `sac-app` n'est pas encore déployé ; Pages SAC reste actif.
 - Les valeurs secrètes Pages ne sont pas exportables via l'API et n'ont pas été copiées.
 - La préparation documentaire est faite ; la configuration réelle des secrets et la validation sur une préproduction Cloudflare restent à effectuer.
+
+
+## Contrôle Cloudflare complémentaire — 26 novembre 2026
+
+Vérification directe des ressources Cloudflare (noms uniquement ; aucune valeur secrète lue) :
+
+- Le Worker applicatif cible `sac-app` n'existe pas encore.
+- `sac-gps-relay` possède bien `GPS_RELAY_HMAC_SECRET` en secret, `GPS_RELAY_E2EE_READY`, la liaison D1 `DB` et le Durable Object `GPS_ROOMS`. Ce secret est propre au relais GPS.
+- `sac-ordinary-notification-delivery` possède `INTERNAL_DISPATCH_TOKEN` en secret et `PAGES_DISPATCH_URL` en variable.
+- `sac-sos-notification-delivery` possède les quatre paramètres Push (`PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PRIVATE_JWK`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_SUBJECT`) actuellement déclarés en `secret_text`, ainsi que la liaison D1 `DB`.
+- `sac-notification-retention-purge` possède uniquement la liaison D1 `DB`.
+- Le projet Pages `sac` est toujours présent sur `sac-3xh.pages.dev`, branche `main`. L'API projet renvoie les paramètres sous `deployment_configs.env_vars` ; les valeurs ne sont pas affichées ici et doivent être vérifiées par noms uniquement au moment du transfert.
+- Les Workers UPK et UPK staging sont restés hors des opérations.
+
+**Conséquence :** avant la création de `sac-app`, le transfert doit reprendre les valeurs Push depuis le Worker SOS existant, et le token interne depuis le Worker de dispatch/Pages via le coffre de confiance. Le secret GPS demeure sur le relais GPS. Aucun secret ne doit être supprimé, remplacé ou déplacé pendant cette phase.
