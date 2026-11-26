@@ -20,14 +20,23 @@ export default {
     env: Env,
     context: ExecutionContext,
   ): Promise<void> {
-    // Ordinary reminders are processed directly by sac-app. This removes the
-    // old HTTP hop through the deleted Pages project.
-    if (controller.cron === "* * * * *") {
-      context.waitUntil(runOrdinaryNotificationDispatch(env.DB, env, Date.now()));
-    }
+    // A single every-minute trigger serves all scheduled SAC jobs.
+    context.waitUntil(runOrdinaryNotificationDispatch(env.DB, env, Date.now()));
 
-    // Reuse the existing, tested SOS dispatch and hourly retention-purge
-    // implementation. It selects the correct task from controller.cron.
-    await sosNotificationWorker.scheduled(controller, env, context);
+    // Keep SOS delivery on its every-minute cadence.
+    await sosNotificationWorker.scheduled(
+      { ...controller, cron: "* * * * *" },
+      env,
+      context,
+    );
+
+    // Run retention cleanup once per hour, on the top-of-hour invocation.
+    if (new Date(controller.scheduledTime).getUTCMinutes() === 0) {
+      await sosNotificationWorker.scheduled(
+        { ...controller, cron: "0 * * * *" },
+        env,
+        context,
+      );
+    }
   },
 };
