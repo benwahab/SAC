@@ -5,6 +5,7 @@ SAC est une application de sécurité personnelle et familiale. Elle permet à u
 ## Références obligatoires
 
 - [État réel et feuille de route opérationnelle — 19 novembre 2026](docs/ETAT_REEL_ET_FEUILLE_DE_ROUTE_OPERATIONNELLE_2026-11-19.md) — inventaire du code et ordre des prochains chantiers.
+- [Avancement R2 et état des migrations D1 — 26 novembre 2026](docs/AVANCEMENT_R2_2026-11-26.md) — buckets privés créés, bindings encore bloqués par les contrôles de sécurité, et vérification des 39 migrations D1.
 - [Audit transversal de cohérence de l'architecture — 18 novembre 2026](docs/AUDIT_TRANSVERSAL_COHERENCE_ARCHITECTURE_2026-11-18.md) — écarts P0/P1, hiérarchie des décisions et ordre de résolution avant migration/lancement.
 - [Consolidation générale de l'architecture](docs/CONSOLIDATION_GENERALE_SAC.md)
 - [Décisions complémentaires du 18 novembre 2026](docs/DECISIONS_COMPLEMENTAIRES_2026-11-18.md)
