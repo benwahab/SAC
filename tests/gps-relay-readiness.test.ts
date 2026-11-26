@@ -28,5 +28,5 @@ test("GPS relay checks its Durable Object binding before parsing or consuming on
 
 test("SAC static assets do not intercept the GPS WebSocket route", () => {
   const config = readFileSync(new URL("../workers/app/wrangler.toml", import.meta.url), "utf8");
-  assert.match(config, /run_worker_first\\s*=\\s*\\[\\s*"\\/api\\/\\*",\\s*"\\/v1\\/alerts\\/\\*"\\s*\\]/);
+  assert.ok(config.includes('run_worker_first = ["/api/*", "/v1/alerts/*"]'));
 });
