@@ -29,10 +29,11 @@ crons = ["* * * * *"]
 enabled = true
 
 
-# Receive the existing GPS Durable Object namespace from sac-gps-relay.
-# No local binding is added until Cloudflare commits the source-side transfer.
+# Bind the transferred GPS Durable Object namespace inside the main SAC Worker.
+[[durable_objects.bindings]]
+name = "GPS_ROOMS"
+class_name = "GpsRelayRoom"
+
 [exports.GpsRelayRoom]
 type = "durable-object"
-state = "expecting-transfer"
 storage = "sqlite"
-transfer_from = "sac-gps-relay"
