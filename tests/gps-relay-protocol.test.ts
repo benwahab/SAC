@@ -42,3 +42,26 @@ test("encrypted positions are only routed to the addressed recipient", () => {
   assert.equal(isRelayTarget("author", "gps-encrypted", "recipient", "r2", "r1"), false);
   assert.equal(isRelayTarget("author", "gps-encrypted", "author", "a1", "r1"), false);
 });
+
+
+import { createGpsWebSocketUrl } from "../functions/lib/location/gps-relay-url.ts";
+import { isGpsRelaySocketPath } from "../workers/gps-relay/routing.ts";
+
+test("GPS websocket URL stays on the incoming SAC app origin", () => {
+  assert.equal(
+    createGpsWebSocketUrl("https://sac.example/api/alerts/alert-123/gps-ticket", "alert-123"),
+    "wss://sac.example/v1/alerts/alert-123/socket",
+  );
+  assert.equal(
+    createGpsWebSocketUrl("http://localhost:8787/api/alerts/alert-123/gps-ticket", "alert-123"),
+    "ws://localhost:8787/v1/alerts/alert-123/socket",
+  );
+});
+
+test("GPS websocket route matches only the alert socket endpoint", () => {
+  assert.equal(isGpsRelaySocketPath("/v1/alerts/alert-123/socket"), true);
+  assert.equal(isGpsRelaySocketPath("/v1/alerts/a%2Fb/socket"), true);
+  assert.equal(isGpsRelaySocketPath("/v1/alerts/alert-123/gps-ticket"), false);
+  assert.equal(isGpsRelaySocketPath("/v1/alerts/alert-123/socket/extra"), false);
+  assert.equal(isGpsRelaySocketPath("/api/alerts/alert-123/socket"), false);
+});
