@@ -91,7 +91,7 @@
 - Source class remains in source code during the transfer deploy.
 - Source export becomes a `transferred` tombstone with `transferred_to = "sac-app"`.
 
-- [ ] Change source metadata to the transfer tombstone.
+- [ ] Change source metadata to the transfer tombstone and add `script_name = "sac-app"` to the source `GPS_ROOMS` binding so the old GPS URL can continue forwarding to the transferred namespace during the cutover window.
 - [ ] Deploy the source and verify Cloudflare reports `Transferred (committed): GpsRelayRoom → sac-app`.
 - [ ] Confirm no new namespace was created and the existing namespace is now owned by `sac-app`.
 - [ ] Stop immediately if Cloudflare reconciliation does not explicitly confirm the transfer.
@@ -135,6 +135,7 @@
 ## Execution Notes
 
 - **Ruling (sequencing correction):** The initial Task 1 wording would have changed GPS ticket URLs before the namespace was transferred and bound in `sac-app`, which would break newly issued GPS connections during the pending-transfer phase. Therefore, test and implement the same-origin URL helper in Task 1, but defer wiring it into the ticket endpoint until Task 5 after the target binding is confirmed. The current `GPS_RELAY_PUBLIC_URL` remains unchanged until that cutover.
+- **Ruling (source continuity):** During the source transfer commit, retain the source Worker's `GPS_ROOMS` binding with `script_name = "sac-app"`. Cloudflare documents this cross-Worker binding form for a source Worker that must keep using the transferred namespace. This keeps the old GPS endpoint forwarding to the same namespace until the ticket endpoint is switched and old tickets expire.
 
 - Use Cloudflare's documented four-deploy cross-Worker transfer sequence; never combine the target pending phase and source commit into one assumed atomic operation.
 - A successful bundle build is not proof of live WebSocket behavior. Production connection and packet-forwarding checks are required before source retirement.
