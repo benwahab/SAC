@@ -384,13 +384,13 @@ export default function AdminDashboard({ language = "fr" }: { language?: Languag
             <span aria-hidden="true" className="w-6 text-center text-lg">{section.icon}</span><span>{sectionLabel(section)}</span>
           </button>)}
         </nav>
-        <a href="/" className="mt-6 rounded-xl border border-emerald-900/15 px-3 py-3 text-center text-sm font-bold">{t.back}</a>
+        <a href="/" className="mt-6 rounded-xl border border-emerald-900/15 px-3 py-3 text-center text-sm font-bold">{language === "fr" ? "Retour à mon accueil" : language === "ar" ? "العودة إلى صفحتي الرئيسية" : "Back to my home"}</a>
       </aside>
       <div className="min-w-0 flex-1 px-4 py-5 sm:px-7 lg:px-9">
         <header className="mb-7 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3 lg:hidden"><BrandLogo className="h-7 w-auto" /><span className="text-sm font-black">SAC Admin</span></div>
           <div className="hidden lg:block"><p className="text-xs font-bold uppercase tracking-widest text-emerald-800/60">Console professionnelle</p><h1 className="mt-1 text-2xl font-black">{sectionLabel(selectedSection)}</h1></div>
-          <div className="ms-auto flex items-center gap-3"><span className="rounded-full border border-emerald-800/15 bg-white px-3 py-2 text-xs font-bold">{t.roleSuperAdmin}</span><a href="/" className="rounded-xl border border-emerald-900/15 bg-white px-4 py-2 text-sm font-bold lg:hidden">{t.back}</a></div>
+          <div className="ms-auto flex items-center gap-3"><span className="rounded-full border border-emerald-800/15 bg-white px-3 py-2 text-xs font-bold">{t.roleSuperAdmin}</span><a href="/" className="rounded-xl border border-emerald-900/15 bg-white px-4 py-2 text-sm font-bold">{language === "fr" ? "Retour à mon accueil" : language === "ar" ? "العودة إلى صفحتي الرئيسية" : "Back to my home"}</a></div>
         </header>
         <div className="mb-5 flex gap-2 overflow-x-auto pb-2 lg:hidden" aria-label="Navigation professionnelle">
           {consoleSections.map((section) => <button key={section.id} type="button" onClick={() => setActiveSection(section.id)} aria-current={activeSection === section.id ? "page" : undefined} className={activeSection === section.id ? "shrink-0 rounded-xl bg-emerald-800 px-3 py-2 text-xs font-bold text-white" : "shrink-0 rounded-xl border border-emerald-900/15 bg-white px-3 py-2 text-xs font-bold text-slate-700"}>{sectionLabel(section)}</button>)}
