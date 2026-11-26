@@ -5,8 +5,8 @@ Ce fichier est le point d'entrée architectural du dépôt. Le détail du modèl
 ## Stack à respecter
 
 - Frontend : React + Vite + TypeScript + Tailwind CSS + Lucide React.
-- Backend : API REST TypeScript avec Cloudflare Pages Functions dans `functions/api/`.
-- Hébergement PWA : Cloudflare Pages.
+- Backend : API REST TypeScript avec les routes `functions/api/`, compilées en Worker Cloudflare dédié pour la cible de migration.
+- Hébergement PWA : Cloudflare Workers Static Assets pour la cible `sac-app` ; le projet Pages `sac` reste l’hébergement de production tant que la migration n’est pas validée.
 - Base relationnelle cible : Cloudflare D1.
 - Stockage objet privé : Cloudflare R2 si activé et autorisé sur le compte.
 - Première livraison : PWA mobile-first.
@@ -20,8 +20,10 @@ Ce fichier est le point d'entrée architectural du dépôt. Le détail du modèl
 4. Les capacités Web et natives sont isolées dans `src/services/device/`.
 5. Les migrations D1 sont versionnées dans GitHub.
 6. R2 reste privé par défaut et ne sera utilisé qu'après activation/autorisation.
-7. Aucun second backend autonome sur Cloudflare Workers ne remplace Pages Functions sans validation explicite.
-8. Toute décision non encore validée est signalée comme telle dans `docs/DECISIONS_ET_POINTS_A_VALIDER.md`.
+7. Les routes existantes `functions/` restent la source métier unique ; le build Worker les compile avec `wrangler pages functions build` sans réécriture manuelle.
+8. La configuration du Worker applicatif SAC est isolée dans `workers/app/` et son build Vite dans `vite.config.worker.ts`. La configuration Pages racine reste intacte pendant la période de validation.
+9. Aucun déploiement ni basculement de production n’est autorisé avant validation fonctionnelle, reprise sécurisée des secrets et plan de retour arrière.
+10. Toute décision non encore validée est signalée comme telle dans `docs/DECISIONS_ET_POINTS_A_VALIDER.md`.
 
 ## Dépôt
 
