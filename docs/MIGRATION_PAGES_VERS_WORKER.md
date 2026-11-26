@@ -85,3 +85,8 @@ Les noms suivants ont été observés dans la configuration de Pages SAC. Cet in
 Cloudflare masque les valeurs des secrets existants. L'assistant ne peut donc ni les exporter depuis Pages, ni vérifier leur contenu, ni les transférer automatiquement. Les valeurs doivent être ajoutées au Worker par une opération sécurisée dans Cloudflare, sans les écrire dans GitHub, les fichiers de configuration, les journaux ou cette documentation.
 
 Avant le premier déploiement public, établir une matrice finale code → paramètre → type (secret/variable) → service consommateur → validation. En particulier, vérifier que le Worker applicatif et les Workers auxiliaires reçoivent uniquement les secrets dont ils ont besoin.
+
+
+## Procédure détaillée de transfert sécurisé
+
+La matrice opérationnelle et les étapes de transfert sont désormais détaillées dans [`docs/TRANSFERT_SECURise_SECRETS_PAGES_VERS_WORKER.md`](./TRANSFERT_SECURise_SECRETS_PAGES_VERS_WORKER.md). Ce document plus récent fait foi pour la répartition des paramètres entre `sac-app` et les Workers auxiliaires, les risques de rotation et la séquence de bascule. Les paramètres `APP_BASE_URL` et `GPS_RELAY_HMAC_SECRET` restent à confirmer avant toute copie ; ne pas les transférer automatiquement.
