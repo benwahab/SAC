@@ -1,9 +1,9 @@
 import { requireAuthenticatedDeviceSession } from "../../../lib/security/require-authenticated-device-session.ts";
 import { guardSameOriginJsonPost } from "../../../lib/security/http-request-guard.ts";
+import { createGpsWebSocketUrl } from "../../../lib/location/gps-relay-url.ts";
 
 interface Env {
   DB: D1Database;
-  GPS_RELAY_PUBLIC_URL?: string;
 }
 const HEADERS = {
   "Cache-Control": "no-store",
@@ -49,7 +49,6 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
   if (typeof alertId !== "string" || !alertId.trim() || alertId.length > 128) {
     return json({ error: "alert_not_found" }, 404);
   }
-  if (!env.GPS_RELAY_PUBLIC_URL) return json({ error: "gps_service_not_configured" }, 503);
 
   try {
     const row = await env.DB.prepare(
@@ -104,15 +103,11 @@ export const onRequestPost: PagesFunction<Env, "alertId"> = async ({ request, en
       return json({ error: "alert_not_found_or_closed" }, 409);
     }
 
-    const relayUrl = new URL(
-      "/v1/alerts/" + encodeURIComponent(row.id) + "/socket",
-      env.GPS_RELAY_PUBLIC_URL,
-    );
-    relayUrl.protocol = relayUrl.protocol === "https:" ? "wss:" : "ws:";
+    const websocketUrl = createGpsWebSocketUrl(request.url, row.id);
 
     return json({
       ticket,
-      websocketUrl: relayUrl.toString(),
+      websocketUrl,
       websocketProtocol: "sac-gps-v1",
       expiresInSeconds: 120,
     });

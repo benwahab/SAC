@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { parseGpsWebSocketProtocols } from "../workers/gps-relay/websocket-protocol.ts";
 import { isRelayTarget } from "../workers/gps-relay/routing.ts";
@@ -64,4 +65,10 @@ test("GPS websocket route matches only the alert socket endpoint", () => {
   assert.equal(isGpsRelaySocketPath("/v1/alerts/alert-123/gps-ticket"), false);
   assert.equal(isGpsRelaySocketPath("/v1/alerts/alert-123/socket/extra"), false);
   assert.equal(isGpsRelaySocketPath("/api/alerts/alert-123/socket"), false);
+});
+
+test("GPS ticket API issues WebSocket URLs on the SAC app origin", () => {
+  const source = readFileSync(new URL("../functions/api/alerts/[alertId]/gps-ticket.ts", import.meta.url), "utf8");
+  assert.match(source, /createGpsWebSocketUrl\(request\.url,\s*row\.id\)/);
+  assert.doesNotMatch(source, /GPS_RELAY_PUBLIC_URL/);
 });
