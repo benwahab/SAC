@@ -125,3 +125,31 @@ Vérification directe des ressources Cloudflare (noms uniquement ; aucune valeur
 - Les Workers UPK et UPK staging sont restés hors des opérations.
 
 **Conséquence :** avant la création de `sac-app`, le transfert doit reprendre les valeurs Push depuis le Worker SOS existant, et le token interne depuis le Worker de dispatch/Pages via le coffre de confiance. Le secret GPS demeure sur le relais GPS. Aucun secret ne doit être supprimé, remplacé ou déplacé pendant cette phase.
+
+
+### Inventaire exact des paramètres de production Pages
+
+Lecture Cloudflare effectuée le 26 novembre 2026 : seuls les noms et types ont été récupérés, jamais les valeurs.
+
+| Nom | Type actuel dans Pages |
+|---|---|
+| `APP_BASE_URL` | `secret_text` |
+| `BREVO_API_KEY` | `secret_text` |
+| `BREVO_FROM_EMAIL` | `secret_text` |
+| `BREVO_FROM_NAME` | `secret_text` |
+| `EMAIL_OTP_HMAC_SECRET` | `secret_text` |
+| `GPS_RELAY_E2EE_READY` | `plain_text` |
+| `GPS_RELAY_HMAC_SECRET` | `secret_text` |
+| `GPS_RELAY_PUBLIC_URL` | `plain_text` |
+| `INTERNAL_DISPATCH_TOKEN` | `secret_text` |
+| `MULTI_DEVICE_PASSWORD_LOGIN_ENABLED` | `secret_text` |
+| `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` | `secret_text` |
+| `PUSH_VAPID_PRIVATE_JWK` | `secret_text` |
+| `PUSH_VAPID_PUBLIC_KEY` | `secret_text` |
+| `PUSH_VAPID_SUBJECT` | `secret_text` |
+| `WEBAUTHN_ALLOWED_ORIGINS` | `secret_text` |
+| `WEBAUTHN_ROOT_ENROLLMENT_ENABLED` | `secret_text` |
+| `WEBAUTHN_RP_ID` | `secret_text` |
+| `WEBAUTHN_RP_NAME` | `secret_text` |
+
+Le type `secret_text` actuel est conservé comme niveau de confidentialité par défaut lors de la reprise. Une éventuelle conversion en variable publique ne sera faite qu'après validation fonctionnelle et décision explicite ; aucune valeur ne doit être révélée dans les journaux ou dans Git.
