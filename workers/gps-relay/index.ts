@@ -69,6 +69,8 @@ export default {
     if (!isGpsRelayReady(env.GPS_RELAY_E2EE_READY)) {
       return json({ error: "gps_relay_not_ready" }, 503);
     }
+    // Fail closed before consuming a one-time ticket if the namespace binding is absent.
+    if (!env.GPS_ROOMS) return json({ error: "gps_service_unavailable" }, 503);
     const url = new URL(request.url);
     const match = url.pathname.match(/^\/v1\/alerts\/([^/]+)\/socket$/);
     if (!match) return json({ error: "not_found" }, 404);
@@ -102,7 +104,6 @@ export default {
     headers.set("X-SAC-Device-ID", consumed.device_id);
     headers.set("X-SAC-Session-ID", consumed.session_id);
     headers.set("X-SAC-Role", consumed.role);
-    if (!env.GPS_ROOMS) return json({ error: "gps_service_unavailable" }, 503);
     const room = env.GPS_ROOMS.get(env.GPS_ROOMS.idFromName(alertId));
     return room.fetch(new Request(request, { headers }));
   },
