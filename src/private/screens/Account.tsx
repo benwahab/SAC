@@ -341,6 +341,13 @@ export default function Account({ copy, go, notice, setNotice, ownProfile, setOw
               <form onSubmit={deleteAccount} className="mt-3 flex flex-col gap-2">
                 <label className="flex items-start gap-2 text-sm font-semibold"><input type="checkbox" checked={confirmDelete} onChange={(event) => setConfirmDelete(event.target.checked)} className="mt-1 size-4" />{copy.accountDelete}</label>
                 <input type="password" required value={deletePassword} onChange={(event) => setDeletePassword(event.target.value)} placeholder={copy.accountDeletePassword} autoComplete="current-password" className={fieldClass} />
+                {!confirmDelete ? (
+                  <p className="text-xs font-medium text-sac-muted">Coche la case de confirmation pour activer le bouton.</p>
+                ) : !deletePassword ? (
+                  <p className="text-xs font-medium text-sac-muted">Saisis le mot de passe actuel de ton compte pour continuer.</p>
+                ) : (
+                  <p className="text-xs font-semibold text-sac-confirm">Confirmation et mot de passe renseignés. Tu peux envoyer la demande.</p>
+                )}
                 <button type="submit" disabled={busy !== null || !confirmDelete || !deletePassword} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-sac-alert px-4 text-sm font-extrabold text-white disabled:opacity-50"><Trash2 size={16} />{busy === "delete" ? copy.accountDeleting : copy.accountDeleteButton}</button>
               </form>
             </Card>
