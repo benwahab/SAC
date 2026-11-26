@@ -208,6 +208,8 @@ jobs:
       - name: Test registration input policy
         run: npm run test:registration-policy
       - run: npm run build
+      - name: Build isolated SAC Worker bundle without deploying
+        run: npm run build:worker
       - name: Audit production dependencies (blocking)
         run: npm audit --omit=dev --audit-level=high
       - name: Audit all dependencies (development toolchain)
