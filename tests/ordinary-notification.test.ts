@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { isOrdinaryNotificationKindImplemented } from "../functions/lib/notifications/ordinary-dispatch.ts";
 import {
   applyWebPushOutcome,
   buildOrdinaryPushPayload,
   createOrdinaryNotification,
   isOrdinaryPushPayload,
-  isOrdinaryNotificationKindImplemented,
   ordinaryNotificationDeduplicationKey,
   transitionOrdinaryNotification,
   type OrdinaryNotification,
