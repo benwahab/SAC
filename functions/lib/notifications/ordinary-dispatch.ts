@@ -126,8 +126,18 @@ async function releaseExpiredDeliveryLeases(db: D1Database, now: number): Promis
   ).bind(now, now - DELIVERY_LEASE_MS).run().catch(() => undefined);
 }
 
+/**
+ * Seul reminder_due dispose actuellement d'une source métier vérifiable et
+ * d'un flux de création actif. Les événements familiaux et les rappels
+ * cliniques restent volontairement bloqués tant que leurs modèles et leurs
+ * contrôles de propriété ne sont pas implémentés.
+ */
+export function isOrdinaryNotificationKindImplemented(kind: OrdinaryNotificationKind): boolean {
+  return kind === "reminder_due";
+}
+
 async function revalidateReminderSource(db: D1Database, row: OutboxRow): Promise<boolean> {
-  if (row.kind !== "reminder_due") return false;
+  if (!isOrdinaryNotificationKindImplemented(row.kind)) return false;
   const source = await db.prepare(
     `SELECT o.status AS occurrence_status, r.status AS reminder_status
      FROM health_reminder_occurrences o
