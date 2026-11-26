@@ -10,3 +10,9 @@ export function isRelayTarget(
   }
   return senderRole === "author" ? targetRole === "recipient" : targetRole === "author";
 }
+
+
+/** Match only the public GPS socket endpoint; ticket APIs stay in Pages Functions. */
+export function isGpsRelaySocketPath(pathname: string): boolean {
+  return /^\/v1\/alerts\/[^/]+\/socket$/.test(pathname);
+}
