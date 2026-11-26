@@ -22,6 +22,7 @@
 ## Review Focus
 
 - Ticket issued immediately before routing cutover still points at the source URL; wait at least the 120-second ticket lifetime before source retirement.
+- The ticket endpoint must not return the target origin during `expecting-transfer`; the target has no local `GPS_ROOMS` binding until the fourth deploy.
 - Missing target Durable Object binding during the pending-transfer phase must fail closed, not fall through to app/static routing.
 - Invalid, expired, reused or unauthorized tickets must retain existing HTTP status and error semantics.
 - Non-GPS routes and existing scheduled handlers must remain unchanged.
@@ -40,9 +41,10 @@
 - Ticket handler derives `websocketUrl` from the incoming request origin, converting `https:` to `wss:` and `http:` to `ws:`.
 - App entry dispatches only `/v1/alerts/:alertId/socket` to the relay handler; all other requests continue to `pagesFunctionsWorker.fetch`.
 
-- [ ] Add a test asserting that a successful GPS ticket response uses the request host and WebSocket scheme, not `GPS_RELAY_PUBLIC_URL`.
-- [ ] Run the focused ticket tests and confirm the new assertion fails against current behavior.
+- [ ] Add a pure helper test asserting that a GPS socket URL uses the incoming SAC app origin and the correct `ws:` / `wss:` scheme.
+- [ ] Run the focused GPS tests and confirm the new assertions fail against current behavior.
 - [ ] Add routing tests asserting the GPS socket path is dispatched to the relay and all other paths use the existing Pages Functions handler.
+- [ ] Keep the ticket endpoint pointed at the current GPS Worker until Task 5 has completed the namespace transfer and the target binding is live; only then switch ticket responses to the same-origin `sac-app` URL.
 - [ ] Implement the smallest change that preserves the current error responses and existing app routing.
 - [ ] Run focused tests and typecheck; commit the code and tests.
 
@@ -131,6 +133,8 @@
 ---
 
 ## Execution Notes
+
+- **Ruling (sequencing correction):** The initial Task 1 wording would have changed GPS ticket URLs before the namespace was transferred and bound in `sac-app`, which would break newly issued GPS connections during the pending-transfer phase. Therefore, test and implement the same-origin URL helper in Task 1, but defer wiring it into the ticket endpoint until Task 5 after the target binding is confirmed. The current `GPS_RELAY_PUBLIC_URL` remains unchanged until that cutover.
 
 - Use Cloudflare's documented four-deploy cross-Worker transfer sequence; never combine the target pending phase and source commit into one assumed atomic operation.
 - A successful bundle build is not proof of live WebSocket behavior. Production connection and packet-forwarding checks are required before source retirement.
