@@ -151,5 +151,5 @@
 - **Ruling (source continuity):** During the source transfer commit, retain the source Worker's `GPS_ROOMS` binding with `script_name = "sac-app"`. Cloudflare documents this cross-Worker binding form for a source Worker that must keep using the transferred namespace. This keeps the old GPS endpoint forwarding to the same namespace until the ticket endpoint is switched and old tickets expire.
 
 - Use Cloudflare's documented four-deploy cross-Worker transfer sequence; never combine the target pending phase and source commit into one assumed atomic operation.
-- A successful bundle build is not proof of live WebSocket behavior. Production connection and packet-forwarding checks are required before source retirement.
+- A successful bundle build and invalid-ticket smoke test do not prove a successful authorized WebSocket session or encrypted packet forwarding. That remains a manual device acceptance check after migration; the source Worker was retired only after D1 confirmed zero active alerts and zero pre-cutover unexpired tickets.
 - If a transfer step fails, retain both Workers and stop; do not delete the source class or namespace.

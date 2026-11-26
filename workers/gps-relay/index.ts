@@ -1,3 +1,8 @@
+/**
+ * SAC GPS relay module, deployed only as part of the main `sac-app` Worker.
+ * `workers/app/entry.ts` imports this fetch handler and re-exports GpsRelayRoom.
+ * Do not restore a standalone Worker config or deployment pipeline for this folder.
+ */
 import { parseGpsWebSocketProtocols } from "./websocket-protocol.ts";
 import { isGpsRelayReady } from "./relay-readiness.ts";
 import { isRelayTarget } from "./routing.ts";
