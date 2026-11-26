@@ -1,0 +1,25 @@
+name = "sac-app"
+main = "../../dist/worker/index.js"
+compatibility_date = "2026-11-17"
+workers_dev = true
+preview_urls = true
+
+# This Worker uses the existing production SAC database.
+# No database is created, copied, reset, or migrated by this configuration.
+[[d1_databases]]
+binding = "DB"
+database_name = "sac-db"
+database_id = "892ce876-f279-409c-8f9e-06b1dca66e9d"
+
+[vars]
+GPS_RELAY_PUBLIC_URL = "https://sac-gps-relay.benwahab111.workers.dev"
+GPS_RELAY_E2EE_READY = "true"
+
+[assets]
+directory = "../../dist/client/"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+not_found_handling = "single-page-application"
+
+[observability]
+enabled = true
