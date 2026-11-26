@@ -5,6 +5,7 @@ import {
   buildOrdinaryPushPayload,
   createOrdinaryNotification,
   isOrdinaryPushPayload,
+  isOrdinaryNotificationKindImplemented,
   ordinaryNotificationDeduplicationKey,
   transitionOrdinaryNotification,
   type OrdinaryNotification,
@@ -23,6 +24,14 @@ function makeNotification(): OrdinaryNotification {
   if (!created.ok) throw new Error("fixture invalide");
   return created.notification;
 }
+
+test("seuls les types ordinaires dont la source est implémentée sont distribués", () => {
+  assert.equal(isOrdinaryNotificationKindImplemented("reminder_due"), true);
+  assert.equal(isOrdinaryNotificationKindImplemented("family_event_created"), false);
+  assert.equal(isOrdinaryNotificationKindImplemented("family_event_updated"), false);
+  assert.equal(isOrdinaryNotificationKindImplemented("family_event_cancelled"), false);
+  assert.equal(isOrdinaryNotificationKindImplemented("clinic_reminder_due"), false);
+});
 
 test("la clé de déduplication est stable et propre au destinataire", () => {
   const key = ordinaryNotificationDeduplicationKey({
