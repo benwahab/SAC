@@ -67,13 +67,14 @@ export default function Dashboard({ copy, language, go, closeContacts, invitatio
               </a>
             )}
             <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[.16em] text-white/90">{copy.homeBadgePrivate}</span>
-            <button type="button" onClick={() => go({ name: "account" })} aria-label={copy.accountProfileSection} title={copy.accountProfileSection} className="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-white/20 p-0.5 shadow-glass transition hover:bg-white/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-              <ProfileAvatar photoUrl={ownProfile?.photoUrl} name={[ownProfile?.firstName, ownProfile?.lastName].filter(Boolean).join(" ") || "?"} size="md" />
-            </button>
+
           </div>
         </div>
 
         <div className="relative mt-6 flex items-center gap-3">
+            <button type="button" onClick={() => go({ name: "account" })} aria-label={copy.accountProfileSection} title={copy.accountProfileSection} className="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-white/20 p-0.5 shadow-glass transition hover:bg-white/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+              <ProfileAvatar photoUrl={ownProfile?.photoUrl} name={[ownProfile?.firstName, ownProfile?.lastName].filter(Boolean).join(" ") || "?"} size="md" />
+            </button>
           <div className="min-w-0">
             <p className="text-sm font-bold text-white/85">{greeting}</p>
             <p className="mt-1 text-[11px] font-black uppercase tracking-[.18em] text-white/60">{copy.homeEyebrow}</p>
