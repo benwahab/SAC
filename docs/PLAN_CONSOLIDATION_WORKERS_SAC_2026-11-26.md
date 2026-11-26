@@ -112,3 +112,19 @@ UPK ne doit jamais être rattaché à SAC.
 ## État au 26 novembre 2026
 
 Audit Cloudflare et dépôt effectué. Aucune ressource Cloudflare n'a été modifiée et aucun Worker n'a été supprimé. La consolidation du code et des tâches planifiées reste à réaliser selon l'ordre ci-dessus.
+
+
+## Avancement après audit
+
+Le 26 novembre 2026, une première intégration préparatoire a été ajoutée sur `main` :
+
+- `workers/app/entry.ts` conserve le gestionnaire HTTP généré par Pages Functions et lui ajoute un gestionnaire `scheduled`.
+- Le traitement des notifications ordinaires est appelé directement depuis `sac-app`, sans l'ancien appel HTTP vers Pages.
+- Le traitement SOS et la purge horaire réutilisent le Worker SOS existant comme module, sans recopier sa logique.
+- `workers/app/wrangler.toml` pointe maintenant vers cet entrypoint et déclare les deux Cron Triggers.
+
+Les quatre secrets Push nécessaires sont présents dans les bindings/secrets de `sac-app`. Le binding D1 `DB` est également présent. Les valeurs des secrets ne sont pas lues ni exposées.
+
+**Statut : code préparatoire ajouté, validation CI de cette nouvelle entrée et déploiement réel encore à confirmer.** La configuration de production Cloudflare n'a pas encore été mise à jour par un déploiement. Les Workers secondaires restent actifs ; aucun Cron n'a été retiré et aucune ressource n'a été supprimée.
+
+Le précédent run GitHub Actions `45886606319` a validé les contrôles existants, mais le job de déploiement a échoué avant le déploiement parce que le secret GitHub `CLOUDFLARE_API_TOKEN` était absent. Ce secret doit être configuré dans les secrets du dépôt GitHub avant tout déploiement.
