@@ -90,7 +90,10 @@
     "test:account-social-d1": "node --experimental-strip-types --test tests/d1-account-social.integration.test.ts",
     "test:d1-support-tickets": "python3 tests/d1_support_tickets_schema.test.py",
     "test:d1-support-intake-otp": "python3 tests/d1_support_ticket_email_otp_schema.test.py",
-    "test:contact-invitation-inbox": "node --experimental-strip-types --test tests/contact-invitation-inbox-endpoint.test.ts"
+    "test:contact-invitation-inbox": "node --experimental-strip-types --test tests/contact-invitation-inbox-endpoint.test.ts",
+    "build:worker": "tsc -p tsconfig.app.json && vite build --config vite.config.worker.ts && wrangler pages functions build --outdir=dist/worker",
+    "dev:worker": "npm run build:worker && wrangler dev --config workers/app/wrangler.toml",
+    "deploy:worker": "npm run build:worker && wrangler deploy --config workers/app/wrangler.toml"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
