@@ -210,6 +210,8 @@ jobs:
       - run: npm run build
       - name: Build isolated SAC Worker bundle without deploying
         run: npm run build:worker
+      - name: Apply D1 migrations to Worker-local database
+        run: npx wrangler d1 migrations apply sac-db --local --config workers/app/wrangler.toml
       - name: Smoke-test SAC Worker locally with isolated D1
         run: |
           set -euo pipefail
