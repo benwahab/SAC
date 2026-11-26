@@ -210,6 +210,22 @@ jobs:
       - run: npm run build
       - name: Build isolated SAC Worker bundle without deploying
         run: npm run build:worker
+      - name: Smoke-test SAC Worker locally with isolated D1
+        run: |
+          set -euo pipefail
+          npx wrangler dev --config workers/app/wrangler.toml --local --ip 127.0.0.1 --port 8787 > /tmp/sac-app-worker.log 2>&1 &
+          worker_pid=$!
+          trap 'kill "$worker_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:8787/api/health > /tmp/sac-worker-health.json; then
+              break
+            fi
+            sleep 2
+          done
+          cat /tmp/sac-worker-health.json
+          grep -q '"ok":true' /tmp/sac-worker-health.json
+          curl --silent --show-error --fail http://127.0.0.1:8787/ > /tmp/sac-worker-index.html
+          grep -q '<div id="root">' /tmp/sac-worker-index.html
       - name: Validate isolated SAC Worker deployment configuration without deploying
         run: npx wrangler deploy --dry-run --config workers/app/wrangler.toml
       - name: Audit production dependencies (blocking)
