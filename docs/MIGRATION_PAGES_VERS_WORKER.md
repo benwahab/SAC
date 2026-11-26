@@ -65,3 +65,23 @@ npm run deploy:worker
 ## Référence Cloudflare
 
 La méthode suit la documentation officielle Pages → Workers : compiler les Pages Functions avec `wrangler pages functions build`, puis configurer le script compilé et les assets statiques dans un Worker Static Assets.
+
+
+## Inventaire des paramètres Pages à reprendre
+
+Les noms suivants ont été observés dans la configuration de Pages SAC. Cet inventaire décrit les entrées présentes dans l'ancien environnement ; il ne signifie pas que chaque entrée doit être copiée telle quelle ni que toutes sont des secrets.
+
+| Groupe | Noms observés | Traitement avant migration |
+|---|---|---|
+| URL applicative | `APP_BASE_URL` | Adapter à l'URL réelle du Worker uniquement après validation de son domaine et des parcours d'invitation. |
+| E-mail Brevo | `BREVO_API_KEY`, `BREVO_FROM_EMAIL`, `BREVO_FROM_NAME` | Reprendre les trois paramètres nécessaires au service Brevo ; clé API uniquement comme secret. |
+| OTP e-mail | `EMAIL_OTP_HMAC_SECRET` | Secret serveur obligatoire pour signer/vérifier les codes OTP ; ne jamais le journaliser. |
+| Relais GPS | `GPS_RELAY_HMAC_SECRET` | Secret serveur utilisé pour signer les tickets du relais GPS ; conserver la même confiance entre services. |
+| Dispatch interne | `INTERNAL_DISPATCH_TOKEN` | Secret d'authentification des appels internes de dispatch. |
+| Connexion multi-appareils | `MULTI_DEVICE_PASSWORD_LOGIN_ENABLED` | Paramètre fonctionnel à vérifier selon le type Cloudflare et le code qui le lit. |
+| Web Push | `PUSH_SUBSCRIPTION_ENCRYPTION_KEY`, `PUSH_VAPID_PRIVATE_JWK`, `PUSH_VAPID_PUBLIC_KEY`, `PUSH_VAPID_SUBJECT` | Vérifier la configuration réelle et la cohérence de la paire VAPID. La clé de chiffrement existante masquée n'est pas récupérable en clair ; ne pas supposer qu'elle peut être copiée. Suivre la procédure de rotation commune Pages/Worker avant d'activer le stockage ou l'envoi Push. |
+| WebAuthn | `WEBAUTHN_ALLOWED_ORIGINS`, `WEBAUTHN_ROOT_ENROLLMENT_ENABLED`, `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME` | Adapter les origines et le RP à l'URL finale ; garder l'enrôlement racine désactivé tant que la procédure n'est pas validée. |
+
+Cloudflare masque les valeurs des secrets existants. L'assistant ne peut donc ni les exporter depuis Pages, ni vérifier leur contenu, ni les transférer automatiquement. Les valeurs doivent être ajoutées au Worker par une opération sécurisée dans Cloudflare, sans les écrire dans GitHub, les fichiers de configuration, les journaux ou cette documentation.
+
+Avant le premier déploiement public, établir une matrice finale code → paramètre → type (secret/variable) → service consommateur → validation. En particulier, vérifier que le Worker applicatif et les Workers auxiliaires reçoivent uniquement les secrets dont ils ont besoin.
