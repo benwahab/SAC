@@ -153,3 +153,31 @@ Lecture Cloudflare effectuée le 26 novembre 2026 : seuls les noms et types ont 
 | `WEBAUTHN_RP_NAME` | `secret_text` |
 
 Le type `secret_text` actuel est conservé comme niveau de confidentialité par défaut lors de la reprise. Une éventuelle conversion en variable publique ne sera faite qu'après validation fonctionnelle et décision explicite ; aucune valeur ne doit être révélée dans les journaux ou dans Git.
+
+
+## Décision de transfert après inspection des ressources
+
+Les secrets Cloudflare ne sont pas récupérables en clair via l'API. Le transfert automatique direct Pages → Worker n'est donc pas possible pour les paramètres qui n'existent que sur Pages. Ne pas tenter de les afficher, les écrire dans les logs, dans Git ou dans les sorties CI.
+
+### Sources possibles sans révéler de valeurs
+
+| Paramètres | Source opérationnelle connue | Action |
+|---|---|---|
+| `PUSH_SUBSCRIPTION_ENCRYPTION_KEY` | Worker `sac-sos-notification-delivery` | Recréer le secret sur `sac-app` avec la même valeur via une procédure administrateur sûre ; ne pas régénérer |
+| `PUSH_VAPID_PRIVATE_JWK` | Worker `sac-sos-notification-delivery` | Même valeur exacte ; ne pas régénérer |
+| `PUSH_VAPID_PUBLIC_KEY` | Worker `sac-sos-notification-delivery` | Même paire VAPID |
+| `PUSH_VAPID_SUBJECT` | Worker `sac-sos-notification-delivery` | Reprendre la valeur exacte |
+| `INTERNAL_DISPATCH_TOKEN` | Worker `sac-ordinary-notification-delivery` et Pages | Garder le même secret partagé jusqu'à migration coordonnée du dispatch |
+| `GPS_RELAY_HMAC_SECRET` | Worker `sac-gps-relay` | Reste exclusivement sur le relais GPS ; ne pas le recopier sur `sac-app` sauf besoin prouvé |
+| `BREVO_API_KEY`, `EMAIL_OTP_HMAC_SECRET`, `WEBAUTHN_*`, `APP_BASE_URL`, `MULTI_DEVICE_PASSWORD_LOGIN_ENABLED` | Paramètres actuellement déclarés sur Pages | Réentrée manuelle par l'administrateur depuis son coffre de secrets ou son fournisseur d'origine ; les valeurs Pages ne sont pas exportables |
+
+### Ordre impératif
+
+1. Créer/configurer le Worker cible sans basculer le domaine de production.
+2. Ajouter les variables publiques de configuration adaptées à la future URL, en particulier l'origine WebAuthn, le RP ID et l'URL de base, après décision du nom de domaine final.
+3. Ajouter les secrets au Worker via Cloudflare Dashboard ou commande Wrangler exécutée dans un environnement administrateur local sécurisé. Ne jamais utiliser une valeur littérale dans un workflow GitHub.
+4. Vérifier uniquement la présence des noms de bindings/secrets, jamais leur valeur.
+5. Effectuer les tests de disponibilité, OTP, WebAuthn, notifications et Push sur une URL de préproduction. Pour les Push déjà enregistrés, valider le déchiffrement avec la clé historique avant tout trafic.
+6. Garder Pages et les Workers auxiliaires inchangés jusqu'à validation de bout en bout. Ne faire aucune bascule DNS/domaine avant validation.
+
+**Blocage explicite :** tant que les secrets historiques non récupérables ne sont pas réintroduits par l'administrateur depuis leur source de confiance, le déploiement public du Worker applicatif est interdit. Le déploiement avec des valeurs factices ou des clés régénérées casserait potentiellement l'OTP, WebAuthn et les abonnements Push.
