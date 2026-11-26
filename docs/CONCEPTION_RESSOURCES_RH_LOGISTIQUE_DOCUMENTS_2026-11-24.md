@@ -126,10 +126,14 @@ Aucune migration D1/R2 ni donnée fictive n'est créée par cette note. Le modul
 
 ## Prérequis d'infrastructure vérifié le 24 novembre 2026
 
-Le compte Cloudflare relié au projet répond actuellement que R2 doit d'abord être activé depuis le tableau de bord Cloudflare. Aucun bucket SAC ne peut donc être supposé disponible. En conséquence :
-- aucune liaison R2 n'est ajoutée à `wrangler.toml` ;
-- aucune route d'upload/téléchargement n'est activée ;
-- aucun document n'est stocké publiquement ou dans D1 sous forme de contenu binaire ;
-- la mise en œuvre du stockage documentaire attend l'activation R2, la création d'un bucket privé dédié, puis les tests de liaison locale et d'accès serveur.
+**Mise à jour du 26 novembre 2026 :** R2 est désormais activé sur le compte Cloudflare. Deux buckets privés dédiés ont été créés :
+- Production : `sac-private-documents` ;
+- Preview : `sac-private-documents-preview`.
+
+Les domaines publics gérés `r2.dev` sont désactivés et aucun domaine personnalisé n'est attaché. Cloudflare a affecté la localisation `WEUR` et la juridiction `default` ; ce constat technique ne constitue pas une validation juridique de l'hébergement ou des transferts.
+
+Les buckets sont vides. Aucun document existant n'a été déplacé. La liaison Pages Functions `DOCUMENTS` et l'activation des routes restent volontairement en attente : le modèle et les contrôles du §5-§9 doivent être validés et testés avant d'ouvrir les uploads/téléchargements. En particulier, la limite de taille/type, la validation MIME, l'analyse anti-malware, le chiffrement, les accès serveur et la politique de conservation/sauvegarde ne sont pas encore homologués.
+
+Les migrations D1 de SAC sont distinctes de R2 : l'inventaire direct du 26 novembre confirme que les migrations `0001` à `0039` sont enregistrées dans `d1_migrations`. Aucune migration SQL supplémentaire n'a été nécessaire pour créer les buckets R2.
 
 Cette vérification n'a créé ni modifié aucune ressource Cloudflare.
