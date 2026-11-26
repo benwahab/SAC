@@ -141,7 +141,7 @@
 - Production smoke test passed: the `sac-app` GPS route returned HTTP 401 for a deliberately invalid one-time ticket, after the static-asset routing rule was corrected.
 - GPS tickets now derive their WebSocket URL from the incoming SAC app origin. `GPS_RELAY_PUBLIC_URL` was removed from the app configuration.
 - At source retirement, D1 reported zero active alerts and zero pre-cutover unexpired GPS tickets.
-- The old `sac-gps-relay` Worker and its Worker Build configuration were deleted. The standalone GPS Worker workflow and Wrangler config are removed from the repository; the GPS relay module remains because `sac-app` imports it.
+- The old `sac-gps-relay` Worker and its Worker Build configuration were deleted. The standalone GPS Worker workflow and Wrangler config are removed. The old standalone SOS, ordinary-notification and retention-purge Wrangler configs and SOS deployment workflow were also removed; the SOS module remains because `sac-app` imports it.
 - The old `GPS_RELAY_HMAC_SECRET` binding had no references in the SAC repository code and was not required by the active relay implementation; it was retired with the old Worker.
 - **Remaining manual acceptance:** no valid authenticated two-device GPS session was available for this deployment. A real author/recipient encrypted location exchange must still be tested from SAC devices. The invalid-ticket smoke test proves routing and fail-closed behavior, not a complete successful GPS session.
 

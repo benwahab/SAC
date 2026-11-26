@@ -106,10 +106,6 @@ jobs:
         run: npm run test:live-geolocation
       - name: Test encrypted Web Push subscription cryptography
         run: npm run test:push-subscriptions
-      - name: Bundle SOS notification delivery Worker without deploying
-        run: npm run test:sos-notification-worker-build
-      - name: Bundle ordinary notification delivery Worker without deploying
-        run: npm run test:ordinary-notification-worker-build
       - name: Test D1 health reminders and ordinary notification schema
         run: python3 tests/d1_health_reminders_schema.test.py
       - name: Test service worker separation between ordinary reminders and SOS
@@ -188,15 +184,6 @@ jobs:
         run: npm run test:gps-relay-protocol
       - name: Test fail-closed GPS E2EE activation gate
         run: npm run test:gps-relay-readiness
-      - name: Bundle GPS relay Worker and validate Durable Object bindings
-        run: |
-          npm run test:gps-relay-build
-          bundle="$(find /tmp/sac-gps-relay-build -type f -name '*.js' ! -name '*.map' | head -n 1)"
-          test -n "$bundle"
-          echo "SAC_GPS_BUNDLE_NAME=$(basename "$bundle")"
-          printf 'SAC_GPS_BUNDLE_BASE64='
-          base64 -w0 "$bundle"
-          echo
       - name: Test SOS service end-to-end against isolated local D1
         run: npm run test:sos-d1
       - name: Test trusted contact service against isolated local D1
@@ -208,8 +195,8 @@ jobs:
       - name: Test registration input policy
         run: npm run test:registration-policy
       - run: npm run build
-      - name: Build isolated SAC Worker bundle without deploying
-        run: npm run build:worker
+      - name: Bundle consolidated SAC Worker and validate integrated GPS and notification bindings
+        run: npm run test:app-worker-build
       - name: Apply D1 migrations to Worker-local database
         run: npx wrangler d1 migrations apply sac-db --local --config workers/app/wrangler.toml
       - name: Smoke-test SAC Worker locally with isolated D1
